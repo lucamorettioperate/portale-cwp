@@ -77,6 +77,8 @@ end $$;
 grant execute on function admin_imposta_organizzazioni(uuid, uuid[]) to authenticated;
 
 -- Aggiorna admin_elenco_utenti per includere l'elenco organizzazioni.
+-- (drop necessario perché cambia il tipo di ritorno)
+drop function if exists admin_elenco_utenti();
 create or replace function admin_elenco_utenti()
 returns table (
   id uuid, email text, ruolo ruolo_utente, nome_completo text,
