@@ -109,8 +109,8 @@ async function hashFile(file) {
 /* Carica un documento per una pratica.
    - mai sovrascrive: ogni caricamento è una nuova versione
    - file salvato in storage: documenti/<pratica_id>/<timestamp>-<nome>
-   - se è una nuova versione dello stesso "nome logico", la precedente
-     viene marcata non-corrente. */
+   - numero di versione, "versione corrente" e audit sono gestiti dal
+     database (script 07): qui si inserisce solo il nuovo record. */
 export async function caricaDocumento({
   praticaId,
   faseId = null,
@@ -124,16 +124,6 @@ export async function caricaDocumento({
 }) {
   const nome = nomeLogico || file.name;
 
-  // Versione successiva per lo stesso nome logico nella pratica.
-  const { data: esistenti } = await supabase
-    .from("documento")
-    .select("id, versione")
-    .eq("pratica_id", praticaId)
-    .eq("nome", nome)
-    .order("versione", { ascending: false })
-    .limit(1);
-  const versione = esistenti && esistenti.length ? esistenti[0].versione + 1 : 1;
-
   // Carica il file nello storage (percorso che inizia con l'id pratica).
   const storagePath = `${praticaId}/${Date.now()}-${file.name}`;
   const { error: errUpload } = await supabase.storage
@@ -143,15 +133,6 @@ export async function caricaDocumento({
 
   const hash = await hashFile(file);
 
-  // Marca non-corrente la versione precedente.
-  if (versione > 1) {
-    await supabase
-      .from("documento")
-      .update({ corrente: false })
-      .eq("pratica_id", praticaId)
-      .eq("nome", nome);
-  }
-
   // Inserisce il record del documento.
   const { data, error } = await supabase
     .from("documento")
@@ -160,12 +141,9 @@ export async function caricaDocumento({
       fase_id: faseId,
       tipologia,
       nome,
-      versione,
-      corrente: true,
       visibile_cliente: visibileCliente,
       visibile_fondazione: visibileFondazione,
       pubblico,
-      stato: "corrente",
       storage_path: storagePath,
       hash_file: hash,
       caricato_da: utenteId,
@@ -183,6 +161,11 @@ export async function urlDocumento(storagePath) {
 
 // ---- Consultazione pubblica ----
 
+// Colonne del commento leggibili dal portale: l'identità dell'autore
+// resta nota solo alla piattaforma (requisiti, sezione 6).
+const COLONNE_COMMENTO =
+  "id, consultazione_id, pratica_id, testo, allegato_documento_id, stato, motivazione_moderazione, risposta_testo, creato_il";
+
 // Legge la consultazione (eventuale) di una pratica, con i suoi commenti.
 export async function leggiConsultazione(praticaId) {
   const { data: cons } = await supabase
@@ -196,7 +179,7 @@ export async function leggiConsultazione(praticaId) {
 
   const { data: commenti } = await supabase
     .from("commento")
-    .select("*")
+    .select(COLONNE_COMMENTO)
     .eq("consultazione_id", cons.id)
     .order("creato_il", { ascending: true });
 
@@ -236,7 +219,7 @@ export async function inviaCommento({ consultazioneId, praticaId, testo, autoreU
       autore_utente_id: autoreUtenteId,
       stato: "ricevuto",
     })
-    .select()
+    .select(COLONNE_COMMENTO)
     .single();
 }
 
@@ -250,10 +233,10 @@ export async function moderaCommento(id, stato, motivazione = null) {
 
 // Il cliente risponde a un commento ammesso.
 export async function rispondiCommento(id, risposta) {
-  return await supabase
-    .from("commento")
-    .update({ risposta_testo: risposta, stato: "risposto" })
-    .eq("id", id);
+  return await supabase.rpc("rispondi_commento", {
+    p_commento: id,
+    p_risposta: risposta,
+  });
 }
 
 // ---- Gestione utenti (Admin) ----
@@ -300,6 +283,5 @@ export async function creaUtente({ email, password, ruolo, organizzazioneId, nom
 }
 
 // ---- Audit ----
-export async function registraAudit(evento) {
-  return await supabase.from("audit_event").insert(evento);
-}
+// L'audit trail è scritto automaticamente dal database (trigger, script 07)
+// per ogni operazione rilevante: il browser non lo scrive più.

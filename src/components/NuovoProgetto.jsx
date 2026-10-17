@@ -5,7 +5,6 @@ import {
   elencaOrganizzazioni,
   creaOrganizzazione,
   creaPratica,
-  registraAudit,
 } from "../lib/dati.js";
 
 /* Finestra per creare un nuovo progetto.
@@ -72,14 +71,6 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
       return;
     }
 
-    await registraAudit({
-      utente_id: utente?.id,
-      ruolo,
-      operazione: "creazione progetto",
-      oggetto_tipo: "pratica",
-      oggetto_id: pratica.id,
-      stato_successivo: "attiva",
-    });
 
     setInCorso(false);
     onCreato && onCreato(pratica.id);

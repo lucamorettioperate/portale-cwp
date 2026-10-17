@@ -6,7 +6,6 @@ import {
   elencaDocumenti,
   caricaDocumento,
   urlDocumento,
-  registraAudit,
 } from "../lib/dati.js";
 
 /* Gestione documentale: elenco versionato e upload.
@@ -53,14 +52,6 @@ export default function Documenti({ praticaId, fase = null, compatto = false }) 
     if (error) {
       setErrore("Caricamento non riuscito: " + error.message);
     } else {
-      await registraAudit({
-        utente_id: utente?.id,
-        ruolo,
-        operazione: "caricamento documento",
-        oggetto_tipo: "documento",
-        oggetto_id: data.id,
-        stato_successivo: `v${data.versione}`,
-      });
       await carica();
     }
     setInUpload(false);

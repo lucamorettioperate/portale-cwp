@@ -10,7 +10,6 @@ import {
   moderaCommento,
   rispondiCommento,
   elencaDocumenti,
-  registraAudit,
 } from "../lib/dati.js";
 
 /* Consultazione pubblica (fase 3): pubblicazione documento per 30 giorni,
@@ -25,6 +24,7 @@ export default function Consultazione({ praticaId }) {
   const [caricamento, setCaricamento] = useState(true);
   const [nuovoCommento, setNuovoCommento] = useState("");
   const [azione, setAzione] = useState(false);
+  const [errore, setErrore] = useState("");
 
   async function carica() {
     setCaricamento(true);
@@ -55,14 +55,6 @@ export default function Consultazione({ praticaId }) {
     setAzione(true);
     const { data, error } = await apriConsultazione({ praticaId, documentoId: docSel });
     if (!error) {
-      await registraAudit({
-        utente_id: utente?.id,
-        ruolo,
-        operazione: "apertura consultazione pubblica",
-        oggetto_tipo: "pratica",
-        oggetto_id: praticaId,
-        stato_successivo: "consultazione attiva (30 giorni)",
-      });
       await carica();
     }
     setAzione(false);
@@ -71,13 +63,6 @@ export default function Consultazione({ praticaId }) {
   async function chiudi() {
     setAzione(true);
     await chiudiConsultazione(cons.id);
-    await registraAudit({
-      utente_id: utente?.id,
-      ruolo,
-      operazione: "chiusura consultazione pubblica",
-      oggetto_tipo: "pratica",
-      oggetto_id: praticaId,
-    });
     await carica();
     setAzione(false);
   }
@@ -85,29 +70,39 @@ export default function Consultazione({ praticaId }) {
   async function invia() {
     if (!nuovoCommento.trim()) return;
     setAzione(true);
-    await inviaCommento({
+    setErrore("");
+    const { error } = await inviaCommento({
       consultazioneId: cons.id,
       praticaId,
       testo: nuovoCommento.trim(),
       autoreUtenteId: utente?.id,
     });
-    setNuovoCommento("");
+    if (error) setErrore("Osservazione non inviata: " + error.message);
+    else setNuovoCommento("");
     await carica();
     setAzione(false);
   }
+
+  async function rispondi(id, testo) {
+    setAzione(true);
+    setErrore("");
+    const { error } = await rispondiCommento(id, testo);
+    if (error) setErrore("Risposta non salvata: " + error.message);
+    await carica();
+    setAzione(false);
+    return !error;
+  }
+
+  // Il cliente vede solo le osservazioni ammesse alla consultazione;
+  // lo staff le vede tutte, comprese quelle da moderare.
+  const commentiVisibili = (cons?.commenti || []).filter(
+    (c) => staff || c.stato === "pubblicato" || c.stato === "risposto"
+  );
 
   async function modera(id, stato) {
     setAzione(true);
     const motivazione = stato === "non_pubblicato" ? "Non ammesso dal moderatore" : null;
     await moderaCommento(id, stato, motivazione);
-    await registraAudit({
-      utente_id: utente?.id,
-      ruolo,
-      operazione: "moderazione commento",
-      oggetto_tipo: "commento",
-      oggetto_id: id,
-      stato_successivo: stato,
-    });
     await carica();
     setAzione(false);
   }
@@ -183,12 +178,14 @@ export default function Consultazione({ praticaId }) {
             </div>
           )}
 
+          {errore && <div style={{ color: C.red, fontSize: 13, marginBottom: 12 }}>{errore}</div>}
+
           {/* Elenco commenti */}
           <div style={{ display: "grid", gap: 8 }}>
-            {(cons.commenti || []).length === 0 && (
+            {commentiVisibili.length === 0 && (
               <div style={{ fontSize: 13, color: C.grafite }}>Nessuna osservazione ricevuta.</div>
             )}
-            {(cons.commenti || []).map((c) => (
+            {commentiVisibili.map((c) => (
               <div
                 key={c.id}
                 style={{
@@ -210,6 +207,11 @@ export default function Consultazione({ praticaId }) {
                   <div style={{ fontSize: 12.5, marginTop: 8, padding: "8px 10px", background: C.greenSoft, borderRadius: 7, color: C.ink }}>
                     <b>Risposta:</b> {c.risposta_testo}
                   </div>
+                )}
+
+                {/* Risposta del Cliente alle osservazioni ammesse */}
+                {!staff && (c.stato === "pubblicato" || c.stato === "risposto") && (
+                  <RispostaCliente commento={c} inCorso={azione} onRispondi={rispondi} />
                 )}
 
                 {/* Moderazione (staff) */}
@@ -237,6 +239,43 @@ export default function Consultazione({ praticaId }) {
         </div>
       )}
     </Riquadro>
+  );
+}
+
+function RispostaCliente({ commento, inCorso, onRispondi }) {
+  const [aperta, setAperta] = useState(false);
+  const [testo, setTesto] = useState(commento.risposta_testo || "");
+
+  if (!aperta) {
+    return (
+      <button onClick={() => setAperta(true)} style={{ ...btnMini, marginTop: 10 }}>
+        {commento.risposta_testo ? "Modifica risposta" : "Rispondi"}
+      </button>
+    );
+  }
+  return (
+    <div style={{ marginTop: 10 }}>
+      <textarea
+        value={testo}
+        onChange={(e) => setTesto(e.target.value)}
+        rows={3}
+        placeholder="Scrivi la risposta all'osservazione…"
+        aria-label="Risposta all'osservazione"
+        style={{ ...campo, width: "100%", boxSizing: "border-box", resize: "vertical" }}
+      />
+      <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+        <button
+          onClick={async () => {
+            if (await onRispondi(commento.id, testo)) setAperta(false);
+          }}
+          disabled={inCorso || !testo.trim()}
+          style={btnPrimario}
+        >
+          Salva risposta
+        </button>
+        <button onClick={() => setAperta(false)} style={btnMini}>Annulla</button>
+      </div>
+    </div>
   );
 }
 

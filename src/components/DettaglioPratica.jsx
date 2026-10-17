@@ -4,7 +4,7 @@ import { useAuth } from "../lib/AuthContext.jsx";
 import Badge from "./Badge.jsx";
 import Documenti from "./Documenti.jsx";
 import Consultazione from "./Consultazione.jsx";
-import { leggiPratica, aggiornaFase, registraAudit } from "../lib/dati.js";
+import { leggiPratica, aggiornaFase } from "../lib/dati.js";
 
 /* Dettaglio di una pratica con le sue 7 fasi.
    L'Operatore/Admin può aprire e chiudere le fasi (azioni esplicite). */
@@ -44,15 +44,6 @@ export default function DettaglioPratica({ praticaId, onAggiornato }) {
         : { stato: "completata", data_effettiva_chiusura: new Date().toISOString().slice(0, 10) };
     const { error } = await aggiornaFase(fase.id, modifiche);
     if (!error) {
-      await registraAudit({
-        utente_id: utente?.id,
-        ruolo,
-        operazione: nuovoStato === "in_corso" ? "apertura fase" : "chiusura fase",
-        oggetto_tipo: "pratica",
-        oggetto_id: pratica.id,
-        stato_precedente: `${fase.nome} / ${fase.stato}`,
-        stato_successivo: `${fase.nome} / ${nuovoStato}`,
-      });
       await carica();
       onAggiornato && onAggiornato();
     }
