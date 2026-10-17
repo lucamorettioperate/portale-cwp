@@ -80,6 +80,105 @@ export async function aggiornaPratica(id, modifiche) {
   return await supabase.from("pratica").update(modifiche).eq("id", id).select().single();
 }
 
+// ---- Documenti ----
+
+// Elenca i documenti di una pratica (versione corrente in evidenza).
+export async function elencaDocumenti(praticaId) {
+  return await supabase
+    .from("documento")
+    .select("*")
+    .eq("pratica_id", praticaId)
+    .order("creato_il", { ascending: false });
+}
+
+// Calcola l'hash SHA-256 di un file (integrità).
+async function hashFile(file) {
+  try {
+    const buffer = await file.arrayBuffer();
+    const digest = await crypto.subtle.digest("SHA-256", buffer);
+    return Array.from(new Uint8Array(digest))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  } catch {
+    return null;
+  }
+}
+
+/* Carica un documento per una pratica.
+   - mai sovrascrive: ogni caricamento è una nuova versione
+   - file salvato in storage: documenti/<pratica_id>/<timestamp>-<nome>
+   - se è una nuova versione dello stesso "nome logico", la precedente
+     viene marcata non-corrente. */
+export async function caricaDocumento({
+  praticaId,
+  faseId = null,
+  file,
+  tipologia = null,
+  nomeLogico = null,
+  visibileCliente = true,
+  visibileFondazione = true,
+  pubblico = false,
+  utenteId = null,
+}) {
+  const nome = nomeLogico || file.name;
+
+  // Versione successiva per lo stesso nome logico nella pratica.
+  const { data: esistenti } = await supabase
+    .from("documento")
+    .select("id, versione")
+    .eq("pratica_id", praticaId)
+    .eq("nome", nome)
+    .order("versione", { ascending: false })
+    .limit(1);
+  const versione = esistenti && esistenti.length ? esistenti[0].versione + 1 : 1;
+
+  // Carica il file nello storage (percorso che inizia con l'id pratica).
+  const storagePath = `${praticaId}/${Date.now()}-${file.name}`;
+  const { error: errUpload } = await supabase.storage
+    .from("documenti")
+    .upload(storagePath, file, { upsert: false });
+  if (errUpload) return { data: null, error: errUpload };
+
+  const hash = await hashFile(file);
+
+  // Marca non-corrente la versione precedente.
+  if (versione > 1) {
+    await supabase
+      .from("documento")
+      .update({ corrente: false })
+      .eq("pratica_id", praticaId)
+      .eq("nome", nome);
+  }
+
+  // Inserisce il record del documento.
+  const { data, error } = await supabase
+    .from("documento")
+    .insert({
+      pratica_id: praticaId,
+      fase_id: faseId,
+      tipologia,
+      nome,
+      versione,
+      corrente: true,
+      visibile_cliente: visibileCliente,
+      visibile_fondazione: visibileFondazione,
+      pubblico,
+      stato: "corrente",
+      storage_path: storagePath,
+      hash_file: hash,
+      caricato_da: utenteId,
+    })
+    .select()
+    .single();
+
+  return { data, error };
+}
+
+// Ottiene un URL temporaneo per scaricare un documento.
+export async function urlDocumento(storagePath) {
+  return await supabase.storage.from("documenti").createSignedUrl(storagePath, 60);
+}
+
 // ---- Audit ----
 export async function registraAudit(evento) {
   return await supabase.from("audit_event").insert(evento);

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { COLORI as C, STATI_PRATICA, STATI_FASE, RUOLI } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Badge from "./Badge.jsx";
+import Documenti from "./Documenti.jsx";
 import { leggiPratica, aggiornaFase, registraAudit } from "../lib/dati.js";
 
 /* Dettaglio di una pratica con le sue 7 fasi.
@@ -143,6 +144,9 @@ export default function DettaglioPratica({ praticaId, onAggiornato }) {
           );
         })}
       </div>
+
+      {/* Documenti della pratica */}
+      <Documenti praticaId={pratica.id} />
     </div>
   );
 }
