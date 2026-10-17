@@ -8,11 +8,13 @@ import Stat from "../components/Stat.jsx";
 import AzioniRuolo from "../components/AzioniRuolo.jsx";
 import RapportoForm from "../components/RapportoForm.jsx";
 import { statoColor } from "../lib/stato.js";
+import { useAuth } from "../lib/AuthContext.jsx";
 
 /* Dashboard operativa multi-ruolo — porta nel portale reale il prototipo
    approvato. I dati sono ancora di esempio (in memoria); verranno sostituiti
    dalle pratiche reali di Supabase nel passo successivo. */
 export default function Dashboard() {
+  const { utente, esci, backendPronto } = useAuth();
   const [ruolo, setRuolo] = useState("operate");
   const [progetti, setProgetti] = useState(PROGETTI_ESEMPIO);
   const [selId, setSelId] = useState(PROGETTI_ESEMPIO[0].id);
@@ -86,26 +88,52 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Selettore ruolo */}
-        <div style={{ display: "flex", gap: 6, background: "#2b3127", padding: 5, borderRadius: 10 }}>
-          {Object.entries(ATTORI).map(([k, a]) => (
-            <button
-              key={k}
-              onClick={() => setRuolo(k)}
-              style={{
-                background: ruolo === k ? a.color : "transparent",
-                color: ruolo === k ? C.white : "#b9bdb2",
-                border: "none",
-                borderRadius: 7,
-                padding: "7px 13px",
-                fontSize: 12.5,
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              {a.short}
-            </button>
-          ))}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+          {/* Selettore ruolo (anteprima: cambia la vista) */}
+          <div style={{ display: "flex", gap: 6, background: "#2b3127", padding: 5, borderRadius: 10 }}>
+            {Object.entries(ATTORI).map(([k, a]) => (
+              <button
+                key={k}
+                onClick={() => setRuolo(k)}
+                style={{
+                  background: ruolo === k ? a.color : "transparent",
+                  color: ruolo === k ? C.white : "#b9bdb2",
+                  border: "none",
+                  borderRadius: 7,
+                  padding: "7px 13px",
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                {a.short}
+              </button>
+            ))}
+          </div>
+
+          {/* Utente ed esci (solo con backend attivo) */}
+          {backendPronto && utente && (
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 12, color: "#b9bdb2", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {utente.email}
+              </span>
+              <button
+                onClick={esci}
+                style={{
+                  background: "transparent",
+                  color: "#b9bdb2",
+                  border: "1px solid #3a4035",
+                  borderRadius: 7,
+                  padding: "7px 12px",
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Esci
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
