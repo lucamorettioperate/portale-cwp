@@ -1,90 +1,58 @@
 /* =========================================================================
-   Dati ufficiali del Programma Carbon WastePrint.
-   Fonte: carbonwasteprint.com (fasi, soglie-giorno, ruoli).
-   Usati in tutto il portale come riferimento unico.
+   Dati di riferimento del Programma Carbon WastePrint.
+   Allineati all'analisi funzionale: 7 fasi, 3 ruoli applicativi, stati.
    ========================================================================= */
 
-// Le 6 fasi operative ufficiali, da Giorno 0 a Giorno 150.
+// Le 7 fasi operative ufficiali (intervalli di giorni dall'infografica).
 export const FASI = [
-  {
-    n: 1,
-    giorno: 0,
-    titolo: "Richiesta di adesione e saldo fattura",
-    responsabile: "Soggetto Promotore del Progetto",
-    attore: "promotore",
-    descr:
-      "Il soggetto promotore presenta la richiesta di adesione al Programma CWP e provvede al saldo della fattura. Si apre la pratica.",
-  },
-  {
-    n: 2,
-    giorno: 10,
-    titolo: "Conclusione prima fase di verifica documentale",
-    responsabile: "Soggetto Promotore del Progetto",
-    attore: "promotore",
-    descr:
-      "Completamento della prima verifica documentale: la modulistica e i documenti di progetto vengono controllati per ammissibilità.",
-  },
-  {
-    n: 3,
-    giorno: 40,
-    titolo: "Chiusura del periodo di feedback pubblico (30 gg)",
-    responsabile: "Soggetto Promotore del Progetto",
-    attore: "promotore",
-    descr:
-      "Il progetto resta in consultazione pubblica per 30 giorni. Al Giorno 40 si chiude la finestra di feedback pubblico.",
-  },
-  {
-    n: 4,
-    giorno: 60,
-    titolo: "Risposta ai commenti e pubblicazione documento",
-    responsabile: "Soggetto Promotore del Progetto",
-    attore: "promotore",
-    descr:
-      "Il promotore risponde ai commenti raccolti e pubblica il documento di progetto aggiornato.",
-  },
-  {
-    n: 5,
-    giorno: 135,
-    titolo: "Chiusura validazione ed emissione rapporto",
-    responsabile: "Ente di Validazione e Verifica",
-    attore: "validatore",
-    descr:
-      "L'ente terzo di validazione e verifica (es. RINA) conclude la fase di validazione ed emette il rapporto di validazione.",
-  },
-  {
-    n: 6,
-    giorno: 150,
-    titolo: "Conclusione seconda fase di verifica documentale",
-    responsabile: "Soggetto Promotore del Progetto",
-    attore: "promotore",
-    descr:
-      "Seconda e ultima verifica documentale. A esito positivo il progetto è validato: si procede al monitoraggio annuale e all'emissione dei crediti.",
-  },
+  { numero: 1, nome: "Adesione", g_da: 0, g_a: 0, responsabile: "Soggetto Promotore" },
+  { numero: 2, nome: "Prima verifica documentale", g_da: 0, g_a: 10, responsabile: "Soggetto Promotore" },
+  { numero: 3, nome: "Consultazione pubblica", g_da: 10, g_a: 40, responsabile: "Soggetto Promotore" },
+  { numero: 4, nome: "Risposta ai commenti / pubblicazione", g_da: 40, g_a: 60, responsabile: "Soggetto Promotore" },
+  { numero: 5, nome: "Validazione e verifica", g_da: 60, g_a: 135, responsabile: "Ente di Validazione" },
+  { numero: 6, nome: "Seconda verifica documentale", g_da: 135, g_a: 150, responsabile: "Soggetto Promotore" },
+  { numero: 7, nome: "Chiusura", g_da: 150, g_a: 150, responsabile: "Soggetto Promotore" },
 ];
 
-// I tre attori del Programma, con i relativi colori-guida.
-export const ATTORI = {
-  promotore: {
-    label: "Soggetto Promotore del Progetto",
-    short: "Promotore",
+// I tre ruoli applicativi.
+export const RUOLI = {
+  cliente: {
+    label: "Cliente / Organizzazione",
+    short: "Cliente",
     sub: "Comune · Ente locale · Soggetto gestore",
     color: "#2f5d3a",
     soft: "#e4ede1",
   },
-  operate: {
-    label: "Fondazione Operate",
-    short: "Operate",
-    sub: "Soggetto Promotore del Programma",
+  operatore: {
+    label: "Operatore di back-office",
+    short: "Operatore",
+    sub: "Fondazione Operate",
     color: "#5a5e54",
     soft: "#e8e8e2",
   },
-  validatore: {
-    label: "Ente di Validazione e Verifica",
-    short: "Validatore",
-    sub: "RINA Services SpA · ISO 14064-2:2019",
-    color: "#c98a1a",
+  admin: {
+    label: "Amministratore",
+    short: "Admin",
+    sub: "Configurazione e gestione",
+    color: "#b06a2f",
     soft: "#f3e7d6",
   },
+};
+
+// Stati di una pratica (Progetto o Rapporto).
+export const STATI_PRATICA = {
+  attiva: { label: "Attiva", bg: "#e4ede1", fg: "#2f5d3a" },
+  sospesa: { label: "Sospesa", bg: "#f3e7d6", fg: "#c98a1a" },
+  annullata: { label: "Annullata", bg: "#f6dcd6", fg: "#a23b2c" },
+  chiusa: { label: "Chiusa", bg: "#e8e8e2", fg: "#5a5e54" },
+};
+
+// Stati di una fase.
+export const STATI_FASE = {
+  non_iniziata: { label: "Non iniziata", bg: "#f0eee7", fg: "#8a8d82" },
+  in_corso: { label: "In corso", bg: "#e4ede1", fg: "#2f5d3a" },
+  in_attesa_integrazione: { label: "In attesa di integrazione", bg: "#f3e7d6", fg: "#c98a1a" },
+  completata: { label: "Completata", bg: "#dfe9db", fg: "#2f5d3a" },
 };
 
 // Palette condivisa del portale.
