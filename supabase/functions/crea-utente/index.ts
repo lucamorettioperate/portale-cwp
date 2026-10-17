@@ -1,11 +1,12 @@
 // =====================================================================
-//  Edge Function: invita-utente
-//  Invita un nuovo utente via email e imposta ruolo + organizzazione.
+//  Edge Function: crea-utente
+//  Crea un nuovo utente con password temporanea e imposta ruolo +
+//  organizzazione. L'Admin comunica la password all'utente, che potrà
+//  cambiarla al primo accesso.
 //  Sicurezza:
 //   - verifica che il chiamante sia autenticato e con ruolo 'admin'
 //   - usa la service role key (lato server, mai esposta al browser)
 //   - non consente di creare altri admin
-//  L'utente riceve un'email e imposta da sé la password.
 // =====================================================================
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -25,55 +26,55 @@ Deno.serve(async (req) => {
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Client con il token del chiamante: serve per sapere CHI sta chiamando.
+    // Client con il token del chiamante: per sapere CHI chiama.
     const authHeader = req.headers.get("Authorization") || "";
     const clientChiamante = createClient(SUPABASE_URL, ANON_KEY, {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: userData } = await clientChiamante.auth.getUser();
     const chiamante = userData?.user;
-    if (!chiamante) {
-      return json({ error: "Non autenticato" }, 401);
-    }
+    if (!chiamante) return json({ error: "Non autenticato" }, 401);
 
-    // Verifica ruolo admin del chiamante.
+    // Verifica ruolo admin.
     const { data: profilo } = await clientChiamante
       .from("profilo")
       .select("ruolo")
       .eq("id", chiamante.id)
       .single();
     if (profilo?.ruolo !== "admin") {
-      return json({ error: "Solo un amministratore può invitare utenti" }, 403);
+      return json({ error: "Solo un amministratore può creare utenti" }, 403);
     }
 
-    // Dati dell'invito.
     const body = await req.json();
     const email = (body.email || "").trim().toLowerCase();
+    const password = body.password || "";
     const ruolo = body.ruolo; // 'cliente' | 'operatore'
     const organizzazioneId = body.organizzazione_id || null;
     const nomeCompleto = body.nome_completo || null;
 
-    if (!email || !["cliente", "operatore"].includes(ruolo)) {
-      return json({ error: "Dati non validi (email o ruolo)" }, 400);
+    if (!email || password.length < 8 || !["cliente", "operatore"].includes(ruolo)) {
+      return json({ error: "Dati non validi (email, password min 8 caratteri, ruolo)" }, 400);
     }
     if (ruolo === "cliente" && !organizzazioneId) {
       return json({ error: "Per un utente cliente serve l'organizzazione" }, 400);
     }
 
-    // Client amministrativo (service role) per creare l'invito.
+    // Client amministrativo (service role).
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    // Invia l'invito via email: l'utente imposterà la password.
-    const { data: invito, error: errInvito } = await admin.auth.admin.inviteUserByEmail(email, {
-      data: { nome_completo: nomeCompleto },
+    // Crea l'utente già confermato.
+    const { data: creato, error: errCrea } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { nome_completo: nomeCompleto },
     });
-    if (errInvito) {
-      return json({ error: "Invito non riuscito: " + errInvito.message }, 400);
+    if (errCrea) {
+      return json({ error: "Creazione non riuscita: " + errCrea.message }, 400);
     }
 
-    const nuovoId = invito.user?.id;
+    const nuovoId = creato.user?.id;
     if (nuovoId) {
-      // Imposta ruolo e organizzazione sul profilo (creato dal trigger).
       await admin
         .from("profilo")
         .update({

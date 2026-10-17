@@ -6,7 +6,7 @@ import Badge from "../components/Badge.jsx";
 import {
   elencaUtenti,
   elencaOrganizzazioni,
-  invitaUtente,
+  creaUtente,
   aggiornaUtente,
 } from "../lib/dati.js";
 
@@ -58,7 +58,7 @@ export default function GestioneUtenti() {
             </p>
           </div>
           <button onClick={() => setInvito(true)} style={btnPrimario}>
-            + Invita utente
+            + Nuovo utente
           </button>
         </div>
 
@@ -168,6 +168,7 @@ function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
 function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
   const [email, setEmail] = useState("");
   const [nome, setNome] = useState("");
+  const [password, setPassword] = useState(generaPassword());
   const [ruolo, setRuolo] = useState("cliente");
   const [orgId, setOrgId] = useState(organizzazioni[0]?.id || "");
   const [errore, setErrore] = useState("");
@@ -181,30 +182,39 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
       setErrore("Seleziona l'organizzazione per l'utente cliente.");
       return;
     }
+    if (password.length < 8) {
+      setErrore("La password deve avere almeno 8 caratteri.");
+      return;
+    }
     setInCorso(true);
-    const { data, error } = await invitaUtente({
+    const { data, error } = await creaUtente({
       email: email.trim(),
+      password,
       ruolo,
       organizzazioneId: ruolo === "cliente" ? orgId : null,
       nomeCompleto: nome.trim() || null,
     });
     setInCorso(false);
     if (error || data?.error) {
-      setErrore("Invito non riuscito: " + (data?.error || error.message));
+      setErrore("Creazione non riuscita: " + (data?.error || error.message));
     } else {
       setOk(true);
-      setTimeout(onInvitato, 1400);
+      setTimeout(onInvitato, 2500);
     }
   }
 
   return (
     <div style={overlay} onClick={onChiudi}>
       <div style={modale} onClick={(e) => e.stopPropagation()}>
-        <h2 style={{ fontFamily: "'Archivo'", fontSize: 19, margin: "0 0 16px" }}>Invita utente</h2>
+        <h2 style={{ fontFamily: "'Archivo'", fontSize: 19, margin: "0 0 16px" }}>Nuovo utente</h2>
 
         {ok ? (
-          <div style={{ color: C.green, fontSize: 14, padding: "12px 0" }}>
-            ✓ Invito inviato a {email}. L'utente riceverà un'email per impostare la password.
+          <div style={{ color: C.green, fontSize: 14, padding: "12px 0", lineHeight: 1.6 }}>
+            ✓ Utente creato: <b>{email}</b>
+            <br />
+            Comunica all'utente la password temporanea: <b style={{ fontFamily: "monospace" }}>{password}</b>
+            <br />
+            Potrà cambiarla dopo il primo accesso.
           </div>
         ) : (
           <form onSubmit={invia}>
@@ -215,6 +225,15 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
             <label style={lbl}>
               Nome e cognome (facoltativo)
               <input value={nome} onChange={(e) => setNome(e.target.value)} style={campo} />
+            </label>
+            <label style={lbl}>
+              Password temporanea
+              <div style={{ display: "flex", gap: 8 }}>
+                <input value={password} onChange={(e) => setPassword(e.target.value)} style={{ ...campo, flex: 1 }} />
+                <button type="button" onClick={() => setPassword(generaPassword())} style={btnSecondario}>
+                  Genera
+                </button>
+              </div>
             </label>
             <label style={lbl}>
               Ruolo
@@ -240,7 +259,7 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
             <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
               <button type="button" onClick={onChiudi} style={btnSecondario}>Annulla</button>
               <button type="submit" disabled={inCorso} style={{ ...btnPrimario, flex: 1 }}>
-                {inCorso ? "Invio…" : "Invia invito"}
+                {inCorso ? "Creazione…" : "Crea utente"}
               </button>
             </div>
           </form>
@@ -248,6 +267,14 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
       </div>
     </div>
   );
+}
+
+// Genera una password temporanea leggibile.
+function generaPassword() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  let p = "";
+  for (let i = 0; i < 10; i++) p += chars[Math.floor(Math.random() * chars.length)];
+  return p + "!";
 }
 
 const overlay = {

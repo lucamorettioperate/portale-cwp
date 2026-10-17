@@ -270,11 +270,12 @@ export async function aggiornaUtente(utenteId, ruolo, organizzazioneId) {
   });
 }
 
-// Invita un nuovo utente (via Edge Function).
-export async function invitaUtente({ email, ruolo, organizzazioneId, nomeCompleto }) {
-  return await supabase.functions.invoke("invita-utente", {
+// Crea un nuovo utente con password temporanea (via Edge Function).
+export async function creaUtente({ email, password, ruolo, organizzazioneId, nomeCompleto }) {
+  return await supabase.functions.invoke("crea-utente", {
     body: {
       email,
+      password,
       ruolo,
       organizzazione_id: organizzazioneId,
       nome_completo: nomeCompleto,
