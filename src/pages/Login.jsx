@@ -45,26 +45,18 @@ export default function Login() {
           padding: "32px 28px",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-          <div
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 9,
-              background: C.green,
-              display: "grid",
-              placeItems: "center",
-              fontFamily: "'Archivo'",
-              fontWeight: 800,
-              fontSize: 17,
-              color: C.white,
-            }}
-          >
-            CW
-          </div>
-          <div style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: 18 }}>
-            Carbon WastePrint<span style={{ color: C.amber }}>®</span>
-          </div>
+        <img
+          src="/loghi/carbonwasteprint.png"
+          alt="Carbon WastePrint"
+          style={{ height: 48, width: "auto", display: "block", marginBottom: 10 }}
+        />
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+          <span style={{ fontSize: 12, color: C.grafite }}>Programma di</span>
+          <img
+            src="/loghi/fondazione-operate.png"
+            alt="Fondazione Operate"
+            style={{ height: 20, width: "auto", display: "block" }}
+          />
         </div>
         <p style={{ fontSize: 13, color: C.grafite, margin: "0 0 24px" }}>
           Accedi alla piattaforma di gestione del Programma.

@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./lib/AuthContext.jsx";
 import Login from "./pages/Login.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
+import BackOffice from "./pages/BackOffice.jsx";
 import { COLORI as C } from "./lib/cwpProgram.js";
 
 // Schermata di caricamento mentre si verifica la sessione.
@@ -37,7 +37,7 @@ export default function App() {
         path="/"
         element={
           <Protetta>
-            <Dashboard />
+            <BackOffice />
           </Protetta>
         }
       />
