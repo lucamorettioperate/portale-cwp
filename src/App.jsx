@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./lib/AuthContext.jsx";
 import Login from "./pages/Login.jsx";
 import BackOffice from "./pages/BackOffice.jsx";
+import AreaCliente from "./pages/AreaCliente.jsx";
 import { COLORI as C } from "./lib/cwpProgram.js";
 
 // Schermata di caricamento mentre si verifica la sessione.
@@ -14,11 +15,18 @@ function Caricamento() {
   );
 }
 
+// Sceglie la pagina giusta in base al ruolo dell'utente.
+function HomePerRuolo() {
+  const { ruolo } = useAuth();
+  if (ruolo === "operatore" || ruolo === "admin") return <BackOffice />;
+  // Default: vista cliente (anche se il profilo non ha ancora un ruolo definito).
+  return <AreaCliente />;
+}
+
 // Protegge le pagine: senza sessione rimanda al login.
 function Protetta({ children }) {
   const { autenticato, caricamento, backendPronto } = useAuth();
   if (caricamento) return <Caricamento />;
-  // Se il backend non è configurato, mostra comunque la dashboard (anteprima dati esempio).
   if (!backendPronto) return children;
   if (!autenticato) return <Navigate to="/login" replace />;
   return children;
@@ -37,7 +45,7 @@ export default function App() {
         path="/"
         element={
           <Protetta>
-            <BackOffice />
+            <HomePerRuolo />
           </Protetta>
         }
       />
