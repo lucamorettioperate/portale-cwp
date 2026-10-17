@@ -35,14 +35,10 @@ Deno.serve(async (req) => {
     const chiamante = userData?.user;
     if (!chiamante) return json({ error: "Non autenticato" }, 401);
 
-    // Verifica ruolo admin.
-    const { data: profilo } = await clientChiamante
-      .from("profilo")
-      .select("ruolo")
-      .eq("id", chiamante.id)
-      .single();
-    if (profilo?.ruolo !== "admin") {
-      return json({ error: "Solo un amministratore può creare utenti" }, 403);
+    // Verifica: amministratore attivo con verifica a due fattori (script 10).
+    const { data: admin_ok } = await clientChiamante.rpc("sono_admin");
+    if (admin_ok !== true) {
+      return json({ error: "Solo un amministratore (con verifica a due fattori) può creare utenti" }, 403);
     }
 
     const body = await req.json();

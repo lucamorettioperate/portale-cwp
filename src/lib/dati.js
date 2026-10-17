@@ -433,3 +433,8 @@ export async function elencaAudit({ praticaId = null, limite = 200 } = {}) {
   if (praticaId) q = q.eq("pratica_id", praticaId);
   return await q;
 }
+
+// Attiva / disattiva un utente (solo admin, script 10).
+export async function impostaUtenteAttivo(utenteId, attivo) {
+  return await supabase.rpc("admin_imposta_attivo", { p_utente: utenteId, p_attivo: attivo });
+}

@@ -8,6 +8,7 @@ import GestioneUtenti from "./pages/GestioneUtenti.jsx";
 import Cruscotto from "./pages/Cruscotto.jsx";
 import TuoiDocumenti from "./pages/TuoiDocumenti.jsx";
 import Audit from "./pages/Audit.jsx";
+import VerificaMfa from "./pages/VerificaMfa.jsx";
 import { COLORI as C } from "./lib/cwpProgram.js";
 
 // Schermata di caricamento mentre si verifica la sessione.
@@ -29,10 +30,12 @@ function HomePerRuolo() {
 
 // Protegge le pagine: senza sessione rimanda al login.
 function Protetta({ children }) {
-  const { autenticato, caricamento, backendPronto } = useAuth();
+  const { autenticato, caricamento, backendPronto, mfa } = useAuth();
   if (caricamento) return <Caricamento />;
   if (!backendPronto) return children;
   if (!autenticato) return <Navigate to="/login" replace />;
+  // Operatori e Amministratori: prima la verifica a due fattori.
+  if (mfa.richiesta && !mfa.verificata) return <VerificaMfa />;
   return children;
 }
 

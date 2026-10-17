@@ -17,6 +17,7 @@ import {
   richiediIntegrazione,
 } from "../lib/dati.js";
 import { formatoData, giorniA } from "../lib/date.js";
+import { esportaFascicolo } from "../lib/fascicolo.js";
 
 /* Dettaglio di una pratica con le sue 7 fasi.
    L'Operatore/Admin apre e chiude le fasi, modifica le scadenze, richiede
@@ -81,8 +82,9 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
               </button>
             )}
           </div>
-          <div style={{ textAlign: "right" }}>
+          <div style={{ textAlign: "right", display: "grid", gap: 8, justifyItems: "end", alignContent: "start" }}>
             <Badge bg={st.bg} fg={st.fg}>{st.label}</Badge>
+            <BottoneFascicolo praticaId={pratica.id} staff={staff} />
           </div>
         </div>
         {pratica.stato !== "attiva" && pratica.motivazione_stato && (
@@ -357,6 +359,33 @@ function CambioStato({ pratica, onFatto }) {
       </label>
       {errore && <div style={{ color: C.red, fontSize: 12.5, marginBottom: 8 }}>{errore}</div>}
       <Bottoni inCorso={inCorso} conferma="Conferma" onConferma={conferma} onAnnulla={() => setAperto(false)} />
+    </div>
+  );
+}
+
+/* Export del fascicolo completo (ZIP). */
+function BottoneFascicolo({ praticaId, staff }) {
+  const [stato, setStato] = useState("");
+  const [errore, setErrore] = useState("");
+  async function esporta() {
+    setErrore("");
+    setStato("Avvio…");
+    try {
+      const esito = await esportaFascicolo(praticaId, { staff, onAvanzamento: setStato });
+      setStato(esito.mancanti.length ? `Scaricato (${esito.mancanti.length} file non recuperati)` : "");
+    } catch (e) {
+      setStato("");
+      setErrore("Export non riuscito: " + e.message);
+    }
+  }
+  const lavora = stato && !stato.startsWith("Scaricato");
+  return (
+    <div style={{ textAlign: "right" }}>
+      <button onClick={esporta} disabled={lavora} style={btnMini}>
+        {lavora ? stato : staff ? "Esporta fascicolo" : "Scarica documentazione"}
+      </button>
+      {stato.startsWith("Scaricato") && <div style={{ fontSize: 11.5, color: C.amber, marginTop: 4 }}>{stato}</div>}
+      {errore && <div style={{ fontSize: 11.5, color: C.red, marginTop: 4 }}>{errore}</div>}
     </div>
   );
 }

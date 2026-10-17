@@ -9,6 +9,7 @@ import {
   creaUtente,
   aggiornaUtente,
   impostaOrganizzazioniUtente,
+  impostaUtenteAttivo,
 } from "../lib/dati.js";
 
 /* Gestione utenti — solo Admin.
@@ -131,6 +132,15 @@ function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
     setModifica(true);
   }
 
+  async function commutaAttivo() {
+    setErrore("");
+    setSalvataggio(true);
+    const { error } = await impostaUtenteAttivo(utente.id, !utente.attivo);
+    setSalvataggio(false);
+    if (error) setErrore(error.message);
+    else onSalvato();
+  }
+
   async function salva() {
     setErrore("");
     if (ruolo === "cliente" && orgIds.length === 0) {
@@ -178,12 +188,19 @@ function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
 
         {!modifica && (
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {!utente.attivo && <Badge bg="#f6dcd6" fg={C.red}>Disattivato</Badge>}
             {r && <Badge bg={r.soft} fg={r.color}>{r.short}</Badge>}
             {modificabile && <button onClick={apri} style={btnMini}>Modifica</button>}
+            {modificabile && (
+              <button onClick={commutaAttivo} disabled={salvataggio} style={{ ...btnMini, color: utente.attivo ? C.red : C.green }}>
+                {utente.attivo ? "Disattiva" : "Riattiva"}
+              </button>
+            )}
           </div>
         )}
       </div>
 
+      {!modifica && errore && <div style={{ color: C.red, fontSize: 12.5, marginTop: 8 }}>{errore}</div>}
       {modifica && (
         <div
           style={{

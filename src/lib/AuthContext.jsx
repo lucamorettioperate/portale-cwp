@@ -13,6 +13,15 @@ export function AuthProvider({ children }) {
   const [sessione, setSessione] = useState(null);
   const [profilo, setProfilo] = useState(null);
   const [caricamento, setCaricamento] = useState(true);
+  // Verifica a due fattori: richiesta per lo staff (script 10).
+  const [mfa, setMfa] = useState({ richiesta: false, verificata: false });
+
+  async function caricaMfa() {
+    if (!supabase) return;
+    const { data } = await supabase.rpc("mio_stato_mfa");
+    const riga = Array.isArray(data) ? data[0] : data;
+    setMfa({ richiesta: !!riga?.richiesta, verificata: !!riga?.verificata });
+  }
 
   // Carica il profilo applicativo (ruolo, organizzazione) dell'utente.
   async function caricaProfilo(userId) {
@@ -40,15 +49,23 @@ export function AuthProvider({ children }) {
     // Sessione iniziale.
     supabase.auth.getSession().then(async ({ data }) => {
       setSessione(data.session);
-      if (data.session?.user) await caricaProfilo(data.session.user.id);
+      if (data.session?.user) {
+        await caricaProfilo(data.session.user.id);
+        await caricaMfa();
+      }
       setCaricamento(false);
     });
 
     // Ascolta i cambi di stato (login, logout, refresh).
     const { data: sub } = supabase.auth.onAuthStateChange(async (_evento, sess) => {
       setSessione(sess);
-      if (sess?.user) await caricaProfilo(sess.user.id);
-      else setProfilo(null);
+      if (sess?.user) {
+        await caricaProfilo(sess.user.id);
+        await caricaMfa();
+      } else {
+        setProfilo(null);
+        setMfa({ richiesta: false, verificata: false });
+      }
     });
 
     return () => sub.subscription.unsubscribe();
@@ -74,6 +91,8 @@ export function AuthProvider({ children }) {
     backendPronto: supabaseConfigurato,
     accedi,
     esci,
+    mfa,
+    caricaMfa,
   };
 
   return <AuthContext.Provider value={valore}>{children}</AuthContext.Provider>;
