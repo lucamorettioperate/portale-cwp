@@ -9,6 +9,8 @@ import Cruscotto from "./pages/Cruscotto.jsx";
 import TuoiDocumenti from "./pages/TuoiDocumenti.jsx";
 import Audit from "./pages/Audit.jsx";
 import VerificaMfa from "./pages/VerificaMfa.jsx";
+import Crediti from "./pages/Crediti.jsx";
+import CalcoloCrediti from "./pages/CalcoloCrediti.jsx";
 import { COLORI as C } from "./lib/cwpProgram.js";
 
 // Schermata di caricamento mentre si verifica la sessione.
@@ -77,6 +79,22 @@ export default function App() {
         element={
           <Protetta>
             <Audit />
+          </Protetta>
+        }
+      />
+      <Route
+        path="/crediti"
+        element={
+          <Protetta>
+            <Crediti />
+          </Protetta>
+        }
+      />
+      <Route
+        path="/crediti/:id"
+        element={
+          <Protetta>
+            <CalcoloCrediti />
           </Protetta>
         }
       />

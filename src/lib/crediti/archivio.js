@@ -1,0 +1,191 @@
+/* Lettura e salvataggio dei calcoli dei crediti (tabelle dello script 11).
+   Accessibili solo agli Amministratori con verifica a due fattori. */
+import { supabase } from "../supabase.js";
+import { TIPOLOGIE_RIFIUTO, BENI_RIUSO, BUFFER_SOLO_VIRTUOSE } from "./parametri.js";
+
+const BLOCCO = 1000; // righe per invio / lettura
+
+// Dati iniziali di un nuovo calcolo: fattori e parametri della Metodologia.
+export function datiIniziali() {
+  return {
+    rifiuti: [],
+    pefUd: "",
+    pefUnd: "",
+    classiUd: [],
+    classiUnd: [],
+    fattori: TIPOLOGIE_RIFIUTO.map((t) => ({
+      id: t.id,
+      nome: t.nome,
+      fe: t.fe,
+      ps: t.ps,
+      recupero: t.recupero,
+      calcolato: !!t.calcolato,
+      fonte: t.fonte,
+    })),
+    scenarioRiuso: "riutilizzo",
+    beni: BENI_RIUSO.map((b) => ({ id: b.id, nome: b.nome, peso: b.peso, fe: b.feRiutilizzo })),
+    psConsuntivo: false,
+    volumiCentralizzati: {},
+    opzioni: {
+      soloVirtuose: false,
+      bufferVirtuose: BUFFER_SOLO_VIRTUOSE,
+      utenzeMonitorate: { res: true, nonres: true, und: true },
+      categorieUndNonMonitorate: 0,
+      rifiutiMisurati: { indifferenziato: true },
+      misuraCentralizzate: false,
+      misuraAltriNonCentralizzati: false,
+      tariffaPuntuale: false,
+      bufferManuale: "",
+      motivazioneBuffer: "",
+    },
+  };
+}
+
+export async function elencaCalcoli() {
+  return await supabase
+    .from("calcolo_crediti")
+    .select("id, pratica_id, titolo, anno, tipo, stato, crediti_lordi, crediti_netti, buffer_pct, calcolato_il, aggiornato_il, versione_di, pratica:pratica_id (codice, tipo, anno_monitoraggio, organizzazione:organizzazione_id (denominazione))")
+    .order("aggiornato_il", { ascending: false });
+}
+
+export async function leggiCalcolo(id) {
+  return await supabase
+    .from("calcolo_crediti")
+    .select("*, pratica:pratica_id (codice, tipo, titolo, anno_monitoraggio, organizzazione:organizzazione_id (denominazione))")
+    .eq("id", id)
+    .single();
+}
+
+export async function creaCalcolo({ praticaId, titolo, anno, tipo, dataAvvio = null, dati = null, versioneDi = null }) {
+  return await supabase
+    .from("calcolo_crediti")
+    .insert({
+      pratica_id: praticaId,
+      titolo,
+      anno,
+      tipo,
+      data_avvio: dataAvvio || null,
+      dati: dati || datiIniziali(),
+      versione_di: versioneDi,
+    })
+    .select()
+    .single();
+}
+
+export async function salvaCalcolo(id, campi) {
+  return await supabase.from("calcolo_crediti").update(campi).eq("id", id).select().single();
+}
+
+export async function eliminaCalcolo(id) {
+  return await supabase.from("calcolo_crediti").delete().eq("id", id);
+}
+
+// Legge tutte le righe di una tabella di dettaglio, a blocchi.
+async function leggiTutto(tabella, calcoloId) {
+  const tutte = [];
+  for (let da = 0; ; da += BLOCCO) {
+    const { data, error } = await supabase
+      .from(tabella)
+      .select("*")
+      .eq("calcolo_id", calcoloId)
+      .order("id", { ascending: true })
+      .range(da, da + BLOCCO - 1);
+    if (error) return { data: null, error };
+    tutte.push(...(data || []));
+    if (!data || data.length < BLOCCO) break;
+  }
+  return { data: tutte, error: null };
+}
+
+// Sostituisce tutte le righe di una tabella di dettaglio.
+async function sostituisci(tabella, calcoloId, righe, onAvanzamento) {
+  const { error: e1 } = await supabase.from(tabella).delete().eq("calcolo_id", calcoloId);
+  if (e1) return { error: e1 };
+  for (let i = 0; i < righe.length; i += BLOCCO) {
+    onAvanzamento && onAvanzamento(Math.min(i + BLOCCO, righe.length), righe.length);
+    const blocco = righe.slice(i, i + BLOCCO).map((r) => ({ ...r, calcolo_id: calcoloId }));
+    const { error } = await supabase.from(tabella).insert(blocco);
+    if (error) return { error };
+  }
+  return { error: null };
+}
+
+// Conversione tra righe del database e oggetti del motore di calcolo.
+const daDbConferimento = (r) => ({
+  utenza: r.utenza,
+  macro: r.macro,
+  classe: r.classe,
+  tipologia: r.tipologia,
+  svuotamenti: r.svuotamenti,
+  volume: r.volume,
+  pesoStrutture: r.peso_strutture,
+  volumeStrutture: r.volume_strutture,
+  pesoCdr: r.peso_cdr,
+  volumeCdr: r.volume_cdr,
+  nUtenze: Number(r.n_utenze) || 1,
+});
+const aDbConferimento = (c) => ({
+  utenza: String(c.utenza),
+  macro: c.macro,
+  classe: String(c.classe),
+  tipologia: c.tipologia,
+  svuotamenti: c.svuotamenti ?? null,
+  volume: c.volume ?? null,
+  peso_strutture: c.pesoStrutture ?? null,
+  volume_strutture: c.volumeStrutture ?? null,
+  peso_cdr: c.pesoCdr ?? null,
+  volume_cdr: c.volumeCdr ?? null,
+  n_utenze: c.nUtenze || 1,
+});
+const daDbRiuso = (r) => ({
+  utenza: r.utenza,
+  macro: r.macro,
+  classe: r.classe,
+  bene: r.bene,
+  pezzi: r.pezzi,
+  peso: r.peso,
+  nUtenze: Number(r.n_utenze) || 1,
+});
+const aDbRiuso = (c) => ({
+  utenza: String(c.utenza),
+  macro: c.macro,
+  classe: String(c.classe),
+  bene: c.bene,
+  pezzi: c.pezzi ?? null,
+  peso: c.peso ?? null,
+  n_utenze: c.nUtenze || 1,
+});
+
+export async function leggiConferimenti(calcoloId) {
+  const { data, error } = await leggiTutto("calcolo_conferimento", calcoloId);
+  return { data: data ? data.map(daDbConferimento) : null, error };
+}
+export async function salvaConferimenti(calcoloId, righe, onAvanzamento) {
+  return await sostituisci("calcolo_conferimento", calcoloId, righe.map(aDbConferimento), onAvanzamento);
+}
+export async function leggiRiuso(calcoloId) {
+  const { data, error } = await leggiTutto("calcolo_riuso", calcoloId);
+  return { data: data ? data.map(daDbRiuso) : null, error };
+}
+export async function salvaRiuso(calcoloId, righe, onAvanzamento) {
+  return await sostituisci("calcolo_riuso", calcoloId, righe.map(aDbRiuso), onAvanzamento);
+}
+
+// Nuova versione (bozza) di un calcolo: copia dati e Banca Dati Utenze.
+export async function nuovaVersione(calcolo) {
+  const { data: nuovo, error } = await creaCalcolo({
+    praticaId: calcolo.pratica_id,
+    titolo: `${calcolo.titolo} (rev.)`,
+    anno: calcolo.anno,
+    tipo: calcolo.tipo,
+    dataAvvio: calcolo.data_avvio,
+    dati: calcolo.dati,
+    versioneDi: calcolo.id,
+  });
+  if (error) return { data: null, error };
+  const [c, r] = await Promise.all([leggiConferimenti(calcolo.id), leggiRiuso(calcolo.id)]);
+  if (c.error || r.error) return { data: nuovo, error: c.error || r.error };
+  const e1 = await salvaConferimenti(nuovo.id, c.data);
+  const e2 = await salvaRiuso(nuovo.id, r.data);
+  return { data: nuovo, error: e1.error || e2.error };
+}

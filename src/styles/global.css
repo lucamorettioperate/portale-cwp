@@ -49,3 +49,9 @@ a {
 @media (max-width: 860px) {
   .layout-pratiche { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Calcolo dei crediti: passi a sinistra, contenuto a destra. */
+.layout-crediti { grid-template-columns: 210px minmax(0, 1fr); }
+@media (max-width: 860px) {
+  .layout-crediti { grid-template-columns: minmax(0, 1fr); }
+}
