@@ -140,6 +140,9 @@ export default function DettaglioPratica({ praticaId, onAggiornato }) {
                     )}
                   </div>
                 )}
+
+                {/* Documenti della fase */}
+                <Documenti praticaId={pratica.id} fase={f} compatto />
               </div>
             </div>
           );
@@ -149,7 +152,7 @@ export default function DettaglioPratica({ praticaId, onAggiornato }) {
       {/* Consultazione pubblica (fase 3) */}
       <Consultazione praticaId={pratica.id} />
 
-      {/* Documenti della pratica */}
+      {/* Documenti generali della pratica (contratto, amministrativi) */}
       <Documenti praticaId={pratica.id} />
     </div>
   );

@@ -82,13 +82,15 @@ export async function aggiornaPratica(id, modifiche) {
 
 // ---- Documenti ----
 
-// Elenca i documenti di una pratica (versione corrente in evidenza).
-export async function elencaDocumenti(praticaId) {
-  return await supabase
-    .from("documento")
-    .select("*")
-    .eq("pratica_id", praticaId)
-    .order("creato_il", { ascending: false });
+// Elenca i documenti di una pratica.
+// - faseId undefined: tutti i documenti della pratica
+// - faseId = "<id>": solo i documenti di quella fase
+// - faseId = null: solo i documenti generali (non legati a una fase)
+export async function elencaDocumenti(praticaId, faseId = undefined) {
+  let q = supabase.from("documento").select("*").eq("pratica_id", praticaId);
+  if (faseId === null) q = q.is("fase_id", null);
+  else if (faseId !== undefined) q = q.eq("fase_id", faseId);
+  return await q.order("creato_il", { ascending: false });
 }
 
 // Calcola l'hash SHA-256 di un file (integrità).

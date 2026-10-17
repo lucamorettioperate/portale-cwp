@@ -9,11 +9,14 @@ import {
   registraAudit,
 } from "../lib/dati.js";
 
-/* Gestione documentale di una pratica: elenco versionato e upload.
+/* Gestione documentale: elenco versionato e upload.
+   - fase: se passata, i documenti sono filtrati e legati a quella fase
+   - altrimenti mostra i documenti generali della pratica (senza fase)
    Il cliente carica le proprie; lo staff carica e imposta la visibilità. */
-export default function Documenti({ praticaId }) {
+export default function Documenti({ praticaId, fase = null, compatto = false }) {
   const { ruolo, utente } = useAuth();
   const staff = ruolo === "operatore" || ruolo === "admin";
+  const faseId = fase ? fase.id : null; // null = documenti generali
 
   const [documenti, setDocumenti] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
@@ -23,7 +26,7 @@ export default function Documenti({ praticaId }) {
 
   async function carica() {
     setCaricamento(true);
-    const { data } = await elencaDocumenti(praticaId);
+    const { data } = await elencaDocumenti(praticaId, faseId);
     setDocumenti(data || []);
     setCaricamento(false);
   }
@@ -31,7 +34,7 @@ export default function Documenti({ praticaId }) {
   useEffect(() => {
     carica();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [praticaId]);
+  }, [praticaId, faseId]);
 
   async function onFile(e) {
     const file = e.target.files?.[0];
@@ -40,6 +43,7 @@ export default function Documenti({ praticaId }) {
     setInUpload(true);
     const { data, error } = await caricaDocumento({
       praticaId,
+      faseId,
       file,
       visibileCliente: true,
       visibileFondazione: true,
@@ -68,29 +72,32 @@ export default function Documenti({ praticaId }) {
     if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener");
   }
 
+  const titolo = fase ? "Documenti della fase" : "Documenti generali";
+
   return (
     <div
-      style={{
-        background: C.white,
-        border: `1px solid ${C.line}`,
-        borderRadius: 14,
-        padding: "18px 20px",
-      }}
+      style={
+        compatto
+          ? { marginTop: 12, paddingTop: 12, borderTop: `1px dashed ${C.line}` }
+          : { background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, padding: "18px 20px" }
+      }
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-        <h3 style={{ fontFamily: "'Archivo'", fontSize: 15, margin: 0 }}>Documenti</h3>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: compatto ? 10 : 14 }}>
+        <h3 style={{ fontFamily: "'Archivo'", fontSize: compatto ? 13 : 15, margin: 0, color: compatto ? C.grafite : C.ink }}>
+          {titolo}
+        </h3>
         <label
           style={{
             background: inUpload ? C.line : C.green,
             color: C.white,
             borderRadius: 8,
-            padding: "7px 13px",
-            fontSize: 12.5,
+            padding: compatto ? "5px 10px" : "7px 13px",
+            fontSize: 12,
             fontWeight: 600,
             cursor: inUpload ? "default" : "pointer",
           }}
         >
-          {inUpload ? "Caricamento…" : "+ Carica documento"}
+          {inUpload ? "Caricamento…" : "+ Carica"}
           <input
             ref={inputRef}
             type="file"
@@ -163,10 +170,12 @@ export default function Documenti({ praticaId }) {
         </div>
       )}
 
-      <p style={{ fontSize: 11, color: C.grafite, marginTop: 12, lineHeight: 1.5 }}>
-        Ogni caricamento crea una nuova versione. Le versioni precedenti restano
-        consultabili e nessun documento viene mai sovrascritto.
-      </p>
+      {!compatto && (
+        <p style={{ fontSize: 11, color: C.grafite, marginTop: 12, lineHeight: 1.5 }}>
+          Ogni caricamento crea una nuova versione. Le versioni precedenti restano
+          consultabili e nessun documento viene mai sovrascritto.
+        </p>
+      )}
     </div>
   );
 }
