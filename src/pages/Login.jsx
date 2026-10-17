@@ -48,14 +48,14 @@ export default function Login() {
         <img
           src="/loghi/carbonwasteprint.png"
           alt="Carbon WastePrint"
-          style={{ height: 48, width: "auto", display: "block", marginBottom: 10 }}
+          style={{ height: 96, width: "auto", display: "block", marginBottom: 14 }}
         />
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
           <span style={{ fontSize: 12, color: C.grafite }}>Programma di</span>
           <img
             src="/loghi/fondazione-operate.png"
             alt="Fondazione Operate"
-            style={{ height: 20, width: "auto", display: "block" }}
+            style={{ height: 40, width: "auto", display: "block" }}
           />
         </div>
         <p style={{ fontSize: 13, color: C.grafite, margin: "0 0 24px" }}>

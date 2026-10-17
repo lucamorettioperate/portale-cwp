@@ -179,6 +179,81 @@ export async function urlDocumento(storagePath) {
   return await supabase.storage.from("documenti").createSignedUrl(storagePath, 60);
 }
 
+// ---- Consultazione pubblica ----
+
+// Legge la consultazione (eventuale) di una pratica, con i suoi commenti.
+export async function leggiConsultazione(praticaId) {
+  const { data: cons } = await supabase
+    .from("consultazione")
+    .select("*")
+    .eq("pratica_id", praticaId)
+    .order("creato_il", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!cons) return { data: null, error: null };
+
+  const { data: commenti } = await supabase
+    .from("commento")
+    .select("*")
+    .eq("consultazione_id", cons.id)
+    .order("creato_il", { ascending: true });
+
+  return { data: { ...cons, commenti: commenti || [] }, error: null };
+}
+
+// Apre la consultazione: pubblica una versione del documento per 30 giorni.
+export async function apriConsultazione({ praticaId, documentoId }) {
+  const oggi = new Date();
+  const chiusura = new Date(oggi.getTime() + 30 * 24 * 60 * 60 * 1000);
+  return await supabase
+    .from("consultazione")
+    .insert({
+      pratica_id: praticaId,
+      documento_id: documentoId,
+      data_apertura: oggi.toISOString().slice(0, 10),
+      data_chiusura: chiusura.toISOString().slice(0, 10),
+      attiva: true,
+    })
+    .select()
+    .single();
+}
+
+// Chiude la consultazione.
+export async function chiudiConsultazione(id) {
+  return await supabase.from("consultazione").update({ attiva: false }).eq("id", id);
+}
+
+// Invia un commento (identità nota, pubblicato in forma anonima).
+export async function inviaCommento({ consultazioneId, praticaId, testo, autoreUtenteId }) {
+  return await supabase
+    .from("commento")
+    .insert({
+      consultazione_id: consultazioneId,
+      pratica_id: praticaId,
+      testo,
+      autore_utente_id: autoreUtenteId,
+      stato: "ricevuto",
+    })
+    .select()
+    .single();
+}
+
+// Modera un commento: pubblica / non pubblica (con motivazione).
+export async function moderaCommento(id, stato, motivazione = null) {
+  return await supabase
+    .from("commento")
+    .update({ stato, motivazione_moderazione: motivazione })
+    .eq("id", id);
+}
+
+// Il cliente risponde a un commento ammesso.
+export async function rispondiCommento(id, risposta) {
+  return await supabase
+    .from("commento")
+    .update({ risposta_testo: risposta, stato: "risposto" })
+    .eq("id", id);
+}
+
 // ---- Audit ----
 export async function registraAudit(evento) {
   return await supabase.from("audit_event").insert(evento);

@@ -25,13 +25,13 @@ export default function Header() {
         <img
           src="/loghi/carbonwasteprint.png"
           alt="Carbon WastePrint"
-          style={{ height: 34, width: "auto", display: "block" }}
+          style={{ height: 68, width: "auto", display: "block" }}
         />
-        <div style={{ width: 1, height: 28, background: C.line }} />
+        <div style={{ width: 1, height: 52, background: C.line }} />
         <img
           src="/loghi/fondazione-operate.png"
           alt="Fondazione Operate"
-          style={{ height: 26, width: "auto", display: "block" }}
+          style={{ height: 52, width: "auto", display: "block" }}
         />
       </div>
 
