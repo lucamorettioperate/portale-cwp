@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Carbon Credit">
+  <!-- Contrassegno originale del portale CWP: cerchio pieno, germoglio, scritta. -->
+  <circle cx="100" cy="100" r="96" fill="#2f5d3a"/>
+  <circle cx="100" cy="100" r="86" fill="none" stroke="#e4ede1" stroke-width="2.5" stroke-dasharray="3 5"/>
+  <!-- germoglio -->
+  <path d="M100 74 V54" stroke="#e4ede1" stroke-width="5" stroke-linecap="round"/>
+  <path d="M100 58 C 88 58, 78 50, 76 36 C 90 36, 100 44, 100 58 Z" fill="#a9cf8e"/>
+  <path d="M100 52 C 112 52, 124 42, 126 28 C 110 28, 100 38, 100 52 Z" fill="#e4ede1"/>
+  <text x="100" y="112" text-anchor="middle" font-family="Archivo, Arial, sans-serif" font-weight="800" font-size="31" fill="#ffffff" letter-spacing="1">CARBON</text>
+  <text x="100" y="146" text-anchor="middle" font-family="Archivo, Arial, sans-serif" font-weight="800" font-size="31" fill="#a9cf8e" letter-spacing="1">CREDIT</text>
+</svg>

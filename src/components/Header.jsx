@@ -48,10 +48,16 @@ export default function Header() {
       }}
     >
       {/* Loghi in piccolo, a sinistra */}
-      <Link to="/" style={{ display: "flex", alignItems: "center", gap: 16 }} aria-label="Pagina iniziale">
-        <img src="/loghi/carbonwasteprint.png" alt="Carbon WastePrint" style={{ height: 68, width: "auto", display: "block" }} />
-        <div style={{ width: 1, height: 52, background: C.line }} />
-        <img src="/loghi/fondazione-operate.png" alt="Fondazione Operate" style={{ height: 52, width: "auto", display: "block" }} />
+      <Link to="/" className="loghi-header" aria-label="Pagina iniziale">
+        <img className="logo-cwp" src="/loghi/carbonwasteprint.png" alt="Carbon WastePrint" />
+        <div className="loghi-separatore" />
+        <div className="loghi-colonna">
+          <img className="logo-fondazione" src="/loghi/fondazione-operate.png" alt="Fondazione Operate" />
+          <div className="loghi-partner">
+            <img src="/loghi/rina.png" alt="RINA — Certification Digital Partner" />
+            <img src="/loghi/carbon-credit.svg" alt="Carbon Credit" />
+          </div>
+        </div>
       </Link>
 
       {backendPronto && utente && (
