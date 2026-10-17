@@ -1,0 +1,44 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+  --ink: #1b2118;
+  --paper: #f6f4ee;
+  --paper-warm: #efece1;
+  --line: #d9d4c5;
+  --green: #2f5d3a;
+  --green-soft: #e4ede1;
+  --ocra: #b06a2f;
+  --ocra-soft: #f3e7d6;
+  --grafite: #5a5e54;
+  --white: #ffffff;
+  --amber: #c98a1a;
+  --red: #a23b2c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+a {
+  color: var(--green);
+}
