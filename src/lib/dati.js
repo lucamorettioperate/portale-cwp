@@ -354,3 +354,82 @@ export async function creaUtente({ email, password, ruolo, organizzazioneId, nom
 // ---- Audit ----
 // L'audit trail è scritto automaticamente dal database (trigger, script 07)
 // per ogni operazione rilevante: il browser non lo scrive più.
+
+// ---- Cruscotto del back-office (script 09) ----
+// Una riga per pratica: fase corrente, scadenza, integrazioni, consultazione.
+export async function leggiCruscotto() {
+  return await supabase.rpc("staff_cruscotto");
+}
+
+// ---- Rapporti di Monitoraggio annuali ----
+// Crea il Rapporto dell'anno successivo per un Progetto (max 10),
+// con le sue fasi. Codice e organizzazione li assegna il database.
+export async function creaRapporto(progetto) {
+  const { data: esistenti } = await elencaRapporti(progetto.id);
+  const anno = (esistenti || []).reduce((m, r) => Math.max(m, r.anno_monitoraggio || 0), 0) + 1;
+  if (anno > 10) {
+    return { data: null, error: { message: "Il Progetto ha già 10 Rapporti di Monitoraggio" } };
+  }
+  return await creaPratica({
+    tipo: "rapporto",
+    organizzazione_id: progetto.organizzazione_id,
+    progetto_padre_id: progetto.id,
+    anno_monitoraggio: anno,
+    titolo: `Rapporto di Monitoraggio anno ${anno}`,
+    stato: "attiva",
+  });
+}
+
+// ---- Pagamenti (registrazione manuale, requisiti §7) ----
+export async function elencaPagamenti(praticaId) {
+  return await supabase
+    .from("pagamento")
+    .select("*")
+    .eq("pratica_id", praticaId)
+    .order("scadenza", { ascending: true, nullsFirst: false });
+}
+
+export async function salvaPagamento(pagamento) {
+  const { id, ...campi } = pagamento;
+  if (id) return await supabase.from("pagamento").update(campi).eq("id", id).select().single();
+  return await supabase.from("pagamento").insert(campi).select().single();
+}
+
+// ---- Visibilità dei documenti (staff) ----
+export async function aggiornaVisibilitaDocumento(id, flag) {
+  return await supabase.from("documento").update(flag).eq("id", id);
+}
+
+// ---- "I tuoi documenti": documenti generali delle pratiche del Cliente ----
+export async function elencaDocumentiOrganizzazione() {
+  return await supabase
+    .from("documento")
+    .select("*, pratica:pratica_id (codice, titolo, tipo, organizzazione:organizzazione_id (denominazione))")
+    .is("fase_id", null)
+    .order("creato_il", { ascending: false });
+}
+
+// ---- Notifiche interne ----
+export async function elencaNotifiche() {
+  return await supabase
+    .from("notifica")
+    .select("*")
+    .order("creato_il", { ascending: false })
+    .limit(50);
+}
+
+export async function segnaNotificheLette(ids) {
+  if (!ids.length) return { data: null, error: null };
+  return await supabase.from("notifica").update({ letta: true }).in("id", ids);
+}
+
+// ---- Audit (solo staff) ----
+export async function elencaAudit({ praticaId = null, limite = 200 } = {}) {
+  let q = supabase
+    .from("audit_event")
+    .select("*")
+    .order("avvenuto_il", { ascending: false })
+    .limit(limite);
+  if (praticaId) q = q.eq("pratica_id", praticaId);
+  return await q;
+}

@@ -5,6 +5,9 @@ import Login from "./pages/Login.jsx";
 import BackOffice from "./pages/BackOffice.jsx";
 import AreaCliente from "./pages/AreaCliente.jsx";
 import GestioneUtenti from "./pages/GestioneUtenti.jsx";
+import Cruscotto from "./pages/Cruscotto.jsx";
+import TuoiDocumenti from "./pages/TuoiDocumenti.jsx";
+import Audit from "./pages/Audit.jsx";
 import { COLORI as C } from "./lib/cwpProgram.js";
 
 // Schermata di caricamento mentre si verifica la sessione.
@@ -19,7 +22,7 @@ function Caricamento() {
 // Sceglie la pagina giusta in base al ruolo dell'utente.
 function HomePerRuolo() {
   const { ruolo } = useAuth();
-  if (ruolo === "operatore" || ruolo === "admin") return <BackOffice />;
+  if (ruolo === "operatore" || ruolo === "admin") return <Cruscotto />;
   // Default: vista cliente (anche se il profilo non ha ancora un ruolo definito).
   return <AreaCliente />;
 }
@@ -47,6 +50,30 @@ export default function App() {
         element={
           <Protetta>
             <HomePerRuolo />
+          </Protetta>
+        }
+      />
+      <Route
+        path="/pratiche"
+        element={
+          <Protetta>
+            <BackOffice />
+          </Protetta>
+        }
+      />
+      <Route
+        path="/documenti"
+        element={
+          <Protetta>
+            <TuoiDocumenti />
+          </Protetta>
+        }
+      />
+      <Route
+        path="/audit"
+        element={
+          <Protetta>
+            <Audit />
           </Protetta>
         }
       />

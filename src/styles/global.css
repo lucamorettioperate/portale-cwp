@@ -42,3 +42,10 @@ a:focus-visible {
 a {
   color: var(--green);
 }
+
+/* Pagina Pratiche: elenco a sinistra e dettaglio a destra; su schermi
+   stretti l'elenco va sopra il dettaglio. */
+.layout-pratiche { grid-template-columns: 340px minmax(0, 1fr); }
+@media (max-width: 860px) {
+  .layout-pratiche { grid-template-columns: minmax(0, 1fr); }
+}

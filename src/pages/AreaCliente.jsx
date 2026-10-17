@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { COLORI as C, STATI_PRATICA, STATI_FASE } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
@@ -11,13 +12,16 @@ import { elencaProgetti } from "../lib/dati.js";
 export default function AreaCliente() {
   const { profilo } = useAuth();
   const [progetti, setProgetti] = useState([]);
-  const [selId, setSelId] = useState(null);
+  // Pratica aperta nell'indirizzo (?id=…), così le notifiche la aprono.
+  const [params, setParams] = useSearchParams();
+  const selId = params.get("id");
+  const setSelId = (id) => setParams(id ? { id } : {});
   const [caricamento, setCaricamento] = useState(true);
 
   useEffect(() => {
     elencaProgetti().then(({ data }) => {
       setProgetti(data || []);
-      if (data && data.length) setSelId(data[0].id);
+      if (!params.get("id") && data && data.length) setSelId(data[0].id);
       setCaricamento(false);
     });
   }, []);
@@ -91,6 +95,7 @@ export default function AreaCliente() {
                     </div>
                     <div style={{ fontSize: 12.5, color: C.grafite, marginTop: 3 }}>
                       {p.codice || "senza codice"}
+                      {p.organizzazione?.denominazione ? ` · ${p.organizzazione.denominazione}` : ""}
                     </div>
                   </button>
                 );
@@ -98,7 +103,7 @@ export default function AreaCliente() {
             </div>
 
             {/* Dettaglio della pratica selezionata (sola lettura per il cliente) */}
-            {selId && <DettaglioPratica praticaId={selId} />}
+            {selId && <DettaglioPratica key={selId} praticaId={selId} onApri={setSelId} />}
           </div>
         )}
       </div>

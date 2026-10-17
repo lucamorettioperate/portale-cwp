@@ -70,3 +70,14 @@ export const COLORI = {
   amber: "#c98a1a",
   red: "#a23b2c",
 };
+
+// Tipologie di documento (requisiti §5, "I tuoi documenti").
+export const TIPOLOGIE_DOCUMENTO = [
+  "Contratto",
+  "Allegato al contratto",
+  "Documentazione amministrativa",
+  "Documento di progetto",
+  "Rapporto dell'Ente di Validazione",
+  "Integrazione",
+  "Altro",
+];

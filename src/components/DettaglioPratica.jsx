@@ -5,6 +5,8 @@ import Badge from "./Badge.jsx";
 import Documenti from "./Documenti.jsx";
 import Consultazione from "./Consultazione.jsx";
 import Integrazioni from "./Integrazioni.jsx";
+import Rapporti from "./Rapporti.jsx";
+import Pagamenti from "./Pagamenti.jsx";
 import {
   leggiPratica,
   apriFase,
@@ -20,7 +22,7 @@ import { formatoData, giorniA } from "../lib/date.js";
    L'Operatore/Admin apre e chiude le fasi, modifica le scadenze, richiede
    integrazioni e cambia lo stato della pratica. Le azioni critiche
    richiedono una motivazione, registrata nell'audit (requisiti §8). */
-export default function DettaglioPratica({ praticaId, onAggiornato }) {
+export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
   const { ruolo } = useAuth();
   const [pratica, setPratica] = useState(null);
   const [integrazioni, setIntegrazioni] = useState([]);
@@ -70,8 +72,14 @@ export default function DettaglioPratica({ praticaId, onAggiornato }) {
               {pratica.organizzazione?.denominazione || "—"}
             </h1>
             <div style={{ fontSize: 13, color: C.grafite }}>
-              {pratica.titolo || "Progetto"} · {pratica.organizzazione?.tipo || ""}
+              {pratica.titolo || "Progetto"}
+              {pratica.organizzazione?.tipo ? ` · ${pratica.organizzazione.tipo}` : ""}
             </div>
+            {pratica.tipo === "rapporto" && pratica.progetto_padre_id && onApri && (
+              <button onClick={() => onApri(pratica.progetto_padre_id)} style={linkBtn}>
+                ← Torna al Progetto
+              </button>
+            )}
           </div>
           <div style={{ textAlign: "right" }}>
             <Badge bg={st.bg} fg={st.fg}>{st.label}</Badge>
@@ -100,8 +108,16 @@ export default function DettaglioPratica({ praticaId, onAggiornato }) {
         ))}
       </div>
 
-      {/* Consultazione pubblica (fase 3) */}
-      <Consultazione praticaId={pratica.id} />
+      {/* Consultazione pubblica (fase 3, solo per i Progetti) */}
+      {pratica.tipo === "progetto" && <Consultazione praticaId={pratica.id} />}
+
+      {/* Rapporti di Monitoraggio annuali del Progetto */}
+      {pratica.tipo === "progetto" && (
+        <Rapporti progetto={pratica} staff={staff} onApri={onApri} onCreato={onAggiornato} />
+      )}
+
+      {/* Pagamenti (solo back-office) */}
+      {staff && <Pagamenti praticaId={pratica.id} />}
 
       {/* Documenti generali della pratica (contratto, amministrativi) */}
       <Documenti key={`gen-${versione}`} praticaId={pratica.id} />
@@ -364,6 +380,16 @@ function Pannello({ children }) {
   );
 }
 
+const linkBtn = {
+  background: "none",
+  border: "none",
+  padding: 0,
+  marginTop: 6,
+  color: C.green,
+  fontSize: 12.5,
+  fontWeight: 600,
+  cursor: "pointer",
+};
 const riquadro = {
   background: C.white,
   border: `1px solid ${C.line}`,

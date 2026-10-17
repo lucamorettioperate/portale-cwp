@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSearchParams, Navigate } from "react-router-dom";
 import { COLORI as C, STATI_PRATICA } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
@@ -12,7 +13,12 @@ import { elencaProgetti } from "../lib/dati.js";
 export default function BackOffice() {
   const { ruolo } = useAuth();
   const [progetti, setProgetti] = useState([]);
-  const [selId, setSelId] = useState(null);
+  // La pratica aperta è nell'indirizzo (?id=…): così cruscotto e notifiche
+  // possono aprire direttamente una pratica.
+  const [params, setParams] = useSearchParams();
+  const selId = params.get("id");
+  const setSelId = (id) => setParams(id ? { id } : {});
+  const [cerca, setCerca] = useState("");
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState("");
   const [creazione, setCreazione] = useState(false);
@@ -23,7 +29,7 @@ export default function BackOffice() {
     if (error) setErrore(error.message);
     else {
       setProgetti(data || []);
-      if (!selId && data && data.length) setSelId(data[0].id);
+      if (!params.get("id") && data && data.length) setSelId(data[0].id);
     }
     setCaricamento(false);
   }
@@ -34,15 +40,16 @@ export default function BackOffice() {
   }, []);
 
   const staff = ruolo === "operatore" || ruolo === "admin";
+  if (ruolo && !staff) return <Navigate to="/" replace />;
 
   return (
     <div style={{ background: C.paper, minHeight: "100vh" }}>
       <Header />
 
       <div
+        className="layout-pratiche"
         style={{
           display: "grid",
-          gridTemplateColumns: "340px 1fr",
           gap: 22,
           padding: "22px 24px",
           maxWidth: 1320,
@@ -104,7 +111,19 @@ export default function BackOffice() {
             </div>
           )}
 
-          {progetti.map((p) => {
+          {progetti.length > 4 && (
+            <input
+              value={cerca}
+              onChange={(e) => setCerca(e.target.value)}
+              placeholder="Cerca…"
+              aria-label="Cerca progetto"
+              style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: `1px solid ${C.line}`, borderRadius: 8, fontSize: 13, marginBottom: 10 }}
+            />
+          )}
+
+          {progetti
+            .filter((p) => !cerca.trim() || [p.codice, p.titolo, p.organizzazione?.denominazione].some((v) => (v || "").toLowerCase().includes(cerca.trim().toLowerCase())))
+            .map((p) => {
             const st = STATI_PRATICA[p.stato] || STATI_PRATICA.attiva;
             const attivo = p.id === selId;
             return (
@@ -140,7 +159,7 @@ export default function BackOffice() {
         {/* Dettaglio */}
         <main>
           {selId ? (
-            <DettaglioPratica praticaId={selId} onAggiornato={ricarica} />
+            <DettaglioPratica key={selId} praticaId={selId} onAggiornato={ricarica} onApri={setSelId} />
           ) : (
             !caricamento && (
               <div

@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { COLORI as C } from "../lib/cwpProgram.js";
+import { COLORI as C, TIPOLOGIE_DOCUMENTO } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Badge from "./Badge.jsx";
 import {
   elencaDocumenti,
   caricaDocumento,
   urlDocumento,
+  aggiornaVisibilitaDocumento,
 } from "../lib/dati.js";
 
 /* Gestione documentale: elenco versionato e upload.
@@ -22,6 +23,11 @@ export default function Documenti({ praticaId, fase = null, compatto = false }) 
   const [inUpload, setInUpload] = useState(false);
   const [errore, setErrore] = useState("");
   const inputRef = useRef(null);
+  // Opzioni di caricamento dello staff (il Cliente non sceglie la visibilità).
+  const [opzioni, setOpzioni] = useState(false);
+  const [tipologia, setTipologia] = useState(fase ? "Documento di progetto" : "Contratto");
+  const [visCliente, setVisCliente] = useState(true);
+  const [pubblico, setPubblico] = useState(false);
 
   async function carica() {
     setCaricamento(true);
@@ -44,11 +50,13 @@ export default function Documenti({ praticaId, fase = null, compatto = false }) 
       praticaId,
       faseId,
       file,
-      visibileCliente: true,
+      tipologia: staff ? tipologia : null,
+      visibileCliente: staff ? visCliente : true,
       visibileFondazione: true,
-      pubblico: false,
+      pubblico: staff ? pubblico : false,
       utenteId: utente?.id,
     });
+    setOpzioni(false);
     if (error) {
       setErrore("Caricamento non riuscito: " + error.message);
     } else {
@@ -56,6 +64,13 @@ export default function Documenti({ praticaId, fase = null, compatto = false }) 
     }
     setInUpload(false);
     if (inputRef.current) inputRef.current.value = "";
+  }
+
+  async function cambiaVisibilita(doc, flag) {
+    setErrore("");
+    const { error } = await aggiornaVisibilitaDocumento(doc.id, flag);
+    if (error) setErrore("Visibilità non aggiornata: " + error.message);
+    else carica();
   }
 
   async function scarica(doc) {
@@ -77,6 +92,23 @@ export default function Documenti({ praticaId, fase = null, compatto = false }) 
         <h3 style={{ fontFamily: "'Archivo'", fontSize: compatto ? 13 : 15, margin: 0, color: compatto ? C.grafite : C.ink }}>
           {titolo}
         </h3>
+        {staff && !opzioni ? (
+          <button
+            onClick={() => setOpzioni(true)}
+            style={{
+              background: C.green,
+              color: C.white,
+              border: "none",
+              borderRadius: 8,
+              padding: compatto ? "5px 10px" : "7px 13px",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            + Carica
+          </button>
+        ) : (
         <label
           style={{
             background: inUpload ? C.line : C.green,
@@ -88,7 +120,7 @@ export default function Documenti({ praticaId, fase = null, compatto = false }) 
             cursor: inUpload ? "default" : "pointer",
           }}
         >
-          {inUpload ? "Caricamento…" : "+ Carica"}
+          {inUpload ? "Caricamento…" : staff ? "Scegli il file" : "+ Carica"}
           <input
             ref={inputRef}
             type="file"
@@ -97,7 +129,25 @@ export default function Documenti({ praticaId, fase = null, compatto = false }) 
             style={{ display: "none" }}
           />
         </label>
+        )}
       </div>
+
+      {/* Opzioni dello staff prima di scegliere il file */}
+      {staff && opzioni && (
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", padding: 10, background: C.paper, border: `1px solid ${C.line}`, borderRadius: 9, marginBottom: 10, fontSize: 12.5 }}>
+          <select value={tipologia} onChange={(e) => setTipologia(e.target.value)} aria-label="Tipologia del documento" style={{ padding: "6px 8px", border: `1px solid ${C.line}`, borderRadius: 7, fontSize: 12.5 }}>
+            {TIPOLOGIE_DOCUMENTO.map((t) => <option key={t}>{t}</option>)}
+          </select>
+          <label style={{ display: "flex", gap: 5, alignItems: "center" }}>
+            <input type="checkbox" checked={visCliente} onChange={(e) => setVisCliente(e.target.checked)} /> Visibile al Cliente
+          </label>
+          <label style={{ display: "flex", gap: 5, alignItems: "center" }}>
+            <input type="checkbox" checked={pubblico} onChange={(e) => setPubblico(e.target.checked)} /> Pubblico
+          </label>
+          <span style={{ flex: 1 }} />
+          <button onClick={() => setOpzioni(false)} style={{ background: "none", border: "none", color: C.grafite, fontSize: 12.5, cursor: "pointer" }}>Annulla</button>
+        </div>
+      )}
 
       {errore && <div style={{ color: C.red, fontSize: 12.5, marginBottom: 10 }}>{errore}</div>}
 
@@ -133,12 +183,26 @@ export default function Documenti({ praticaId, fase = null, compatto = false }) 
                   </span>
                   <Badge bg={C.greenSoft} fg={C.green}>v{d.versione}</Badge>
                   {d.corrente && <Badge bg="#dfe9db" fg={C.green}>corrente</Badge>}
+                  {d.tipologia && <Badge bg={C.paperWarm} fg={C.grafite}>{d.tipologia}</Badge>}
                   {d.pubblico && <Badge bg={C.ocraSoft} fg={C.amber}>pubblico</Badge>}
+                  {staff && !d.visibile_cliente && <Badge bg="#e8e8e2" fg={C.grafite}>solo Fondazione</Badge>}
                 </div>
                 <div style={{ fontSize: 11, color: C.grafite, marginTop: 2 }}>
                   {new Date(d.creato_il).toLocaleString("it-IT")}
                   {staff && d.hash_file && <> · hash {d.hash_file.slice(0, 10)}…</>}
                 </div>
+                {staff && (
+                  <div style={{ display: "flex", gap: 10, marginTop: 4, fontSize: 11.5, color: C.grafite }}>
+                    <label style={{ display: "flex", gap: 4, alignItems: "center", cursor: "pointer" }}>
+                      <input type="checkbox" checked={d.visibile_cliente} onChange={(e) => cambiaVisibilita(d, { visibile_cliente: e.target.checked })} />
+                      Cliente
+                    </label>
+                    <label style={{ display: "flex", gap: 4, alignItems: "center", cursor: "pointer" }}>
+                      <input type="checkbox" checked={d.pubblico} onChange={(e) => cambiaVisibilita(d, { pubblico: e.target.checked })} />
+                      Pubblico
+                    </label>
+                  </div>
+                )}
               </div>
               <button
                 onClick={() => scarica(d)}
