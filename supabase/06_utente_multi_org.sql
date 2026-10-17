@@ -30,26 +30,42 @@ select id, organizzazione_id from profilo
 where organizzazione_id is not null
 on conflict do nothing;
 
--- Aggiorna "pratica_mia": l'utente vede le pratiche delle organizzazioni
--- a cui è associato (tabella molti-a-molti), oltre al vecchio campo singolo
--- per retrocompatibilità.
+-- Helper: l'organizzazione indicata è una di quelle dell'utente corrente?
+-- (tabella molti-a-molti, più il vecchio campo singolo per retrocompatibilità)
+create or replace function app_org_mia(p_org uuid)
+returns boolean
+language sql stable security definer set search_path = public as $$
+  select p_org is not null and (
+    p_org = app_organizzazione()
+    or exists (
+      select 1 from utente_organizzazione uo
+      where uo.utente_id = auth.uid()
+        and uo.organizzazione_id = p_org
+    )
+  );
+$$;
+
+-- Aggiorna "pratica_mia": l'utente vede le pratiche di tutte le
+-- organizzazioni a cui è associato.
 create or replace function pratica_mia(p_id uuid)
 returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (
     select 1 from pratica pr
     where pr.id = p_id
-      and (
-        app_is_staff()
-        or pr.organizzazione_id = app_organizzazione()
-        or exists (
-          select 1 from utente_organizzazione uo
-          where uo.utente_id = auth.uid()
-            and uo.organizzazione_id = pr.organizzazione_id
-        )
-      )
+      and (app_is_staff() or app_org_mia(pr.organizzazione_id))
   );
 $$;
+
+-- Aggiorna le regole di visibilità che usavano solo il campo singolo:
+-- elenco pratiche e anagrafica organizzazioni del cliente.
+drop policy if exists pratica_select on pratica;
+create policy pratica_select on pratica for select
+  using (app_is_staff() or app_org_mia(organizzazione_id));
+
+drop policy if exists org_select on organizzazione;
+create policy org_select on organizzazione for select
+  using (app_is_staff() or app_org_mia(id));
 
 -- Funzione per impostare le organizzazioni di un utente (solo admin).
 create or replace function admin_imposta_organizzazioni(

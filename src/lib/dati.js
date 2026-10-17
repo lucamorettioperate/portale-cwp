@@ -263,12 +263,26 @@ export async function elencaUtenti() {
   return await supabase.rpc("admin_elenco_utenti");
 }
 
-// Aggiorna ruolo e organizzazione di un utente.
-export async function aggiornaUtente(utenteId, ruolo, organizzazioneId) {
-  return await supabase.rpc("admin_aggiorna_utente", {
+// Aggiorna ruolo e organizzazioni di un utente.
+// - organizzazioniIds: elenco delle organizzazioni (comuni/aziende) associate;
+//   la prima resta anche come "organizzazione principale" sul profilo.
+// - per gli operatori le associazioni vengono azzerate.
+export async function aggiornaUtente(utenteId, ruolo, organizzazioniIds = []) {
+  const ids = ruolo === "cliente" ? organizzazioniIds : [];
+  const r1 = await supabase.rpc("admin_aggiorna_utente", {
     p_utente: utenteId,
     p_ruolo: ruolo,
-    p_organizzazione: organizzazioneId,
+    p_organizzazione: ids[0] || null,
+  });
+  if (r1.error) return r1;
+  return await impostaOrganizzazioniUtente(utenteId, ids);
+}
+
+// Imposta l'elenco completo delle organizzazioni associate a un utente.
+export async function impostaOrganizzazioniUtente(utenteId, organizzazioniIds) {
+  return await supabase.rpc("admin_imposta_organizzazioni", {
+    p_utente: utenteId,
+    p_organizzazioni: organizzazioniIds,
   });
 }
 
