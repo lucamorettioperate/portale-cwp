@@ -77,14 +77,20 @@ Deno.serve(async (req) => {
       "Messaggio automatico: non rispondere a questa email.",
     ].join("\n");
 
-    const html = `<!doctype html><html lang="it"><body style="margin:0;background:#f6f4ee;font-family:Arial,Helvetica,sans-serif;color:#1b2118">
+    const html = `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light"></head><body style="margin:0;background:#f6f4ee;font-family:Arial,Helvetica,sans-serif;color:#1b2118">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px">
 <table role="presentation" width="100%" style="max-width:560px;background:#ffffff;border:1px solid #d9d4c5;border-radius:12px" cellpadding="0" cellspacing="0">
 <tr><td style="padding:22px 24px 6px;font-size:13px;color:#5a5e54">Programma Carbon WastePrint&reg; &middot; Fondazione Operate</td></tr>
 <tr><td style="padding:6px 24px 0;font-size:14px">${esc(saluto)}</td></tr>
 <tr><td style="padding:12px 24px 0;font-size:18px;font-weight:bold">${esc(n.titolo)}</td></tr>
 ${n.testo ? `<tr><td style="padding:6px 24px 0;font-size:14px;color:#5a5e54">${esc(n.testo)}</td></tr>` : ""}
-<tr><td style="padding:20px 24px"><a href="${link}" style="display:inline-block;background:#2f5d3a;color:#ffffff;text-decoration:none;font-weight:bold;font-size:14px;padding:11px 18px;border-radius:8px">Apri nel portale</a></td></tr>
+<tr><td style="padding:20px 24px">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+<td bgcolor="#2f5d3a" style="background-color:#2f5d3a;border:2px solid #2f5d3a;border-radius:8px">
+<a href="${link}" style="display:inline-block;background-color:#2f5d3a;color:#ffffff;text-decoration:none;font-weight:bold;font-size:14px;line-height:18px;padding:11px 18px;border-radius:8px"><span style="color:#ffffff">Apri nel portale &rarr;</span></a>
+</td></tr></table>
+<div style="padding-top:10px;font-size:12px;color:#8a8d82">Oppure copia questo indirizzo nel browser: <a href="${link}" style="color:#2f5d3a">${esc(link)}</a></div>
+</td></tr>
 <tr><td style="padding:0 24px 20px;font-size:12px;color:#8a8d82">Messaggio automatico: non rispondere a questa email.</td></tr>
 </table></td></tr></table></body></html>`;
 
