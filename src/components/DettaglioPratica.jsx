@@ -1,26 +1,49 @@
 import React, { useEffect, useState } from "react";
-import { COLORI as C, STATI_PRATICA, STATI_FASE, RUOLI } from "../lib/cwpProgram.js";
+import { COLORI as C, STATI_PRATICA, STATI_FASE } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Badge from "./Badge.jsx";
 import Documenti from "./Documenti.jsx";
 import Consultazione from "./Consultazione.jsx";
-import { leggiPratica, aggiornaFase } from "../lib/dati.js";
+import Integrazioni from "./Integrazioni.jsx";
+import {
+  leggiPratica,
+  apriFase,
+  chiudiFase,
+  modificaScadenzaFase,
+  cambiaStatoPratica,
+  elencaIntegrazioni,
+  richiediIntegrazione,
+} from "../lib/dati.js";
+import { formatoData, giorniA } from "../lib/date.js";
 
 /* Dettaglio di una pratica con le sue 7 fasi.
-   L'Operatore/Admin può aprire e chiudere le fasi (azioni esplicite). */
+   L'Operatore/Admin apre e chiude le fasi, modifica le scadenze, richiede
+   integrazioni e cambia lo stato della pratica. Le azioni critiche
+   richiedono una motivazione, registrata nell'audit (requisiti §8). */
 export default function DettaglioPratica({ praticaId, onAggiornato }) {
-  const { ruolo, utente } = useAuth();
+  const { ruolo } = useAuth();
   const [pratica, setPratica] = useState(null);
+  const [integrazioni, setIntegrazioni] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
-  const [azioneInCorso, setAzioneInCorso] = useState(false);
+  const [versione, setVersione] = useState(0); // per ricaricare i documenti
 
   const staff = ruolo === "operatore" || ruolo === "admin";
 
-  async function carica() {
-    setCaricamento(true);
-    const { data } = await leggiPratica(praticaId);
+  async function carica(silenzioso = false) {
+    if (!silenzioso) setCaricamento(true);
+    const [{ data }, { data: integr }] = await Promise.all([
+      leggiPratica(praticaId),
+      elencaIntegrazioni(praticaId),
+    ]);
     setPratica(data);
+    setIntegrazioni(integr || []);
     setCaricamento(false);
+  }
+
+  async function dopoAzione() {
+    await carica(true);
+    setVersione((v) => v + 1);
+    onAggiornato && onAggiornato();
   }
 
   useEffect(() => {
@@ -34,33 +57,10 @@ export default function DettaglioPratica({ praticaId, onAggiornato }) {
   const fasi = (pratica.fasi || []).sort((a, b) => a.numero - b.numero);
   const st = STATI_PRATICA[pratica.stato] || STATI_PRATICA.attiva;
 
-  // Apre o chiude una fase e registra l'operazione nell'audit.
-  async function cambiaFase(fase, nuovoStato) {
-    if (!staff || azioneInCorso) return;
-    setAzioneInCorso(true);
-    const modifiche =
-      nuovoStato === "in_corso"
-        ? { stato: "in_corso", data_apertura: new Date().toISOString().slice(0, 10) }
-        : { stato: "completata", data_effettiva_chiusura: new Date().toISOString().slice(0, 10) };
-    const { error } = await aggiornaFase(fase.id, modifiche);
-    if (!error) {
-      await carica();
-      onAggiornato && onAggiornato();
-    }
-    setAzioneInCorso(false);
-  }
-
   return (
     <div style={{ display: "grid", gap: 18 }}>
       {/* Intestazione pratica */}
-      <div
-        style={{
-          background: C.white,
-          border: `1px solid ${C.line}`,
-          borderRadius: 14,
-          padding: "22px 24px",
-        }}
-      >
+      <div style={riquadro}>
         <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
             <div style={{ fontSize: 12, color: C.grafite, fontWeight: 600 }}>
@@ -73,105 +73,337 @@ export default function DettaglioPratica({ praticaId, onAggiornato }) {
               {pratica.titolo || "Progetto"} · {pratica.organizzazione?.tipo || ""}
             </div>
           </div>
-          <Badge bg={st.bg} fg={st.fg}>{st.label}</Badge>
+          <div style={{ textAlign: "right" }}>
+            <Badge bg={st.bg} fg={st.fg}>{st.label}</Badge>
+          </div>
         </div>
+        {pratica.stato !== "attiva" && pratica.motivazione_stato && (
+          <div style={{ fontSize: 12.5, color: C.grafite, marginTop: 10 }}>
+            Motivazione: {pratica.motivazione_stato}
+          </div>
+        )}
+        {staff && <CambioStato pratica={pratica} onFatto={dopoAzione} />}
       </div>
 
       {/* Le 7 fasi */}
       <div style={{ display: "grid", gap: 10 }}>
-        {fasi.map((f) => {
-          const sf = STATI_FASE[f.stato] || STATI_FASE.non_iniziata;
-          const resp = f.responsabile || "";
-          return (
-            <div
-              key={f.id}
-              style={{
-                background: C.white,
-                border: `1px solid ${f.stato === "in_corso" ? C.green : C.line}`,
-                borderRadius: 12,
-                padding: "14px 18px",
-                display: "flex",
-                gap: 16,
-                alignItems: "flex-start",
-              }}
-            >
-              <div style={{ minWidth: 48, textAlign: "center" }}>
-                <div style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: 18, color: f.stato === "completata" ? C.green : C.ink }}>
-                  {f.numero}
-                </div>
-                <div style={{ fontSize: 10, color: C.grafite, fontWeight: 600 }}>FASE</div>
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                  <span style={{ fontWeight: 700, fontSize: 14 }}>{f.nome}</span>
-                  <Badge bg={sf.bg} fg={sf.fg}>{sf.label}</Badge>
-                </div>
-                {resp && (
-                  <div style={{ fontSize: 11.5, color: C.grafite, marginTop: 5 }}>
-                    Responsabile: {resp}
-                  </div>
-                )}
-                {/* Azioni staff */}
-                {staff && (
-                  <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-                    {f.stato === "non_iniziata" && (
-                      <button onClick={() => cambiaFase(f, "in_corso")} disabled={azioneInCorso} style={btnPrimario}>
-                        Apri fase
-                      </button>
-                    )}
-                    {f.stato === "in_corso" && (
-                      <button onClick={() => cambiaFase(f, "completata")} disabled={azioneInCorso} style={btnPrimario}>
-                        Chiudi fase
-                      </button>
-                    )}
-                    {f.stato === "completata" && (
-                      <span style={{ fontSize: 12, color: C.green, fontWeight: 600 }}>
-                        ✓ Completata {f.data_effettiva_chiusura ? `il ${f.data_effettiva_chiusura}` : ""}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {/* Documenti della fase */}
-                <Documenti praticaId={pratica.id} fase={f} compatto />
-              </div>
-            </div>
-          );
-        })}
+        {fasi.map((f) => (
+          <Fase
+            key={f.id}
+            fase={f}
+            pratica={pratica}
+            staff={staff}
+            richieste={integrazioni.filter((r) => r.fase_id === f.id)}
+            versione={versione}
+            onCambio={dopoAzione}
+          />
+        ))}
       </div>
 
       {/* Consultazione pubblica (fase 3) */}
       <Consultazione praticaId={pratica.id} />
 
       {/* Documenti generali della pratica (contratto, amministrativi) */}
-      <Documenti praticaId={pratica.id} />
+      <Documenti key={`gen-${versione}`} praticaId={pratica.id} />
+    </div>
+  );
+}
+
+/* Una fase: stato, date, azioni dello staff, integrazioni, documenti. */
+function Fase({ fase: f, pratica, staff, richieste, versione, onCambio }) {
+  const [form, setForm] = useState(null); // null | "integrazione" | "scadenza" | "chiusura"
+  const [testo, setTesto] = useState("");
+  const [data, setData] = useState(f.data_prevista_chiusura || "");
+  const [errore, setErrore] = useState("");
+  const [inCorso, setInCorso] = useState(false);
+
+  const sf = STATI_FASE[f.stato] || STATI_FASE.non_iniziata;
+  const aperta = f.stato === "in_corso" || f.stato === "in_attesa_integrazione";
+  const attiva = pratica.stato === "attiva";
+  const integrAperte = richieste.filter((r) => !r.risolta).length;
+  const residui = aperta ? giorniA(f.data_prevista_chiusura) : null;
+
+  function apriForm(tipo) {
+    setErrore("");
+    setTesto("");
+    setData(f.data_prevista_chiusura || "");
+    setForm(tipo);
+  }
+
+  async function esegui(azione) {
+    setErrore("");
+    setInCorso(true);
+    const { error } = await azione();
+    setInCorso(false);
+    if (error) {
+      setErrore(error.message);
+      return;
+    }
+    setForm(null);
+    onCambio();
+  }
+
+  function chiudi() {
+    // Con integrazioni aperte la chiusura è un'eccezione: chiede la motivazione.
+    if (integrAperte > 0 && form !== "chiusura") {
+      apriForm("chiusura");
+      return;
+    }
+    esegui(() => chiudiFase(f.id, form === "chiusura" ? testo : null));
+  }
+
+  return (
+    <div
+      style={{
+        background: C.white,
+        border: `1px solid ${aperta ? C.green : C.line}`,
+        borderRadius: 12,
+        padding: "14px 18px",
+        display: "flex",
+        gap: 16,
+        alignItems: "flex-start",
+      }}
+    >
+      <div style={{ minWidth: 48, textAlign: "center" }}>
+        <div style={{ fontFamily: "'Archivo'", fontWeight: 800, fontSize: 18, color: f.stato === "completata" ? C.green : C.ink }}>
+          {f.numero}
+        </div>
+        <div style={{ fontSize: 10, color: C.grafite, fontWeight: 600 }}>FASE</div>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontWeight: 700, fontSize: 14 }}>{f.nome}</span>
+          <Badge bg={sf.bg} fg={sf.fg}>{sf.label}</Badge>
+          {residui != null && (
+            <span style={{ fontSize: 12, fontWeight: 600, color: residui < 0 ? C.red : residui <= 3 ? C.amber : C.grafite }}>
+              {residui < 0 ? `scaduta da ${-residui} gg` : residui === 0 ? "scade oggi" : `${residui} gg alla scadenza`}
+            </span>
+          )}
+        </div>
+
+        {/* Date */}
+        <div style={{ fontSize: 11.5, color: C.grafite, marginTop: 5, display: "flex", gap: 12, flexWrap: "wrap" }}>
+          {f.responsabile && <span>Responsabile: {f.responsabile}</span>}
+          {f.data_apertura && <span>Aperta il {formatoData(f.data_apertura)}</span>}
+          {f.data_prevista_chiusura && f.stato !== "completata" && (
+            <span>Scadenza {formatoData(f.data_prevista_chiusura)}</span>
+          )}
+          {f.data_effettiva_chiusura && <span>Chiusa il {formatoData(f.data_effettiva_chiusura)}</span>}
+        </div>
+
+        {/* Azioni staff */}
+        {staff && attiva && (
+          <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+            {f.stato === "non_iniziata" && (
+              <button onClick={() => esegui(() => apriFase(f.id))} disabled={inCorso} style={btnPrimario}>
+                Apri fase
+              </button>
+            )}
+            {aperta && (
+              <>
+                <button onClick={chiudi} disabled={inCorso} style={btnPrimario}>Chiudi fase</button>
+                <button onClick={() => apriForm("integrazione")} disabled={inCorso} style={btnMini}>
+                  Richiedi integrazione
+                </button>
+                <button onClick={() => apriForm("scadenza")} disabled={inCorso} style={btnMini}>
+                  Modifica scadenza
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Moduli inline delle azioni */}
+        {form && (
+          <div style={formBox}>
+            {form === "integrazione" && (
+              <>
+                <label style={lbl}>
+                  Cosa deve integrare il Cliente
+                  <textarea
+                    value={testo}
+                    onChange={(e) => setTesto(e.target.value)}
+                    rows={3}
+                    style={{ ...campo, resize: "vertical" }}
+                    placeholder="Es. manca la delibera tariffaria 2025 firmata"
+                  />
+                </label>
+                <Bottoni
+                  inCorso={inCorso}
+                  conferma="Invia richiesta"
+                  onConferma={() => esegui(() => richiediIntegrazione(f.id, testo.trim()))}
+                  onAnnulla={() => setForm(null)}
+                />
+              </>
+            )}
+            {form === "scadenza" && (
+              <>
+                <label style={lbl}>
+                  Nuova scadenza
+                  <input type="date" value={data} onChange={(e) => setData(e.target.value)} style={{ ...campo, maxWidth: 200 }} />
+                </label>
+                <label style={lbl}>
+                  Motivazione (obbligatoria)
+                  <input value={testo} onChange={(e) => setTesto(e.target.value)} style={campo} placeholder="Es. proroga concordata con il Comune" />
+                </label>
+                <Bottoni
+                  inCorso={inCorso}
+                  conferma="Salva scadenza"
+                  onConferma={() => esegui(() => modificaScadenzaFase(f.id, data || null, testo.trim()))}
+                  onAnnulla={() => setForm(null)}
+                />
+              </>
+            )}
+            {form === "chiusura" && (
+              <>
+                <div style={{ fontSize: 12.5, color: C.ocra, marginBottom: 8 }}>
+                  Ci sono {integrAperte} richieste di integrazione ancora aperte: chiudendo la fase il Cliente non potrà più integrare.
+                </div>
+                <label style={lbl}>
+                  Motivazione (obbligatoria)
+                  <input value={testo} onChange={(e) => setTesto(e.target.value)} style={campo} />
+                </label>
+                <Bottoni inCorso={inCorso} conferma="Chiudi comunque" onConferma={chiudi} onAnnulla={() => setForm(null)} />
+              </>
+            )}
+          </div>
+        )}
+        {errore && <div style={{ color: C.red, fontSize: 12.5, marginTop: 8 }}>{errore}</div>}
+
+        <Integrazioni pratica={pratica} fase={f} richieste={richieste} onCambio={onCambio} />
+
+        {/* Documenti della fase */}
+        <Documenti key={`${f.id}-${versione}`} praticaId={pratica.id} fase={f} compatto />
+      </div>
+    </div>
+  );
+}
+
+/* Cambio di stato della pratica con motivazione obbligatoria. */
+function CambioStato({ pratica, onFatto }) {
+  const [aperto, setAperto] = useState(false);
+  const [stato, setStato] = useState("");
+  const [motivazione, setMotivazione] = useState("");
+  const [errore, setErrore] = useState("");
+  const [inCorso, setInCorso] = useState(false);
+
+  if (pratica.stato === "annullata") return null;
+
+  const opzioni = {
+    attiva: ["sospesa", "annullata", "chiusa"],
+    sospesa: ["attiva", "annullata", "chiusa"],
+    chiusa: ["attiva"],
+  }[pratica.stato] || [];
+  const etichette = { attiva: "Riattiva", sospesa: "Sospendi", annullata: "Annulla", chiusa: "Chiudi pratica" };
+
+  async function conferma() {
+    setErrore("");
+    setInCorso(true);
+    const { error } = await cambiaStatoPratica(pratica.id, stato, motivazione.trim());
+    setInCorso(false);
+    if (error) setErrore(error.message);
+    else {
+      setAperto(false);
+      onFatto();
+    }
+  }
+
+  if (!aperto) {
+    return (
+      <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
+        {opzioni.map((o) => (
+          <button
+            key={o}
+            onClick={() => {
+              setStato(o);
+              setMotivazione("");
+              setErrore("");
+              setAperto(true);
+            }}
+            style={{ ...btnMini, color: o === "annullata" ? C.red : C.grafite }}
+          >
+            {etichette[o]}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div style={formBox}>
+      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
+        {etichette[stato]}: la pratica passerà a «{STATI_PRATICA[stato]?.label}»
+        {stato === "annullata" && <span style={{ color: C.red }}> — operazione definitiva</span>}
+      </div>
+      <label style={lbl}>
+        Motivazione (obbligatoria)
+        <input value={motivazione} onChange={(e) => setMotivazione(e.target.value)} style={campo} />
+      </label>
+      {errore && <div style={{ color: C.red, fontSize: 12.5, marginBottom: 8 }}>{errore}</div>}
+      <Bottoni inCorso={inCorso} conferma="Conferma" onConferma={conferma} onAnnulla={() => setAperto(false)} />
+    </div>
+  );
+}
+
+function Bottoni({ inCorso, conferma, onConferma, onAnnulla }) {
+  return (
+    <div style={{ display: "flex", gap: 8 }}>
+      <button onClick={onConferma} disabled={inCorso} style={btnPrimario}>
+        {inCorso ? "…" : conferma}
+      </button>
+      <button onClick={onAnnulla} style={btnMini}>Annulla</button>
     </div>
   );
 }
 
 function Pannello({ children }) {
   return (
-    <div
-      style={{
-        background: C.white,
-        border: `1px solid ${C.line}`,
-        borderRadius: 14,
-        padding: "40px 28px",
-        textAlign: "center",
-        color: C.grafite,
-      }}
-    >
+    <div style={{ ...riquadro, padding: "40px 28px", textAlign: "center", color: C.grafite }}>
       {children}
     </div>
   );
 }
 
+const riquadro = {
+  background: C.white,
+  border: `1px solid ${C.line}`,
+  borderRadius: 14,
+  padding: "22px 24px",
+};
+const formBox = {
+  marginTop: 12,
+  padding: 12,
+  background: C.paper,
+  border: `1px solid ${C.line}`,
+  borderRadius: 10,
+};
+const lbl = { display: "grid", gap: 4, fontSize: 12, color: C.grafite, fontWeight: 600, marginBottom: 10 };
+const campo = {
+  width: "100%",
+  boxSizing: "border-box",
+  padding: "8px 10px",
+  border: `1px solid ${C.line}`,
+  borderRadius: 8,
+  fontSize: 13,
+  fontFamily: "'Inter', sans-serif",
+  background: C.white,
+};
 const btnPrimario = {
   background: C.green,
   color: C.white,
   border: "none",
   borderRadius: 8,
   padding: "8px 14px",
+  fontSize: 12.5,
+  fontWeight: 600,
+  cursor: "pointer",
+};
+const btnMini = {
+  background: C.white,
+  color: C.grafite,
+  border: `1px solid ${C.line}`,
+  borderRadius: 8,
+  padding: "7px 12px",
   fontSize: 12.5,
   fontWeight: 600,
   cursor: "pointer",

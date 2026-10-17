@@ -70,6 +70,67 @@ export async function creaPratica(dati) {
   return { data: pratica, error: null };
 }
 
+// ---- Azioni del back-office (funzioni del database, script 08) ----
+// Ogni azione critica richiede una motivazione, registrata nell'audit.
+
+// Apre una fase: data di apertura oggi, scadenza calcolata dai giorni del Programma.
+export async function apriFase(faseId) {
+  return await supabase.rpc("staff_apri_fase", { p_fase: faseId });
+}
+
+// Chiude una fase. La motivazione è obbligatoria solo se restano integrazioni aperte.
+export async function chiudiFase(faseId, motivazione = null) {
+  return await supabase.rpc("staff_chiudi_fase", { p_fase: faseId, p_motivazione: motivazione });
+}
+
+export async function modificaScadenzaFase(faseId, data, motivazione) {
+  return await supabase.rpc("staff_modifica_scadenza", {
+    p_fase: faseId,
+    p_data: data,
+    p_motivazione: motivazione,
+  });
+}
+
+export async function cambiaStatoPratica(praticaId, stato, motivazione) {
+  return await supabase.rpc("staff_cambia_stato_pratica", {
+    p_pratica: praticaId,
+    p_stato: stato,
+    p_motivazione: motivazione,
+  });
+}
+
+// ---- Richieste di integrazione ----
+
+export async function elencaIntegrazioni(praticaId) {
+  return await supabase
+    .from("richiesta_integrazione")
+    .select("*, documento:documento_risposta_id (id, nome, versione, storage_path)")
+    .eq("pratica_id", praticaId)
+    .order("creato_il", { ascending: true });
+}
+
+export async function richiediIntegrazione(faseId, descrizione) {
+  return await supabase.rpc("staff_richiedi_integrazione", {
+    p_fase: faseId,
+    p_descrizione: descrizione,
+  });
+}
+
+export async function rispondiIntegrazione(richiestaId, documentoId, nota = null) {
+  return await supabase.rpc("cliente_rispondi_integrazione", {
+    p_richiesta: richiestaId,
+    p_documento: documentoId,
+    p_nota: nota,
+  });
+}
+
+export async function chiudiIntegrazione(richiestaId, motivazione = null) {
+  return await supabase.rpc("staff_chiudi_integrazione", {
+    p_richiesta: richiestaId,
+    p_motivazione: motivazione,
+  });
+}
+
 // Aggiorna lo stato di una fase (es. apertura/chiusura).
 export async function aggiornaFase(faseId, modifiche) {
   return await supabase.from("fase").update(modifiche).eq("id", faseId).select().single();
@@ -151,7 +212,15 @@ export async function caricaDocumento({
     .select()
     .single();
 
-  return { data, error };
+  return { data, error: traduciErrore(error) };
+}
+
+// Messaggio comprensibile per i rifiuti delle regole di sicurezza.
+function traduciErrore(error) {
+  if (error && /row-level security/i.test(error.message || "")) {
+    return { ...error, message: "operazione non consentita (la pratica potrebbe essere sospesa, annullata o chiusa)" };
+  }
+  return error;
 }
 
 // Ottiene un URL temporaneo per scaricare un documento.
