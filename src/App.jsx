@@ -4,6 +4,7 @@ import { useAuth } from "./lib/AuthContext.jsx";
 import Login from "./pages/Login.jsx";
 import BackOffice from "./pages/BackOffice.jsx";
 import AreaCliente from "./pages/AreaCliente.jsx";
+import GestioneUtenti from "./pages/GestioneUtenti.jsx";
 import { COLORI as C } from "./lib/cwpProgram.js";
 
 // Schermata di caricamento mentre si verifica la sessione.
@@ -46,6 +47,14 @@ export default function App() {
         element={
           <Protetta>
             <HomePerRuolo />
+          </Protetta>
+        }
+      />
+      <Route
+        path="/utenti"
+        element={
+          <Protetta>
+            <GestioneUtenti />
           </Protetta>
         }
       />

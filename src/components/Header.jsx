@@ -1,4 +1,5 @@
 import React from "react";
+import { Link, useLocation } from "react-router-dom";
 import { COLORI as C, RUOLI } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 
@@ -6,6 +7,7 @@ import { useAuth } from "../lib/AuthContext.jsx";
 export default function Header() {
   const { utente, ruolo, esci, backendPronto } = useAuth();
   const r = ruolo ? RUOLI[ruolo] : null;
+  const location = useLocation();
 
   return (
     <header
@@ -38,6 +40,39 @@ export default function Header() {
       {/* Utente ed esci */}
       {backendPronto && utente && (
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {/* Navigazione admin */}
+          {ruolo === "admin" && (
+            <nav style={{ display: "flex", gap: 4, marginRight: 4 }}>
+              <Link
+                to="/"
+                style={{
+                  textDecoration: "none",
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  color: location.pathname === "/" ? C.green : C.grafite,
+                  padding: "6px 10px",
+                  borderRadius: 7,
+                  background: location.pathname === "/" ? C.greenSoft : "transparent",
+                }}
+              >
+                Pratiche
+              </Link>
+              <Link
+                to="/utenti"
+                style={{
+                  textDecoration: "none",
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  color: location.pathname === "/utenti" ? C.green : C.grafite,
+                  padding: "6px 10px",
+                  borderRadius: 7,
+                  background: location.pathname === "/utenti" ? C.greenSoft : "transparent",
+                }}
+              >
+                Utenti
+              </Link>
+            </nav>
+          )}
           {r && (
             <span
               style={{

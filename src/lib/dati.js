@@ -254,6 +254,34 @@ export async function rispondiCommento(id, risposta) {
     .eq("id", id);
 }
 
+// ---- Gestione utenti (Admin) ----
+
+// Elenco utenti con email, ruolo, organizzazione (funzione lato database).
+export async function elencaUtenti() {
+  return await supabase.rpc("admin_elenco_utenti");
+}
+
+// Aggiorna ruolo e organizzazione di un utente.
+export async function aggiornaUtente(utenteId, ruolo, organizzazioneId) {
+  return await supabase.rpc("admin_aggiorna_utente", {
+    p_utente: utenteId,
+    p_ruolo: ruolo,
+    p_organizzazione: organizzazioneId,
+  });
+}
+
+// Invita un nuovo utente (via Edge Function).
+export async function invitaUtente({ email, ruolo, organizzazioneId, nomeCompleto }) {
+  return await supabase.functions.invoke("invita-utente", {
+    body: {
+      email,
+      ruolo,
+      organizzazione_id: organizzazioneId,
+      nome_completo: nomeCompleto,
+    },
+  });
+}
+
 // ---- Audit ----
 export async function registraAudit(evento) {
   return await supabase.from("audit_event").insert(evento);
