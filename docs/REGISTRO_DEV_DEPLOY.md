@@ -428,6 +428,18 @@ commentatori esterni).
 **Chiusura**: 19. collaudo completo e pulizia dati di test (comprese le
 notifiche "Email di prova") · 20. decisioni A e B.
 
+**Rifiniture emerse dalla stesura del Manuale Utente (18/10)**:
+22. **Recupero e cambio password** per gli utenti (oggi assenti: la
+password la riassegna la Fondazione) — priorità alta;
+23. dopo l'accesso da un link email, riportare l'utente alla pratica del
+link (oggi va alla pagina iniziale);
+24. pratica non attiva: spiegare perché i pulsanti di risposta alle
+integrazioni non compaiono e nascondere "+ Carica";
+25. date della consultazione in formato gg/mm/aaaa (oggi aaaa-mm-gg);
+26. canale di messaggi tra Comune e Fondazione nella pratica (oggi solo la
+nota delle integrazioni);
+27. valutare se mostrare ai Comuni le voci di pagamento (oggi solo staff).
+
 **Da rifinire**: 21. **Agente AI (Claude) integrato nel portale** —
 richiesto da Luca il 18/10. Ambito da definire; usi possibili: assistente
 per gli utenti dei Comuni (come compilare, cosa manca nella pratica),
