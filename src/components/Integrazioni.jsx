@@ -8,6 +8,7 @@ import {
   chiudiIntegrazione,
   urlDocumento,
 } from "../lib/dati.js";
+import { ACCEPT, FORMATI_LEGGIBILI } from "../lib/file.js";
 import { formatoData } from "../lib/date.js";
 
 /* Richieste di integrazione di una fase (requisiti §4).
@@ -137,8 +138,9 @@ function Richiesta({ richiesta: r, pratica, fase, staff, puoRispondere, onCambio
           />
           <label style={{ ...btnPrimario, opacity: inCorso ? 0.6 : 1 }}>
             {inCorso ? "Caricamento…" : r.documento_risposta_id ? "Carica di nuovo" : "Carica integrazione"}
-            <input ref={inputRef} type="file" onChange={onFile} disabled={inCorso} style={{ display: "none" }} />
+            <input ref={inputRef} type="file" accept={ACCEPT} onChange={onFile} disabled={inCorso} style={{ display: "none" }} />
           </label>
+          <div style={{ fontSize: 11.5, color: C.grafite, width: "100%" }}>Formati accettati: {FORMATI_LEGGIBILI}</div>
         </div>
       )}
       {!staff && !r.risolta && fase.stato === "completata" && (

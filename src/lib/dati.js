@@ -4,6 +4,7 @@
    ========================================================================= */
 import { supabase } from "./supabase.js";
 import { FASI } from "./cwpProgram.js";
+import { verificaFile, traduciErroreArchivio } from "./file.js";
 
 // ---- Organizzazioni ----
 export async function elencaOrganizzazioni() {
@@ -185,12 +186,16 @@ export async function caricaDocumento({
 }) {
   const nome = nomeLogico || file.name;
 
+  // Dimensione, formato e contenuto reale del file (requisiti §13).
+  const verifica = await verificaFile(file);
+  if (!verifica.ok) return { data: null, error: { message: verifica.errore } };
+
   // Carica il file nello storage (percorso che inizia con l'id pratica).
-  const storagePath = `${praticaId}/${Date.now()}-${file.name}`;
+  const storagePath = `${praticaId}/${Date.now()}-${verifica.nomeSicuro}`;
   const { error: errUpload } = await supabase.storage
     .from("documenti")
-    .upload(storagePath, file, { upsert: false });
-  if (errUpload) return { data: null, error: errUpload };
+    .upload(storagePath, file, { upsert: false, contentType: verifica.mime });
+  if (errUpload) return { data: null, error: { message: traduciErroreArchivio(errUpload) } };
 
   const hash = await hashFile(file);
 
@@ -211,6 +216,10 @@ export async function caricaDocumento({
     })
     .select()
     .single();
+
+  // Registrazione rifiutata: il file appena caricato non resta orfano
+  // (riesce allo staff; per il Cliente l'archivio non consente cancellazioni).
+  if (error) await supabase.storage.from("documenti").remove([storagePath]).catch(() => {});
 
   return { data, error: traduciErrore(error) };
 }

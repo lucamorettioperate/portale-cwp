@@ -8,6 +8,7 @@ import {
   urlDocumento,
   aggiornaVisibilitaDocumento,
 } from "../lib/dati.js";
+import { ACCEPT, FORMATI_LEGGIBILI } from "../lib/file.js";
 
 /* Gestione documentale: elenco versionato e upload.
    - fase: se passata, i documenti sono filtrati e legati a quella fase
@@ -124,6 +125,7 @@ export default function Documenti({ praticaId, fase = null, compatto = false }) 
           <input
             ref={inputRef}
             type="file"
+            accept={ACCEPT}
             onChange={onFile}
             disabled={inUpload}
             style={{ display: "none" }}
@@ -131,6 +133,8 @@ export default function Documenti({ praticaId, fase = null, compatto = false }) 
         </label>
         )}
       </div>
+
+      <div style={{ fontSize: 11.5, color: C.grafite, margin: "-6px 0 10px" }}>Formati accettati: {FORMATI_LEGGIBILI}</div>
 
       {/* Opzioni dello staff prima di scegliere il file */}
       {staff && opzioni && (
