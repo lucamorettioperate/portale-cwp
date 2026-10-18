@@ -177,7 +177,7 @@
     {
       "rev": "1.9",
       "data": "18/10/2026",
-      "descrizione": "Script 20 (rinforzi di integrità, ora italiana nel database), funzioni crea-utente e consultazione-pubblica ripubblicate, punto 33 quasi completato.",
+      "descrizione": "Script 20 (rinforzi di integrità, ora italiana nel database), funzioni crea-utente e consultazione-pubblica ripubblicate, punto 33 completato; decisione sull'audit.",
       "autore": "Fondazione Operate"
     }
   ]

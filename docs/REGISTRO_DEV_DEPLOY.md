@@ -430,7 +430,8 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   quelle usate nel calcolo e la nuova versione si crea nel database in
   un'unica operazione; (5) chi ha una password temporanea non vede né
   scrive dati finché non la cambia (prima lo imponeva solo l'interfaccia).
-  Rimossi i componenti del prototipo non usati. Il limite di 10 Rapporti
+  Rimossi i componenti del prototipo non usati. Decisione di Luca: l'audit
+  resta leggibile da tutto lo staff. Il limite di 10 Rapporti
   era già garantito dal database (segnalazione del 18/10 errata).
   Effetto pratico: i calcoli in bozza calcolati prima di oggi vanno
   ricalcolati («Calcola») prima della conferma.
@@ -723,6 +724,7 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 - 18/10 — **D**: chi commenta dall'esterno conferma la propria email; nome ed
   email li vede solo lo staff; il nome è pubblicato solo se l'autore lo sceglie.
 - 18/10 — Pagamenti visibili al Comune in sola lettura.
+- 18/10 — Audit: resta leggibile dal database da tutto lo staff (serve alla cronologia nel fascicolo esportato dagli Operatori); la pagina Audit resta solo per gli Amministratori.
 
 **Aperte**
 - Scelte interpretative del calcolo crediti (soprattutto il segno del riuso,
@@ -798,7 +800,7 @@ completato (va barrato qui e annotato in Cronologia).
 - ~~**31.** Codice sorgente commentato per sviluppatori umani~~ — fatto il 18/10: ogni file (portale, script SQL, Edge Functions, prove, strumenti) ha in testa lo scopo e il collegamento al capitolo del registro, e commenti in italiano su funzioni, regole di sicurezza e passaggi non ovvi. **Regola permanente:** vale anche per tutto il codice nuovo o modificato.
 - **32.** Manuale Test (test-user): guida sintetica per i collaudatori, riservata agli Amministratori, da aggiornare a ogni rilascio insieme a registro, Manuale Utente e Manuale Amministratore.
 
-- **33.** Pulizia e rinforzi emersi dalla revisione del codice del 18/10 — in gran parte fatto il 18/10 (script 20):
+- ~~**33.** Pulizia e rinforzi emersi dalla revisione del codice del 18/10~~ — fatto il 18/10 (script 20):
     - ~~creazione del Progetto e delle sue 7 fasi in un'unica funzione del database~~ — fatto (`staff_crea_pratica`);
     - ~~import della Banca Dati Utenze~~ — resta a blocchi (una sola chiamata non regge centinaia di migliaia di righe), ma un salvataggio a metà non si può più confermare: fatto;
     - ~~password temporanee: allineare `crea-utente` alla regola dei 10 caratteri con lettere e numeri~~ — fatto;
@@ -807,7 +809,7 @@ completato (va barrato qui e annotato in Cronologia).
     - ~~data della consultazione in ora italiana~~ — fatto (tutto il database in ora italiana);
     - ~~limite di 10 Rapporti di Monitoraggio nel database~~ — era già garantito (vincolo e indice dello script 01);
     - ~~componenti del prototipo, stile `avviso`, `datiEsempio.js`, `etichetta()` non usati~~ — eliminati;
-    - **da decidere (Luca):** il registro di audit è leggibile dal database da tutto lo staff (serve all'export del fascicolo degli Operatori), mentre la pagina Audit è solo Admin: lasciarlo così o limitarlo agli Amministratori (in quel caso il fascicolo esportato da un Operatore non conterrebbe più la cronologia).
+    - ~~audit leggibile da tutto lo staff~~ — decisione di Luca del 18/10: resta così (capitolo Decisioni).
 
 **Da rifinire**
 
