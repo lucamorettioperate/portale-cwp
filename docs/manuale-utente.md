@@ -8,22 +8,26 @@
 
 ## Introduzione
 
-Il portale Carbon WastePrint è lo strumento con cui il vostro ente segue, insieme a Fondazione Operate, la partecipazione al Programma Carbon WastePrint®: dall'adesione del Progetto fino alle verifiche e ai Rapporti di Monitoraggio annuali.
+Il portale Carbon WastePrint è lo strumento con cui il vostro ente segue, insieme a Fondazione Operate, la partecipazione al Programma Carbon WastePrint®: dall'adesione del Progetto fino alle verifiche, ai Rapporti di Monitoraggio annuali e ai crediti emessi.
 
 Nel portale potete:
 
-- vedere in che fase si trova ogni vostra pratica e le relative scadenze;
+- vedere in che fase si trova ogni vostra pratica, le relative scadenze e lo stato nel Programma;
 - caricare i documenti richiesti e scaricare quelli messi a disposizione dalla Fondazione;
 - rispondere alle richieste di integrazione;
-- rispondere ai commenti ricevuti durante la consultazione pubblica;
+- rispondere alle osservazioni ricevute durante il feedback pubblico;
 - scrivere alla Fondazione nella sezione Messaggi di ogni pratica;
 - vedere le voci di pagamento e scaricare i modelli di documento;
+- vedere i crediti emessi dai vostri Rapporti di Monitoraggio;
+- inviare reclami e richieste di chiarimento;
 - ricevere notifiche nel portale e per email;
 - scaricare il tracciato per inviare i dati utili al calcolo dei crediti.
 
 **Cosa serve:** un computer o tablet con un browser aggiornato (Chrome, Edge, Firefox, Safari) e le credenziali fornite dalla Fondazione. Indirizzo del portale: [portale-cwp.vercel.app](https://portale-cwp.vercel.app).
 
-**Chi è l'utente:** in questo manuale «utente» è il referente del Comune, dell'ente o del soggetto gestore (nel portale: ruolo *Cliente / Organizzazione*). Un utente può seguire più organizzazioni, ad esempio un delegato di più Comuni, e un'organizzazione può avere più utenti.
+**Chi è l'utente:** in questo manuale «utente» è il referente del Comune, dell'ente o del soggetto gestore (nel portale: ruolo *Cliente / Organizzazione*). Nel linguaggio del Programma il vostro ente è il **promotore del progetto**; Fondazione Operate è il **promotore del programma**.
+
+**Un solo account per Organizzazione.** Ogni Organizzazione ha un solo account attivo: quello del rappresentante autorizzato. L'Organizzazione può indicare fino a 2 delegati con il Modulo di delega di rappresentanza: il primo è il rappresentante con l'account, il secondo è un sostituto senza account. Per cambiare rappresentante chiedete alla Fondazione: disattiva l'account attuale e ne crea uno nuovo. Un utente può invece seguire più organizzazioni, ad esempio un delegato di più Comuni.
 
 ## Primo accesso
 
@@ -37,7 +41,16 @@ Le credenziali (email e password temporanea) vi vengono fornite da Fondazione Op
 
 **Regole per la password:** almeno 10 caratteri, con almeno una lettera e un numero, senza il vostro indirizzo email. Usate una password che non adoperate per altri servizi.
 
-In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato dati**, **Manuale**), la campanella delle notifiche, l'indicazione *Cliente*, il vostro indirizzo email con il collegamento **Il mio profilo** e il pulsante **Esci** per uscire.
+In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato dati**, **Reclami**, **Il Programma**, **Manuale**), la campanella delle notifiche, l'indicazione *Cliente*, il vostro indirizzo email con il collegamento **Il mio profilo** e il pulsante **Esci** per uscire.
+
+| Voce del menu | Cosa trovate |
+| --- | --- |
+| Le mie pratiche | I vostri Progetti e Rapporti (capitolo 3) |
+| I tuoi documenti | I documenti generali di tutte le pratiche (capitolo 11) |
+| Formato dati | Il tracciato per i dati del calcolo dei crediti (capitolo 13) |
+| Reclami | Reclami e richieste di chiarimento (capitolo 14) |
+| Il Programma | La pagina pubblica del Programma (capitolo 15) |
+| Manuale | Questo manuale in PDF |
 
 | Messaggio | Cosa significa | Cosa fare |
 | --- | --- | --- |
@@ -68,27 +81,63 @@ Ogni riquadro mostra il titolo del progetto, lo stato e il codice della pratica 
 | Stato | Significato |
 | --- | --- |
 | Attiva | La pratica procede normalmente |
-| Sospesa | Temporaneamente ferma: non si possono caricare documenti |
+| Sospesa | Temporaneamente ferma: non si possono caricare documenti e non si emettono crediti |
 | Annullata | La pratica non prosegue |
 | Chiusa | Percorso concluso |
+| Ritirato | Solo per i Progetti: il Progetto è uscito dal Programma su richiesta dei promotori (capitolo 4) |
 
 Per aprire una pratica fate clic sul suo riquadro: il dettaglio compare sotto l'elenco, nella stessa pagina. All'apertura viene mostrata automaticamente la pratica più recente.
 
 Se non vedete pratiche compare il messaggio «Non risultano ancora pratiche a tuo carico»: la pratica appare quando la Fondazione registra il vostro progetto.
 
-In cima al dettaglio ci sono il codice, l'ente e lo stato. Se la pratica non è attiva è indicata anche la **Motivazione**. Il pulsante **Scarica documentazione** scarica in un unico file ZIP tutti i documenti della pratica (tutte le versioni), un riepilogo in PDF (Riepilogo.pdf) e i riepiloghi in formato CSV, comprese le osservazioni della consultazione con i loro allegati, le note condivise e i messaggi.
+**L'intestazione della pratica.** In cima al dettaglio trovate:
+
+- l'**ID progetto** (o **ID rapporto**), ad esempio «ID progetto: CWP-2026-0001». È il codice univoco assegnato dalla Fondazione: usatelo in ogni comunicazione;
+- il nome dell'ente e il titolo del progetto;
+- lo stato della pratica (tabella sopra);
+- lo stato **Nel Programma** (tabella sotto).
+
+Se la pratica non è attiva è indicata anche la **Motivazione**. Il pulsante **Scarica documentazione** scarica in un unico file ZIP tutti i documenti della pratica (tutte le versioni), un riepilogo in PDF (Riepilogo.pdf) e i riepiloghi in formato CSV, comprese le osservazioni del feedback pubblico con i loro allegati, le note condivise e i messaggi.
+
+**Lo stato nel Programma.** Accanto allo stato della pratica compare «Nel Programma: …», con i nomi usati dalla Guida al Programma. Si aggiorna da solo quando la Fondazione chiude le fasi.
+
+| Nel Programma | Quando |
+| --- | --- |
+| richiesta di registrazione | Fino alla fine della fase 2 (per il Rapporto: richiesta di registrazione del rapporto) |
+| in fase di validazione | Dopo la fase 2 |
+| in fase di verifica documentale | Dopo la fase 5 |
+| progetto registrato | Dopo la fase 6 (per il Rapporto: rapporto registrato e crediti registrati) |
+| progetto ritirato | Il Progetto è stato ritirato |
+| non registrato (pratica annullata) | La pratica è stata annullata |
+
+**I dati del progetto.** Sotto l'intestazione trovate i dati principali, inseriti dalla Fondazione:
+
+| Dato | Cosa indica |
+| --- | --- |
+| Territorio (codici ISTAT) | I Comuni del progetto, con il codice ISTAT di 6 cifre |
+| Co-promotori | Gli altri soggetti promotori del progetto, se ci sono |
+| Periodo di riferimento | 10 anni (una volta) oppure 7 anni rinnovabili 3 volte |
+| Popolazione residente | Gli abitanti del territorio |
+| Crediti previsti | Nel periodo, per il Progetto; nell'anno, per il Rapporto |
+| Registrato il | La data di registrazione: è il giorno in cui si chiude la fase 6. Nel Rapporto compare come «Crediti registrati il» |
+
+Ogni Comune (codice ISTAT) può far parte di un solo Progetto, se non è annullato o ritirato. Se un dato non è corretto, scrivete alla Fondazione nella sezione **Messaggi**.
 
 ## Seguire una pratica: fasi e scadenze
 
-Ogni Progetto attraversa 7 fasi (i Rapporti di Monitoraggio ne hanno 4, capitolo 9). Le apre e le chiude Fondazione Operate; voi vedete in ogni momento a che punto siete e quanto tempo resta.
+Ogni Progetto e ogni Rapporto di Monitoraggio attraversano 7 fasi. Le apre e le chiude Fondazione Operate; voi vedete in ogni momento a che punto siete e quanto tempo resta.
 
-1. **Adesione**
-2. **Prima verifica documentale**
-3. **Consultazione pubblica**
-4. **Risposta ai commenti / pubblicazione**
-5. **Validazione e verifica**
-6. **Seconda verifica documentale**
-7. **Chiusura**
+| Fase | Progetto | Giorni | Rapporto di Monitoraggio | Giorni | Responsabile |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Adesione** | 0 | **Registrazione del rapporto** | 0 | Promotore del progetto (il vostro ente) |
+| 2 | **Prima verifica documentale** | 10 | **Prima verifica documentale** | 10 | Promotore del programma (la Fondazione) |
+| 3 | **Feedback pubblico** | 30 | **Feedback pubblico** | 20 | Promotore del programma |
+| 4 | **Risposta ai commenti / pubblicazione** | 20 | **Risposta ai commenti** | 15 | Promotore del progetto |
+| 5 | **Validazione e verifica** | 75 | **Verifica del rapporto** | 60 | Ente di validazione e verifica |
+| 6 | **Seconda verifica documentale** | 15 | **Seconda verifica documentale** | 10 | Promotore del programma |
+| 7 | **Chiusura** | 0 | **Chiusura** | 0 | Promotore del programma |
+
+I giorni sono le durate standard: la Fondazione può modificarle. Fa sempre fede la scadenza mostrata nella fase.
 
 Ogni fase ha uno stato:
 
@@ -99,7 +148,7 @@ Ogni fase ha uno stato:
 | In attesa di integrazione | La Fondazione vi ha chiesto un documento o un chiarimento (capitolo 6) |
 | Completata | La fase è chiusa |
 
-La fase aperta ha il bordo verde e il conto alla rovescia: «N gg alla scadenza» (in arancione negli ultimi 3 giorni), «scade oggi» oppure «scaduta da N gg» in rosso. Sotto il nome trovate, quando presenti, il responsabile, la data di apertura, la scadenza e la data di chiusura.
+La fase aperta ha il bordo verde e il conto alla rovescia: «N gg alla scadenza» (in arancione negli ultimi 3 giorni), «scade oggi» oppure «scaduta da N gg» in rosso. Sotto il nome trovate, quando presenti, il **Responsabile** della fase, la data di apertura, la scadenza e la data di chiusura.
 
 Dentro ogni fase trovate, quando presenti:
 
@@ -109,9 +158,22 @@ Dentro ogni fase trovate, quando presenti:
 - i **Documenti richiesti**: l'elenco dei documenti attesi in quella fase, con **✓ presente** oppure **○ manca**;
 - i **Documenti della fase**.
 
-**Ente di Validazione.** Quando la Fondazione assegna l'Ente di Validazione al vostro Progetto, il suo nome compare nell'intestazione della pratica.
+**Documenti richiesti dalla Guida al Programma.** Di norma le fasi chiedono questi documenti. L'elenco può cambiare: fa fede quello mostrato nella fase.
 
-**Pratica sospesa, annullata o chiusa.** In alto compare un avviso: finché la pratica non torna attiva non si caricano documenti (il pulsante **+ Carica** non c'è) e non si risponde alle integrazioni. Potete sempre consultare tutto e scrivere alla Fondazione nella sezione **Messaggi**. Una pratica chiusa o annullata riporta la data fino a cui viene conservata (10 anni).
+| Fase | Progetto | Rapporto di Monitoraggio |
+| --- | --- | --- |
+| 1 | Modulo di descrizione del progetto | Modulo di descrizione del rapporto di monitoraggio |
+| 3 | Contratto con l'ente di validazione e verifica | Contratto con l'ente di validazione e verifica |
+| 4 | Documento di proprietà del progetto; Documento riassuntivo delle risultanze del periodo di feedback pubblico (anche se non ci sono state osservazioni) | Documento riassuntivo delle risultanze del periodo di feedback pubblico |
+| 5 | Rapporto di validazione | Rapporto di verifica; Dichiarazione relativa all'effettività della generazione dei crediti |
+
+**Verifica sull'accuratezza e accertamenti.** Nelle due verifiche documentali (fasi 2 e 6) la Fondazione può avviare una **verifica sull'accuratezza**, che aggiunge 15 giorni alla scadenza. Dopo può chiedere fino a 3 **ulteriori accertamenti**, di 10 giorni ciascuno. Ogni volta ricevete una notifica con la nuova scadenza. Nella fase compare la scritta «Verifica sull'accuratezza avviata · accertamenti: N di 3». Se dopo il terzo accertamento le revisioni non bastano, la richiesta non è accettata e si può ripresentare dopo 6 mesi.
+
+**Ente di validazione e verifica.** Quando la Fondazione assegna l'Ente di validazione e verifica al vostro Progetto, il suo nome compare nell'intestazione della pratica.
+
+**Pratica sospesa, annullata, chiusa o ritirata.** In alto compare un avviso: finché la pratica non torna attiva non si caricano documenti (il pulsante **+ Carica** non c'è) e non si risponde alle integrazioni. Potete sempre consultare tutto e scrivere alla Fondazione nella sezione **Messaggi**. La sospensione ferma anche l'emissione dei crediti: la Fondazione la usa, ad esempio, per un controllo di qualità. Una pratica chiusa, annullata o ritirata riporta la data «Da conservare fino al» (12 anni).
+
+**Ritiro e rientro del Progetto.** Un Progetto si ritira dal Programma con una lettera di tutti i promotori del progetto (nome, ID del progetto, motivo). La Fondazione lo registra e il Progetto passa a *Ritirato*. Il Progetto resta visibile sulla pagina pubblica, ma non emette più crediti e non può avere nuovi Rapporti. Per rientrare nel Programma serve una nuova lettera: la Fondazione registra il rientro e il Progetto torna *Attiva*. In entrambi i casi ricevete una notifica.
 
 ## Caricare documenti
 
@@ -130,7 +192,7 @@ I documenti si caricano in due punti della pratica: in **Documenti della fase**,
 
 **Scaricare.** Ogni documento ha il pulsante **Scarica**: il file si apre in una nuova scheda. Le etichette accanto al nome indicano la versione, se è *corrente*, la tipologia e se è *pubblico*.
 
-**Chi vede cosa.** I documenti che caricate sono visibili a voi e alla Fondazione, mai pubblici. La Fondazione può mettervi a disposizione altri documenti, anche pubblici.
+**Chi vede cosa.** I documenti che caricate sono visibili a voi e alla Fondazione, mai pubblici. La Fondazione può mettervi a disposizione altri documenti, anche pubblici: i documenti pubblici compaiono anche sulla pagina pubblica del Programma (capitolo 15). Il **Contratto con l'ente di validazione e verifica** e il **Modulo di descrizione del progetto – versione privata** non sono mai pubblici.
 
 | Messaggio | Cosa fare |
 | --- | --- |
@@ -152,17 +214,17 @@ Quando la Fondazione ha bisogno di un documento o di un chiarimento apre una **r
 
 Avete sbagliato file? Finché la richiesta non è chiusa potete premere **Carica di nuovo** e inviarne un altro.
 
-Quando la fase è chiusa compare la scritta «La fase è chiusa: non è più possibile integrare». Se la pratica è sospesa, annullata o chiusa, i pulsanti di risposta non compaiono: contattate la Fondazione.
+Quando la fase è chiusa compare la scritta «La fase è chiusa: non è più possibile integrare». Se la pratica è sospesa, annullata, chiusa o ritirata, i pulsanti di risposta non compaiono: contattate la Fondazione.
 
-## Consultazione pubblica
+## Feedback pubblico
 
-Nella fase 3 la Fondazione apre la consultazione pubblica sul vostro Progetto, di norma per 30 giorni: ricevete la notifica «Aperta la consultazione pubblica». Il riquadro **Consultazione pubblica** si trova nel dettaglio del Progetto e mostra il periodo e i giorni rimanenti.
+Nella fase 3 la Fondazione apre il **feedback pubblico**: per un periodo stabilito chiunque può leggere la documentazione e inviare osservazioni. Il periodo dura 30 giorni per il Progetto e 20 giorni per ogni Rapporto di Monitoraggio. All'apertura ricevete la notifica «Aperto il periodo di feedback pubblico». Il riquadro **Feedback pubblico** si trova nel dettaglio della pratica e mostra il periodo, i giorni rimanenti e il documento pubblicato.
 
-**Dove si partecipa.** La consultazione si svolge sulla pagina pubblica del portale **Consultazioni pubbliche** ([portale-cwp.vercel.app/consultazioni](https://portale-cwp.vercel.app/consultazioni)), raggiungibile senza credenziali anche dal link nella pagina di accesso. Chiunque può leggere il documento e inviare un'osservazione: per farla arrivare deve confermare il proprio indirizzo email con il collegamento che riceve. Il link alla pagina pubblica del vostro Progetto compare nel riquadro **Consultazione pubblica**: potete diffonderlo ai cittadini.
+**Dove si partecipa.** Il feedback pubblico si svolge sulla pagina pubblica del portale **Feedback pubblico** ([portale-cwp.vercel.app/consultazioni](https://portale-cwp.vercel.app/consultazioni)), raggiungibile senza credenziali anche dal link nella pagina di accesso. Chiunque può leggere il documento e inviare un'osservazione: per farla arrivare deve confermare il proprio indirizzo email con il collegamento che riceve. Il link alla pagina pubblica del vostro Progetto o Rapporto compare nel riquadro **Feedback pubblico**: potete diffonderlo ai cittadini.
 
 **Osservazioni.** La Fondazione modera le osservazioni: voi vedete solo quelle *Pubblicate* o già *Risposte*, con il numero (**Osservazione n. 3**), firmate *Partecipante* oppure con il nome, se l'autore ha scelto di pubblicarlo. Se un'osservazione ha un allegato compare il collegamento **Allegato**. Quando la Fondazione pubblica una nuova osservazione ricevete la notifica «Nuova osservazione a cui rispondere».
 
-**Errata corrige.** Se il documento in consultazione contiene un errore, la Fondazione pubblica un'**errata corrige** (con l'eventuale documento corretto) e ricevete la notifica. In alcuni casi la Fondazione può far ripartire i 30 giorni: la nuova data di chiusura compare nell'errata corrige.
+**Errata corrige.** Se il documento pubblicato contiene un errore, la Fondazione pubblica un'**errata corrige** (con l'eventuale documento corretto) e ricevete la notifica. In alcuni casi la Fondazione può far ripartire il periodo, con la stessa durata (30 giorni per il Progetto, 20 per il Rapporto): la nuova data di chiusura compare nell'errata corrige.
 
 **Rispondere a un'osservazione:**
 
@@ -170,7 +232,7 @@ Nella fase 3 la Fondazione apre la consultazione pubblica sul vostro Progetto, d
 2. Scrivete la risposta nel campo «Scrivi la risposta all'osservazione…».
 3. Premete **Salva risposta**. L'osservazione diventa *Risposto* e la risposta compare sotto il testo.
 
-Per correggere una risposta premete **Modifica risposta**. Si può rispondere anche dopo la chiusura della consultazione, durante la fase 4.
+Per correggere una risposta premete **Modifica risposta**. Si può rispondere anche dopo la chiusura del feedback pubblico, durante la fase 4. Nella fase 4 si carica anche il **Documento riassuntivo delle risultanze del periodo di feedback pubblico**, anche se non ci sono state osservazioni.
 
 Se volete inviare anche voi un'osservazione, usate la pagina pubblica come tutti i partecipanti.
 
@@ -185,29 +247,53 @@ I vostri messaggi compaiono a destra; quelli della Fondazione, firmati «Fondazi
 
 ## Rapporti di monitoraggio e pagamenti
 
-Ogni anno si presenta un **Rapporto di Monitoraggio**, fino a 10 per Progetto. Ogni Rapporto è una pratica a sé, con i suoi documenti e 4 fasi, senza consultazione pubblica; lo crea la Fondazione.
+Ogni anno si presenta un **Rapporto di Monitoraggio**. Il numero massimo dipende dal periodo di riferimento del Progetto:
 
-1. **Caricamento del rapporto** (già in corso quando il Rapporto nasce)
-2. **Verifica documentale**
-3. **Validazione e verifica**
-4. **Chiusura**
+| Periodo di riferimento | Rapporti al massimo |
+| --- | --- |
+| 10 anni (una volta) | 10 |
+| 7 anni rinnovabili 3 volte | 21 |
 
-1. Aprite il Progetto: in basso trovate **Rapporti di Monitoraggio (N/10)**.
+Ogni Rapporto è una pratica a sé, con i suoi documenti e le stesse 7 fasi del Progetto, compreso il feedback pubblico di 20 giorni (tabella del capitolo 4). Lo crea la Fondazione; la fase 1 *Registrazione del rapporto* è già in corso quando il Rapporto nasce. Un Progetto ritirato o annullato non può avere nuovi Rapporti.
+
+1. Aprite il Progetto: in basso trovate **Rapporti di Monitoraggio (N/10)** oppure **(N/21)**.
 2. Fate clic su un Rapporto («Anno N · codice») per aprirlo.
-3. Dentro il Rapporto lavorate come in un Progetto: fasi, documenti, integrazioni.
+3. Dentro il Rapporto lavorate come in un Progetto: fasi, documenti, integrazioni, feedback pubblico.
 4. Per tornare al Progetto premete **← Torna al Progetto**.
 
 Il codice del Rapporto è quello del Progetto con l'anno, ad esempio `CWP-2026-0001-RM1`.
 
-**Pagamenti.** In ogni pratica la sezione **Pagamenti** mostra le voci previste dalla Fondazione (ad esempio la quota di adesione) con importo, scadenza e stato: *Da pagare*, *Scaduto* o *Pagato*, con la data in cui la Fondazione ha registrato il pagamento. In alto trovate il riepilogo *Totale · pagato · da pagare*. La sezione è in sola lettura: i pagamenti si effettuano fuori dal portale, secondo le indicazioni della Fondazione, che poi li registra. Quando la Fondazione aggiunge una voce ricevete una notifica. Fatture e documenti amministrativi, quando caricati dalla Fondazione, si trovano in **I tuoi documenti**.
+**Pagamenti.** In ogni pratica la sezione **Pagamenti** mostra le voci previste dalla Fondazione con importo, scadenza e stato: *Da pagare*, *Scaduto* o *Pagato*, con la data in cui la Fondazione ha registrato il pagamento. Accanto a ogni voce è indicata la voce dello **Schema tariffario** del Programma: *Tariffa di iscrizione*, *Tariffa di registrazione*, *Emissione dei crediti* o *Vendita dei crediti*. In alto trovate il riepilogo *Totale · pagato · da pagare*. La sezione è in sola lettura: i pagamenti si effettuano fuori dal portale, secondo le indicazioni della Fondazione, che poi li registra. Quando la Fondazione aggiunge una voce ricevete una notifica. Fatture e documenti amministrativi, quando caricati dalla Fondazione, si trovano in **I tuoi documenti**.
+
+**Fatture scadute.** Se una voce è scaduta e non è stata pagata, le attività successive sono sospese: la Fondazione non può aprire nuove fasi finché il pagamento non viene registrato. Nel riquadro **Pagamenti** compare un avviso rosso. La **Tariffa di iscrizione** va saldata prima della fase 5 (validazione o verifica).
+
+## Crediti emessi
+
+Nel dettaglio di ogni Rapporto di Monitoraggio il riquadro **Crediti emessi** mostra i crediti di carbonio emessi per quel Rapporto. Il riquadro è in sola lettura.
+
+I crediti si emettono solo dopo la registrazione del Rapporto, cioè quando la fase 6 è completata. Prima compare la scritta «I crediti si emettono dopo la registrazione del Rapporto (seconda verifica documentale completata)». Non si emettono crediti se il Rapporto o il Progetto è sospeso, annullato o ritirato.
+
+Ogni emissione è un **lotto**. Per ogni lotto vedete:
+
+- il **codice del lotto**: il codice del Rapporto con L1, L2…, ad esempio `CWP-2026-0001-RM1-L1`;
+- il numero di crediti e la data di emissione;
+- gli **ID** dei crediti, «da … a …»: ogni credito ha un ID univoco, ad esempio `CWP-2026-0001-RM1-L1-000001`;
+- il **registro** su cui il lotto è caricato e da quale data;
+- lo stato: *da caricare sul registro*, *attivi N* (disponibili alla vendita), *ritirati M* (cancellati dopo la vendita).
+
+Sotto il lotto compaiono le eventuali **vendite**: data, numero di crediti, beneficiario, obiettivo di compensazione e ID. Accanto c'è «Ritirati: cancellazione tombale del …» oppure «In attesa della dichiarazione di cancellazione del registro».
+
+Quando la Fondazione emette un lotto ricevete la notifica «Crediti emessi». Le tariffe di emissione e di vendita compaiono nella sezione **Pagamenti** del Rapporto. I crediti emessi sono visibili anche sulla pagina pubblica del Programma (capitolo 15).
 
 ## I tuoi documenti
 
 La pagina **I tuoi documenti** (menu in alto) raccoglie in un solo posto i documenti generali di tutte le vostre pratiche, Progetti e Rapporti: contratto, allegati, documentazione amministrativa e così via. I documenti delle singole fasi restano dentro le fasi.
 
-- I documenti sono raggruppati per tipologia: Contratto, Allegato al contratto, Documentazione amministrativa, Documento di progetto, Rapporto dell'Ente di Validazione, Rapporto di calcolo dei crediti, Integrazione, Altro, Senza tipologia (dove finiscono i file caricati da voi).
+- I documenti sono raggruppati per tipologia, con i nomi ufficiali del Programma (elenco sotto). I file caricati da voi senza tipologia finiscono in *Senza tipologia*.
 - Per ogni documento vedete nome, versione, codice della pratica, ente e data, e il pulsante **Scarica**.
 - Di norma vedete solo la versione corrente. Per vedere anche le precedenti spuntate **Mostra anche le versioni precedenti**.
+
+**Tipologie di documento.** Modulo di descrizione del progetto; Modulo di descrizione del progetto – versione privata; Documento di proprietà del progetto; Contratto con l'ente di validazione e verifica; Documento riassuntivo delle risultanze del periodo di feedback pubblico; Rapporto di validazione; Modulo di descrizione del rapporto di monitoraggio; Rapporto di verifica; Dichiarazione relativa all'effettività della generazione dei crediti; Modulo di delega di rappresentanza; Modulo di adesione a un progetto; Modulo di recesso da un progetto; Richiesta di ritiro o di rientro del progetto; Prova di attività del progetto; Comunicazione di vendita dei crediti; Dichiarazione di cancellazione tombale dei crediti; Documentazione amministrativa; Rapporto di calcolo dei crediti; Integrazione; Altro. I documenti caricati prima con altre tipologie compaiono in fondo all'elenco.
 
 **Modelli da scaricare.** Se la Fondazione ha pubblicato modelli generali (moduli, fac-simile), li trovate in questa pagina con il pulsante **Scarica**. I modelli che riguardano una fase precisa compaiono invece dentro quella fase, nella pratica.
 
@@ -228,16 +314,22 @@ Il portale vi avvisa degli eventi delle vostre pratiche con la **campanella** in
 | --- | --- |
 | Aperta la fase «…» — scadenza … | La Fondazione apre una fase |
 | Completata la fase «…» | La Fondazione chiude una fase |
+| Avviata la verifica sull'accuratezza nella fase «…» — nuova scadenza … | La Fondazione avvia la verifica sull'accuratezza (fasi 2 e 6) |
+| Ulteriore accertamento (n. …) nella fase «…» — nuova scadenza … | La Fondazione chiede un ulteriore accertamento |
 | Nuova richiesta di integrazione | Vi viene chiesto un documento o un chiarimento |
 | Nuovo documento disponibile | La Fondazione carica un documento visibile a voi |
-| Aperta la consultazione pubblica — fino al … | Inizia la consultazione sul vostro Progetto |
+| Aperto il periodo di feedback pubblico — fino al … | Inizia il feedback pubblico sul vostro Progetto o Rapporto |
+| Nuova osservazione a cui rispondere | La Fondazione pubblica un'osservazione del feedback pubblico |
+| Errata corrige pubblicata nel feedback pubblico | La Fondazione corregge il documento pubblicato |
 | Scadenza vicina: «fase» (data) | Mancano 3 giorni o meno alla scadenza di una fase |
 | Fase scaduta: «fase» | La scadenza è passata |
 | Pratica sospesa, riattivata, annullata o chiusa | Cambia lo stato della pratica, con la motivazione |
+| Progetto ritirato dal Programma / Progetto rientrato nel Programma | La Fondazione registra il ritiro o il rientro del Progetto |
 | Nuovo messaggio dalla Fondazione | La Fondazione vi scrive nella sezione Messaggi |
 | Nuova nota della Fondazione | La Fondazione lascia una nota su una fase |
 | Nuova voce di pagamento | La Fondazione registra una voce di pagamento |
-| Errata corrige pubblicata in consultazione | La Fondazione corregge il documento in consultazione |
+| Crediti emessi: N (codice del lotto) | La Fondazione emette crediti per un vostro Rapporto |
+| Risposta a REC-… / CHI-… | La Fondazione risponde a un vostro reclamo o richiesta di chiarimento |
 
 Le email partono da un indirizzo automatico: non rispondete all'email, scrivete alla Fondazione nella sezione **Messaggi** della pratica.
 
@@ -266,18 +358,57 @@ I dati per il calcolo dei crediti si inviano con un unico modello Excel, il **Tr
 
 **File molto grandi.** Oltre 50 MB o oltre 1 milione di righe: salvate ogni foglio come file CSV con le stesse intestazioni (ad esempio `6_Letture.csv`), raccoglieteli in un archivio ZIP e caricate lo ZIP.
 
+## Reclami e richieste di chiarimento
+
+La voce **Reclami** del menu apre la pagina **Reclami e richieste di chiarimento**, secondo la Politica di reclamo del Programma. Potete scrivere in qualsiasi momento: ricevete una conferma e poi una risposta scritta. Qui si trattano soprattutto l'interpretazione delle regole e dei criteri del Programma. Per una questione con un ente di validazione e verifica o con un registro, rivolgetevi prima a loro.
+
+**Inviare un reclamo o una richiesta:**
+
+1. Nel riquadro **Nuovo invio** scegliete il **Tipo**: *Richiesta di chiarimento* oppure *Reclamo*.
+2. Se riguarda un vostro Progetto, sceglietelo in **Progetto (facoltativo)**.
+3. Scrivete l'**Oggetto** e i **Dettagli** (almeno 10 caratteri).
+4. Compilate **Dichiarazione di eventuali conflitti di interesse** (ad esempio «nessuno»).
+5. Premete **Invia**. Compare il codice assegnato: `CHI-AAAA-NNN` per le richieste di chiarimento, `REC-AAAA-NNN` per i reclami.
+
+Nel riquadro **I miei invii** trovate ogni invio con codice, oggetto, data e stato: *ricevuto*, *in esame*, *risposto* o *chiuso*. Quando arriva la risposta compare sotto l'invio, con la data, e ricevete la notifica «Risposta a …». Le spese per la gestione di un reclamo sono a carico di chi lo presenta, che ne viene informato; non si pagano se l'azione contestata viene annullata. Gli eventuali costi compaiono sotto l'invio.
+
+| Messaggio | Cosa fare |
+| --- | --- |
+| Indica l'oggetto. | Scrivete un oggetto di almeno 3 caratteri |
+| Descrivi la questione (almeno 10 caratteri). | Aggiungete più dettagli |
+
+Si può presentare un reclamo anche per iscritto alla PEC indicata nella pagina pubblica del Programma (capitolo 15).
+
+## La pagina pubblica del Programma
+
+La pagina **Il Programma** ([portale-cwp.vercel.app/programma](https://portale-cwp.vercel.app/programma)) è pubblica: chiunque la apre senza credenziali. Si raggiunge dalla voce **Il Programma** del menu, dal link nella pagina di accesso e dall'intestazione delle pagine pubbliche.
+
+La pagina contiene:
+
+- **Il Programma**: soggetto promotore del programma, PEC, email, sito ufficiale e il collegamento ai periodi di feedback pubblico aperti;
+- gli elenchi degli **Enti di validazione e verifica**, dei **Registri** e delle **Metodologie approvate**;
+- i **Documenti del Programma e modulistica**, da scaricare;
+- i **Progetti**, dal momento in cui sono *in fase di validazione*, anche quelli ritirati. Per ogni Progetto: ID, promotore, titolo e stato nel Programma. Con un clic si aprono gli altri promotori, il territorio (codici ISTAT), il periodo di riferimento, la data di registrazione, i documenti pubblici e i Rapporti di Monitoraggio con stato, documenti e crediti emessi (lotti con ID da … a …, registro, attivi e ritirati);
+- come presentare **reclami e richieste di chiarimento**.
+
+Anche il vostro Progetto compare qui da quando è in fase di validazione. Sono pubblicati solo i documenti pubblici: il Contratto con l'ente e la versione privata del Modulo di descrizione del progetto non lo sono mai.
+
 ## Domande frequenti
 
 **Ho dimenticato la password.** Usate **Password dimenticata?** nella pagina di accesso (capitolo 2). In alternativa Fondazione Operate può assegnarvi una password temporanea, che al primo accesso vi verrà chiesto di sostituire.
 
 **Non vedo la mia pratica.** La pratica compare quando la Fondazione registra il Progetto e lo collega alla vostra organizzazione. Se seguite più enti, controllate di essere stati associati a tutti.
 
-**Il caricamento non riesce.** Leggete il messaggio sotto il riquadro e consultate la tabella del capitolo 5. Se la pratica è sospesa, annullata o chiusa non si possono caricare documenti.
+**Il caricamento non riesce.** Leggete il messaggio sotto il riquadro e consultate la tabella del capitolo 5. Se la pratica è sospesa, annullata, chiusa o ritirata non si possono caricare documenti.
 
 **Ho caricato il file sbagliato.** Caricate il file corretto con lo stesso nome: diventa la versione corrente. I documenti non si cancellano, così resta traccia di tutte le versioni.
+
+**La pratica è ferma e la fase successiva non si apre.** Controllate la sezione **Pagamenti**: con una voce scaduta e non pagata le attività sono sospese fino al saldo (capitolo 9).
+
+**Un collega deve avere l'account al posto mio.** Ogni Organizzazione ha un solo account attivo, quello del rappresentante autorizzato. Chiedete alla Fondazione di disattivare il vostro account e di crearne uno nuovo per il collega (capitolo 1).
 
 **Non ricevo le email.** Controllate la cartella della posta indesiderata. Le notifiche restano comunque disponibili nella campanella del portale.
 
 **Il link dell'email apre la pagina di accesso.** Accedete con le vostre credenziali: subito dopo si apre la pratica indicata nell'email.
 
-**Come scrivo alla Fondazione?** Il portale non ha ancora una messaggistica libera. Si comunica con la nota delle integrazioni o con i canali abituali della Fondazione (email e telefono).
+**Come scrivo alla Fondazione?** Usate la sezione **Messaggi** della pratica (capitolo 8). Per reclami e richieste di chiarimento sul Programma usate la pagina **Reclami** (capitolo 14). Restano validi anche i canali abituali della Fondazione (email e telefono).

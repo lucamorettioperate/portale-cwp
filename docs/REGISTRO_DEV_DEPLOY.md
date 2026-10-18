@@ -235,6 +235,9 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `19_correzioni_revisione_codice.sql` | Il Comune legge solo le osservazioni ammesse della consultazione (policy `commento_select`); un Amministratore non può cambiare il ruolo di un altro Amministratore né il proprio (`admin_aggiorna_utente`) | 18/10/2026 |
 | `20_rinforzi_integrita.sql` | Data italiana nel database (`timezone = Europe/Rome`); `staff_crea_pratica` (pratica e 7 fasi insieme); `admin_aggiorna_utente_completo` (ruolo e organizzazioni insieme); calcolo crediti: trigger `trg_calcolo_coerenza` (risultato azzerato se cambiano i dati, controllo delle righe della Banca Dati alla conferma) e `trg_*_bdu_*` (risultato azzerato se cambia la Banca Dati), `admin_nuova_versione_calcolo`; password temporanea: `app_ruolo`, `app_organizzazione`, `app_org_mia` non riconoscono chi deve ancora cambiarla | 18/10/2026 |
 | `21_completamento_funzionale.sql` | Rapporti con 4 fasi (`durata_fase.tipo_pratica`, `cwp_numero_fasi`, `cwp_durata_fase(tipo, numero)`, `staff_apri_fase` e `admin_imposta_durata_fase` per tipo, `staff_crea_pratica` con 7 o 4 fasi, `modello_documento.tipo_pratica`); tabella `documento_richiesto`; Organizzazioni ed Enti scrivibili dallo staff (niente cancellazioni); consultazione: `staff_apri_consultazione`, `staff_chiudi_consultazione`, documento bloccato (`trg_documento_bloccato`), `commento.numero`; conservazione: nessuna cancellazione o modifica diretta di pratiche, fasi, integrazioni, consultazioni, pagamenti, file; `pratica.conservare_fino_al`; il Comune carica solo nelle fasi aperte (`fase_aperta`, policy `doc_insert`); notifiche di apertura della fase 1 e di osservazione ammessa; audit dei documenti richiesti | 18/10/2026 |
+| `22_stato_ritirata.sql` | Nuovo stato `ritirata` della pratica (ritiro del Progetto, Guida 6.4.1); da eseguire da solo prima del 23 | 18/10/2026 |
+| `23_allineamento_guida.sql` | Allineamento alla Guida al Programma: Rapporto a 7 fasi (10/20/15/60/10 gg, migrazione dei Rapporti a 4 fasi), «Feedback pubblico» anche per i Rapporti (`cwp_giorni_feedback`), responsabili delle fasi con i nomi della Guida; conservazione 12 anni; periodo di riferimento (`periodo_riferimento`, `cwp_massimo_rapporti`: 10 o 21 Rapporti) e `rapporto_coerente` (nessun Rapporto per Progetti ritirati o annullati); un solo account cliente attivo per Organizzazione (`trg_account_unico`) e fino a 2 delegati (`organizzazione.delegati`); stato nel Programma (`cwp_stato_programma`) e data di registrazione (`trg_fase_registrazione`); ritiro e rientro in `staff_cambia_stato_pratica`; territorio (`codici_istat`, un solo Progetto per territorio, `trg_pratica_territorio`), co-promotori, popolazione e crediti previsti, `staff_aggiorna_dati_pratica`; avviso dopo 2 anni senza Rapporti (in `genera_notifiche_scadenze`); documenti richiesti dalla Guida e documenti riservati mai pubblici (`trg_documento_riservato`); voce dello Schema tariffario sul pagamento e sospensione fino al saldo in `staff_apri_fase`; verifica sull'accuratezza e accertamenti (`staff_estendi_verifica`); notifiche ridefinite | 18/10/2026 |
+| `24_programma_pubblico_crediti_reclami.sql` | Informazioni del Programma (`info_programma`, `admin_imposta_info_programma`); tabelle `registro_scambio` e `metodologia`; modelli pubblici (`modello_documento.pubblico`, `categoria`); crediti emessi: `credito_lotto`, `credito_vendita`, `admin_emetti_crediti`, `staff_carica_su_registro`, `staff_registra_vendita`, `staff_registra_cancellazione`, `cwp_riepilogo_lotto`, avviso giornaliero `genera_avvisi_crediti` (pg_cron `cwp_avvisi_crediti`); reclami: tabella `reclamo` con codice automatico, `invia_reclamo`, `miei_reclami`, notifiche; dati pubblici `pubblico_programma` e `pubblico_percorso_file` (solo chiave di servizio) | **da eseguire** (Chrome scollegato la sera del 18/10) |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
 script successivi.
@@ -245,14 +248,17 @@ richiesta_integrazione, consultazione, commento, pagamento, notifica,
 audit_event, impostazione, calcolo_crediti, calcolo_conferimento,
 calcolo_riuso, recupero_password_richiesta, nota_fase, messaggio,
 modello_documento, consultazione_errata, commento_in_attesa,
-documento_richiesto.
+documento_richiesto; dallo script 24 registro_scambio, metodologia,
+credito_lotto, credito_vendita, reclamo.
 
-**Conservazione (script 21)**: nessuna regola consente di cancellare
+**Conservazione (script 21 e 23)**: nessuna regola consente di cancellare
 pratiche, fasi, documenti, integrazioni, consultazioni, osservazioni,
 pagamenti, organizzazioni, enti o file dei documenti (si cancella solo un
 file rimasto orfano); pratiche e fasi si modificano solo con le funzioni
 che chiedono la motivazione. Alla chiusura o all'annullamento la pratica
-riceve `conservare_fino_al` = oggi + 10 anni.
+riceve `conservare_fino_al` = oggi + 12 anni (Guida al Programma 6.2.1 e
+6.5.1; erano 10 fino allo script 23, le date già fissate sono state
+spostate di 2 anni). Lo stesso vale per un Progetto ritirato.
 
 **Archivi (Storage)**: `documenti` (file delle pratiche, 50 MB),
 `modelli` (modelli di documento, lettura per chi ha l'accesso),
@@ -268,7 +274,14 @@ dalla funzione `consultazione-pubblica`).
 `admin_aggiorna_utente_completo`, `admin_imposta_organizzazioni`,
 `admin_nuova_versione_calcolo`, `admin_registro_crediti`,
 `admin_imposta_attivo`, `admin_imposta_durata_fase`, `mio_stato_mfa`,
-`sono_admin`, `richiedi_email_notifica`.
+`sono_admin`, `richiedi_email_notifica`; dallo script 23
+`staff_aggiorna_dati_pratica`, `staff_estendi_verifica`,
+`cwp_stato_programma`; dallo script 24 `info_programma`,
+`admin_imposta_info_programma`, `admin_emetti_crediti`,
+`staff_carica_su_registro`, `staff_registra_vendita`,
+`staff_registra_cancellazione`, `invia_reclamo`, `miei_reclami`
+(`pubblico_programma` e `pubblico_percorso_file` solo dalla funzione
+`consultazione-pubblica`).
 
 **Lavori pianificati (pg_cron)**
 
@@ -276,6 +289,10 @@ dalla funzione `consultazione-pubblica`).
 |---|---|---|
 | `cwp_notifiche_scadenze` | ogni giorno alle 05:00 UTC (07:00 in Italia con l'ora legale, 06:00 con l'ora solare) | Notifiche per fasi in scadenza e scadute |
 | `cwp_riprova_email` | ogni 15 minuti | Rispedisce le email delle ultime 6 ore non ancora inviate |
+| `cwp_avvisi_crediti` (script 24) | ogni giorno alle 06:15 UTC | Avvisa lo staff delle vendite di crediti senza dichiarazione di cancellazione dopo 10 giorni |
+
+Il lavoro `cwp_notifiche_scadenze` dal 18/10 (script 23) avvisa anche dei
+Progetti registrati da almeno 2 anni senza Rapporti (Guida 6.4.1).
 
 **Fuso orario**: dal 18/10 (script 20) il database lavora in ora italiana
 (`Europe/Rome`, impostazione del database): «oggi» per scadenze di fasi,
@@ -285,7 +302,10 @@ usano la stessa data. Gli orari di pg_cron restano in UTC.
 
 **Impostazioni** (tabella `impostazione`, modificabile solo dal SQL Editor):
 `mfa_obbligatoria` (`false`), `url_email_notifiche` (indirizzo della
-funzione email).
+funzione email), `conservazione_12_anni` (traccia dello spostamento delle
+date, script 23). Dallo script 24 `programma_soggetto_promotore`,
+`programma_pec`, `programma_email`, `programma_sito`, che l'Amministratore
+modifica dalla pagina Impostazioni.
 
 **Interruttore di emergenza MFA**: se un amministratore perde l'app di
 autenticazione, dal SQL Editor:
@@ -299,7 +319,7 @@ autenticazione, dal SQL Editor:
 |---|---|---|---|
 | `crea-utente` | L'Amministratore crea un utente con password temporanea e lo associa a tutte le sue organizzazioni (`admin_imposta_organizzazioni` con il token dell'Admin); se un passo fallisce l'account appena creato viene eliminato | Verifica che il chiamante sia Admin (`sono_admin`); password temporanea di almeno 10 caratteri con lettere e numeri; niente creazione di Admin | Dashboard Supabase (editor web); ripubblicata 18/10 (script 20); Verify JWT attivo |
 | `reimposta-password` | L'Amministratore assegna una password temporanea a un Cliente o Operatore; il flag obbliga al cambio al primo accesso; audit | Verifica `sono_admin`; esclusi amministratori e sé stessi | Dashboard Supabase (editor web), 18/10; Verify JWT attivo |
-| `consultazione-pubblica` | Pagine pubbliche della consultazione (data di «oggi» in ora italiana dal 18/10; numero delle osservazioni dallo script 21, ripubblicata il 18/10): elenco, dettaglio (documento, errata corrige, osservazioni ammesse), invio di un'osservazione con allegato facoltativo ed email di conferma, conferma dell'email (l'osservazione diventa *Ricevuto*) | Verify JWT **disattivato** di proposito (pubblico senza account): nessun dato personale restituito, 3 invii/ora per indirizzo e 100/ora per consultazione, campo trappola anti-robot, allegati max 10 MB con controllo del contenuto, token monouso 48 ore salvato come SHA-256 | Dashboard Supabase (editor web), 18/10 |
+| `consultazione-pubblica` | Pagine pubbliche del feedback pubblico (data di «oggi» in ora italiana dal 18/10; numero delle osservazioni dallo script 21; dalla sera del 18/10 anche i Rapporti di Monitoraggio, ripubblicata; azioni `programma` e `file` per la pagina pubblica /programma, script 24, **da ripubblicare**): elenco, dettaglio (documento, errata corrige, osservazioni ammesse), invio di un'osservazione con allegato facoltativo ed email di conferma, conferma dell'email (l'osservazione diventa *Ricevuto*) | Verify JWT **disattivato** di proposito (pubblico senza account): nessun dato personale restituito, 3 invii/ora per indirizzo e 100/ora per consultazione, campo trappola anti-robot, allegati max 10 MB con controllo del contenuto, token monouso 48 ore salvato come SHA-256 | Dashboard Supabase (editor web), 18/10 |
 | `recupera-password` | «Password dimenticata?»: genera il collegamento di recupero (`auth.admin.generateLink`) e spedisce con Resend l'email in italiano «Portale Carbon WastePrint (CWP) — Richiesta di reimpostazione della password», al posto del modello email di Supabase | Verify JWT **disattivato** di proposito (la chiama chi non ha fatto l'accesso): risponde sempre `ok` senza rivelare se l'indirizzo esiste; niente email agli utenti disattivati; massimo una richiesta ogni 2 minuti per indirizzo; il collegamento porta solo al portale | Dashboard Supabase (editor web), 18/10 |
 | `invia-email-notifica` | Spedisce per email una notifica interna (pulsante "Apri nel portale") tramite Resend | Verify JWT **disattivato** di proposito: usa solo l'id ricevuto e rilegge tutto dal database; ogni notifica parte una volta sola | Dashboard Supabase; prima pubblicazione 17/10, aggiornata 17/10 (pulsante per tema scuro) |
 
@@ -322,16 +342,19 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 | `/reimposta-password` | Nuova password dal link dell'email di recupero | **pubblica** (sessione di recupero) |
 | `/profilo` | Il mio profilo: account, cambio password, manuali e documentazione per ruolo | tutti |
 | `/password` | Cambio password volontario | tutti |
-| `/consultazioni`, `/consultazioni/:id`, `/consultazioni/conferma` | Consultazioni pubbliche: elenco, documento e osservazioni, invio con conferma dell'email | **pubbliche**, senza login |
+| `/consultazioni`, `/consultazioni/:id`, `/consultazioni/conferma` | Feedback pubblico (Progetti e Rapporti): elenco, documento e osservazioni, invio con conferma dell'email | **pubbliche**, senza login |
+| `/programma` | Piattaforma pubblica del Programma (Guida 3.7): informazioni, enti, registri, metodologie, documenti e modulistica, Progetti con documenti pubblici, Rapporti e crediti emessi, reclami | **pubblica**, senza login |
+| `/reclami` | Reclami e richieste di chiarimento: invio e stato (utenti), registrazione e gestione (staff) | tutti |
+| `/crediti-emessi` | Crediti emessi: tutti i lotti con vendite, cancellazioni e totali | Operatore, Admin |
 | `/formato-dati` | Formato dei dati per il calcolo crediti, download del tracciato Excel | **pubblica**, senza login |
 | `/` | Cruscotto (staff) oppure Le mie pratiche (cliente) | tutti |
 | `/pratiche` | Back-office: elenco e dettaglio pratiche (`?id=` apre una pratica) | Operatore, Admin |
-| `/anagrafiche` | Organizzazioni ed Enti di Validazione, con le pratiche collegate | Operatore, Admin |
+| `/anagrafiche` | Organizzazioni (con delegati), Enti di Validazione e Registri, con le pratiche collegate | Operatore, Admin |
 | `/documenti` | I tuoi documenti, modelli generali, manuale | Cliente |
 | `/utenti` | Gestione utenti | Admin |
 | `/audit` | Audit trail | Admin |
 | `/crediti`, `/crediti/:id` | Calcolo crediti CWP | Admin |
-| `/impostazioni` | Durata delle fasi (Progetto e Rapporto), documenti richiesti per fase, modelli di documento | Admin |
+| `/impostazioni` | Informazioni del Programma e metodologie, durata delle fasi (Progetto e Rapporto), documenti richiesti per fase, modelli di documento (anche pubblici) | Admin |
 | `/documentazione` | Documentazione: Manuale Utente (PDF; Word solo Admin), Manuale Amministratore e Registro (solo Admin) | tutti (contenuto per ruolo) |
 
 **Struttura del codice** (in sintesi; descrizione completa file per file nel capitolo 14 «Codice sorgente»)
@@ -339,41 +362,47 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
   `ConsultazioniPubbliche.jsx` contiene le tre pagine pubbliche).
 - `src/components/` — `DettaglioPratica`, `Documenti`, `Integrazioni`,
   `Consultazione`, `Rapporti`, `Pagamenti`, `Notifiche`, `NuovoProgetto`,
-  `Header`, `Messaggi`, `NoteFase`, `stili.js` (stili condivisi),
-  `impostazioni/{DurateFasi,DocumentiRichiesti,EntiValidazione,ModelliDocumento}`,
+  `Header`, `Messaggi`, `NoteFase`, `CreditiEmessi`, `stili.js` (stili condivisi),
+  `impostazioni/{DurateFasi,DocumentiRichiesti,EntiValidazione,ModelliDocumento,Registri,InfoProgramma}`,
   `crediti/{ImportaTracciato,RegistroCrediti,TabellaDati}`.
 - `src/lib/` — `dati.js` (accesso ai dati), `AuthContext.jsx` (sessione,
   ruolo, MFA), `file.js` (controlli sui file), `fascicolo.js` (export ZIP)
   e `fascicoloPdf.js` (riepilogo PDF del fascicolo),
-  `csv.js`, `date.js`, `cwpProgram.js` (fasi, ruoli, colori),
-  `crediti/{parametri,calcolo,archivio}.js` (motore di calcolo).
+  `csv.js`, `date.js`, `cwpProgram.js` (fasi, ruoli, colori, stati del
+  Programma, tipologie), `tariffe.js` (Schema tariffario),
+  `crediti/{parametri,calcolo,archivio,qualita}.js` (motore di calcolo e
+  controlli della Gestione qualità dei dati).
 - `public/loghi/` — loghi Carbon WastePrint, Fondazione Operate, RINA,
   Carbon Credit. `public/modelli/` — tracciato dati Excel.
-- `test/` — test del motore crediti, del lettore CSV e dell'import del
-  tracciato (`npm test`); `test/dati/` file di esempio.
+- `test/` — test del motore crediti, del lettore CSV, dell'import del
+  tracciato, delle date, dello Schema tariffario e della qualità dei dati
+  (`npm test`); `test/dati/` file di esempio.
 - `strumenti/genera_tracciato_dati.py` — rigenera il tracciato Excel;
   `strumenti/genera_esempi_tracciato.py` — file di esempio compilati.
 
 ---
 
-## 7. Funzionalità per area (stato al 18/10/2026)
+## 7. Funzionalità per area (stato al 18/10/2026 sera)
 
 | Area (requisiti) | Stato | Dettaglio |
 |---|---|---|
 | Accesso e ruoli (§3, §13) | Fatto | Email+password, tre ruoli, utenti multi-organizzazione, disattivazione; password temporanea da cambiare al primo accesso, cambio e recupero password, reimpostazione dall'Admin; MFA pronta ma spenta |
-| Anagrafiche (§3) | Fatto | Organizzazioni ed Enti di Validazione censiti da Operatori e Admin, con le pratiche collegate |
-| Pratiche (§2) | Fatto | Progetti (7 fasi) e Rapporti di Monitoraggio annuali (4 fasi, senza consultazione), codice automatico, stati attiva/sospesa/annullata/chiusa con motivazione |
-| Fasi (§4) | Fatto | Apertura con scadenza automatica, chiusura, modifica scadenza; durate per Progetto e Rapporto modificabili dall'Admin; note di fase interne o condivise; documenti richiesti per fase (indicatore); il Comune carica solo nelle fasi aperte |
-| Documenti (§5) | Fatto (manca antivirus) | Versioni mai sovrascritte, hash SHA-256, visibilità Cliente/Fondazione/Pubblico, per fase o generali; limite 50 MB, formati ammessi, controllo contenuto |
+| Anagrafiche (§3) | Fatto | Organizzazioni (tipi dello Standard 4.4, fino a 2 delegati), Enti di Validazione e Registri censiti da Operatori e Admin, con le pratiche collegate; un solo account cliente attivo per Organizzazione (Guida 7.2) |
+| Pratiche (§2) | Fatto | Progetti e Rapporti di Monitoraggio annuali con le stesse 7 fasi (Guida 6.2 e 6.3.1), ID automatico, stato nel Programma (Guida, Tabelle 3 e 4), data di registrazione, territorio con codici ISTAT (un solo Progetto per territorio), co-promotori, periodo di riferimento (10 o 21 Rapporti), popolazione e crediti previsti; stati attiva/sospesa/annullata/chiusa/ritirata con motivazione, ritiro e rientro; avviso dopo 2 anni senza Rapporti |
+| Fasi (§4) | Fatto | Apertura con scadenza automatica, chiusura, modifica scadenza; durate per Progetto e Rapporto modificabili dall'Admin; verifica sull'accuratezza (+15 gg) e fino a 3 accertamenti (+10 gg) nelle fasi 2 e 6 (Guida 6.5.2); note di fase interne o condivise; documenti richiesti per fase preconfigurati dalla Guida (indicatore); il Comune carica solo nelle fasi aperte |
+| Documenti (§5) | Fatto (manca antivirus) | Versioni mai sovrascritte, hash SHA-256, visibilità Cliente/Fondazione/Pubblico, per fase o generali; tipologie con i nomi ufficiali della Guida; contratto con l'ente e versione privata del Modulo mai pubblici; limite 50 MB, formati ammessi, controllo contenuto |
 | Integrazioni (§4) | Fatto | Richiesta → risposta del Cliente con documento → chiusura; fase "in attesa di integrazione" |
-| Consultazione pubblica (§6) | Fatto | Pagina pubblica, documento pubblicato e bloccato, osservazioni numerate con email confermata e allegato, moderazione con motivazione facoltativa, firma «Partecipante» o nome a scelta dell'autore, risposte del Comune, errata corrige con ripartenza facoltativa dei 30 giorni |
-| Pagamenti (§7) | Fatto | Voci, incassi, operatore registrato e mostrato allo staff; visibili al Comune in sola lettura |
+| Feedback pubblico (§6, Guida 3.9) | Fatto (manca SPID/CIE/CNS) | Progetti (30 giorni) e Rapporti (20 giorni); pagina pubblica, documento pubblicato e bloccato, osservazioni numerate con email confermata e allegato, moderazione con motivazione facoltativa, firma «Partecipante» o nome a scelta dell'autore, risposte del Comune, errata corrige con ripartenza facoltativa del periodo; l'accesso con SPID/CIE/CNS richiesto dalla Guida 3.9 richiede l'adesione della Fondazione come fornitore di servizi |
+| Pagamenti (§7) | Fatto | Voci con la voce dello Schema tariffario e proposta degli importi (iscrizione, registrazione, emissione, vendita), incassi, operatore registrato e mostrato allo staff; attività sospese fino al saldo delle voci scadute, iscrizione da saldare prima della fase 5; visibili al Comune in sola lettura |
 | Back-office (§8) | Fatto | Cruscotto con scadenze/scaduti, ricerca, azioni con motivazione |
 | Notifiche (§9) | Fatto | Interne + email (Resend); messaggi Comune-Fondazione nella pratica; manca verifica dominio |
 | Audit (§10) | Fatto | Scritto dal database, immutabile, pagina di consultazione |
 | Export fascicolo (§11) | Fatto | ZIP con riepilogo PDF, documenti, validazione, consultazioni con allegati ed errata corrige, note, messaggi, pagamenti e audit con i nomi |
-| Conservazione (§12) | Fatto (parte tecnica) | Nessuna cancellazione; data di conservazione a 10 anni; la procedura di cancellazione a fine periodo la definirà la Fondazione |
-| Calcolo crediti (Metodologia v1.2) | Parziale | Motore formule 1-32, Tabelle 3-5, 8, 15, 16; import diretto del tracciato con aggregazione delle letture, blocco dei dati personali e controlli di coerenza; calcoli confermati immutabili con numero di registro; rapporto PDF; registro dei crediti (manca la parte prevista dallo Standard CWP) |
+| Conservazione (§12) | Fatto (parte tecnica) | Nessuna cancellazione; data di conservazione a 12 anni (Guida 6.2.1 e 6.5.1); la procedura di cancellazione a fine periodo la definirà la Fondazione |
+| Piattaforma pubblica (Guida 3.7) | Fatto (script 24 da eseguire) | Pagina /programma: informazioni del Programma, enti, registri, metodologie, documenti e modulistica, Progetti dal momento «in fase di validazione» con documenti pubblici, Rapporti e crediti |
+| Crediti emessi (Guida 6.3.2-6.3.3, Standard 6) | Fatto (script 24 da eseguire) | Lotti con ID univoci emessi dall'Admin dopo la registrazione del Rapporto (con il limite del calcolo ex post confermato), caricamento sul registro esterno, vendite comunicate dal registro, cancellazione tombale (attivo / ritirato), avviso dopo 10 giorni senza dichiarazione |
+| Reclami (Politica di reclamo, Guida 8) | Fatto (script 24 da eseguire) | Invio dal portale, registrazione dei reclami arrivati via PEC, gestore, conferma, risposta scritta, costi, note interne, notifiche |
+| Calcolo crediti (Metodologia v1.2) | Fatto (scelte interpretative da confermare) | Motore formule 1-32, Tabelle 3-5, 8, 15, 16; import diretto del tracciato con aggregazione delle letture, blocco dei dati personali e controlli di coerenza; controlli della Gestione qualità dei dati (Tabella 3 dello Standard ±30% con motivazione obbligatoria, completezza, unicità, letture a buon fine, tempestività); calcoli confermati immutabili con numero progressivo interno; rapporto PDF. Funzione migliorativa: per la Metodologia il calcolo lo fa il promotore nel Rapporto e l'ente lo verifica |
 | Amministrazione | Fatto | Utenti, audit, impostazioni: durata fasi, documenti richiesti, modelli di documento |
 | Sicurezza (§13) | Parziale | RLS, audit, controlli file; mancano registro di sicurezza, antivirus, ambiente di prova |
 
@@ -427,6 +456,22 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Allineamento ai documenti ufficiali del Programma (punto 35, sera)** —
+  tre rilasci. (1) Script `22_stato_ritirata.sql` e
+  `23_allineamento_guida.sql` provati sul banco locale (migrazione di un
+  Rapporto a 4 fasi, prove di ogni regola), eseguiti e verificati in
+  produzione; funzione `consultazione-pubblica` ripubblicata (feedback anche
+  per i Rapporti, Verify JWT rimasto spento); portale su main (commit
+  16f4b95). (2) Script `24_programma_pubblico_crediti_reclami.sql` provato
+  sul banco locale (emissione, registro, vendite, cancellazione, avvisi,
+  reclami, dati pubblici, permessi negati ad anon); portale e funzione nel
+  ramo `programma-pubblico`: **da eseguire in produzione** e da portare su
+  main (il collegamento a Chrome si è interrotto). (3) Controlli della
+  Gestione qualità dei dati nel calcolo crediti (`src/lib/crediti/qualita.js`,
+  Tabella 3 dello Standard ±30% con motivazione obbligatoria, completezza,
+  unicità, letture a buon fine, tempestività; anche nel rapporto PDF). Nuove
+  prove `test/tariffe.test.mjs` e `test/qualita.test.mjs`. Manuali e
+  presentazione aggiornati.
 - **Rilettura dei documenti ufficiali del Programma** (Guida, Definizioni,
   Normativa, Standard, Metodologia, Politica di reclamo, Schema tariffario,
   Gestione della qualità dei dati, v1.2) in vista della presentazione del
@@ -745,7 +790,7 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 - 17/10 — Sezione calcolo crediti riservata agli Amministratori (fuori dal
   perimetro della piattaforma secondo i requisiti, aggiunta su richiesta).
 - 17/10 — MFA: in attesa, interruttore spento.
-- 18/10 — Una sola utenza per Organizzazione: non vincolante.
+- 18/10 — Una sola utenza per Organizzazione: non vincolante. **Superata la sera del 18/10**: un solo account cliente attivo (Guida 7.2).
 - 18/10 — Durata delle fasi modificabile dall'Amministratore.
 - 18/10 — Antivirus necessario (possibili dati sensibili), da affrontare a
   fine progetto.
@@ -764,48 +809,41 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 - 18/10 — **D**: chi commenta dall'esterno conferma la propria email; nome ed
   email li vede solo lo staff; il nome è pubblicato solo se l'autore lo sceglie.
 - 18/10 — Pagamenti visibili al Comune in sola lettura.
-- 18/10 — Rapporti di Monitoraggio: percorso di 4 fasi senza consultazione (Caricamento del rapporto, Verifica documentale, Validazione e verifica, Chiusura); si creano in qualsiasi momento mentre il Progetto è attivo.
+- 18/10 — Rapporti di Monitoraggio: percorso di 4 fasi senza consultazione (Caricamento del rapporto, Verifica documentale, Validazione e verifica, Chiusura); si creano in qualsiasi momento mentre il Progetto è attivo. **Superata la sera del 18/10** (vedi sotto): 7 fasi come la Guida.
 - 18/10 — La pratica la chiude sempre lo staff a mano (la chiusura della fase finale non la chiude).
 - 18/10 — Documenti richiesti per fase: elenco configurabile dall'Admin, solo indicatore (non blocca la chiusura della fase).
 - 18/10 — Audit: resta leggibile dal database da tutto lo staff (serve alla cronologia nel fascicolo esportato dagli Operatori); la pagina Audit resta solo per gli Amministratori.
+
+- 18/10 sera — **Allineamento ai documenti ufficiali del Programma** (Guida,
+  Standard, Schema tariffario, Politica di reclamo, Gestione qualità dei
+  dati, v1.2), decisione di Luca dopo la rilettura dei documenti (script
+  22-24): Rapporto con le stesse 7 fasi del Progetto e feedback pubblico di
+  20 giorni; termine «feedback pubblico»; conservazione 12 anni; un solo
+  account cliente attivo per Organizzazione con fino a 2 delegati; periodo
+  di riferimento 10 anni o 7 rinnovabili (10 o 21 Rapporti); stati del
+  Programma e ID; ritiro e rientro; un solo progetto per territorio (codici
+  ISTAT); avviso dopo 2 anni senza Rapporti; tipologie e documenti
+  richiesti della Guida, contratto e versione privata mai pubblici; voci e
+  importi dello Schema tariffario con sospensione fino al saldo; verifica
+  sull'accuratezza e accertamenti; piattaforma pubblica /programma; crediti
+  emessi con ID, registro esterno, vendite e cancellazione; reclami;
+  controlli della Gestione qualità dei dati nel calcolo.
 
 **Aperte**
 - Scelte interpretative del calcolo crediti (soprattutto il segno del riuso,
   formule 26 e 29).
 - Antivirus: ClamAV su server proprio o servizio a pagamento.
-- Dalla rilettura dei documenti ufficiali del Programma (v1.2 del
-  04/09/2025), punti in cui il portale differisce e va deciso se allinearlo:
-  1. **Rapporto di Monitoraggio**: la Guida 6.3.1 prevede lo stesso
-     procedimento del Progetto, con feedback pubblico di 20 giorni,
-     adeguamento in 15, verifica dell'ente in 60 e verifica documentale in
-     10; il portale ha 4 fasi senza feedback (decisione del 18/10) e 75
-     giorni per l'ente (durata modificabile dall'Admin).
-  2. **Accesso al feedback pubblico**: la Guida 3.9 indica SPID, CIE o CNS;
-     il portale usa l'email confermata (decisione D).
-  3. **Conservazione**: la Guida (6.2.1, 6.5.1) indica 12 anni per il
-     soggetto promotore del programma; il portale ne calcola 10 dalla
-     chiusura. Lo Standard 4.14 chiede al promotore del progetto almeno 2
-     anni dopo la fine del progetto, i registri 5 anni dopo la vendita.
-  4. **Utenze**: la Guida 7.2 prevede fino a 2 delegati e un solo account
-     del rappresentante autorizzato; il portale ammette più utenze.
-  5. **Numero di Rapporti**: il portale ne ammette 10 (requisiti §2); lo
-     Standard 4.3.8 prevede un periodo di 10 anni oppure di 7 anni
-     rinnovabile 3 volte.
-  6. **Soggetto promotore del programma**: oggi lo Studio Associato
-     Wastelab; all'avvio della piattaforma online incarica un soggetto
-     giuridico (Guida 3.1).
-  7. **Funzioni previste dai documenti e non ancora nel portale**: parte
-     pubblica della piattaforma (elenchi di enti, registri e metodologie,
-     rapporti di validazione e verifica, Politica di reclamo, modulistica:
-     Guida 3.7); stati e ID univoci di progetti e crediti e collegamento al
-     registro esterno (Standard 6); reclami e chiarimenti (Politica di
-     reclamo, via PEC); tariffe dello Schema tariffario e sospensione fino
-     al saldo; ritiro e rientro; avviso dopo 2 anni senza Rapporti (Guida
-     6.4.1); un solo progetto per territorio (codice ISTAT, Standard 4.6);
-     controlli della Gestione qualità dei dati; tipologie ufficiali dei
-     documenti (Standard 4.2).
-  Confermata invece dalla Tabella 3 della Guida la mappatura delle fasi del
-  Progetto (10, 30, 20, 75, 15 giorni).
+- Accesso degli stakeholders al feedback pubblico con SPID, CIE o CNS
+  (Guida 3.9): serve l'adesione della Fondazione come fornitore di servizi
+  (direttamente con AgID o tramite un aggregatore accreditato) e il relativo
+  contratto. Intanto resta l'email confermata (decisione D).
+- Incarico formale del soggetto promotore del programma (Guida 3.1): oggi è
+  lo Studio Associato Wastelab, che all'avvio della piattaforma incarica un
+  soggetto giuridico. Il testo pubblicato si aggiorna in Impostazioni.
+- Rapporti prima della registrazione del Progetto: lo Standard 4.5 li
+  prevede dopo lo stato «progetto registrato»; il portale continua a
+  permetterne la creazione mentre il Progetto è attivo (decisione del
+  18/10), l'emissione dei crediti richiede comunque il Rapporto registrato.
 
 ---
 
@@ -822,7 +860,7 @@ completato (va barrato qui e annotato in Cronologia).
 - ~~**4.** Scelta del file direttamente dalla pratica del Comune~~ — fatto il 18/10.
 - ~~**5.** Controlli di coerenza (classi, totali, valori anomali)~~ — fatto il 18/10.
 - ~~**6.** Rapporto di calcolo in PDF~~ — fatto il 18/10.
-- **7.** Registro dei crediti calcolati e confermati — base fatta il 18/10 (numero di registro, stato valido/sostituito, totali); da completare con le regole di *Guida al Programma* e *Standard CWP* (emissione, trasferimento, annullamento).
+- ~~**7.** Registro dei crediti calcolati e confermati~~ — fatto il 18/10: numero progressivo dei calcoli (elenco interno) e, con lo script 24, emissione dei crediti con ID univoci, caricamento sul registro esterno, vendite e cancellazione tombale (Guida 6.3.2-6.3.3).
 - **8.** Collaudo con dati reali di un Comune.
 - **9.** Conferma delle scelte interpretative.
 
@@ -893,6 +931,8 @@ completato (va barrato qui e annotato in Cronologia).
 
 **Da rifinire**
 
+- ~~**35.** Allineamento ai documenti ufficiali del Programma~~ — fatto la sera del 18/10 (script 22-24, portale, funzione `consultazione-pubblica`): vedi Decisioni e Cronologia. Restano SPID/CIE/CNS (punto 36) e l'incarico del soggetto promotore del programma.
+- **36.** Accesso degli stakeholders con SPID, CIE o CNS (Guida 3.9): adesione come fornitore di servizi (AgID o aggregatore), poi integrazione nella pagina del feedback pubblico.
 - **21.** Agente AI (Claude) integrato nel portale — richiesto da Luca il 18/10. Ambito da definire; usi possibili: assistente per gli utenti dei Comuni (come compilare, cosa manca nella pratica), supporto agli Operatori (controllo completezza dei documenti, bozze di richieste di integrazione e di risposte ai commenti), verifica del tracciato dati prima dell'import, spiegazione dei risultati del calcolo crediti. Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che faccia da tramite, regole su quali dati l'agente può leggere (privacy) e registrazione delle sue azioni nell'audit.
 
 ---
@@ -1064,34 +1104,37 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 91 file, 20.965 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 104 file, 24.647 righe in tutto.
 
 **Avvio e instradamento**
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `src/App.jsx` | 214 | associa ogni indirizzo alla sua pagina e decide chi può aprirla. Le pagine riservate passano dal componente Protetta, che nell'ordine chiede: sessione attiva, eventuale nuova password (link di recupero o password temporanea),… |
+| `src/App.jsx` | 235 | associa ogni indirizzo alla sua pagina e decide chi può aprirla. Le pagine riservate passano dal componente Protetta, che nell'ordine chiede: sessione attiva, eventuale nuova password (link di recupero o password temporanea),… |
 | `src/main.jsx` | 32 | monta l'applicazione nell'elemento #root di index.html e la avvolge nei contesti globali: StrictMode (controlli di React in sviluppo), BrowserRouter (indirizzi /pratiche, /crediti, …) e AuthProvider (sessione, ruolo, MFA).… |
 
 **Pagine (src/pages)**
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `src/pages/Anagrafiche.jsx` | 179 | censimento di Organizzazioni ed Enti di Validazione (requisiti §3: l'Operatore «censisce Organizzazioni ed Enti di Validazione»). - Organizzazioni: elenco con ricerca, dati essenziali (tipo, codice fiscale, partita IVA, PEC,… |
+| `src/pages/Anagrafiche.jsx` | 206 | censimento di Organizzazioni ed Enti di Validazione (requisiti §3: l'Operatore «censisce Organizzazioni ed Enti di Validazione»). - Organizzazioni: elenco con ricerca, dati essenziali (tipo, codice fiscale, partita IVA, PEC,… |
 | `src/pages/AreaCliente.jsx` | 138 | il Comune/azienda vede l'elenco dei propri Progetti (schede compatte con stato) e, sotto, il dettaglio della pratica selezionata: fasi, documenti, integrazioni, messaggi. Link al Manuale Utente in PDF. |
 | `src/pages/Audit.jsx` | 143 | tabella degli eventi registrati (data, utente, operazione, pratica, passaggio di stato, motivazione), con ricerca testuale e pulsante per caricare eventi meno recenti (requisiti §10). |
 | `src/pages/BackOffice.jsx` | 221 | a sinistra l'elenco dei Progetti (con ricerca oltre 4 voci), a destra il dettaglio della pratica scelta con le sue fasi, documenti, integrazioni, consultazione, pagamenti, rapporti. Pulsante «+ Nuovo progetto» per registrare un… |
-| `src/pages/CalcoloCrediti.jsx` | 1371 | editor di un calcolo dei crediti di CO₂eq secondo la Metodologia CWP v1.2, a passi (menu a sinistra): import del tracciato dati, impostazioni, rifiuti del territorio, delibera tariffaria, fattori di emissione, Banca Dati Utenze,… |
+| `src/pages/CalcoloCrediti.jsx` | 1461 | editor di un calcolo dei crediti di CO₂eq secondo la Metodologia CWP v1.2, a passi (menu a sinistra): import del tracciato dati, impostazioni, rifiuti del territorio, delibera tariffaria, fattori di emissione, Banca Dati Utenze,… |
 | `src/pages/CambiaPassword.jsx` | 163 | scegliere una nuova password, con le regole di src/lib/password.js. - "obbligatorio": primo accesso con password temporanea (o reimpostata dall'Amministratore): finché non la cambia l'utente non entra; - "volontario": l'utente… |
-| `src/pages/ConsultazioniPubbliche.jsx` | 326 | permettere a chiunque di leggere il Progetto in consultazione per 30 giorni e inviare osservazioni, che Fondazione Operate modera e a cui il Comune risponde (la moderazione avviene nel back-office, componente Consultazione). |
+| `src/pages/ConsultazioniPubbliche.jsx` | 331 | permettere a chiunque di leggere il Progetto (30 giorni) o il Rapporto di Monitoraggio (20 giorni) nel periodo di feedback pubblico (Guida al Programma 3.9 e 6.3.1) e inviare osservazioni, che Fondazione Operate modera e a cui… |
 | `src/pages/Crediti.jsx` | 230 | sezione del calcolo dei crediti di CO₂eq (Metodologia Carbon WastePrint® v1.2). Due viste: - «Calcoli»: elenco di tutti i calcoli (titolo, pratica, anno e tipo, crediti netti, stato bozza/confermato) e modulo «+ Nuovo calcolo»… |
+| `src/pages/CreditiEmessiPagina.jsx` | 68 | elenco di tutti i lotti di crediti emessi dai Rapporti di Monitoraggio (Guida al Programma 6.3.2 e 6.3.3; script 24), con il totale emessi / attivi / ritirati e, per lo staff, le azioni su ogni lotto (caricamento sul registro,… |
 | `src/pages/Cruscotto.jsx` | 268 | (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso, in scadenza, scadute, in attesa del Cliente, integrazioni da verificare, consultazioni attive) e tabella di tutte le pratiche, Progetti e Rapporti, con ricerca e… |
 | `src/pages/Documentazione.jsx` | 137 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
 | `src/pages/FormatoDati.jsx` | 136 | spiega lo standard dei dati da inviare per il calcolo dei crediti e permette di scaricare il tracciato Excel. Il link si può mandare a Comuni e gestori anche senza credenziali. Contiene: elenco dei fogli del tracciato,… |
-| `src/pages/GestioneUtenti.jsx` | 603 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
-| `src/pages/Impostazioni.jsx` | 56 | parametri del Programma modificabili dagli Amministratori: - Durata delle fasi del Progetto e del Rapporto di Monitoraggio (script 13 e 21, componente DurateFasi); - Documenti richiesti per fase (script 21, componente… |
+| `src/pages/GestioneUtenti.jsx` | 608 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
+| `src/pages/Impostazioni.jsx` | 60 | parametri del Programma modificabili dagli Amministratori: - Durata delle fasi del Progetto e del Rapporto di Monitoraggio (script 13 e 21, componente DurateFasi); - Documenti richiesti per fase (script 21, componente… |
 | `src/pages/Login.jsx` | 259 | accesso con email e password; «Password dimenticata?» per farsi mandare il collegamento di reimpostazione; link alle pagine pubbliche (formato dei dati, consultazioni pubbliche, Manuale Utente in PDF). Dopo l'accesso riuscito… |
 | `src/pages/Profilo.jsx` | 66 | mostra i dati dell'account (nome, email di accesso, ruolo), il collegamento al cambio password («/password») e i documenti da scaricare per il proprio ruolo: Manuale Utente per tutti; Manuale Amministratore e Registro sviluppo e… |
+| `src/pages/Programma.jsx` | 249 | la parte pubblica della piattaforma online richiesta dalla Guida al Programma (cap. 3.7) e dallo Standard CWP (cap. 2.3, 5 e 6): - informazioni del Programma: soggetto promotore del programma, PEC, email e sito ufficiale (Guida… |
+| `src/pages/Reclami.jsx` | 250 | reclami e richieste di chiarimento (Politica di reclamo del Programma; Guida al Programma cap. 8; script 24). - Chiunque abbia un account invia un reclamo o una richiesta di chiarimento dal portale e ne segue lo stato e la… |
 | `src/pages/TuoiDocumenti.jsx` | 175 | (requisiti §5) raccoglie i documenti GENERALI (non legati a una fase) di tutte le pratiche dell'organizzazione: contratto, allegati, documentazione amministrativa e altri documenti della Fondazione, raggruppati per tipologia,… |
 | `src/pages/VerificaMfa.jsx` | 169 | (requisiti §13) - primo accesso: attivazione con QR code da inquadrare con un'app di autenticazione (Google Authenticator, Microsoft Authenticator, Authy…), con chiave da inserire a mano in alternativa; - accessi successivi:… |
 
@@ -1100,24 +1143,27 @@ Inventario generato da `strumenti/inventario_codice.py`: 91 file, 20.965 righe i
 | File | Righe | Cosa contiene |
 |---|---|---|
 | `src/components/Badge.jsx` | 37 | etichetta colorata compatta per mostrare uno stato (pratica, fase, documento, pagamento, calcolo…). Solo grafica. |
-| `src/components/Consultazione.jsx` | 422 | riquadro «Consultazione pubblica» di un Progetto (fase 3, requisiti §6). Lo staff apre la consultazione pubblicando un documento per 30 giorni, modera le osservazioni, pubblica errata corrige e la chiude. Il Comune legge le… |
-| `src/components/DettaglioPratica.jsx` | 723 | pagina di dettaglio di una pratica (Progetto o Rapporto di Monitoraggio) con le sue fasi (7 per il Progetto, 4 per il Rapporto). |
-| `src/components/Documenti.jsx` | 315 | gestione documentale di una pratica: elenco con versioni, caricamento di nuovi file e download. Lo staff sceglie anche tipologia e visibilità (Cliente, Pubblico) e può cambiarle dopo il caricamento. |
-| `src/components/Header.jsx` | 156 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
+| `src/components/Consultazione.jsx` | 435 | riquadro «Feedback pubblico» (il termine della Guida al Programma, cap. 3.9) di un Progetto o di un Rapporto di Monitoraggio (fase 3, requisiti §6; per i Rapporti Guida 6.3.1, script 23). Lo staff apre il feedback pubblicando un… |
+| `src/components/CreditiEmessi.jsx` | 319 | crediti di carbonio emessi da un Rapporto di Monitoraggio registrato (Guida al Programma 6.3.2 e 6.3.3, Tabella 5; Standard 6.2; script 24): - emissione di un lotto con ID univoci (solo Amministratori), anche collegata a un… |
+| `src/components/DettaglioPratica.jsx` | 912 | pagina di dettaglio di una pratica (Progetto o Rapporto di Monitoraggio) con le sue 7 fasi (Guida al Programma 6.2 e 6.3.1). |
+| `src/components/Documenti.jsx` | 317 | gestione documentale di una pratica: elenco con versioni, caricamento di nuovi file e download. Lo staff sceglie anche tipologia e visibilità (Cliente, Pubblico) e può cambiarle dopo il caricamento. |
+| `src/components/Header.jsx` | 162 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
 | `src/components/Integrazioni.jsx` | 266 | richieste di integrazione di una fase (requisiti §4). Ciclo: l'Operatore richiede → il Cliente carica un documento e risponde → l'Operatore chiude la richiesta. Con la chiusura della fase la possibilità di integrare termina. La… |
 | `src/components/Messaggi.jsx` | 129 | conversazione tra Comune e Fondazione Operate dentro una pratica (backlog 26). Mostra i messaggi in ordine di data, quelli dell'utente a destra, e permette di scriverne di nuovi. |
 | `src/components/NoteFase.jsx` | 108 | note scritte sotto una delle fasi di una pratica (backlog 10). Lo staff legge tutte le note e ne aggiunge di nuove, interne (solo Fondazione) o condivise con il Comune; il Comune vede solo le condivise. |
 | `src/components/Notifiche.jsx` | 177 | campanella delle notifiche interne (requisiti §9) nell'intestazione. Mostra il numero delle non lette, apre un elenco a tendina delle ultime 50 notifiche, segna come lette e porta alla pratica collegata. |
-| `src/components/NuovoProgetto.jsx` | 260 | finestra (sovrapposta alla pagina) per creare un nuovo Progetto. Si sceglie un'organizzazione esistente o se ne crea una nuova, si indicano codice (facoltativo) e titolo; alla creazione vengono generate le 7 fasi, con la fase 1… |
-| `src/components/Pagamenti.jsx` | 226 | riquadro «Pagamenti» di una pratica (requisiti §7). Nessun incasso online: il back-office censisce il piano previsto (più voci con scadenze diverse) e registra a mano gli incassi. Mostra totali, incassato, da incassare e lo… |
-| `src/components/Rapporti.jsx` | 124 | elenco dei Rapporti di Monitoraggio annuali di un Progetto (requisiti §2): fino a 10, uno per anno, in sequenza. Ognuno è una pratica autonoma (tipo «rapporto») con le sue 4 fasi (Caricamento del rapporto, Verifica documentale,… |
+| `src/components/NuovoProgetto.jsx` | 291 | finestra (sovrapposta alla pagina) per creare un nuovo Progetto. Si sceglie un'organizzazione esistente o se ne crea una nuova, si indicano codice (facoltativo, è l'ID univoco del progetto), titolo, territorio (codici ISTAT dei… |
+| `src/components/Pagamenti.jsx` | 298 | riquadro «Pagamenti» di una pratica (requisiti §7). Nessun incasso online: il back-office censisce il piano previsto (più voci con scadenze diverse) e registra a mano gli incassi. Mostra totali, incassato, da incassare e lo… |
+| `src/components/Rapporti.jsx` | 127 | elenco dei Rapporti di Monitoraggio annuali di un Progetto (requisiti §2): uno per anno, in sequenza, fino a 10 con il periodo di riferimento di 10 anni o fino a 21 con 7 anni rinnovabili 3 volte (Standard 4.3.8, script 23).… |
 | `src/components/crediti/ImportaTracciato.jsx` | 283 | passo «Importa il tracciato» del calcolo dei crediti (backlog 1-5). L'Amministratore sceglie il tracciato dati del Comune: - dai documenti della pratica del calcolo (file .xlsx o .zip caricati dal Comune), oppure dal proprio… |
 | `src/components/crediti/RegistroCrediti.jsx` | 165 | registro dei crediti (backlog 7), vista «Registro» della pagina Crediti CWP. Elenca i calcoli ex post confermati con il numero di registro assegnato dal database alla conferma (CWP-REG-AAAA-NNNN). Un calcolo corretto con una… |
 | `src/components/crediti/TabellaDati.jsx` | 208 | tabella di dati modificabile in pagina per il calcolo dei crediti CWP (conferimenti, utenze, riuso…), con aggiunta ed eliminazione di righe, importazione da CSV (anche salvato da Excel in italiano) e scaricamento di un modello… |
 | `src/components/impostazioni/DocumentiRichiesti.jsx` | 153 | elenco dei documenti richiesti in ogni fase (requisiti §4, «eventuali documenti richiesti»), per Progetto e Rapporto di Monitoraggio. Ogni voce è una tipologia di documento attesa in una fase; nella pratica la fase mostra… |
 | `src/components/impostazioni/DurateFasi.jsx` | 214 | sezione «Durata delle fasi» delle Impostazioni, una per tipo di pratica: Progetto (7 fasi) e Rapporto di Monitoraggio (4 fasi, script 21). Tabella delle fasi con la durata in giorni modificabile (dalla fase 2 in poi; la fase 1 è… |
 | `src/components/impostazioni/EntiValidazione.jsx` | 139 | anagrafica degli Enti di Validazione (backlog 11), sezione della pagina Anagrafiche. Elenco degli enti con i Progetti a cui sono assegnati (requisiti §3), inserimento di un nuovo ente, modifica e disattivazione. L'ente non… |
-| `src/components/impostazioni/ModelliDocumento.jsx` | 156 | modelli di documento (backlog 12), sezione della pagina Impostazioni. L'Amministratore carica i modelli che i Comuni scaricano: un modello può valere per una fase di un tipo di pratica (Progetto o |
+| `src/components/impostazioni/InfoProgramma.jsx` | 145 | informazioni del Programma pubblicate sulla pagina pubblica /programma (Guida al Programma 3.1 e 3.6): soggetto promotore del programma, PEC (anche per i reclami), email e sito ufficiale; e le metodologie approvate (Guida cap.… |
+| `src/components/impostazioni/ModelliDocumento.jsx` | 184 | modelli di documento (backlog 12), sezione della pagina Impostazioni. L'Amministratore carica i modelli che i Comuni scaricano: un modello può valere per una fase di un tipo di pratica (Progetto o |
+| `src/components/impostazioni/Registri.jsx` | 109 | elenco dei registri riconosciuti dal Programma (Guida al Programma 3.5, Standard CWP cap. 6), pubblicato sulla pagina pubblica /programma: piattaforme esterne su cui il promotore del progetto carica e vende i crediti. Requisiti… |
 | `src/components/stili.js` | 85 | oggetti di stile in linea condivisi dai componenti delle pratiche e delle impostazioni (stessa grafica del resto del portale: carta, verde Fondazione, bordi sottili) e la funzione dataOra per mostrare data e ora in formato… |
 
 **Librerie (src/lib)**
@@ -1128,17 +1174,19 @@ Inventario generato da `strumenti/inventario_codice.py`: 91 file, 20.965 righe i
 | `src/lib/crediti/archivio.js` | 244 | crea, legge, aggiorna ed elimina i calcoli (testata e dati in calcolo_crediti) e la loro Banca Dati Utenze (righe di conferimento e di riuso), anche quando le righe sono centinaia di migliaia (invio e lettura a blocchi). Crea le… |
 | `src/lib/crediti/calcolo.js` | 457 | funzioni pure (nessun accesso al database): ricevono i dati del calcolo e restituiscono risultati intermedi e finali, con il riferimento alla formula della Metodologia accanto a ogni passaggio. |
 | `src/lib/crediti/parametri.js` | 95 | tabelle numeriche della Metodologia usate come valori iniziali di ogni calcolo: fattori di emissione per tipologia di rifiuto (Tab. 3, 4, 7), pesi specifici (Tab. 8), beni a riuso (Tab. 5), buffer (Tab. 15 e Cap. 7), giorni… |
-| `src/lib/crediti/rapportoPdf.js` | 347 | genera nel browser, con jsPDF e jspdf-autotable, il rapporto di un calcolo: scheda, sintesi dei crediti, buffer, dati di ingresso, risultati per tipologia e per classe, avvisi, controlli di coerenza e scelte interpretative. Il… |
+| `src/lib/crediti/qualita.js` | 124 | indicatori di qualità dei dati di un calcolo dei crediti, oltre ai controlli di coerenza di tracciato.js: - soglia di scostamento ±30% (cap. 3.1.2) tra la produzione pro capite dei rifiuti del territorio e i valori medi del… |
+| `src/lib/crediti/rapportoPdf.js` | 369 | genera nel browser, con jsPDF e jspdf-autotable, il rapporto di un calcolo: scheda, sintesi dei crediti, buffer, dati di ingresso, risultati per tipologia e per classe, avvisi, controlli di coerenza e scelte interpretative. Il… |
 | `src/lib/crediti/tracciato.js` | 657 | legge il file del tracciato compilato dal Comune o dal gestore, blocca l'import se trova dati personali, converte i fogli nei dati del motore di calcolo (calcolo.js) e segnala le incoerenze. |
 | `src/lib/csv.js` | 157 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
-| `src/lib/cwpProgram.js` | 119 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e le 4 del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
+| `src/lib/cwpProgram.js` | 185 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
 | `src/lib/date.js` | 68 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO (anche la data italiana, indipendente dal fuso del computer). |
-| `src/lib/dati.js` | 865 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
-| `src/lib/fascicolo.js` | 352 | ZIP con: riepilogo PDF (Riepilogo.pdf, src/lib/fascicoloPdf.js), dati della pratica con l'Ente di Validazione, fasi, tutti i documenti in tutte le versioni (cartella Validazione per il rapporto dell'Ente; per i Rapporti anche il… |
+| `src/lib/dati.js` | 1024 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
+| `src/lib/fascicolo.js` | 354 | ZIP con: riepilogo PDF (Riepilogo.pdf, src/lib/fascicoloPdf.js), dati della pratica con l'Ente di Validazione, fasi, tutti i documenti in tutte le versioni (cartella Validazione per il rapporto dell'Ente; per i Rapporti anche il… |
 | `src/lib/fascicoloPdf.js` | 129 | un documento leggibile da stampare o archiviare insieme ai file del fascicolo: dati della pratica e dell'Ente di Validazione, fasi, elenco dei documenti (con l'impronta SHA-256), integrazioni, consultazioni pubbliche, pagamenti… |
 | `src/lib/file.js` | 158 | prima di inviare un file all'archivio controlla formato ammesso, dimensione, contenuto reale (primi byte, "firma" del formato) e prepara un nome sicuro per il percorso nell'archivio. Traduce anche gli errori dello Storage di… |
 | `src/lib/password.js` | 70 | controllo delle regole della password prima dell'invio, generazione della password temporanea assegnata dall'Amministratore, traduzione in italiano degli errori di Supabase Auth. |
 | `src/lib/supabase.js` | 37 | crea l'unico client @supabase/supabase-js usato dal portale (database, Auth, Storage, Edge Functions). Legge URL e chiave dalle variabili d'ambiente (file .env in locale, mai pubblicato; in produzione le variabili del progetto… |
+| `src/lib/tariffe.js` | 110 | calcolare le voci di pagamento proposte per una pratica dalle tariffe massime dello Schema tariffario (IVA esclusa). Sono proposte: lo staff le controlla, può cambiare l'importo e le salva come voci di pagamento (Pagamenti.jsx).… |
 
 **Database: script SQL (supabase)**
 
@@ -1165,13 +1213,16 @@ Inventario generato da `strumenti/inventario_codice.py`: 91 file, 20.965 righe i
 | `supabase/19_correzioni_revisione_codice.sql` | 47 | CORREZIONI EMERSE DALLA REVISIONE DEL CODICE (punto 31, 18/10/2026) |
 | `supabase/20_rinforzi_integrita.sql` | 300 | RINFORZI DI INTEGRITÀ (backlog 33, 18/10/2026) |
 | `supabase/21_completamento_funzionale.sql` | 679 | COMPLETAMENTO FUNZIONALE (confronto con i requisiti, 18/10/2026) |
+| `supabase/22_stato_ritirata.sql` | 14 | STATO «RITIRATA» DELLA PRATICA (Guida al Programma, cap. 6.4.1) |
+| `supabase/23_allineamento_guida.sql` | 857 | ALLINEAMENTO AI DOCUMENTI UFFICIALI DEL PROGRAMMA (18/10/2026) |
+| `supabase/24_programma_pubblico_crediti_reclami.sql` | 571 | PIATTAFORMA PUBBLICA, CREDITI EMESSI E RECLAMI (18/10/2026) |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `supabase/functions/consultazione-pubblica/index.ts` | 398 | servizio della pagina pubblica delle consultazioni (requisiti §6, decisioni B e D del 18/10/2026). Chiunque, senza account, può: - "elenco": vedere le consultazioni aperte; - "dettaglio": leggere documento, errata corrige e… |
+| `supabase/functions/consultazione-pubblica/index.ts` | 432 | servizio della pagina pubblica delle consultazioni (requisiti §6, decisioni B e D del 18/10/2026). Chiunque, senza account, può: - "elenco": vedere le consultazioni aperte; - "dettaglio": leggere documento, errata corrige e… |
 | `supabase/functions/crea-utente/index.ts` | 156 | crea un nuovo utente con password temporanea e imposta ruolo + organizzazione. L'Admin comunica la password all'utente, che potrà cambiarla al primo accesso. |
 | `supabase/functions/invia-email-notifica/index.ts` | 160 | invia per email ogni nuova notifica del portale (requisiti §9: "email + notifica interna"). |
 | `supabase/functions/recupera-password/index.ts` | 155 | «Password dimenticata?» — genera il collegamento di recupero di Supabase Auth e spedisce l'email in italiano con Resend (stessa grafica delle notifiche), invece del modello email di Supabase. |
@@ -1184,6 +1235,8 @@ Inventario generato da `strumenti/inventario_codice.py`: 91 file, 20.965 righe i
 | `test/crediti.test.mjs` | 144 | verifica del motore di calcolo con un esempio calcolato a mano (un piccolo Comune con 2 classi domestiche e 1 non domestica). Controlla le formule 1-17, 19-22 e 28-32 (non la 18: peso specifico a consuntivo), i buffer delle… |
 | `test/csv.test.mjs` | 53 | verifica che i CSV salvati da Excel in italiano (BOM, separatore ";", virgola decimale, punto delle migliaia, testi tra virgolette con ";" dentro, righe vuote) siano letti correttamente; che intestazioni con maiuscole/accenti… |
 | `test/date.test.mjs` | 31 | verificare le date in ora italiana usate per aprire le consultazioni (30 giorni) e per i nomi dei file: oggiItalia() deve dare sempre aaaa-mm-gg in fuso Europe/Rome, aggiungiGiorni() deve contare i giorni sul calendario (fine… |
+| `test/qualita.test.mjs` | 43 | verificare il confronto con la Tabella 3 dello Standard CWP (soglia ±30%) e gli indicatori di completezza, unicità, letture a buon fine e tempestività. |
+| `test/tariffe.test.mjs` | 44 | verificare gli importi proposti per le voci di pagamento con gli esempi dello Schema tariffario v1.2: fasce di popolazione, quote per credito previsto, scaglioni cumulativi di emissione e minimo di vendita. |
 | `test/tracciato.test.mjs` | 110 | cinque prove sui file di esempio: lettura dell'Excel compilato, blocco dei dati personali (con valori oscurati nei messaggi), ZIP di CSV con singole letture (aggregazione ed esclusione delle letture fuori anno), controlli di… |
 
 **Strumenti (strumenti)**
