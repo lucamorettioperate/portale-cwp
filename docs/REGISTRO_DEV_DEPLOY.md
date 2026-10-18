@@ -114,6 +114,9 @@ In breve: **GitHub conserva** il codice, **Vercel mostra** il portale,
   senza attività (si riattiva dalla dashboard).
 - Ambiente unico (produzione). I requisiti §15 chiedono un ambiente di prova
   separato: in backlog.
+- **Decisione del 18/10:** Vercel e Supabase passeranno a piani a pagamento
+  (backlog punto 29). I limiti dei piani gratuiti descritti qui sopra
+  valgono fino ad allora.
 
 ---
 
@@ -416,6 +419,11 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   fine progetto.
 - 18/10 — Formato dati: standard unico definito dalla Fondazione (tracciato
   v1.0), con ZIP ammesso per i dati voluminosi.
+- 18/10 — **Vercel e Supabase passeranno a piani a pagamento** (decisione di
+  Luca). Conseguenze previste, da verificare al momento dell'attivazione:
+  repository GitHub di nuovo privato (il piano gratuito di Vercel lo
+  impedisce), nessuna pausa del database per inattività, backup automatici
+  giornalieri di Supabase, limite per file caricato aumentabile oltre 50 MB.
 
 **Aperte**
 - A. Una nuova versione di documento durante una fase fa ripartire il
@@ -474,6 +482,10 @@ completato (va barrato qui e annotato in Cronologia).
 - **26.** Canale di messaggi tra Comune e Fondazione nella pratica (oggi solo la nota delle integrazioni).
 - **27.** Valutare se mostrare ai Comuni le voci di pagamento (oggi solo staff).
 - **28.** Riservatezza della documentazione: il registro è nel repository pubblico e i suoi file Word/PDF sono raggiungibili da chi conosce l'indirizzo (il portale li mostra solo agli Amministratori). Per renderli davvero riservati: archivio privato su Supabase con accesso solo Admin, o repository privato (oggi incompatibile con il piano gratuito di Vercel).
+
+**Infrastruttura**
+
+- **29.** Passaggio a piani a pagamento di **Vercel** e **Supabase** (decisione del 18/10). Dopo l'attivazione: rendere privato il repository GitHub e ricollegarlo a Vercel (risolve in buona parte il punto 28); verificare i backup automatici di Supabase e scrivere la procedura di ripristino (punto 18); valutare l'ambiente di prova separato (punto 18); decidere se alzare il limite di 50 MB per file; aggiornare i §2-3 di questo registro con piani, costi e intestatario dei contratti.
 
 **Da rifinire**
 

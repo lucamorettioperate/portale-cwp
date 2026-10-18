@@ -19,6 +19,12 @@
       "data": "18/10/2026",
       "descrizione": "Prima emissione: architettura, servizi, database (script 01-14), Edge Functions, pagine del portale (compresa Documentazione), funzionalità, procedure di rilascio, cronologia dal prototipo al 18/10/2026, artefatti, decisioni, backlog, problemi risolti.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.1",
+      "data": "18/10/2026",
+      "descrizione": "Pagina Documentazione; backlog riordinato; decisione di passare Vercel e Supabase a piani a pagamento (punto 29); riservatezza della documentazione (punto 28).",
+      "autore": "Fondazione Operate"
     }
   ]
 }
