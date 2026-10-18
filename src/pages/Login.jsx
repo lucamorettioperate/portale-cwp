@@ -124,6 +124,9 @@ export default function Login() {
             {inCorso ? "Accesso in corso…" : "Accedi"}
           </button>
         </form>
+        <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${C.line}`, fontSize: 12.5, color: C.grafite }}>
+          Comuni e gestori: <a href="/formato-dati" style={{ color: C.green, fontWeight: 600 }}>formato dei dati per il calcolo dei crediti</a>
+        </div>
       </div>
     </div>
   );

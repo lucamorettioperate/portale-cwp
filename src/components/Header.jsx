@@ -25,6 +25,7 @@ function vociMenu(ruolo) {
   return [
     ["/", "Le mie pratiche"],
     ["/documenti", "I tuoi documenti"],
+    ["/formato-dati", "Formato dati"],
   ];
 }
 

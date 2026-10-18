@@ -8,7 +8,7 @@ controllo MIME, scansione malware.
 | Controllo | Dove | Dettaglio |
 |---|---|---|
 | Dimensione massima 50 MB | Portale, archivio (bucket), database | 50 MB è anche il massimo per file del piano Supabase gratuito |
-| Formati ammessi | Portale, archivio, database | PDF, PDF firmato `.p7m`, Word (`.doc`, `.docx`), Excel (`.xls`, `.xlsx`), OpenDocument (`.odt`, `.ods`), RTF, CSV, TXT, JPG, PNG |
+| Formati ammessi | Portale, archivio, database | PDF, PDF firmato `.p7m`, Word (`.doc`, `.docx`), Excel (`.xls`, `.xlsx`), OpenDocument (`.odt`, `.ods`), RTF, CSV, TXT, JPG, PNG, ZIP (per i dati voluminosi del tracciato dati CWP) |
 | Tipo MIME | Archivio e database | il bucket accetta solo i tipi della lista; il database verifica che tipo ed estensione coincidano |
 | Contenuto reale | Portale | i primi byte del file devono corrispondere al formato dichiarato: un `.exe` rinominato in `.pdf` viene rifiutato |
 | Cartella della pratica | Database | un documento può riferirsi solo a un file presente nella cartella della propria pratica |

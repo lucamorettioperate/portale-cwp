@@ -12,6 +12,7 @@ import VerificaMfa from "./pages/VerificaMfa.jsx";
 import Crediti from "./pages/Crediti.jsx";
 import CalcoloCrediti from "./pages/CalcoloCrediti.jsx";
 import Impostazioni from "./pages/Impostazioni.jsx";
+import FormatoDati from "./pages/FormatoDati.jsx";
 import { COLORI as C } from "./lib/cwpProgram.js";
 
 // Schermata di caricamento mentre si verifica la sessione.
@@ -51,6 +52,8 @@ export default function App() {
         path="/login"
         element={caricamento ? <Caricamento /> : autenticato ? <Navigate to="/" replace /> : <Login />}
       />
+      {/* Pagina pubblica, senza login: formato dei dati per Comuni e gestori */}
+      <Route path="/formato-dati" element={<FormatoDati />} />
       <Route
         path="/"
         element={

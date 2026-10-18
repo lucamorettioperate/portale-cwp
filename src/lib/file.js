@@ -23,13 +23,14 @@ export const FORMATI = {
   jpg: { mime: "image/jpeg", firma: "jpg" },
   jpeg: { mime: "image/jpeg", firma: "jpg" },
   png: { mime: "image/png", firma: "png" },
+  zip: { mime: "application/zip", firma: "zip" }, // dati voluminosi (CSV del tracciato dati CWP)
 };
 
 // Per l'attributo "accept" dei campi di caricamento.
 export const ACCEPT = Object.keys(FORMATI).map((e) => "." + e).join(",");
 
 // Testo da mostrare vicino ai pulsanti di caricamento.
-export const FORMATI_LEGGIBILI = "PDF (anche firmati .p7m), Word, Excel, OpenDocument, RTF, CSV, TXT, JPG, PNG · max 50 MB";
+export const FORMATI_LEGGIBILI = "PDF (anche firmati .p7m), Word, Excel, OpenDocument, RTF, CSV, TXT, JPG, PNG, ZIP · max 50 MB";
 
 function estensione(nome) {
   const m = /\.([A-Za-z0-9]+)$/.exec(nome || "");

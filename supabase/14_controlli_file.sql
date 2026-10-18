@@ -4,7 +4,8 @@
 --
 --  - limite di dimensione: 50 MB per file (massimo del piano Supabase);
 --  - whitelist dei formati: PDF, PDF firmato (.p7m), Word, Excel,
---    OpenDocument, RTF, CSV, testo, immagini JPG/PNG;
+--    OpenDocument, RTF, CSV, testo, immagini JPG/PNG, ZIP (per i dati
+--    voluminosi del tracciato dati CWP);
 --  - controllo MIME: il bucket accetta solo i tipi della whitelist e il
 --    database verifica che estensione e tipo dichiarato coincidano.
 --    Il contenuto reale del file (le prime "firme" di byte) è verificato
@@ -33,7 +34,8 @@ language sql immutable as $$
     ('txt',  'text/plain'),
     ('jpg',  'image/jpeg'),
     ('jpeg', 'image/jpeg'),
-    ('png',  'image/png')
+    ('png',  'image/png'),
+    ('zip',  'application/zip')   -- dati voluminosi: CSV del tracciato dati CWP
 $$;
 
 create or replace function cwp_dimensione_massima()
