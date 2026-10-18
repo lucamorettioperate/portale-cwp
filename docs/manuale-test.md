@@ -60,18 +60,19 @@ Il portale è lo strumento unico con cui Comune e Fondazione seguono la pratica.
 | Area | Cosa fa il portale | Chi la usa |
 | --- | --- | --- |
 | Accesso | Email e password, password temporanea da cambiare al primo accesso, recupero della password, profilo | tutti |
-| Pratiche | Progetti e Rapporti di Monitoraggio, codice automatico (CWP-AAAA-NNNN), stati attiva / sospesa / annullata / chiusa | Fondazione; il Comune consulta |
-| Fasi | 7 fasi con apertura, scadenza calcolata, chiusura, modifica della scadenza con motivazione; note di fase interne o condivise; modelli da scaricare per fase | Fondazione; il Comune consulta |
+| Pratiche | Progetti e Rapporti di Monitoraggio, codice automatico (CWP-AAAA-NNNN), stati attiva / sospesa / annullata / chiusa; conservazione per 10 anni, nulla si cancella | Fondazione; il Comune consulta |
+| Fasi | 7 fasi per il Progetto, 4 per il Rapporto; apertura, scadenza calcolata, chiusura, modifica della scadenza con motivazione; note di fase interne o condivise; modelli da scaricare e documenti richiesti per fase | Fondazione; il Comune consulta |
+| Anagrafiche | Organizzazioni ed Enti di Validazione, con le pratiche collegate | Fondazione |
 | Messaggi | Conversazione tra Comune e Fondazione dentro ogni pratica | tutti |
 | Documenti | Caricamento con versioni (mai sovrascritte), visibilità, controllo di formato e contenuto, impronta di integrità | tutti |
 | Integrazioni | Richiesta della Fondazione → risposta del Comune con documento → chiusura | tutti |
-| Consultazione pubblica | Pagina pubblica per 30 giorni; osservazioni con email confermata e allegato; moderazione; risposte del Comune; errata corrige | tutti, anche senza accesso |
+| Consultazione pubblica | Pagina pubblica per 30 giorni; documento bloccato; osservazioni numerate con email confermata e allegato; moderazione con motivazione; risposte del Comune; errata corrige | tutti, anche senza accesso |
 | Pagamenti | Voci previste e incassi registrati a mano (nessun pagamento online) | Fondazione; il Comune consulta |
 | Notifiche | Campanella nel portale ed email per ogni evento importante; avvisi di scadenza | tutti |
 | Cruscotto | Tutte le pratiche con fase, scadenza e cose da fare, filtri e ricerca | Fondazione |
-| Export | Fascicolo completo della pratica in un file ZIP | tutti |
+| Export | Fascicolo completo della pratica in un file ZIP con riepilogo PDF | tutti |
 | Audit | Registro non modificabile di ogni operazione, con motivazione | Amministratore |
-| Utenti e impostazioni | Creazione utenti, associazione ai Comuni, reimpostazione password, durata delle fasi, Enti di Validazione, modelli di documento | Amministratore |
+| Utenti e impostazioni | Creazione utenti, associazione ai Comuni, reimpostazione password, durata delle fasi, documenti richiesti, modelli di documento | Amministratore |
 | Calcolo crediti | Import del tracciato dati del Comune con controllo dei dati personali e della coerenza, calcolo secondo la Metodologia, rapporto PDF, conferma con numero di registro, registro dei crediti, nuove versioni | Amministratore |
 | Formato dati | Pagina pubblica con il tracciato Excel standard per i dati dei Comuni | tutti, anche senza accesso |
 | Documentazione | Manuali e registro tecnico da scaricare | tutti (per ruolo) |
@@ -86,11 +87,13 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | --- | --- | --- |
 | 1.1 | [A] Impostazioni: cambiate la durata della fase 2 da 10 a 12 giorni con una motivazione | La durata complessiva si aggiorna; la modifica compare in Audit |
 | 1.2 | [A] Pratiche → + Nuovo progetto, con una **nuova** organizzazione «Comune di Prova» | Nasce la pratica CWP-AAAA-NNNN con 7 fasi; la fase 1 è In corso |
+| 1.2b | [O] Anagrafiche → Organizzazioni: Modifica «Comune di Prova» aggiungendo codice fiscale e PEC | Dati salvati; sotto l'organizzazione compare la pratica creata |
 | 1.3 | [A] Utenti → + Nuovo utente, ruolo Cliente, associato a «Comune di Prova» | L'utente compare in elenco; annotate la password temporanea |
 | 1.4 | [C] Accedete con la password temporanea | Il portale chiede subito una nuova password (min. 10 caratteri, lettere e numeri) |
 | 1.5 | [C] Aprite Il mio profilo e il Manuale | Dati dell'account; manuale scaricabile in PDF |
-| 1.6 | [A] Impostazioni → Enti di Validazione: + Nuovo ente «RINA (prova)» | L'ente compare in elenco |
-| 1.7 | [A] Impostazioni → Modelli di documento: un modello per la fase 1 e uno Generale | Pubblicati; il Comune vede il primo nella fase 1 e il secondo in I tuoi documenti |
+| 1.6 | [O] Anagrafiche → Enti di Validazione: + Nuovo ente «RINA (prova)» | L'ente compare in elenco (anche un Operatore può crearlo) |
+| 1.7 | [A] Impostazioni → Modelli di documento: un modello per «Progetto · Fase 1» e uno Generale | Pubblicati; il Comune vede il primo nella fase 1 e il secondo in I tuoi documenti |
+| 1.8 | [A] Impostazioni → Documenti richiesti per fase: Progetto, Fase 2, tipologia «Documento di progetto» | La voce compare in elenco |
 
 ### 2. Fase 1 — Adesione
 
@@ -111,22 +114,24 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | N. | Prova | Risultato atteso |
 | --- | --- | --- |
 | 3.1 | [O] Apri fase 2 | Scadenza = oggi + 12 giorni (prova 1.1); notifica al Comune |
-| 3.2 | [C] Nella fase 2 caricate un documento di progetto | Lo staff riceve la notifica «Il Cliente ha caricato un documento» |
+| 3.2 | [C] Nella fase 2 guardate «Documenti richiesti», poi caricate un file scegliendo «Documento di progetto» | Prima «○ manca», dopo «✓ presente»; lo staff riceve la notifica «Il Cliente ha caricato un documento» |
 | 3.3 | [C] Provate a caricare un file .exe, un file vuoto, un .txt rinominato in .pdf | Tutti rifiutati con un messaggio chiaro |
 | 3.4 | [O] Richiedi integrazione («manca la delibera TARI») | Fase In attesa di integrazione; notifica al Comune; nel Cruscotto «In attesa del Cliente» |
 | 3.5 | [C] Rispondete all'integrazione caricando un file | Richiesta «Risposta ricevuta»; notifica allo staff |
 | 3.6 | [O] Accetta e chiudi, poi Chiudi fase 2 | La fase torna In corso dopo la chiusura dell'integrazione, poi Completata |
+| 3.7 | [C] Riaprite la fase 2 completata | Il pulsante + Carica non c'è più (si carica solo nelle fasi aperte) |
 
 ### 4. Fasi 3 e 4 — Consultazione pubblica
 
 | N. | Prova | Risultato atteso |
 | --- | --- | --- |
-| 4.1 | [O] Apri fase 3; nel riquadro Consultazione pubblica scegliete il documento di progetto e Apri consultazione | Consultazione Attiva per 30 giorni; notifica al Comune; link alla pagina pubblica |
+| 4.1 | [O] Apri fase 3; nel riquadro Consultazione pubblica scegliete il documento di progetto e Apri consultazione | Consultazione Attiva per 30 giorni; il documento diventa Pubblico; notifica al Comune; link alla pagina pubblica |
+| 4.1b | [O] Sul documento in consultazione provate a togliere la spunta Pubblico | Rifiutato: «Il documento è pubblicato in una consultazione attiva…» |
 | 4.2 | Senza accesso, aprite Consultazioni pubbliche (link nella pagina di accesso) e la consultazione | Si leggono documento e osservazioni pubblicate |
 | 4.3 | Inviate un'osservazione con nome, email (quella del titolare del servizio email, vedi limiti) e un PDF allegato | Messaggio «Controlla la tua email»; arriva l'email di conferma |
 | 4.4 | Premete il pulsante dell'email; riprovate lo stesso collegamento | Prima volta: «osservazione ricevuta», notifica allo staff; seconda volta: collegamento già utilizzato |
 | 4.5 | Provate a inviare 4 osservazioni in un'ora con lo stesso indirizzo; un allegato .exe | La quarta e l'allegato sono rifiutati con un messaggio chiaro |
-| 4.6 | [O] Pubblica un'osservazione e Non pubblicare un'altra | Lo staff vede nome, email e allegato; il Comune e la pagina pubblica vedono solo quella pubblicata, firmata «Partecipante» |
+| 4.6 | [O] Pubblica un'osservazione; su un'altra Non pubblicare scrivendo una motivazione | Ogni osservazione ha il suo numero («Osservazione n. 1»); lo staff vede nome, email, allegato e la motivazione; il Comune riceve «Nuova osservazione a cui rispondere»; il Comune e la pagina pubblica vedono solo quella pubblicata, firmata «Partecipante» |
 | 4.7 | [O] + Pubblica errata corrige spuntando «Fai ripartire i 30 giorni», prima senza e poi con motivazione | Senza motivazione: errore; con motivazione: nuova chiusura a 30 giorni, visibile anche sulla pagina pubblica; notifica al Comune |
 | 4.8 | [C] Rispondete all'osservazione pubblicata | Stato Risposto; la risposta compare anche sulla pagina pubblica |
 | 4.9 | [O] Chiudi consultazione, chiudi la fase 3, apri e chiudi la fase 4 | Consultazione Chiusa; fasi Completate |
@@ -138,7 +143,7 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 5.1 | [O] Apri fase 5 e caricate un PDF con tipologia «Rapporto dell'Ente di Validazione» | Documento nella fase 5 |
 | 5.2 | [O] Modifica scadenza della fase 5 senza motivazione, poi con motivazione | Senza motivazione: errore; con motivazione: nuova scadenza, motivazione in Audit |
 | 5.3 | [O] Chiudete le fasi 5, 6 e 7 | Tutte Completate |
-| 5.4 | [O] e [C] Esporta fascicolo / Scarica documentazione | ZIP con documenti e riepiloghi; pagamenti e audit solo nell'export dello staff |
+| 5.4 | [O] e [C] Esporta fascicolo / Scarica documentazione | ZIP con Riepilogo.pdf, documenti, cartella Validazione (rapporto dell'Ente), Consultazione con osservazioni numerate e allegati, note e messaggi; pagamenti e audit (con i nomi) solo nell'export dello staff |
 
 ### 6. Stato della pratica e Rapporto di Monitoraggio
 
@@ -146,7 +151,9 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | --- | --- | --- |
 | 6.1 | [O] Sospendi la pratica con motivazione | Notifica al Comune con la motivazione |
 | 6.2 | [C] Aprite la pratica sospesa | Avviso «La pratica è sospesa…»; nessun pulsante + Carica; i Messaggi funzionano |
-| 6.3 | [O] Riattiva la pratica; nella sezione Rapporti di Monitoraggio premete + Rapporto anno 1 | Nasce la pratica CWP-…-RM1 con le sue 7 fasi |
+| 6.3 | [O] Riattiva la pratica; nella sezione Rapporti di Monitoraggio premete + Rapporto anno 1 | Nasce la pratica CWP-…-RM1 con 4 fasi (Caricamento del rapporto in corso, Verifica documentale, Validazione e verifica, Chiusura), senza consultazione |
+| 6.4 | [O] Nel Rapporto aprite la fase 2 | Scadenza = oggi + 10 giorni (durata del Rapporto in Impostazioni) |
+| 6.5 | [O] Chiudete la pratica (Chiudi pratica, con motivazione) | Stato Chiusa; nell'intestazione «Da conservare fino al» con la data tra 10 anni; riattivando la data sparisce |
 
 ### 7. Calcolo dei crediti (solo Amministratore)
 

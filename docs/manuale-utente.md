@@ -76,11 +76,11 @@ Per aprire una pratica fate clic sul suo riquadro: il dettaglio compare sotto l'
 
 Se non vedete pratiche compare il messaggio «Non risultano ancora pratiche a tuo carico»: la pratica appare quando la Fondazione registra il vostro progetto.
 
-In cima al dettaglio ci sono il codice, l'ente e lo stato. Se la pratica non è attiva è indicata anche la **Motivazione**. Il pulsante **Scarica documentazione** scarica in un unico file ZIP tutti i documenti della pratica (tutte le versioni) e i riepiloghi in formato CSV.
+In cima al dettaglio ci sono il codice, l'ente e lo stato. Se la pratica non è attiva è indicata anche la **Motivazione**. Il pulsante **Scarica documentazione** scarica in un unico file ZIP tutti i documenti della pratica (tutte le versioni), un riepilogo in PDF (Riepilogo.pdf) e i riepiloghi in formato CSV, comprese le osservazioni della consultazione con i loro allegati, le note condivise e i messaggi.
 
 ## Seguire una pratica: fasi e scadenze
 
-Ogni pratica attraversa 7 fasi. Le apre e le chiude Fondazione Operate; voi vedete in ogni momento a che punto siete e quanto tempo resta.
+Ogni Progetto attraversa 7 fasi (i Rapporti di Monitoraggio ne hanno 4, capitolo 9). Le apre e le chiude Fondazione Operate; voi vedete in ogni momento a che punto siete e quanto tempo resta.
 
 1. **Adesione**
 2. **Prima verifica documentale**
@@ -106,19 +106,23 @@ Dentro ogni fase trovate, quando presenti:
 - le **Richieste di integrazione** (capitolo 6);
 - le **Note della Fondazione**: indicazioni che la Fondazione vi lascia su quella fase, con data e ora;
 - i **Modelli da scaricare**: moduli o fac-simile da compilare per quella fase;
+- i **Documenti richiesti**: l'elenco dei documenti attesi in quella fase, con **✓ presente** oppure **○ manca**;
 - i **Documenti della fase**.
 
 **Ente di Validazione.** Quando la Fondazione assegna l'Ente di Validazione al vostro Progetto, il suo nome compare nell'intestazione della pratica.
 
-**Pratica sospesa, annullata o chiusa.** In alto compare un avviso: finché la pratica non torna attiva non si caricano documenti (il pulsante **+ Carica** non c'è) e non si risponde alle integrazioni. Potete sempre consultare tutto e scrivere alla Fondazione nella sezione **Messaggi**.
+**Pratica sospesa, annullata o chiusa.** In alto compare un avviso: finché la pratica non torna attiva non si caricano documenti (il pulsante **+ Carica** non c'è) e non si risponde alle integrazioni. Potete sempre consultare tutto e scrivere alla Fondazione nella sezione **Messaggi**. Una pratica chiusa o annullata riporta la data fino a cui viene conservata (10 anni).
 
 ## Caricare documenti
 
 I documenti si caricano in due punti della pratica: in **Documenti della fase**, dentro la fase a cui si riferiscono, oppure in **Documenti generali**, in fondo alla pratica, per quelli non legati a una fase.
 
 1. Aprite la pratica e individuate il riquadro giusto (fase o generali).
-2. Premete **+ Carica** e scegliete il file dal computer.
-3. Attendete: il pulsante mostra «Caricamento…». A fine caricamento il documento compare nell'elenco.
+2. Se la fase ha documenti richiesti, scegliete in «Che documento state caricando?» quale state caricando: così la fase segna il documento come presente.
+3. Premete **+ Carica** e scegliete il file dal computer.
+4. Attendete: il pulsante mostra «Caricamento…». A fine caricamento il documento compare nell'elenco.
+
+**Quando si può caricare.** Nelle fasi aperte (*In corso* o *In attesa di integrazione*) e tra i documenti generali. In una fase completata o non ancora aperta il pulsante **+ Carica** non c'è: se dovete inviare ancora qualcosa, scrivete alla Fondazione nella sezione **Messaggi**.
 
 **Formati accettati:** PDF (anche firmati .p7m), Word, Excel, OpenDocument, RTF, CSV, TXT, JPG, PNG, ZIP. **Dimensione massima:** 50 MB per file.
 
@@ -134,7 +138,7 @@ I documenti si caricano in due punti della pratica: in **Documenti della fase**,
 | File troppo grande (… MB): il limite è 50 MB | Comprimete il file in ZIP o dividetelo in più parti |
 | Il file è vuoto | Controllate di aver scelto il file giusto |
 | Il contenuto del file non corrisponde a un file .xxx | Il file non è del tipo indicato dal nome: riapritelo e salvatelo di nuovo nel formato corretto |
-| Operazione non consentita (la pratica potrebbe essere sospesa, annullata o chiusa) | Con la pratica non attiva non si caricano documenti: contattate la Fondazione |
+| Operazione non consentita (la pratica potrebbe essere sospesa, annullata o chiusa) | Con la pratica non attiva, o nella fase già chiusa, non si caricano documenti: contattate la Fondazione |
 
 ## Rispondere a una richiesta di integrazione
 
@@ -156,7 +160,7 @@ Nella fase 3 la Fondazione apre la consultazione pubblica sul vostro Progetto, d
 
 **Dove si partecipa.** La consultazione si svolge sulla pagina pubblica del portale **Consultazioni pubbliche** ([portale-cwp.vercel.app/consultazioni](https://portale-cwp.vercel.app/consultazioni)), raggiungibile senza credenziali anche dal link nella pagina di accesso. Chiunque può leggere il documento e inviare un'osservazione: per farla arrivare deve confermare il proprio indirizzo email con il collegamento che riceve. Il link alla pagina pubblica del vostro Progetto compare nel riquadro **Consultazione pubblica**: potete diffonderlo ai cittadini.
 
-**Osservazioni.** La Fondazione modera le osservazioni: voi vedete solo quelle *Pubblicate* o già *Risposte*, firmate *Partecipante* oppure con il nome, se l'autore ha scelto di pubblicarlo. Se un'osservazione ha un allegato compare il collegamento **Allegato**.
+**Osservazioni.** La Fondazione modera le osservazioni: voi vedete solo quelle *Pubblicate* o già *Risposte*, con il numero (**Osservazione n. 3**), firmate *Partecipante* oppure con il nome, se l'autore ha scelto di pubblicarlo. Se un'osservazione ha un allegato compare il collegamento **Allegato**. Quando la Fondazione pubblica una nuova osservazione ricevete la notifica «Nuova osservazione a cui rispondere».
 
 **Errata corrige.** Se il documento in consultazione contiene un errore, la Fondazione pubblica un'**errata corrige** (con l'eventuale documento corretto) e ricevete la notifica. In alcuni casi la Fondazione può far ripartire i 30 giorni: la nuova data di chiusura compare nell'errata corrige.
 
@@ -181,7 +185,12 @@ I vostri messaggi compaiono a destra; quelli della Fondazione, firmati «Fondazi
 
 ## Rapporti di monitoraggio e pagamenti
 
-Dopo la conclusione del Progetto, ogni anno si presenta un **Rapporto di Monitoraggio**, fino a 10 per Progetto. Ogni Rapporto è una pratica a sé, con le sue 7 fasi e i suoi documenti; lo crea la Fondazione.
+Ogni anno si presenta un **Rapporto di Monitoraggio**, fino a 10 per Progetto. Ogni Rapporto è una pratica a sé, con i suoi documenti e 4 fasi, senza consultazione pubblica; lo crea la Fondazione.
+
+1. **Caricamento del rapporto** (già in corso quando il Rapporto nasce)
+2. **Verifica documentale**
+3. **Validazione e verifica**
+4. **Chiusura**
 
 1. Aprite il Progetto: in basso trovate **Rapporti di Monitoraggio (N/10)**.
 2. Fate clic su un Rapporto («Anno N · codice») per aprirlo.

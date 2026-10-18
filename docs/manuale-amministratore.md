@@ -18,9 +18,10 @@ Nel portale la Fondazione lavora con due ruoli:
 | Cruscotto, pratiche, fasi, scadenze | sì | sì |
 | Documenti, integrazioni, consultazione, pagamenti | sì | sì |
 | Export del fascicolo | sì | sì |
+| Anagrafiche (Organizzazioni ed Enti di Validazione) | sì | sì |
 | Gestione utenti | — | sì |
 | Audit trail | — | sì |
-| Impostazioni (durata delle fasi, Enti di Validazione, modelli) | — | sì |
+| Impostazioni (durata delle fasi, documenti richiesti, modelli) | — | sì |
 | Calcolo dei crediti CWP | — | sì |
 | Documentazione (Registro e questo manuale) | — | sì |
 
@@ -31,6 +32,7 @@ L'**Ente di Validazione** (RINA) non ha un accesso al portale: il suo rapporto v
 - **Ogni azione importante è registrata** nell'audit trail, con autore, data e ora, stato prima e dopo. Il registro non si può modificare.
 - **Le azioni eccezionali richiedono una motivazione**: cambio di stato della pratica, modifica di una scadenza, chiusura di un'integrazione senza risposta, modifica della durata delle fasi. La motivazione finisce nell'audit.
 - **I documenti non si sovrascrivono mai**: ogni caricamento crea una nuova versione e le precedenti restano consultabili.
+- **Nulla si cancella**: tutti i dati delle pratiche si conservano per 10 anni (requisiti §12).
 - **Un calcolo dei crediti confermato non si modifica più**: le correzioni si fanno con una nuova versione.
 
 ## Accesso, profilo e verifica in due passaggi
@@ -39,8 +41,8 @@ Si accede da [portale-cwp.vercel.app](https://portale-cwp.vercel.app) con **Emai
 
 | Ruolo | Voci di menu |
 | --- | --- |
-| Operatore | Cruscotto, Pratiche, Manuale |
-| Amministratore | Cruscotto, Pratiche, Utenti, Audit, Crediti CWP, Impostazioni, Documentazione |
+| Operatore | Cruscotto, Pratiche, Anagrafiche, Manuale |
+| Amministratore | Cruscotto, Pratiche, Utenti, Audit, Anagrafiche, Crediti CWP, Impostazioni, Documentazione |
 
 **Il mio profilo.** Facendo clic sulla propria email si apre la pagina con i dati dell'account, il pulsante **Cambia password** e i documenti da scaricare (per l'Amministratore: Manuale Utente, Manuale Amministratore e Registro sviluppo e deploy).
 
@@ -97,7 +99,16 @@ Vengono create le 7 fasi: la 1 (Adesione) già *In corso*, le altre *Non iniziat
 2. Nella sezione **Rapporti di Monitoraggio (N/10)** premete **+ Rapporto anno N**.
 3. Il Rapporto nasce con codice `<codice progetto>-RMN`, eredita l'ente e si apre subito.
 
-I Rapporti si creano in ordine (l'anno N richiede l'anno N−1), fino a 10. Ogni Rapporto ha fasi, documenti e pagamenti propri, senza consultazione pubblica. Per tornare al Progetto: **← Torna al Progetto**.
+I Rapporti si creano in ordine (l'anno N richiede l'anno N−1), fino a 10, in qualsiasi momento mentre il Progetto è attivo. Ogni Rapporto ha documenti e pagamenti propri e un percorso di **4 fasi**, senza consultazione pubblica:
+
+| Fase del Rapporto | Durata iniziale (giorni) |
+| --- | --- |
+| 1. Caricamento del rapporto | avvio (già *In corso*) |
+| 2. Verifica documentale | 10 |
+| 3. Validazione e verifica | 75 |
+| 4. Chiusura | 15 |
+
+Le durate si cambiano in Impostazioni. Per tornare al Progetto: **← Torna al Progetto**.
 
 **Utenti del Comune.** Perché il Comune veda la pratica, il suo referente deve essere associato all'organizzazione (capitolo «Gestione utenti»).
 
@@ -114,7 +125,9 @@ Le azioni sulle fasi compaiono nella scheda di ciascuna fase, **solo se la prati
 
 **Note di fase.** Sotto ogni fase, **+ Aggiungi nota** apre un campo di testo. Senza spunta la nota è **interna** (la vede solo la Fondazione, bordo arancione); con la spunta **Visibile al Comune** la nota è **condivisa** (bordo verde) e il Comune riceve la notifica «Nuova nota della Fondazione». Le note non si modificano né si cancellano e finiscono nell'audit: per correggere, aggiungete una nuova nota.
 
-**Ente di Validazione della pratica.** Nell'intestazione della pratica, accanto a «Ente di Validazione», premete **Assegna** (o **Cambia**), scegliete l'ente e premete **Salva**. L'elenco degli enti si gestisce in Impostazioni (capitolo «Impostazioni»). Il Comune vede il nome dell'ente assegnato. L'assegnazione è registrata nell'audit.
+**Documenti richiesti.** Se in Impostazioni sono indicati i documenti richiesti per una fase, la fase mostra l'elenco con **✓ presente** o **○ manca** (un documento conta se ha quella tipologia). È solo un promemoria: la fase si chiude comunque.
+
+**Ente di Validazione della pratica.** Nell'intestazione della pratica, accanto a «Ente di Validazione», premete **Assegna** (o **Cambia**), scegliete l'ente e premete **Salva**. L'elenco degli enti si gestisce nella pagina **Anagrafiche** (capitolo «Anagrafiche»). Il Comune vede il nome dell'ente assegnato. L'assegnazione è registrata nell'audit.
 
 **Nuove versioni durante una fase.** Se il Comune carica una nuova versione di un documento mentre la fase è aperta, la scadenza **non riparte** (decisione della Fondazione del 18/10/2026). Se serve più tempo si usa **Modifica scadenza** con la motivazione.
 
@@ -131,7 +144,9 @@ Le azioni sulle fasi compaiono nella scheda di ciascuna fase, **solo se la prati
 2. Scrivete la **Motivazione (obbligatoria)**, almeno 3 caratteri.
 3. Premete **Conferma**.
 
-Il Comune riceve la notifica con la motivazione, che resta visibile nell'intestazione della pratica. Con la pratica sospesa, annullata o chiusa il Comune vede un avviso che lo spiega, non ha il pulsante **+ Carica** e non può rispondere alle integrazioni; può sempre scrivere nella sezione Messaggi (non sulle pratiche annullate).
+Il Comune riceve la notifica con la motivazione, che resta visibile nell'intestazione della pratica. Con la pratica sospesa, annullata o chiusa il Comune vede un avviso che lo spiega, non ha il pulsante **+ Carica** e non può rispondere alle integrazioni; può sempre scrivere nella sezione Messaggi (non sulle pratiche annullate). La pratica chiusa la chiude sempre lo staff: completare la fase finale non la chiude da sola.
+
+**Conservazione per 10 anni.** Nulla si cancella dal portale: pratiche, fasi, documenti, consultazioni, pagamenti e anagrafiche restano. Quando una pratica viene chiusa o annullata, l'intestazione riporta **Da conservare fino al** (10 anni dopo); se la pratica viene riattivata la data sparisce.
 
 ## Documenti e visibilità
 
@@ -148,7 +163,9 @@ Formati ammessi: PDF (anche .p7m), Word, Excel, OpenDocument, RTF, CSV, TXT, JPG
 
 **Versioni.** Un file con lo stesso nome nella stessa pratica diventa la nuova versione (v2, v3…); le precedenti restano consultabili. Per ogni documento lo staff vede anche l'impronta *hash* che ne garantisce l'integrità e l'etichetta *solo Fondazione* se non è visibile al Cliente.
 
-**Cambiare la visibilità.** Le caselle **Cliente** e **Pubblico** su ogni riga si possono cambiare in qualsiasi momento; la modifica è registrata nell'audit. Il Rapporto di RINA va caricato con tipologia *Rapporto dell'Ente di Validazione*.
+**Cambiare la visibilità.** Le caselle **Cliente** e **Pubblico** su ogni riga si possono cambiare in qualsiasi momento, tranne per il documento in consultazione pubblica attiva (vedi «Consultazione pubblica»); la modifica è registrata nell'audit. Il Rapporto di RINA va caricato con tipologia *Rapporto dell'Ente di Validazione*: nel fascicolo esportato finisce nella cartella *Validazione*.
+
+**Caricamenti del Comune.** Il Comune carica documenti solo nelle fasi aperte (*In corso* o *In attesa di integrazione*) e tra i documenti generali; in una fase completata o non ancora aperta il pulsante **+ Carica** non compare. Se la fase ha documenti richiesti, il Comune sceglie anche quale sta caricando.
 
 ## Richieste di integrazione
 
@@ -172,18 +189,20 @@ La consultazione pubblica riguarda solo i Progetti (fase 3) e dura 30 giorni. Si
 
 1. Caricate prima il documento da sottoporre a consultazione (capitolo «Documenti e visibilità»).
 2. Nel riquadro **Consultazione pubblica** della pratica scegliete il documento.
-3. Premete **Apri consultazione**. Il periodo va da oggi a 30 giorni dopo, il Comune riceve la notifica e la consultazione compare nell'elenco pubblico.
+3. Premete **Apri consultazione**. Il periodo va da oggi a 30 giorni dopo (date in ora italiana), il Comune riceve la notifica e la consultazione compare nell'elenco pubblico.
+
+Il documento scelto diventa **pubblico** e resta **bloccato** finché la consultazione è attiva: non se ne possono cambiare visibilità, tipologia o fase. Per sostituirlo si usa l'errata corrige. C'è una sola consultazione attiva alla volta per Progetto.
 
 Nel riquadro trovate il periodo, i giorni rimanenti, il documento e il **link alla pagina pubblica** da diffondere.
 
 **Come arriva un'osservazione.** Sulla pagina pubblica chiunque scrive nome, email, testo e, se vuole, un allegato (PDF, JPG, PNG, DOCX o ODT, massimo 10 MB). Deve acconsentire al trattamento dei dati e può scegliere di pubblicare il proprio nome. Il portale gli invia un'email con il pulsante **Conferma e invia l'osservazione →**, valido 48 ore e una sola volta: solo dopo la conferma l'osservazione arriva alla Fondazione come *Ricevuto*, con la notifica «Nuova osservazione da moderare». Il portale limita gli invii (3 all'ora per indirizzo) e blocca i robot.
 
-**Moderare le osservazioni.** Lo staff vede di ogni osservazione nome, email («email confermata»), data e ora, allegato e se l'autore ha scelto di pubblicare il nome.
+**Moderare le osservazioni.** Ogni osservazione ha un numero progressivo (**Osservazione n. 3**), lo stesso sulla pagina pubblica, per il Comune e nel fascicolo. Lo staff vede anche nome, email («email confermata»), data e ora, allegato e se l'autore ha scelto di pubblicare il nome.
 
 | Pulsante | Effetto |
 | --- | --- |
-| Pubblica | L'osservazione diventa *Pubblicato*: compare sulla pagina pubblica e il Comune può rispondere |
-| Non pubblicare | L'osservazione diventa *Non pubblicato* (motivazione «Non ammesso dal moderatore») |
+| Pubblica | L'osservazione diventa *Pubblicato*: compare sulla pagina pubblica e il Comune riceve la notifica «Nuova osservazione a cui rispondere» |
+| Non pubblicare | Si apre il campo **Motivazione** (facoltativa, non pubblica); con **Conferma: non pubblicare** l'osservazione diventa *Non pubblicato*. Non viene cancellata e la motivazione resta nella pratica e nell'audit |
 
 Sulla pagina pubblica e per il Comune l'autore compare come *Partecipante*, oppure con il nome se l'ha scelto; l'email non è mai pubblicata. Le risposte le scrive il Comune e compaiono anche sulla pagina pubblica.
 
@@ -229,14 +248,18 @@ Il pulsante **Esporta fascicolo**, nell'intestazione della pratica, scarica tutt
 
 | Contenuto | Dettaglio |
 | --- | --- |
+| Riepilogo.pdf | Sintesi leggibile: dati della pratica ed Ente di Validazione, fasi, documenti con impronta, integrazioni, consultazioni, pagamenti e storico (questi due solo per lo staff) |
 | Documenti/Generali, Documenti/Fase N | Tutti i documenti, in tutte le versioni (`nome_vN`) |
-| pratica.csv, fasi.csv, documenti.csv | Dati della pratica, delle fasi e dei documenti, con l'impronta SHA-256 |
+| Validazione | Il rapporto dell'Ente di Validazione (tipologia *Rapporto dell'Ente di Validazione*) |
+| Contratto del Progetto | Solo per i Rapporti: contratto e allegati del Progetto |
+| pratica.csv, fasi.csv, documenti.csv | Dati della pratica (con Ente e data di conservazione), delle fasi e dei documenti, con l'impronta SHA-256 |
 | integrazioni.csv | Se ci sono richieste di integrazione |
-| consultazione.csv, consultazione_info.txt | Se c'è stata una consultazione |
-| pagamenti.csv, audit.csv | Solo nell'export dello staff |
+| Consultazione/ | Osservazioni numerate e anonime con i loro allegati, errata corrige, info.txt |
+| note_di_fase.csv, messaggi.csv | Note (per il Comune solo quelle condivise) e messaggi |
+| pagamenti.csv, audit.csv | Solo nell'export dello staff, con i nomi di chi ha registrato e operato |
 | LEGGIMI.txt | Descrizione del contenuto |
 
-I file CSV si aprono direttamente con Excel. Se alcuni file non si recuperano il pulsante lo segnala («N file non recuperati»). Il Comune ha lo stesso export («Scarica documentazione») senza pagamenti e audit.
+I file CSV si aprono direttamente con Excel. Se alcuni file non si recuperano il pulsante lo segnala («N file non recuperati»). Il Comune ha lo stesso export («Scarica documentazione») senza pagamenti, audit e note interne.
 
 ## Notifiche ed email
 
@@ -299,15 +322,39 @@ Sono registrati, tra gli altri: apertura e chiusura delle fasi, modifiche di sca
 
 Il registro non si può modificare né cancellare, neppure dagli Amministratori.
 
-## Impostazioni: fasi, Enti di Validazione e modelli
+## Anagrafiche: Organizzazioni ed Enti di Validazione
 
-La pagina **Impostazioni** ha tre sezioni: durata delle fasi, Enti di Validazione e modelli di documento.
+La pagina **Anagrafiche** è aperta a Operatori e Amministratori. Nulla si cancella: le anagrafiche restano anche quando non servono più.
+
+### Organizzazioni
+
+Elenco dei Comuni, soggetti gestori e aziende, con la ricerca per nome, codice fiscale, partita IVA o PEC; sotto ogni organizzazione compaiono le sue pratiche.
+
+1. Premete **+ Nuova organizzazione** (oppure **Modifica** su una esistente).
+2. Compilate **Denominazione** (obbligatoria), **Tipo**, **Codice fiscale**, **Partita IVA**, **PEC**, **Note**.
+3. Premete **Salva**.
+
+Un'organizzazione si può creare anche al momento di creare un Progetto (**+ Nuovo progetto → Nuova**).
+
+### Enti di Validazione
+
+Anagrafica degli enti che validano i Progetti (ad esempio RINA). Gli enti non accedono al portale. Sotto ogni ente compaiono le pratiche a cui è assegnato.
+
+1. Premete **+ Nuovo ente**.
+2. Compilate **Denominazione** (obbligatoria) e, se disponibili, **Identificativo**, **Accreditamento**, **Referente**, **Email**, **Telefono**, **Note**.
+3. Premete **Salva**.
+
+**Modifica** cambia i dati. Un ente non si cancella: togliendo **Attivo** non si può più assegnare a nuove pratiche, ma resta su quelle a cui era assegnato. L'assegnazione alle pratiche si fa dall'intestazione della pratica.
+
+## Impostazioni: fasi, documenti richiesti e modelli
+
+La pagina **Impostazioni** (solo Amministratori) ha quattro sezioni: durata delle fasi del Progetto, durata delle fasi del Rapporto di Monitoraggio, documenti richiesti per fase e modelli di documento.
 
 ### Durata delle fasi
 
-La sezione fissa quanti giorni dura ogni fase. Quando un Operatore apre una fase, la scadenza è calcolata con questi valori.
+Due tabelle, una per il **Progetto** e una per il **Rapporto di Monitoraggio**, fissano quanti giorni dura ogni fase. Quando un Operatore apre una fase, la scadenza è calcolata con questi valori.
 
-| Fase | Durata iniziale (giorni) | Giorni del percorso |
+| Fase del Progetto | Durata iniziale (giorni) | Giorni del percorso |
 | --- | --- | --- |
 | 1. Adesione | avvio | 0 |
 | 2. Prima verifica documentale | 10 | 0 → 10 |
@@ -317,23 +364,26 @@ La sezione fissa quanti giorni dura ogni fase. Quando un Operatore apre una fase
 | 6. Seconda verifica documentale | 15 | 135 → 150 |
 | 7. Chiusura | 0 | 150 |
 
+Le durate iniziali del Rapporto sono nel capitolo «Pratiche».
+
 **Modificare una durata**
 
-1. Scrivete i nuovi giorni nella colonna **Durata (giorni)**: le colonne *Dal giorno*, *Al giorno* e la durata complessiva si aggiornano subito.
+1. Nella tabella giusta scrivete i nuovi giorni nella colonna **Durata (giorni)**: le colonne *Dal giorno*, *Al giorno* e la durata complessiva si aggiornano subito.
 2. Scrivete la **Motivazione della modifica** (es. «delibera della Fondazione del …»).
 3. Premete **Salva la modifica** (o **Salva N modifiche**).
 
 Valori ammessi: da 0 a 365 giorni. La nuova durata vale per le fasi **aperte da quel momento**: le scadenze già fissate restano e si cambiano pratica per pratica con *Modifica scadenza*. Ogni modifica è registrata nell'audit.
 
-### Enti di Validazione
+### Documenti richiesti per fase
 
-Anagrafica degli enti che validano i Progetti (ad esempio RINA). Gli enti non accedono al portale.
+L'elenco dei documenti che ci si aspetta in ogni fase, per Progetto e Rapporto.
 
-1. Premete **+ Nuovo ente**.
-2. Compilate **Denominazione** (obbligatoria) e, se disponibili, **Identificativo**, **Accreditamento**, **Referente**, **Email**, **Telefono**, **Note**.
-3. Premete **Salva**.
+1. Premete **+ Aggiungi**.
+2. Scegliete **Tipo di pratica** e **Fase**.
+3. Scegliete la **Tipologia del documento** oppure **Altra (scrivila)…** per una tipologia nuova (es. «Delibera tariffaria»).
+4. Se serve scrivete una **Descrizione** (la vede anche il Comune) e premete **Aggiungi**.
 
-**Modifica** cambia i dati. Un ente non si cancella: togliendo **Attivo** non si può più assegnare a nuove pratiche, ma resta su quelle a cui era assegnato. L'assegnazione alle pratiche si fa dall'intestazione della pratica.
+Nella pratica la fase mostra quali documenti sono presenti e quali mancano; il Comune, caricando in quella fase, sceglie quale documento sta caricando. **Togli** disattiva una voce (si rimette con **Rimetti**). L'indicatore non blocca la chiusura della fase.
 
 ### Modelli di documento
 
@@ -341,7 +391,7 @@ Moduli e fac-simile che i Comuni scaricano dal portale.
 
 1. Premete **+ Nuovo modello**.
 2. Scrivete il **Titolo** (es. «Modulo di adesione») e, se serve, una **Descrizione**.
-3. In **Dove compare** scegliete una fase (il modello comparirà dentro quella fase in ogni pratica, sotto «Modelli da scaricare») oppure **Generale** (comparirà nella pagina «I tuoi documenti» dei Comuni).
+3. In **Dove compare** scegliete una fase del Progetto o del Rapporto (il modello comparirà dentro quella fase in ogni pratica di quel tipo, sotto «Modelli da scaricare») oppure **Generale** (comparirà nella pagina «I tuoi documenti» dei Comuni).
 4. Scegliete il **File** (stessi formati e limiti dei documenti) e premete **Carica e pubblica**.
 
 Per aggiornare un modello caricate la nuova versione e premete **Ritira** su quella vecchia: i file non si sovrascrivono. Un modello ritirato si può ripubblicare con **Ripubblica**. Ogni operazione è registrata nell'audit.

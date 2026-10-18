@@ -53,6 +53,12 @@
       "data": "18/10/2026",
       "descrizione": "Nuova tipologia di documento «Rapporto di calcolo dei crediti».",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.9",
+      "data": "18/10/2026",
+      "descrizione": "Rapporti di Monitoraggio con 4 fasi; documenti richiesti per fase; caricamenti solo nelle fasi aperte; osservazioni numerate e notifica di quelle da rispondere; data di conservazione; fascicolo con riepilogo PDF.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -85,6 +91,12 @@
       "data": "18/10/2026",
       "descrizione": "Calcolo crediti: il risultato si azzera quando cambiano dati o Banca Dati Utenze, conferma solo dopo un nuovo «Calcola». Gestione utenti: password temporanea di almeno 10 caratteri con lettere e numeri, creazione annullata se non va a buon fine, nessun accesso ai dati prima del cambio password.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.5",
+      "data": "18/10/2026",
+      "descrizione": "Nuova pagina Anagrafiche (Organizzazioni ed Enti, anche per gli Operatori); Rapporti con 4 fasi e durate proprie; documenti richiesti per fase; consultazione con documento bloccato, osservazioni numerate e motivazione; conservazione per 10 anni; fascicolo con riepilogo PDF e nuove cartelle.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -116,6 +128,12 @@
       "rev": "1.4",
       "data": "18/10/2026",
       "descrizione": "Nuova prova 7.12 (risultato azzerato dopo una modifica dei dati); prove successive del blocco 7 rinumerate; prova 8.4 estesa.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.5",
+      "data": "18/10/2026",
+      "descrizione": "Nuove prove 1.2b, 1.8, 3.7, 4.1b, 6.4, 6.5; prove 1.6, 1.7, 3.2, 4.1, 4.6, 5.4 e 6.3 aggiornate (anagrafiche, documenti richiesti, consultazione, Rapporti a 4 fasi, conservazione, fascicolo).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -178,6 +196,12 @@
       "rev": "1.9",
       "data": "18/10/2026",
       "descrizione": "Script 20 (rinforzi di integrità, ora italiana nel database), funzioni crea-utente e consultazione-pubblica ripubblicate, punto 33 completato; decisione sull'audit.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.0",
+      "data": "18/10/2026",
+      "descrizione": "Completamento funzionale dai requisiti (script 21): Rapporti a 4 fasi, documenti richiesti, anagrafiche per lo staff, consultazione bloccata e numerata, conservazione 10 anni, fascicolo completo; funzione consultazione-pubblica ripubblicata.",
       "autore": "Fondazione Operate"
     }
   ]
