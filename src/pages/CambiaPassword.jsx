@@ -1,3 +1,28 @@
+/* =========================================================================
+   Cambia password — tre usi (src/App.jsx):
+     «/password»            modo "volontario"   (pagina protetta)
+     «/reimposta-password»  modo "recupero"     (pagina pubblica: arrivo dal
+                                                 link dell'email di recupero)
+     qualsiasi pagina protetta, modo "obbligatorio", finché il profilo ha
+     ancora la password temporanea (Protetta in App.jsx la mostra al posto
+     della pagina richiesta).
+   Scopo: scegliere una nuova password, con le regole di src/lib/password.js.
+     - "obbligatorio": primo accesso con password temporanea (o reimpostata
+       dall'Amministratore): finché non la cambia l'utente non entra;
+     - "volontario": l'utente cambia la propria password dal menu;
+     - "recupero": l'utente arriva dal link dell'email «password dimenticata».
+   Chi la usa: tutti i ruoli; il recupero anche senza accesso già fatto.
+   Dati: cambiaPassword() di src/lib/AuthContext.jsx (Supabase Auth
+     updateUser + RPC password_cambiata, script 15, che toglie l'obbligo e
+     scrive l'audit); controllaPassword / traduciErroreAuth / REGOLE_PASSWORD
+     di src/lib/password.js.
+   Sicurezza: l'obbligo di cambio è imposto dall'interfaccia (App.jsx). Il
+     database garantisce solo che l'utente non possa togliersi da solo il
+     flag password_temporanea senza passare da password_cambiata() (trigger
+     profilo_campi_protetti, script 15). Il link di recupero è validato da
+     Supabase Auth.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)».
+   ========================================================================= */
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { COLORI as C } from "../lib/cwpProgram.js";
@@ -5,11 +30,10 @@ import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
 import { controllaPassword, traduciErroreAuth, REGOLE_PASSWORD } from "../lib/password.js";
 
-/* Cambio della password, in tre situazioni:
-   - "obbligatorio": primo accesso con password temporanea (o reimpostata
-     dall'Amministratore): finché non la cambia l'utente non entra nel portale;
-   - "volontario": l'utente cambia la propria password dal menu;
-   - "recupero": l'utente arriva dal link dell'email "password dimenticata". */
+/* Modulo di cambio password.
+   Prop `modo`: "volontario" (predefinito), "obbligatorio" o "recupero".
+   Nei modi "obbligatorio" e "recupero" la pagina è a schermo intero senza
+   intestazione; dopo il salvataggio porta a «/» dopo 1,5 secondi. */
 export default function CambiaPassword({ modo = "volontario" }) {
   const { utente, cambiaPassword, esci, mfa, autenticato, caricamento } = useAuth();
   const navigate = useNavigate();
@@ -27,10 +51,14 @@ export default function CambiaPassword({ modo = "volontario" }) {
   // Link di recupero scaduto o già usato: Supabase lo segnala nell'indirizzo.
   const linkNonValido = modo === "recupero" && /error_code=|error=/.test(window.location.hash + window.location.search);
 
+  // Invio del modulo: controlla i campi, salva la nuova password e mostra
+  // la conferma. Gli errori di Supabase sono tradotti in italiano.
   async function salva(e) {
     e.preventDefault();
     setErrore("");
     if (chiediAttuale && !attuale) return setErrore("Inserisci la password attuale.");
+    // Almeno 10 caratteri con lettere e numeri, niente parte locale
+    // dell'email, le due password devono coincidere (src/lib/password.js).
     const problema = controllaPassword(nuova, conferma, utente?.email || "");
     if (problema) return setErrore(problema);
     setInCorso(true);
@@ -41,6 +69,7 @@ export default function CambiaPassword({ modo = "volontario" }) {
     if (modo !== "volontario") setTimeout(() => navigate("/", { replace: true }), 1500);
   }
 
+  // Titolo e sottotitolo del modulo per ciascun modo.
   const titoli = {
     obbligatorio: ["Scegli la tua password", "Hai effettuato l'accesso con una password temporanea. Per continuare scegline una personale, che conoscerai solo tu."],
     volontario: ["Cambia password", "Scegli una nuova password per accedere al portale."],
@@ -48,6 +77,8 @@ export default function CambiaPassword({ modo = "volontario" }) {
   };
   const [titolo, sottotitolo] = titoli[modo];
 
+  // Riquadro centrato che contiene il modulo o i messaggi. Fuori dal modo
+  // "volontario" occupa tutto lo schermo e mostra il logo.
   const scheda = (contenuto) => (
     <div style={{ minHeight: modo === "volontario" ? "auto" : "100vh", display: "grid", placeItems: "center", background: C.paper, padding: 20 }}>
       <div style={{ width: "100%", maxWidth: 420, background: C.white, border: `1px solid ${C.line}`, borderRadius: 16, padding: "28px 26px" }}>
@@ -59,6 +90,8 @@ export default function CambiaPassword({ modo = "volontario" }) {
     </div>
   );
 
+  // Scelta del contenuto, in ordine: verifica del link in corso, link non
+  // valido (o nessuna sessione di recupero), conferma, modulo.
   let corpo;
   if (modo === "recupero" && caricamento) {
     corpo = scheda(<div style={{ color: C.grafite, fontSize: 14 }}>Verifica del collegamento…</div>);
@@ -112,6 +145,7 @@ export default function CambiaPassword({ modo = "volontario" }) {
     );
   }
 
+  // Solo il cambio volontario sta dentro il portale, con l'intestazione.
   if (modo !== "volontario") return corpo;
   return (
     <div style={{ background: C.paper, minHeight: "100vh" }}>
@@ -121,6 +155,7 @@ export default function CambiaPassword({ modo = "volontario" }) {
   );
 }
 
+// Stili condivisi del modulo.
 const h1 = { fontFamily: "'Archivo'", fontSize: 20, margin: "0 0 8px" };
 const testo = { fontSize: 13.5, color: C.grafite, margin: "0 0 16px", lineHeight: 1.5 };
 const etichetta = { display: "block", fontSize: 12, color: C.grafite, fontWeight: 600, marginBottom: 14 };

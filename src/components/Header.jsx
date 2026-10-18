@@ -1,10 +1,34 @@
+/* =========================================================================
+   Header
+   Scopo: intestazione in cima a ogni pagina riservata. A sinistra i loghi
+     (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con
+     collegamento alla pagina iniziale; a destra, se l'utente ha fatto
+     l'accesso: menu per ruolo, campanella delle notifiche, etichetta del
+     ruolo, collegamento al profilo e pulsante «Esci».
+   Usato da: pagine AreaCliente, BackOffice, Cruscotto, TuoiDocumenti,
+     GestioneUtenti, Audit, Crediti, CalcoloCrediti, Impostazioni,
+     Documentazione, Profilo, CambiaPassword.
+   Chi lo vede: tutti i ruoli autenticati (cliente/Comune, operatore,
+     admin). Senza accesso si vedono solo i loghi.
+   Dati: useAuth() (src/lib/AuthContext.jsx) per utente, ruolo ed esci();
+     RUOLI e COLORI da src/lib/cwpProgram.js. Le notifiche le legge il
+     componente Notifiche.
+   Sicurezza: il menu per ruolo è solo interfaccia (nasconde le voci che
+     non servono). Il vero controllo è in App.jsx (rotte protette), nelle
+     pagine e soprattutto nel database (RLS e funzioni): un utente che
+     digita a mano un indirizzo Admin non vede comunque dati non suoi.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { COLORI as C, RUOLI } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Notifiche from "./Notifiche.jsx";
 
-// Voci di menu per ruolo.
+// Voci di menu per ruolo: elenco di coppie [indirizzo, etichetta].
+// Qualunque ruolo diverso da admin e operatore (compreso un profilo
+// senza ruolo) riceve il menu del cliente/Comune.
+// Se si aggiunge una pagina in App.jsx, aggiungere qui la voce del ruolo.
 function vociMenu(ruolo) {
   if (ruolo === "admin") {
     return [
@@ -33,7 +57,8 @@ function vociMenu(ruolo) {
 }
 
 /* Intestazione del portale: loghi a sinistra; menu, notifiche, utente ed
-   esci a destra. */
+   esci a destra. Nessuna prop: legge tutto da useAuth() e dall'indirizzo
+   corrente (per evidenziare la voce di menu attiva). */
 export default function Header() {
   const { utente, ruolo, esci, backendPronto } = useAuth();
   const r = ruolo ? RUOLI[ruolo] : null;
@@ -69,6 +94,9 @@ export default function Header() {
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <nav aria-label="Menu principale" style={{ display: "flex", gap: 4, marginRight: 4, flexWrap: "wrap" }}>
             {vociMenu(ruolo).map(([to, label]) => {
+              // "/" è attiva solo sulla pagina iniziale esatta (altrimenti
+              // sarebbe sempre evidenziata); le altre anche sulle sottopagine
+              // (es. /crediti/123 evidenzia «Crediti CWP»).
               const attiva = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
               return (
                 <Link

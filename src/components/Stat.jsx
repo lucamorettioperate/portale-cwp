@@ -1,7 +1,18 @@
+/* =========================================================================
+   Stat
+   Scopo: riquadro con un dato numerico in evidenza (etichetta, valore,
+     unità di misura facoltativa).
+   Usato da: nessun file. Non usato: resto del prototipo, si può eliminare.
+   Chi lo vede: nessuno (non montato in alcuna pagina).
+   Dati: nessuno; solo la palette COLORI di src/lib/cwpProgram.js.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import React from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 
 // Riquadro con un dato numerico in evidenza.
+// Props: label (testo sopra), value (numero mostrato grande), unit (facoltativa),
+// accent (colore del valore; se assente usa il colore del testo).
 export default function Stat({ label, value, unit, accent }) {
   return (
     <div

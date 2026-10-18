@@ -1,3 +1,19 @@
+/* =========================================================================
+   Notifiche
+   Scopo: campanella delle notifiche interne (requisiti §9) nell'intestazione.
+     Mostra il numero delle non lette, apre un elenco a tendina delle ultime
+     50 notifiche, segna come lette e porta alla pratica collegata.
+   Usato da: Header.jsx (quindi presente in tutte le pagine riservate).
+   Chi lo vede: tutti i ruoli autenticati (cliente/Comune, operatore, admin).
+   Dati: elencaNotifiche, segnaNotificheLette (src/lib/dati.js) sulla
+     tabella notifica (script 09).
+   Sicurezza: le notifiche le crea solo il database, con trigger sugli
+     eventi della pratica (funzione cwp_notifica, script 09 e 17; email via
+     script 12). Le regole RLS fanno leggere a ognuno solo le proprie
+     (utente_id = utente collegato) e un trigger permette di modificare
+     soltanto il campo «letta». Il browser non può crearne né cambiarne il testo.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { COLORI as C } from "../lib/cwpProgram.js";
@@ -6,7 +22,9 @@ import { elencaNotifiche, segnaNotificheLette } from "../lib/dati.js";
 import { formatoData } from "../lib/date.js";
 
 /* Campanella delle notifiche interne (requisiti §9): conteggio delle non
-   lette, elenco a tendina, apertura della pratica collegata. */
+   lette, elenco a tendina, apertura della pratica collegata.
+   Nessuna prop. Ricarica l'elenco ogni 60 secondi (non c'è aggiornamento
+   in tempo reale). */
 export default function Notifiche() {
   const { ruolo } = useAuth();
   const navigate = useNavigate();
@@ -14,11 +32,14 @@ export default function Notifiche() {
   const [aperta, setAperta] = useState(false);
   const box = useRef(null);
 
+  // Legge le ultime 50 notifiche dell'utente (le RLS filtrano per utente).
   async function carica() {
     const { data } = await elencaNotifiche();
     setNotifiche(data || []);
   }
 
+  // Primo caricamento e poi ogni minuto; il timer si ferma quando
+  // l'intestazione viene smontata (cambio pagina o uscita).
   useEffect(() => {
     carica();
     const t = setInterval(carica, 60000);
@@ -36,6 +57,9 @@ export default function Notifiche() {
 
   const nonLette = notifiche.filter((n) => !n.letta);
 
+  // Clic su una notifica: la segna come letta, chiude la tendina e apre la
+  // pratica collegata. Lo staff la apre nel back-office (/pratiche?id=…),
+  // il Comune nella sua area (/?id=…).
   async function apri(n) {
     if (!n.letta) await segnaNotificheLette([n.id]);
     setAperta(false);
@@ -46,6 +70,7 @@ export default function Notifiche() {
     }
   }
 
+  // «Segna tutte come lette»: solo quelle non lette ora in elenco.
   async function tutteLette() {
     await segnaNotificheLette(nonLette.map((n) => n.id));
     carica();

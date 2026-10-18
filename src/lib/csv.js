@@ -1,7 +1,32 @@
-/* Lettura e scrittura di file CSV (anche salvati da Excel in italiano,
-   con separatore ";" e virgola decimale). */
+/* =========================================================================
+   csv.js — lettura e scrittura di file CSV (anche salvati da Excel in
+   italiano, con separatore ";" e virgola decimale).
+
+   Scopo: leggere i CSV caricati nel calcolo crediti (tabelle dati e file
+   del tracciato), convertirli in oggetti secondo uno schema di colonne,
+   produrre CSV da scaricare (export, modelli vuoti, registro crediti).
+
+   Usato da: src/lib/crediti/tracciato.js, src/pages/CalcoloCrediti.jsx,
+   src/components/crediti/TabellaDati.jsx,
+   src/components/crediti/RegistroCrediti.jsx; test/csv.test.mjs.
+   Dati/servizi coinvolti: nessuno (solo testo nel browser).
+
+   Formato prodotto: separatore ";", fine riga CRLF, BOM UTF-8 iniziale
+   (serve perché Excel riconosca le lettere accentate), numeri con la
+   virgola decimale.
+
+   Uso dei test: npm test (comprende test/csv.test.mjs).
+
+   Registro sviluppo e deploy: capitolo 6 «Portale (frontend)»; capitolo 7
+   «Funzionalità per area», riga Calcolo crediti (vedi anche
+   docs/crediti-cwp.md).
+   ========================================================================= */
 
 // Divide il testo in righe e celle, gestendo le virgolette.
+// Parametro: testo completo del file. Restituisce un array di righe, ognuna
+// un array di celle (stringhe). Le righe tutte vuote vengono scartate.
+// Il separatore si deduce dalla prima riga: ";" se compare almeno quante
+// volte la ",", altrimenti ",". Dentro le virgolette "" vale come ".
 export function leggiCsv(testo) {
   const pulito = testo.replace(/^﻿/, "");
   const primaRiga = pulito.split(/\r?\n/)[0] || "";
@@ -35,6 +60,8 @@ export function leggiCsv(testo) {
   return righe;
 }
 
+// Normalizza un titolo di colonna per il confronto: minuscole, senza
+// accenti, solo lettere e cifre ("Codice utenza" → "codiceutenza").
 const normalizza = (s) =>
   String(s || "")
     .toLowerCase()
@@ -44,7 +71,13 @@ const normalizza = (s) =>
 
 /* Converte il CSV in oggetti secondo uno schema di colonne:
    schema = [{ chiave, titoli: ["Utenza", "codice utenza"], tipo: "numero"|"testo"|"si_no", obbligatorio }]
-   Restituisce { righe, errori, colonneMancanti }. */
+   Restituisce { righe, errori, erroriTotali, colonneMancanti }.
+   - La prima riga è l'intestazione; ogni colonna si cerca fra i "titoli"
+     ammessi (in qualsiasi ordine e maiuscolo/minuscolo).
+   - Se manca una colonna obbligatoria non si legge nessuna riga.
+   - Una riga con errori viene scartata; errori contiene al massimo i primi
+     20 messaggi, erroriTotali il numero complessivo.
+   - I numeri di riga nei messaggi sono quelli di Excel (intestazione = 1). */
 export function csvInOggetti(testo, schema) {
   const righe = leggiCsv(testo);
   if (!righe.length) return { righe: [], errori: ["Il file è vuoto."], colonneMancanti: [] };
@@ -79,6 +112,7 @@ export function csvInOggetti(testo, schema) {
           o[col.chiave] = v;
         }
       } else if (col.tipo === "si_no") {
+        // Qualsiasi valore non riconosciuto come "sì" vale "no" (anche la cella vuota).
         o[col.chiave] = /^(si|sì|s|true|1|x|vero)$/i.test(grezzo);
       } else {
         o[col.chiave] = grezzo;
@@ -94,6 +128,9 @@ export function csvInOggetti(testo, schema) {
 }
 
 // Crea un CSV (separatore ";") da intestazioni e righe.
+// Parametri: intestazioni (array di testi), righe (array di array di valori).
+// Restituisce il testo del file con BOM iniziale; i numeri usano la virgola
+// decimale; le celle con ; " o a capo vanno tra virgolette.
 export function scriviCsv(intestazioni, righe) {
   const cella = (v) => {
     if (v == null) return "";

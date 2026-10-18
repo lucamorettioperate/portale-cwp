@@ -1,9 +1,24 @@
 /* =========================================================================
-   Dati di esempio — progetti a stadi diversi di avanzamento.
-   Servono finché il backend Supabase non è attivo; poi verranno sostituiti
-   dalle pratiche reali lette dal database.
+   datiEsempio.js — dati di esempio del prototipo.
+
+   Scopo: tre progetti fittizi a stadi diversi di avanzamento. Servivano
+   finché il backend Supabase non era attivo; oggi le pratiche reali si
+   leggono dal database (src/lib/dati.js).
+
+   Usato da: nessun file importa più questo modulo (verificato con grep il
+   18/10/2026). È un resto del prototipo: si può eliminare insieme ai
+   componenti Timeline, AzioniRuolo, ProjectCard, Stat.
+   Dati/servizi coinvolti: nessuno. I dati di prova del database stanno
+   invece in supabase/03_dati_esempio.sql.
+
+   Registro sviluppo e deploy: capitolo 6 «Portale (frontend)»
+   (struttura del codice, resti del prototipo).
    ========================================================================= */
 
+// Ogni voce: codice, nomi, tipo di soggetto, abitanti, fase e giorno
+// correnti, adesione, periodo di accredito, % raccolta differenziata,
+// tonnellate di rifiuti, crediti stimati ed emessi, stato del badge
+// (vedi stato.js).
 export const PROGETTI_ESEMPIO = [
   {
     id: "CWP-2025-014",

@@ -1,9 +1,23 @@
+/* =========================================================================
+   ProjectCard
+   Scopo: scheda di una pratica nella lista laterale del prototipo (nome,
+     stato, codice, barra di avanzamento in giorni su 150).
+   Usato da: nessun file. Non usato: resto del prototipo, si può eliminare.
+     Usa i campi del prototipo (p.nome, p.giornoCorrente, p.faseCorrente,
+     stati «Validato», «In istruttoria») e non quelli della tabella pratica.
+   Chi lo vede: nessuno (non montato in alcuna pagina).
+   Dati: nessuno dal database; colori da src/lib/cwpProgram.js e
+     statoColor da src/lib/stato.js (anch'esso del prototipo).
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import React from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import { statoColor } from "../lib/stato.js";
 import Pill from "./Pill.jsx";
 
 // Card di una pratica nella lista laterale.
+// Props: p (pratica del prototipo), active (evidenziata se selezionata),
+// onClick (selezione della pratica).
 export default function ProjectCard({ p, active, onClick }) {
   const sc = statoColor(p.stato);
   return (

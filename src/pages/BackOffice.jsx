@@ -1,3 +1,21 @@
+/* =========================================================================
+   Pratiche (Back-office) — indirizzo «/pratiche» (con «?id=<pratica>» si
+   apre direttamente una pratica)
+   Scopo: a sinistra l'elenco dei Progetti (con ricerca oltre 4 voci), a
+     destra il dettaglio della pratica scelta con le 7 fasi, documenti,
+     integrazioni, consultazione, pagamenti, rapporti. Pulsante
+     «+ Nuovo progetto» per registrare un nuovo Progetto.
+   Chi la usa: Operatore e Amministratore. Un cliente che apre l'indirizzo
+     viene rimandato a «/».
+   Dati: elencaProgetti() di src/lib/dati.js (tabella "pratica"); il
+     dettaglio è il componente DettaglioPratica, la creazione il componente
+     NuovoProgetto (creaPratica: pratica + 7 fasi).
+   Sicurezza: il rimando a «/» è solo interfaccia. Ciò che conta lo fa il
+     database: lettura e scrittura delle pratiche consentite allo staff solo
+     con app_is_staff() (ruolo operatore/admin, profilo attivo e, se
+     l'interruttore mfa_obbligatoria è acceso, sessione a due fattori).
+   Registro sviluppo e deploy: capitolo «Portale (frontend)».
+   ========================================================================= */
 import React, { useEffect, useState } from "react";
 import { useSearchParams, Navigate } from "react-router-dom";
 import { COLORI as C, STATI_PRATICA } from "../lib/cwpProgram.js";
@@ -8,8 +26,9 @@ import DettaglioPratica from "../components/DettaglioPratica.jsx";
 import NuovoProgetto from "../components/NuovoProgetto.jsx";
 import { elencaProgetti } from "../lib/dati.js";
 
-/* Back-office: elenco progetti dal database, dettaglio con 7 fasi,
-   creazione di nuovi progetti. Vista per Operatore/Admin. */
+/* Pagina del back-office. Nessuna prop.
+   Stato principale: elenco progetti, pratica selezionata (nell'indirizzo),
+   testo di ricerca, apertura della finestra «Nuovo progetto». */
 export default function BackOffice() {
   const { ruolo } = useAuth();
   const [progetti, setProgetti] = useState([]);
@@ -17,12 +36,16 @@ export default function BackOffice() {
   // possono aprire direttamente una pratica.
   const [params, setParams] = useSearchParams();
   const selId = params.get("id");
+  // Selezionare una pratica = scrivere ?id= nell'indirizzo (null lo toglie).
   const setSelId = (id) => setParams(id ? { id } : {});
   const [cerca, setCerca] = useState("");
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState("");
   const [creazione, setCreazione] = useState(false);
 
+  // Rilegge l'elenco dei progetti dal database. Se l'indirizzo non indica
+  // una pratica, seleziona la prima (la più recente). Usata all'apertura,
+  // dopo una modifica nel dettaglio (onAggiornato) e dopo una creazione.
   async function ricarica() {
     setCaricamento(true);
     const { data, error } = await elencaProgetti();
@@ -40,6 +63,8 @@ export default function BackOffice() {
   }, []);
 
   const staff = ruolo === "operatore" || ruolo === "admin";
+  // Solo interfaccia: un cliente viene rimandato alla propria area. Finché
+  // il ruolo non è noto (null) la pagina resta visibile.
   if (ruolo && !staff) return <Navigate to="/" replace />;
 
   return (
@@ -121,6 +146,8 @@ export default function BackOffice() {
             />
           )}
 
+          {/* Filtro nel browser su codice, titolo e denominazione
+              dell'organizzazione (senza distinzione di maiuscole). */}
           {progetti
             .filter((p) => !cerca.trim() || [p.codice, p.titolo, p.organizzazione?.denominazione].some((v) => (v || "").toLowerCase().includes(cerca.trim().toLowerCase())))
             .map((p) => {
@@ -183,6 +210,7 @@ export default function BackOffice() {
         <NuovoProgetto
           onChiudi={() => setCreazione(false)}
           onCreato={(id) => {
+            // Chiude la finestra, rilegge l'elenco e apre il progetto appena creato.
             setCreazione(false);
             ricarica().then(() => id && setSelId(id));
           }}

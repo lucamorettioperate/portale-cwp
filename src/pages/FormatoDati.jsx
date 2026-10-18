@@ -1,9 +1,31 @@
+/* =========================================================================
+   Formato dei dati — indirizzo «/formato-dati» (pagina PUBBLICA, senza login)
+   Scopo: spiega lo standard dei dati da inviare per il calcolo dei crediti
+     e permette di scaricare il tracciato Excel. Il link si può mandare a
+     Comuni e gestori anche senza credenziali. Contiene: elenco dei fogli
+     del tracciato, avvertenza sui dati personali, istruzioni di invio
+     (anche CSV in ZIP per file molto grandi).
+   Chi la usa: chiunque (pubblico), in pratica Comuni e gestori della raccolta.
+   Dati: nessuna lettura dal database. Il file è statico in
+     public/modelli/Tracciato_dati_CWP_v1.xlsx ed è generato da
+     strumenti/genera_tracciato_dati.py. Se cambiano fogli o colonne del
+     tracciato vanno aggiornati insieme: lo script Python, l'elenco FOGLI
+     qui sotto, la versione indicata nel testo e l'import del calcolo
+     crediti (src/lib/crediti/ e componente crediti/TabellaDati).
+   Sicurezza: pagina solo informativa. Il blocco dei dati personali nel
+     file caricato è fatto all'import nel calcolo crediti, non qui.
+   Registro sviluppo e deploy: capitolo «Calcolo crediti» (il frontend nel
+     capitolo «Portale (frontend)»).
+   ========================================================================= */
 import React from "react";
 import { Link } from "react-router-dom";
 import { COLORI as C } from "../lib/cwpProgram.js";
 
+// Indirizzo del tracciato da scaricare (cartella public/modelli).
 const FILE = "/modelli/Tracciato_dati_CWP_v1.xlsx";
 
+// Fogli del tracciato, nell'ordine del file: [nome foglio, contenuto, chi lo compila].
+// Solo testo descrittivo: deve restare allineato al file Excel.
 const FOGLI = [
   ["1_Anagrafica", "Ente, anno di riferimento, gestore, tariffa puntuale, ripartizione PEF della delibera", "Comune"],
   ["2_Rifiuti", "Tonnellate raccolte nell'anno per codice EER (Catasto ISPRA, MUD, O.R.So.)", "Comune / gestore"],

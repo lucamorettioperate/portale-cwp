@@ -1,15 +1,31 @@
+/* =========================================================================
+   Messaggi
+   Scopo: conversazione tra Comune e Fondazione Operate dentro una pratica
+     (backlog 26). Mostra i messaggi in ordine di data, quelli dell'utente
+     a destra, e permette di scriverne di nuovi.
+   Usato da: DettaglioPratica.jsx.
+   Chi lo vede: cliente/Comune della pratica, operatore, admin.
+   Dati: elencaMessaggi, inviaMessaggio (src/lib/dati.js) sulla tabella
+     messaggio (script 17).
+   Sicurezza (garantita dal database, script 17):
+     - si leggono solo i messaggi delle pratiche a cui si ha accesso
+       (pratica_mia);
+     - autore, ruolo, nome e ora li compila un trigger (cwp_autore_riga):
+       nessuno può firmarsi a nome di altri;
+     - i messaggi non si modificano e non si cancellano (nessuna policy);
+     - sulle pratiche annullate il Comune non può più scrivere.
+     Ogni nuovo messaggio genera una notifica (e un'email) all'altra parte:
+     la crea il database, non questo componente.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import React, { useEffect, useRef, useState } from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import { elencaMessaggi, inviaMessaggio } from "../lib/dati.js";
 import { riquadro, titoloRiquadro, campo, btnPrimario, dataOra } from "./stili.js";
 
-/* Messaggi tra Comune e Fondazione dentro la pratica (backlog 26).
-   - Comune e staff scrivono nella stessa conversazione; ogni messaggio
-     genera una notifica (e un'email) per l'altra parte.
-   - L'autore lo scrive il database (script 17): nessuno può firmarsi
-     a nome di altri. I messaggi non si modificano e non si cancellano.
-   - Sulle pratiche annullate il Comune non può più scrivere. */
+/* Riquadro «Messaggi» di una pratica.
+   Props: pratica (riga della tabella pratica; servono id e stato). */
 export default function Messaggi({ pratica }) {
   const { ruolo, utente } = useAuth();
   const staff = ruolo === "operatore" || ruolo === "admin";
@@ -17,8 +33,10 @@ export default function Messaggi({ pratica }) {
   const [testo, setTesto] = useState("");
   const [errore, setErrore] = useState("");
   const [inCorso, setInCorso] = useState(false);
+  // Segnaposto in fondo all'elenco: dopo l'invio si scorre fin lì.
   const fine = useRef(null);
 
+  // Rilegge tutti i messaggi della pratica.
   async function carica() {
     const { data } = await elencaMessaggi(pratica.id);
     setMessaggi(data || []);
@@ -29,6 +47,8 @@ export default function Messaggi({ pratica }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pratica.id]);
 
+  // Invia il messaggio (testo senza spazi iniziali e finali), poi ricarica.
+  // Effetto: il database notifica l'altra parte (notifica interna + email).
   async function invia() {
     setErrore("");
     if (!testo.trim()) return;
@@ -41,6 +61,8 @@ export default function Messaggi({ pratica }) {
     fine.current?.scrollIntoView({ block: "nearest" });
   }
 
+  // Stessa regola delle RLS (script 17): qui serve solo a nascondere il
+  // campo; se mancasse, il database rifiuterebbe comunque l'inserimento.
   const puoScrivere = staff || pratica.stato !== "annullata";
 
   return (
@@ -55,6 +77,7 @@ export default function Messaggi({ pratica }) {
       <div style={{ display: "grid", gap: 8, maxHeight: 360, overflowY: "auto", paddingRight: 4 }}>
         {messaggi.length === 0 && <div style={{ fontSize: 13, color: C.grafite }}>Nessun messaggio.</div>}
         {messaggi.map((m) => {
+          // autore_ruolo è registrato dal database al momento dell'invio.
           const daFondazione = m.autore_ruolo === "operatore" || m.autore_ruolo === "admin";
           const mio = m.autore_id === utente?.id;
           return (

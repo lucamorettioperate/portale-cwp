@@ -53,45 +53,130 @@ rapporto viene caricato dall'Operatore.
 
 ## 2. Architettura
 
+### 2.1 Schema generale
+
 ```
- Utenti (browser)
-      │  HTTPS
-      ▼
- ┌──────────────────────────┐        ┌─────────────────────────────────────────┐
- │ VERCEL                   │        │ SUPABASE (progetto "portale-cwp",        │
- │ portale-cwp.vercel.app   │ ─────▶ │ organizzazione Fondazione Operate)       │
- │ React + Vite (sito       │  API   │  • Postgres: tabelle, regole RLS,        │
- │ statico, nessun server)  │        │    trigger di audit, funzioni           │
- └──────────▲───────────────┘        │  • Auth: email+password, MFA (TOTP)      │
-            │ deploy automatico      │  • Storage: bucket privato "documenti"   │
- ┌──────────┴───────────────┐        │  • Edge Functions: crea-utente,          │
- │ GITHUB                   │        │    invia-email-notifica                  │
- │ lucamorettioperate/      │        │  • pg_cron: scadenze (giornaliero),      │
- │ portale-cwp (branch main)│        │    nuovi tentativi email (15 min)        │
- └──────────────────────────┘        │  • pg_net: chiamata alla funzione email  │
-                                     └───────────────┬─────────────────────────┘
-                                                     │ API
-                                                     ▼
-                                     ┌──────────────────────────┐
-                                     │ RESEND — invio email     │
-                                     └──────────────────────────┘
+ Utenti (browser)                         Pubblico senza account
+ Comuni · Operatori · Amministratori      (consultazioni, formato dati)
+      │  HTTPS                                   │  HTTPS
+      ▼                                          ▼
+ ┌────────────────────────────────────────────────────────────┐
+ │ VERCEL — portale-cwp.vercel.app                            │
+ │ Sito statico React + Vite: pagine, controlli dei file,     │
+ │ lettura del tracciato Excel, calcolo crediti, PDF          │
+ │ (nessun server proprio: il codice gira nel browser)        │
+ └───────────▲──────────────────────────────┬─────────────────┘
+             │ deploy automatico            │ API Supabase (chiave pubblica
+ ┌───────────┴──────────────┐               │ + sessione dell'utente)
+ │ GITHUB                   │               ▼
+ │ lucamorettioperate/      │  ┌──────────────────────────────────────────────┐
+ │ portale-cwp (main)       │  │ SUPABASE — progetto portale-cwp              │
+ └──────────────────────────┘  │  Auth: email+password, MFA TOTP, recupero    │
+                               │  Postgres: tabelle, RLS, funzioni (RPC),     │
+                               │    trigger di audit, notifiche, immutabilità │
+                               │  Storage: documenti · modelli ·              │
+                               │    allegati-consultazione (privati)          │
+                               │  Edge Functions (Deno): crea-utente,         │
+                               │    reimposta-password, recupera-password,    │
+                               │    invia-email-notifica,                     │
+                               │    consultazione-pubblica                    │
+                               │  pg_cron: scadenze (giornaliero),            │
+                               │    email da ritentare (15 min)               │
+                               │  pg_net: il database chiama la funzione email│
+                               └───────────────────────┬──────────────────────┘
+                                                       │ API HTTPS
+                                                       ▼
+                                          ┌──────────────────────────┐
+                                          │ RESEND — invio email     │
+                                          │ (API e SMTP di Supabase) │
+                                          └──────────────────────────┘
 ```
 
 In breve: **GitHub conserva** il codice, **Vercel mostra** il portale,
-**Supabase ricorda** dati, utenti e documenti, **Resend spedisce** le email.
+**Supabase ricorda** dati, utenti e documenti e **decide chi può fare
+cosa**, **Resend spedisce** le email.
 
-**Principi di sicurezza**
-- Le regole di accesso stanno **nel database** (Row Level Security): il
-  browser non può vedere né modificare ciò che il ruolo non consente,
-  qualunque cosa faccia.
-- Le azioni sensibili passano da **funzioni del database** che controllano
-  ruolo, stato della pratica e motivazione.
-- L'**audit** è scritto da trigger del database, è immutabile e non può
-  essere scritto dal browser.
-- Operatori e Amministratori hanno i poteri del back-office solo con
-  sessione a due fattori (MFA), quando l'interruttore `mfa_obbligatoria` è
-  acceso (oggi **spento**, per decisione di Luca).
-- Il repository è pubblico ma non contiene dati né chiavi segrete.
+### 2.2 I livelli
+
+| Livello | Dove | Cosa fa | Regola |
+|---|---|---|---|
+| Interfaccia | `src/pages`, `src/components` | Mostra dati e moduli, guida l'utente | Non è una difesa: tutto ciò che nasconde è comunque protetto più sotto |
+| Accesso ai dati | `src/lib/dati.js`, `src/lib/crediti/archivio.js` | Unico punto in cui il portale legge e scrive su Supabase | Le pagine non chiamano Supabase direttamente (eccezioni: autenticazione in `AuthContext.jsx`, registro crediti) |
+| Logica nel browser | `src/lib/file.js`, `src/lib/crediti/*.js`, `src/lib/fascicolo.js` | Controllo dei file, lettura del tracciato, motore di calcolo, PDF, ZIP | Funzioni pure e provate da `npm test` dove possibile |
+| Regole del database | `supabase/*.sql` | RLS per ogni tabella, funzioni per le azioni sensibili, trigger per audit, notifiche, versioni e immutabilità | **Qui** si decide chi vede e chi modifica |
+| Funzioni server | `supabase/functions/*` | Operazioni che richiedono la chiave di servizio o un servizio esterno (utenti, email, pagina pubblica) | La chiave di servizio non arriva mai al browser |
+
+### 2.3 Modello di sicurezza
+- **Ruoli** nel profilo (`profilo.ruolo`): `cliente`, `operatore`, `admin`.
+  Le funzioni `app_ruolo()`, `app_is_staff()`, `app_is_admin()` e
+  `pratica_mia()` (script 02, 06, 10) sono usate da tutte le regole.
+- **Row Level Security** su ogni tabella: il Comune vede solo le pratiche
+  delle organizzazioni a cui è associato; lo staff vede tutto; alcune
+  tabelle sono solo Admin (calcoli dei crediti, durata fasi, enti, modelli).
+- **Azioni sensibili** solo tramite funzioni del database
+  (`staff_apri_fase`, `staff_cambia_stato_pratica`, `staff_errata_corrige`…)
+  che controllano ruolo, stato della pratica e motivazione.
+- **Audit** scritto da trigger (`audit_registra`, script 07/08/17), non
+  modificabile e non scrivibile dal browser.
+- **Immutabilità**: documenti mai sovrascritti (versioni), calcoli
+  confermati non modificabili, numero di registro assegnato dal database.
+- **MFA**: lo staff ha i poteri del back-office solo con sessione a due
+  fattori quando `mfa_obbligatoria` è acceso (oggi **spento**).
+- **Dati personali**: i commentatori esterni sono noti solo allo staff; la
+  Banca Dati Utenze deve contenere solo codici anonimi (import bloccato
+  altrimenti); il rapporto PDF non contiene il dettaglio per utenza.
+- **Segreti** solo in Supabase (Edge Functions → Secrets) e Vercel
+  (variabili d'ambiente); il repository è pubblico ma non contiene chiavi.
+
+### 2.4 Come viaggia una richiesta: esempi passo per passo
+
+**Accesso.** Il browser invia email e password a Supabase Auth
+(`AuthContext.jsx`) → riceve la sessione → il portale legge il profilo
+(ruolo, organizzazioni, `password_temporanea`) → se la password è
+temporanea apre `CambiaPassword`, se serve l'MFA `VerificaMfa`, altrimenti
+il menu del ruolo (`Header.jsx`).
+
+**Il Comune carica un documento.** `Documenti.jsx` → `caricaDocumento()`
+(`dati.js`) controlla formato, dimensione e contenuto (`file.js`) → carica
+il file nell'archivio `documenti/<pratica>/…` → inserisce la riga in
+`documento` → nel database: la regola RLS verifica che la pratica sia del
+Comune e attiva (script 08), il trigger calcola la versione (07), verifica
+il file nell'archivio (14), scrive l'audit (07/08) e crea le notifiche per
+lo staff (09/17) → la notifica genera l'email tramite pg_net e
+`invia-email-notifica` (12) → Resend.
+
+**Richiesta di integrazione.** L'Operatore preme «Richiedi integrazione»
+(`DettaglioPratica.jsx`) → RPC `staff_richiedi_integrazione` (08) → fase
+*In attesa di integrazione*, notifica ed email al Comune → il Comune
+carica il file e chiama `cliente_rispondi_integrazione` → l'Operatore
+chiude con `staff_chiudi_integrazione` → se non restano richieste la fase
+torna *In corso*.
+
+**Osservazione dalla consultazione pubblica.** Pagina pubblica
+`/consultazioni/:id` (`ConsultazioniPubbliche.jsx`) → Edge Function
+`consultazione-pubblica`, azione `invia`: controlli, limiti di invio,
+allegato in `allegati-consultazione`, riga in `commento_in_attesa`, email
+di conferma con Resend → l'autore apre il collegamento
+`/consultazioni/conferma` → azione `conferma`: la riga passa in `commento`
+come *Ricevuto* → trigger di notifica allo staff → moderazione nel portale
+(`Consultazione.jsx`).
+
+**Calcolo dei crediti.** L'Admin crea il calcolo (`Crediti.jsx`) → passo
+«Importa il tracciato» (`ImportaTracciato.jsx`): il file è letto nel
+browser (`tracciato.js`), controllato per dati personali e coerenza,
+salvato in `calcolo_crediti.dati`, `calcolo_conferimento`,
+`calcolo_riuso` (script 11) → «Calcola» esegue il motore
+(`calcolo.js`) nel browser e salva il riepilogo → «Conferma» rende il
+calcolo immutabile e il database assegna il numero di registro (18) →
+«Scarica il rapporto (PDF)» (`rapportoPdf.js`) → «Archivia» carica il PDF
+tra i documenti della pratica → il calcolo compare nel **Registro dei
+crediti** (`admin_registro_crediti`).
+
+**Email di notifica.** Un trigger inserisce una riga in `notifica` (09/17)
+→ il trigger dello script 12 chiama con pg_net la funzione
+`invia-email-notifica` → la funzione rilegge la notifica con la chiave di
+servizio e spedisce con Resend → se non riesce, `pg_cron` riprova ogni 15
+minuti per 6 ore.
 
 ---
 
@@ -227,7 +312,7 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 | `/impostazioni` | Durata delle fasi, Enti di Validazione, Modelli di documento | Admin |
 | `/documentazione` | Documentazione: Manuale Utente (PDF; Word solo Admin), Manuale Amministratore e Registro (solo Admin) | tutti (contenuto per ruolo) |
 
-**Struttura del codice**
+**Struttura del codice** (in sintesi; descrizione completa file per file nel capitolo 14 «Codice sorgente»)
 - `src/pages/` — pagine elencate sopra (+ `VerificaMfa.jsx`;
   `ConsultazioniPubbliche.jsx` contiene le tre pagine pubbliche).
 - `src/components/` — `DettaglioPratica`, `Documenti`, `Integrazioni`,
@@ -291,7 +376,7 @@ dashboard → *Deploy updates* → controlla *Verify JWT* → prova.
 
 **Documenti in Word/PDF (Manuale Utente, Manuale Amministratore e questo Registro)**: si modifica il
 testo (`docs/manuale-utente.md` o `docs/manuale-amministratore.md`, e lo stesso nel manuale online;
-`docs/REGISTRO_DEV_DEPLOY.md`), si aggiunge una riga in
+`docs/REGISTRO_DEV_DEPLOY.md`), si rigenera l'inventario del codice (`python3 strumenti/inventario_codice.py`, capitolo 14), si aggiunge una riga in
 `strumenti/revisioni_documenti.json` (nuovo numero di revisione e data), si
 esegue `node strumenti/genera_documenti.cjs` (richiede la libreria `docx`,
 LibreOffice e, per il PDF impaginato, WeasyPrint) e si pubblica con commit e
@@ -673,3 +758,290 @@ completato (va barrato qui e annotato in Cronologia).
 | Mittente di prova Resend consegna solo al titolare | Verifica del dominio da completare |
 | Site URL di Supabase Auth ancora `http://localhost:3000` e nessun Redirect URL: i link delle email di Supabase (recupero password) non funzionavano | Impostati il 18/10 (autorizzazione di Luca): Site URL `https://portale-cwp.vercel.app`, Redirect URL `https://portale-cwp.vercel.app/**` |
 | Il servizio email predefinito di Supabase Auth consegna solo ai membri del progetto | SMTP personalizzato con Resend attivato il 18/10 (Authentication → Emails → SMTP Settings); limite 30 email di autenticazione all'ora, modificabile in Rate Limits |
+
+---
+
+## 14. Codice sorgente
+
+Questo capitolo descrive tutto il codice del portale per chi deve
+intervenire a mano. Ogni file ha in testa un'intestazione in italiano
+(scopo, chi lo usa, dati coinvolti, sicurezza, capitolo di questo
+registro) e commenti sopra ogni funzione e sui passaggi non ovvi (regola
+del punto 31). L'inventario in fondo al capitolo si rigenera con
+`python3 strumenti/inventario_codice.py`.
+
+### 14.1 Struttura delle cartelle
+
+```
+portale-cwp/
+├── index.html, vite.config.js, package.json   avvio e configurazione di Vite
+├── vercel.json                                 instradamento del sito su Vercel
+├── src/
+│   ├── main.jsx, App.jsx                       avvio di React e pagine (route)
+│   ├── pages/                                  una pagina per indirizzo del portale
+│   ├── components/                             parti riusate dalle pagine
+│   │   ├── crediti/                            tabelle, import del tracciato, registro
+│   │   └── impostazioni/                       Enti di Validazione, modelli di documento
+│   └── lib/                                    accesso ai dati, autenticazione, utilità
+│       └── crediti/                            motore di calcolo, parametri, tracciato, PDF
+├── supabase/
+│   ├── 01_…18_*.sql                            script del database, da eseguire in ordine
+│   ├── functions/<nome>/index.ts               Edge Functions (Deno)
+│   └── email/                                  modello dell'email di recupero (copia)
+├── public/                                     file serviti così come sono
+│   ├── loghi/, modelli/ (tracciato Excel)
+│   ├── manuali/ (Manuale Utente)
+│   └── documentazione/ (manuali riservati, registro, esempi)
+├── docs/                                       testi sorgente di manuali e registro
+├── strumenti/                                  generatori di documenti, tracciato, inventario
+└── test/                                       prove automatiche (npm test) e file di esempio
+```
+
+### 14.2 Convenzioni
+- **Lingua**: nomi, commenti e messaggi in italiano (`caricaDocumento`,
+  `pratica_mia`). I testi per gli utenti non usano gergo tecnico.
+- **Accesso ai dati**: le funzioni di `src/lib/dati.js` restituiscono
+  sempre `{ data, error }` come il client Supabase; le pagine mostrano
+  `error.message`. Gli errori del database sono scritti in italiano dalle
+  funzioni SQL (`raise exception '…'`).
+- **Regole nel database**: ogni controllo che conta (permessi, stato della
+  pratica, motivazioni) è nel database; l'interfaccia lo ripete solo per
+  dare messaggi chiari.
+- **Stili**: in linea negli oggetti `style`, colori da `COLORI` in
+  `src/lib/cwpProgram.js`; quelli condivisi in `src/components/stili.js`.
+  Nessuna libreria grafica esterna.
+- **Date**: nel database in ISO (`aaaa-mm-gg`), a video con `formatoData`
+  (`src/lib/date.js`) in `gg/mm/aaaa`.
+- **Script SQL**: numerati, rieseguibili (`create … if not exists`,
+  `create or replace`, `drop policy if exists`), con intestazione che dice
+  dopo quale script eseguirli.
+- **Commenti**: intestazione obbligatoria per ogni file nuovo; niente
+  commenti `/*! … */` (finirebbero nel sito pubblicato).
+
+### 14.3 Mappa delle dipendenze
+
+```
+main.jsx → App.jsx (route, Protetta: accesso, password temporanea, MFA)
+   ├── pages/* ──────────────┐
+   │     └── components/* ───┤
+   │                         ▼
+   │                  lib/dati.js ── lib/crediti/archivio.js ──▶ Supabase (tabelle, RPC, Storage, Edge Functions)
+   │                  lib/AuthContext.jsx ─────────────────────▶ Supabase Auth
+   │                  lib/file.js, lib/csv.js, lib/date.js, lib/password.js, lib/cwpProgram.js
+   └── pages/CalcoloCrediti.jsx ── lib/crediti/calcolo.js (motore), parametri.js,
+                                   tracciato.js (import), rapportoPdf.js (jsPDF, caricato a richiesta)
+```
+
+### 14.4 Funzioni del database chiamate dal portale (RPC)
+
+| Funzione | Script | Chi | Cosa fa |
+|---|---|---|---|
+| `staff_cruscotto` | 09 | staff | Una riga per pratica con fase corrente, scadenza, cose da fare |
+| `staff_apri_fase`, `staff_chiudi_fase` | 08 | staff | Apertura (scadenza dalla durata della fase) e chiusura delle fasi |
+| `staff_modifica_scadenza` | 08 | staff | Nuova scadenza con motivazione |
+| `staff_cambia_stato_pratica` | 08 | staff | Attiva / sospesa / annullata / chiusa con motivazione |
+| `staff_richiedi_integrazione`, `staff_chiudi_integrazione` | 08 | staff | Ciclo delle integrazioni |
+| `cliente_rispondi_integrazione` | 08 | Comune | Risposta con documento |
+| `rispondi_commento` | 07 | Comune | Risposta a un'osservazione ammessa |
+| `staff_autori_commenti` | 17 | staff | Nome ed email degli autori delle osservazioni |
+| `staff_errata_corrige` | 17 | staff | Errata corrige, eventuale ripartenza dei 30 giorni |
+| `staff_imposta_ente_validazione` | 17 | staff | Ente di Validazione della pratica |
+| `admin_elenco_utenti`, `admin_aggiorna_utente`, `admin_imposta_organizzazioni`, `admin_imposta_attivo` | 05, 06, 10 | admin | Gestione utenti |
+| `admin_imposta_durata_fase` | 13 | admin | Durata delle fasi con motivazione |
+| `admin_registro_crediti` | 18 | admin | Registro dei crediti (valido / sostituito) |
+| `mio_stato_mfa`, `sono_admin` | 10 | tutti | Stato della verifica in due passaggi, controllo Admin per le Edge Functions |
+| `password_cambiata` | 15 | tutti | Toglie l'obbligo di cambio password e scrive l'audit |
+
+### 14.5 Tabelle e archivi
+
+| Tabella | Script | Contenuto |
+|---|---|---|
+| `organizzazione`, `utente_organizzazione`, `profilo` | 01, 06 | Comuni ed enti, utenti, associazioni utente-organizzazione |
+| `pratica`, `fase`, `durata_fase` | 01, 13 | Progetti e Rapporti, 7 fasi, durate |
+| `documento` | 01 (07, 14) | Documenti con versioni, visibilità, impronta |
+| `richiesta_integrazione` | 01 (08) | Integrazioni |
+| `nota_fase`, `messaggio` | 17 | Note di fase, messaggi Comune-Fondazione |
+| `consultazione`, `commento`, `commento_in_attesa`, `consultazione_errata` | 01, 17 | Consultazione pubblica |
+| `pagamento` | 01 (09, 17) | Voci di pagamento e incassi |
+| `ente_validazione`, `modello_documento` | 01, 17 | Anagrafica enti, modelli per i Comuni |
+| `notifica` | 09 | Notifiche interne (e stato dell'email) |
+| `audit_event` | 01 (07) | Registro delle operazioni, immutabile |
+| `impostazione` | 10 | Interruttori (MFA, indirizzo della funzione email) |
+| `calcolo_crediti`, `calcolo_conferimento`, `calcolo_riuso`, `contatore_registro` | 11, 18 | Calcoli dei crediti, Banca Dati Utenze, numerazione del registro |
+| `recupero_password_richiesta` | 16 | Limite alle richieste di recupero password |
+
+Archivi (Storage, tutti privati): `documenti` (file delle pratiche,
+cartella = id della pratica), `modelli` (modelli per i Comuni),
+`allegati-consultazione` (allegati alle osservazioni, scritti solo dalla
+funzione `consultazione-pubblica`).
+
+### 14.6 Librerie esterne (package.json)
+
+| Libreria | Versione | Uso |
+|---|---|---|
+| `react`, `react-dom` | 18.3 | Interfaccia |
+| `react-router-dom` | 6.26 | Indirizzi delle pagine (aggiornamento a 7 nel punto 30) |
+| `@supabase/supabase-js` | 2.45 | Collegamento a Supabase (dati, accesso, archivi, funzioni) |
+| `jszip` | 3.10 | Lettura del tracciato Excel/ZIP, export del fascicolo |
+| `jspdf`, `jspdf-autotable` | 4.2 / 5.0 | Rapporto di calcolo in PDF |
+| `vite`, `@vitejs/plugin-react` | 5.4 / 4.3 | Compilazione e server di sviluppo |
+
+Strumenti (non nel sito): Python 3 con `openpyxl` (tracciato), `weasyprint`
+e `Pillow` (PDF dei documenti); Node con `docx` (Word dei documenti);
+LibreOffice (numeri di pagina del Word).
+
+### 14.7 Come si aggiunge una funzione (procedura per sviluppatori)
+1. **Database**: nuovo script `supabase/NN_nome.sql` rieseguibile, con
+   intestazione; tabelle con RLS attiva e policy; azioni sensibili come
+   funzioni `security definer` che controllano ruolo e stato; trigger di
+   audit (`audit_registra`) e, se serve, di notifica (`notifiche_eventi`).
+   Prova sul banco locale (Postgres con stub di Supabase), poi esecuzione
+   nel SQL Editor.
+2. **Accesso ai dati**: nuove funzioni in `src/lib/dati.js` (con commento
+   su tabella/RPC e script).
+3. **Interfaccia**: componente in `src/components/` o pagina in
+   `src/pages/` (route in `src/App.jsx`, voce di menu in
+   `components/Header.jsx`), con intestazione.
+4. **Prove**: `npm run build`, `npm test`; per le funzioni pure aggiungere
+   un test in `test/`.
+5. **Rilascio**: prima il database, poi il portale (capitolo 8).
+6. **Documenti**: aggiornare insieme registro, Manuale Utente, Manuale
+   Amministratore e Manuale Test; `python3 strumenti/inventario_codice.py`;
+   nuova revisione in `strumenti/revisioni_documenti.json`;
+   `node strumenti/genera_documenti.cjs`.
+
+### 14.8 Inventario dei file
+
+<!-- INVENTARIO-INIZIO -->
+Inventario generato da `strumenti/inventario_codice.py`: 90 file, 17.090 righe in tutto.
+
+**Avvio e instradamento**
+
+| File | Righe | Cosa contiene |
+|---|---|---|
+| `src/App.jsx` | 204 | associa ogni indirizzo alla sua pagina e decide chi può aprirla. Le pagine riservate passano dal componente Protetta, che nell'ordine chiede: sessione attiva, eventuale nuova password (link di recupero o password temporanea),… |
+| `src/main.jsx` | 32 | monta l'applicazione nell'elemento #root di index.html e la avvolge nei contesti globali: StrictMode (controlli di React in sviluppo), BrowserRouter (indirizzi /pratiche, /crediti, …) e AuthProvider (sessione, ruolo, MFA).… |
+
+**Pagine (src/pages)**
+
+| File | Righe | Cosa contiene |
+|---|---|---|
+| `src/pages/AreaCliente.jsx` | 138 | il Comune/azienda vede l'elenco dei propri Progetti (schede compatte con stato) e, sotto, il dettaglio della pratica selezionata: fasi, documenti, integrazioni, messaggi. Link al Manuale Utente in PDF. |
+| `src/pages/Audit.jsx` | 143 | tabella degli eventi registrati (data, utente, operazione, pratica, passaggio di stato, motivazione), con ricerca testuale e pulsante per caricare eventi meno recenti (requisiti §10). |
+| `src/pages/BackOffice.jsx` | 221 | a sinistra l'elenco dei Progetti (con ricerca oltre 4 voci), a destra il dettaglio della pratica scelta con le 7 fasi, documenti, integrazioni, consultazione, pagamenti, rapporti. Pulsante «+ Nuovo progetto» per registrare un… |
+| `src/pages/CalcoloCrediti.jsx` | 1134 | Editor di un calcolo dei crediti (Metodologia CWP v1.2). |
+| `src/pages/CambiaPassword.jsx` | 163 | scegliere una nuova password, con le regole di src/lib/password.js. - "obbligatorio": primo accesso con password temporanea (o reimpostata dall'Amministratore): finché non la cambia l'utente non entra; - "volontario": l'utente… |
+| `src/pages/ConsultazioniPubbliche.jsx` | 266 | ---------- Elenco ---------- |
+| `src/pages/Crediti.jsx` | 196 | Crediti CWP — sezione riservata agli Amministratori. |
+| `src/pages/Cruscotto.jsx` | 231 | Una pratica è "in scadenza" se la fase aperta scade entro questi giorni. |
+| `src/pages/Documentazione.jsx` | 110 | Documentazione scaricabile. |
+| `src/pages/FormatoDati.jsx` | 113 | Pagina pubblica: standard dei dati da inviare per il calcolo dei crediti. |
+| `src/pages/GestioneUtenti.jsx` | 544 | Gestione utenti — solo Admin. |
+| `src/pages/Impostazioni.jsx` | 211 | Impostazioni del Programma — solo Amministratori. Tre sezioni: |
+| `src/pages/Login.jsx` | 224 | Pagina di accesso — email e password. |
+| `src/pages/Profilo.jsx` | 66 | mostra i dati dell'account (nome, email di accesso, ruolo), il collegamento al cambio password («/password») e i documenti da scaricare per il proprio ruolo: Manuale Utente per tutti; Manuale Amministratore e Registro sviluppo e… |
+| `src/pages/TuoiDocumenti.jsx` | 141 | "I tuoi documenti" (requisiti §5): contratto, allegati, documentazione |
+| `src/pages/VerificaMfa.jsx` | 162 | (requisiti §13) - primo accesso: attivazione con QR code da inquadrare con un'app di autenticazione (Google Authenticator, Microsoft Authenticator, Authy…), con chiave da inserire a mano in alternativa; - accessi successivi:… |
+
+**Componenti (src/components)**
+
+| File | Righe | Cosa contiene |
+|---|---|---|
+| `src/components/AzioniRuolo.jsx` | 83 | pulsanti di azione del prototipo, diversi per ruolo (promotore, operate, validatore), con il pulsante «avanza fase» attivo solo quando tocca a quel ruolo. |
+| `src/components/Badge.jsx` | 37 | etichetta colorata compatta per mostrare uno stato (pratica, fase, documento, pagamento, calcolo…). Solo grafica. |
+| `src/components/Consultazione.jsx` | 317 | Consultazione pubblica (fase 3, requisiti §6). |
+| `src/components/DettaglioPratica.jsx` | 559 | Dettaglio di una pratica con le sue 7 fasi. |
+| `src/components/Documenti.jsx` | 243 | Gestione documentale: elenco versionato e upload. |
+| `src/components/Header.jsx` | 154 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
+| `src/components/Integrazioni.jsx` | 224 | Richieste di integrazione di una fase (requisiti §4). |
+| `src/components/Messaggi.jsx` | 106 | Messaggi tra Comune e Fondazione dentro la pratica (backlog 26). |
+| `src/components/NoteFase.jsx` | 87 | Note di fase (backlog 10). |
+| `src/components/Notifiche.jsx` | 177 | campanella delle notifiche interne (requisiti §9) nell'intestazione. Mostra il numero delle non lette, apre un elenco a tendina delle ultime 50 notifiche, segna come lette e porta alla pratica collegata. |
+| `src/components/NuovoProgetto.jsx` | 226 | Finestra per creare un nuovo progetto. |
+| `src/components/Pagamenti.jsx` | 184 | Pagamenti (requisiti §7): nessun incasso online. Il back-office censisce |
+| `src/components/Pill.jsx` | 32 | etichetta colorata compatta, a forma di pillola. |
+| `src/components/ProjectCard.jsx` | 63 | scheda di una pratica nella lista laterale del prototipo (nome, stato, codice, barra di avanzamento in giorni su 150). |
+| `src/components/Rapporti.jsx` | 95 | Rapporti di Monitoraggio annuali di un Progetto (requisiti §2): |
+| `src/components/Stat.jsx` | 47 | riquadro con un dato numerico in evidenza (etichetta, valore, unità di misura facoltativa). |
+| `src/components/Timeline.jsx` | 105 | linea del tempo orizzontale delle fasi di una pratica, con la barra di avanzamento in giorni e il responsabile di ogni fase. |
+| `src/components/crediti/ImportaTracciato.jsx` | 232 | — |
+| `src/components/crediti/RegistroCrediti.jsx` | 136 | — |
+| `src/components/crediti/TabellaDati.jsx` | 161 | Tabella di dati modificabile in pagina, con importazione da CSV (anche |
+| `src/components/impostazioni/EntiValidazione.jsx` | 107 | Anagrafica degli Enti di Validazione (backlog 11) — Impostazioni, solo |
+| `src/components/impostazioni/ModelliDocumento.jsx` | 121 | Modelli di documento (backlog 12) — Impostazioni, solo Amministratori. |
+| `src/components/stili.js` | 96 | oggetti di stile in linea condivisi dai componenti delle pratiche e delle impostazioni (stessa grafica del resto del portale: carta, verde Fondazione, bordi sottili) e la funzione dataOra per mostrare data e ora in formato… |
+
+**Librerie (src/lib)**
+
+| File | Righe | Cosa contiene |
+|---|---|---|
+| `src/lib/AuthContext.jsx` | 189 | tiene in memoria la sessione Supabase Auth, il profilo applicativo (ruolo, organizzazione, flag password temporanea) e lo stato MFA. Espone le funzioni accedi, esci, richiediRecuperoPassword, cambiaPassword e caricaMfa. Ogni… |
+| `src/lib/crediti/archivio.js` | 191 | Lettura e salvataggio dei calcoli dei crediti (tabelle dello script 11). |
+| `src/lib/crediti/calcolo.js` | 362 | — |
+| `src/lib/crediti/parametri.js` | 63 | Tipologie di rifiuto "r" con il fattore di emissione per lo scenario |
+| `src/lib/crediti/rapportoPdf.js` | 309 | I caratteri standard del PDF non hanno i pedici: CO₂ → CO2, ≤ → <=. |
+| `src/lib/crediti/tracciato.js` | 561 | "Peso strutture informatizzate (kg)" → "pesostruttureinformatizzatekg" |
+| `src/lib/csv.js` | 117 | Lettura e scrittura di file CSV (anche salvati da Excel in italiano, |
+| `src/lib/cwpProgram.js` | 84 | Le 7 fasi operative ufficiali (intervalli di giorni dall'infografica). |
+| `src/lib/date.js` | 50 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO. |
+| `src/lib/dati.js` | 609 | ---- Organizzazioni ---- |
+| `src/lib/datiEsempio.js` | 71 | tre progetti fittizi a stadi diversi di avanzamento. Servivano finché il backend Supabase non era attivo; oggi le pratiche reali si leggono dal database (src/lib/dati.js). |
+| `src/lib/fascicolo.js` | 222 | CSV con separatore ";" (si apre direttamente in Excel in italiano). |
+| `src/lib/file.js` | 117 | Estensione → tipo MIME canonico e famiglia di contenuto attesa. |
+| `src/lib/password.js` | 70 | controllo delle regole della password prima dell'invio, generazione della password temporanea assegnata dall'Amministratore, traduzione in italiano degli errori di Supabase Auth. |
+| `src/lib/stato.js` | 30 | restituisce i colori di sfondo e testo per gli stati usati dai dati di esempio ("Validato", "In istruttoria", "Adesione"). Le pratiche reali usano invece STATI_PRATICA e STATI_FASE di cwpProgram.js. |
+| `src/lib/supabase.js` | 37 | crea l'unico client @supabase/supabase-js usato dal portale (database, Auth, Storage, Edge Functions). Legge URL e chiave dalle variabili d'ambiente (file .env in locale, mai pubblicato; in produzione le variabili del progetto… |
+
+**Database: script SQL (supabase)**
+
+| File | Righe | Cosa contiene |
+|---|---|---|
+| `supabase/01_schema.sql` | 256 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
+| `supabase/02_sicurezza.sql` | 178 | PORTALE CARBON WASTEPRINT — Sicurezza (RLS) e automatismi |
+| `supabase/03_dati_esempio.sql` | 48 | DATI DI ESEMPIO per il collaudo del back-office. |
+| `supabase/04_storage.sql` | 55 | STORAGE — archivio dei documenti delle pratiche. |
+| `supabase/05_gestione_utenti.sql` | 63 | GESTIONE UTENTI (Admin) |
+| `supabase/06_utente_multi_org.sql` | 125 | ASSOCIAZIONE UTENTE ↔ PIÙ ORGANIZZAZIONI |
+| `supabase/07_correzioni_sicurezza.sql` | 362 | CORREZIONI DI SICUREZZA E FUNZIONAMENTO (analisi requisiti, ott. 2026) |
+| `supabase/08_integrazioni_azioni.sql` | 377 | INTEGRAZIONI E AZIONI DEL BACK-OFFICE (requisiti §4 e §8) |
+| `supabase/09_cruscotto_pagamenti_notifiche.sql` | 410 | CRUSCOTTO, RAPPORTI, PAGAMENTI, DOCUMENTI E NOTIFICHE |
+| `supabase/10_mfa_profilo.sql` | 199 | MFA OBBLIGATORIA PER LO STAFF E PROTEZIONE DEL PROFILO (requisiti §13) |
+| `supabase/11_crediti.sql` | 135 | CALCOLO DEI CREDITI CWP — sezione riservata agli Amministratori |
+| `supabase/12_email_notifiche.sql` | 85 | INVIO DELLE NOTIFICHE PER EMAIL (requisiti §9) |
+| `supabase/13_durata_fasi.sql` | 81 | DURATA DELLE FASI MODIFICABILE DALL'AMMINISTRATORE |
+| `supabase/14_controlli_file.sql` | 105 | CONTROLLI SUI FILE CARICATI (requisiti §13 "Upload") |
+| `supabase/15_password.sql` | 68 | PASSWORD: CAMBIO OBBLIGATORIO DOPO UNA PASSWORD TEMPORANEA |
+| `supabase/16_recupero_password.sql` | 18 | RECUPERO PASSWORD CON EMAIL DEL PORTALE (Edge Function recupera-password) |
+| `supabase/17_pratiche.sql` | 586 | PRATICHE: RIFINITURE (backlog 10, 11, 12, 13, 26, 27 — 18/10/2026) |
+| `supabase/18_registro_crediti.sql` | 132 | REGISTRO DEI CREDITI (backlog 7 — 18/10/2026) |
+| `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
+
+**Edge Functions (supabase/functions)**
+
+| File | Righe | Cosa contiene |
+|---|---|---|
+| `supabase/functions/consultazione-pubblica/index.ts` | 303 | Edge Function: consultazione-pubblica |
+| `supabase/functions/crea-utente/index.ts` | 95 | Edge Function: crea-utente |
+| `supabase/functions/invia-email-notifica/index.ts` | 120 | Edge Function: invia-email-notifica |
+| `supabase/functions/recupera-password/index.ts` | 118 | Edge Function: recupera-password |
+| `supabase/functions/reimposta-password/index.ts` | 83 | Edge Function: reimposta-password |
+
+**Test (test)**
+
+| File | Righe | Cosa contiene |
+|---|---|---|
+| `test/crediti.test.mjs` | 122 | Verifica del motore di calcolo con un esempio calcolato a mano. |
+| `test/csv.test.mjs` | 33 | File in stile Excel italiano: BOM, ";" e virgola decimale, virgolette, riga vuota finale. |
+| `test/tracciato.test.mjs` | 85 | Test dell'import del tracciato dati CWP (src/lib/crediti/tracciato.js). |
+
+**Strumenti (strumenti)**
+
+| File | Righe | Cosa contiene |
+|---|---|---|
+| `strumenti/genera_documenti.cjs` | 473 | — |
+| `strumenti/genera_esempi_tracciato.py` | 66 | Genera i file di prova del tracciato dati per i test automatici |
+| `strumenti/genera_tracciato_dati.py` | 260 | Genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP). |
+| `strumenti/impagina_pdf.py` | 361 | — |
+| `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
+| `strumenti/revisioni_documenti.json` | 160 | — |
+<!-- INVENTARIO-FINE -->

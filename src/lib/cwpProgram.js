@@ -1,9 +1,25 @@
 /* =========================================================================
-   Dati di riferimento del Programma Carbon WastePrint.
-   Allineati all'analisi funzionale: 7 fasi, 3 ruoli applicativi, stati.
+   cwpProgram.js — dati di riferimento del Programma Carbon WastePrint.
+
+   Scopo: costanti condivise da tutto il portale, allineate all'analisi
+   funzionale: le 7 fasi, i 3 ruoli applicativi, gli stati di pratica e di
+   fase (con i colori dei badge), la palette e le tipologie di documento.
+
+   Usato da: quasi tutte le pagine e i componenti (COLORI in particolare),
+   src/App.jsx, src/lib/dati.js, src/lib/stato.js.
+   Dati/servizi coinvolti: nessuna chiamata. Le chiavi di STATI_PRATICA,
+   STATI_FASE e RUOLI devono coincidere con i tipi enumerati del database
+   (stato_pratica, stato_fase, ruolo_utente in supabase/01_schema.sql):
+   se si aggiunge un valore nel database va aggiunto anche qui.
+
+   Registro sviluppo e deploy: capitolo 6 «Portale (frontend)»;
+   capitolo 4 «Database» (tipi enumerati, tabella durata_fase).
    ========================================================================= */
 
 // Le 7 fasi operative ufficiali (intervalli di giorni dall'infografica).
+// g_da / g_a: giorno di inizio e fine indicativi dall'adesione.
+// Sono valori descrittivi: le scadenze reali si calcolano nel database con
+// la tabella durata_fase (13_durata_fasi.sql), modificabile dall'Admin.
 export const FASI = [
   { numero: 1, nome: "Adesione", g_da: 0, g_a: 0, responsabile: "Soggetto Promotore" },
   { numero: 2, nome: "Prima verifica documentale", g_da: 0, g_a: 10, responsabile: "Soggetto Promotore" },
@@ -14,7 +30,8 @@ export const FASI = [
   { numero: 7, nome: "Chiusura", g_da: 150, g_a: 150, responsabile: "Soggetto Promotore" },
 ];
 
-// I tre ruoli applicativi.
+// I tre ruoli applicativi (chiavi = valori di profilo.ruolo).
+// label/short/sub: testi mostrati; color/soft: colori del badge.
 export const RUOLI = {
   cliente: {
     label: "Cliente / Organizzazione",
@@ -72,6 +89,8 @@ export const COLORI = {
 };
 
 // Tipologie di documento (requisiti §5, "I tuoi documenti").
+// Nel database la colonna documento.tipologia è testo libero: questo
+// elenco è la sola fonte delle voci proposte nel menu (Documenti.jsx).
 export const TIPOLOGIE_DOCUMENTO = [
   "Contratto",
   "Allegato al contratto",

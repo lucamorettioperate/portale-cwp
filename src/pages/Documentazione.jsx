@@ -1,14 +1,35 @@
+/* =========================================================================
+   Documentazione (Manuale) — indirizzo «/documentazione»
+   Scopo: elenco dei documenti del portale da aprire in PDF o scaricare in
+     Word, ciascuno con la revisione più recente e la sua data.
+     - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli
+       Amministratori).
+     - Manuale Amministratore, Manuale Test e Registro sviluppo e deploy:
+       solo Amministratori.
+     Il titolo della pagina è «Documentazione» per l'Admin, «Manuale» per
+     gli altri. L'elenco (ElencoDocumenti) è riusato in «Il mio profilo».
+   Chi la usa: tutti gli utenti con accesso; il contenuto dipende dal ruolo.
+   Dati: nessuna lettura dal database. I file stanno in public/manuali e
+     public/documentazione e sono generati da strumenti/genera_documenti.cjs;
+     revisione e data arrivano dallo stesso registro delle revisioni
+     (strumenti/revisioni_documenti.json, incluso nella build). Per
+     aggiungere una revisione: aggiornare il JSON e rigenerare i file.
+   Sicurezza: il filtro per ruolo è SOLO interfaccia. I file in public/
+     sono statici e raggiungibili da chiunque conosca l'indirizzo, anche
+     senza accesso: non metterci informazioni riservate (credenziali,
+     chiavi, dati personali).
+   Registro sviluppo e deploy: capitolo «Portale (frontend)».
+   ========================================================================= */
 import React from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
 import REVISIONI from "../../strumenti/revisioni_documenti.json";
 
-/* Documentazione scaricabile.
-   - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori).
-   - Manuale Amministratore, Manuale Test e Registro sviluppo e deploy: solo Amministratori.
-   I file sono generati da strumenti/genera_documenti.cjs; revisione e data
-   arrivano dallo stesso registro delle revisioni. */
+/* Catalogo dei documenti.
+   - chiave: voce corrispondente in revisioni_documenti.json
+   - percorso: indirizzo del file SENZA estensione (si aggiungono .pdf e .docx)
+   - soloAdmin: se vero il documento compare solo agli Amministratori. */
 const DOCUMENTI = [
   {
     chiave: "manuale",
@@ -40,7 +61,9 @@ const DOCUMENTI = [
   },
 ];
 
-// Elenco dei documenti scaricabili per il ruolo (usato anche in "Il mio profilo").
+/* Elenco dei documenti scaricabili per il ruolo (usato anche in "Il mio profilo").
+   Prop `compatto`: versione ridotta senza descrizione e nota di revisione.
+   Il pulsante «Scarica Word» compare solo agli Amministratori. */
 export function ElencoDocumenti({ compatto = false }) {
   const { ruolo } = useAuth();
   const admin = ruolo === "admin";
@@ -48,6 +71,7 @@ export function ElencoDocumenti({ compatto = false }) {
   return (
     <div style={{ display: "grid", gap: compatto ? 10 : 14 }}>
       {visibili.map((d) => {
+        // Le revisioni nel JSON sono in ordine cronologico: vale l'ultima.
         const revisioni = REVISIONI[d.chiave] || [];
         const rev = revisioni[revisioni.length - 1];
         return (
@@ -76,6 +100,8 @@ export function ElencoDocumenti({ compatto = false }) {
   );
 }
 
+/* Pagina «Documentazione». Nessuna prop: intestazione, testo introduttivo
+   per ruolo ed ElencoDocumenti completo. */
 export default function Documentazione() {
   const { ruolo } = useAuth();
   const admin = ruolo === "admin";
@@ -97,6 +123,7 @@ export default function Documentazione() {
   );
 }
 
+// Stile dei pulsanti-link: pieno (principale = true) oppure bordato.
 const pulsante = (principale) => ({
   display: "inline-block",
   background: principale ? C.green : C.white,

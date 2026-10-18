@@ -1,13 +1,31 @@
+/* =========================================================================
+   NoteFase
+   Scopo: note scritte sotto una delle 7 fasi di una pratica (backlog 10).
+     Lo staff legge tutte le note e ne aggiunge di nuove, interne (solo
+     Fondazione) o condivise con il Comune; il Comune vede solo le condivise.
+   Usato da: DettaglioPratica.jsx (una volta per ogni fase).
+   Chi lo vede: operatore e admin (tutte le note, con autore e badge);
+     cliente/Comune (solo le note condivise, senza autore).
+   Dati: aggiungiNotaFase (src/lib/dati.js) sulla tabella nota_fase
+     (script 17). L'elenco delle note lo legge DettaglioPratica
+     (elencaNoteFase) e lo passa già filtrato per fase.
+   Sicurezza (garantita dal database, script 17): solo lo staff può
+     inserire note; il Comune riceve dalle RLS solo quelle con
+     visibile_cliente = true; autore e ora li scrive un trigger; le note non
+     si modificano né si cancellano e finiscono nell'audit. Una nota
+     condivisa genera una notifica al Comune (la crea il database).
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import React, { useState } from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import Badge from "./Badge.jsx";
 import { aggiungiNotaFase } from "../lib/dati.js";
 import { campo, btnPrimario, btnMini, btnLink, dataOra } from "./stili.js";
 
-/* Note di fase (backlog 10).
-   Lo staff scrive note interne (solo Fondazione) o condivise con il Comune.
-   Il Comune vede solo quelle condivise. Le note non si modificano: restano
-   come scritte e sono registrate nell'audit. */
+/* Note di una fase, con il modulo «+ Aggiungi nota» per lo staff.
+   Props: fase (riga della tabella fase), pratica (riga pratica), note
+   (note di questa fase), staff (true per operatore/admin), onCambio
+   (chiamata dopo il salvataggio, per far ricaricare le note al genitore). */
 export default function NoteFase({ fase, pratica, note, staff, onCambio }) {
   const [aperto, setAperto] = useState(false);
   const [testo, setTesto] = useState("");
@@ -15,8 +33,11 @@ export default function NoteFase({ fase, pratica, note, staff, onCambio }) {
   const [errore, setErrore] = useState("");
   const [inCorso, setInCorso] = useState(false);
 
+  // Il Comune senza note condivise su questa fase non vede nulla.
   if (!staff && note.length === 0) return null;
 
+  // Salva la nota (minimo 2 caratteri, come il vincolo della tabella).
+  // Nota condivisa: il database invia la notifica al Comune.
   async function salva() {
     setErrore("");
     if (testo.trim().length < 2) return setErrore("Scrivi il testo della nota.");

@@ -1,12 +1,34 @@
+/* =========================================================================
+   Verifica a due fattori (MFA) — nessun indirizzo proprio: la mostra
+   Protetta in src/App.jsx al posto di qualsiasi pagina protetta quando
+   mfa.richiesta è vero e mfa.verificata è falso.
+   Scopo: (requisiti §13)
+     - primo accesso: attivazione con QR code da inquadrare con un'app di
+       autenticazione (Google Authenticator, Microsoft Authenticator, Authy…),
+       con chiave da inserire a mano in alternativa;
+     - accessi successivi: codice a 6 cifre generato dall'app.
+   Chi la usa: Operatori e Amministratori, solo se l'interruttore
+     mfa_obbligatoria è acceso (oggi spento: vedi Registro).
+   Dati: Supabase Auth MFA (listFactors, unenroll, enroll,
+     challengeAndVerify) direttamente da src/lib/supabase.js; poi
+     caricaMfa() di AuthContext (RPC mio_stato_mfa, script 10).
+   Sicurezza: la protezione vera è nel database. Senza sessione «aal2» la
+     funzione app_is_staff() restituisce falso (script 10) e lo staff non ha
+     alcun potere del back-office, anche aggirando questa pagina. La pagina
+     serve solo a portare la sessione da aal1 ad aal2.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)» (interruttore
+     di emergenza MFA nel capitolo «Database»).
+   ========================================================================= */
 import React, { useEffect, useState } from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import { supabase } from "../lib/supabase.js";
 
-/* Verifica a due fattori per Operatori e Amministratori (requisiti §13).
-   - primo accesso: attivazione con QR code da inquadrare con un'app di
-     autenticazione (Google Authenticator, Microsoft Authenticator, Authy…)
-   - accessi successivi: codice a 6 cifre generato dall'app. */
+/* Schermata di verifica. Nessuna prop.
+   All'apertura capisce se l'utente ha già un fattore TOTP verificato
+   (chiede solo il codice) oppure no (avvia una nuova attivazione con QR).
+   Dopo un codice corretto aggiorna lo stato MFA del contesto: App.jsx
+   mostra allora la pagina richiesta. */
 export default function VerificaMfa() {
   const { esci, caricaMfa, utente } = useAuth();
   const [fattore, setFattore] = useState(null); // fattore TOTP verificato
@@ -16,6 +38,8 @@ export default function VerificaMfa() {
   const [inCorso, setInCorso] = useState(false);
   const [pronto, setPronto] = useState(false);
 
+  // Preparazione, una volta all'apertura: lettura dei fattori esistenti ed
+  // eventuale avvio dell'attivazione.
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase.auth.mfa.listFactors();
@@ -34,6 +58,8 @@ export default function VerificaMfa() {
             await supabase.auth.mfa.unenroll({ factorId: f.id });
           }
         }
+        // Il nome con la data distingue i dispositivi nell'elenco dei fattori.
+        // qr_code è un'immagine (data URL) pronta per <img>.
         const { data: nuovo, error: e2 } = await supabase.auth.mfa.enroll({
           factorType: "totp",
           friendlyName: `Portale CWP ${new Date().toISOString().slice(0, 10)}`,
@@ -45,9 +71,13 @@ export default function VerificaMfa() {
     })();
   }, []);
 
+  // Invio del codice. Vale sia per un fattore già attivo sia per quello in
+  // attivazione: una verifica riuscita completa l'attivazione e porta la
+  // sessione a livello aal2.
   async function verifica(e) {
     e.preventDefault();
     setErrore("");
+    // Spazi tolti: l'app può mostrare il codice come «123 456» (maxLength 7).
     const pulito = codice.replace(/\s/g, "");
     if (!/^\d{6}$/.test(pulito)) {
       setErrore("Il codice è di 6 cifre.");
@@ -62,6 +92,7 @@ export default function VerificaMfa() {
       setCodice("");
       return;
     }
+    // Rilegge mio_stato_mfa: con verificata = true App.jsx lascia passare.
     await caricaMfa();
   }
 

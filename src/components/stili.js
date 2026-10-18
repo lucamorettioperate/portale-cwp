@@ -1,7 +1,20 @@
-/* Stili condivisi dai componenti delle pratiche (stessa grafica del resto
-   del portale: carta, verde Fondazione, bordi sottili). */
+/* =========================================================================
+   stili.js (stili condivisi)
+   Scopo: oggetti di stile in linea condivisi dai componenti delle pratiche
+     e delle impostazioni (stessa grafica del resto del portale: carta,
+     verde Fondazione, bordi sottili) e la funzione dataOra per mostrare
+     data e ora in formato italiano.
+   Usato da: Messaggi, Consultazione, NoteFase, impostazioni/EntiValidazione,
+     impostazioni/ModelliDocumento, pagina ConsultazioniPubbliche.
+     Altri componenti più vecchi definiscono ancora stili propri: per
+     cambiare l'aspetto di un pulsante può servire intervenire anche lì.
+   Chi lo vede: tutti, comprese le pagine pubbliche della consultazione.
+   Dati: nessuno; colori da COLORI di src/lib/cwpProgram.js.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import { COLORI as C } from "../lib/cwpProgram.js";
 
+// Contenitore bianco con bordo sottile (sezione di una pagina).
 export const riquadro = {
   background: C.white,
   border: `1px solid ${C.line}`,
@@ -9,8 +22,10 @@ export const riquadro = {
   padding: "18px 20px",
 };
 
+// Titolo di un riquadro.
 export const titoloRiquadro = { fontFamily: "'Archivo'", fontSize: 15, margin: 0 };
 
+// Campo di testo, menu a tendina o area di testo a tutta larghezza.
 export const campo = {
   width: "100%",
   boxSizing: "border-box",
@@ -22,8 +37,10 @@ export const campo = {
   background: C.white,
 };
 
+// <label> che contiene il testo dell'etichetta e, sotto, il campo.
 export const etichetta = { display: "grid", gap: 4, fontSize: 12, color: C.grafite, fontWeight: 600, marginBottom: 10 };
 
+// Pulsante principale (verde): l'azione che salva o invia.
 export const btnPrimario = {
   background: C.green,
   color: C.white,
@@ -35,6 +52,7 @@ export const btnPrimario = {
   cursor: "pointer",
 };
 
+// Pulsante secondario (bianco con bordo): annulla, modifica, azioni minori.
 export const btnMini = {
   background: C.white,
   color: C.grafite,
@@ -46,6 +64,7 @@ export const btnMini = {
   cursor: "pointer",
 };
 
+// Pulsante che sembra un collegamento (testo verde sottolineato).
 export const btnLink = {
   background: "none",
   border: "none",
@@ -57,6 +76,7 @@ export const btnLink = {
   textDecoration: "underline",
 };
 
+// Riquadro di avviso (sfondo ocra chiaro). Oggi non importato da nessun file.
 export const avviso = {
   background: C.ocraSoft || "#f3e7d6",
   color: C.ink,
@@ -67,7 +87,8 @@ export const avviso = {
   lineHeight: 1.5,
 };
 
-// "18/10/2026 · 14:05"
+// Data e ora in formato italiano, nel fuso orario del browser:
+// "18/10/2026 · 14:05". Valore vuoto → "—".
 export function dataOra(valore) {
   if (!valore) return "—";
   const d = new Date(valore);

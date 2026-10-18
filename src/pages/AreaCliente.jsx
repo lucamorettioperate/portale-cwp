@@ -1,3 +1,20 @@
+/* =========================================================================
+   Le mie pratiche (Area Cliente) — indirizzo «/» per il ruolo cliente
+   (src/App.jsx, HomePerRuolo: è la vista predefinita anche se il profilo
+   non ha ancora un ruolo).
+   Scopo: il Comune/azienda vede l'elenco dei propri Progetti (schede
+     compatte con stato) e, sotto, il dettaglio della pratica selezionata:
+     fasi, documenti, integrazioni, messaggi. Link al Manuale Utente in PDF.
+   Chi la usa: cliente (Comune o gestore). Lo staff arriva invece al Cruscotto.
+   Dati: elencaProgetti() di src/lib/dati.js (tabella "pratica" con
+     l'organizzazione); il dettaglio è il componente DettaglioPratica.
+   Sicurezza: il filtro «solo le pratiche della mia organizzazione» lo fa il
+     database (RLS pratica_select, script 06: app_org_mia). La pagina non
+     filtra nulla: mostra ciò che il database restituisce. Le azioni
+     consentite al cliente dentro il dettaglio sono anch'esse decise da RLS
+     e dalle funzioni del database.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)».
+   ========================================================================= */
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { COLORI as C, STATI_PRATICA, STATI_FASE } from "../lib/cwpProgram.js";
@@ -7,20 +24,26 @@ import Badge from "../components/Badge.jsx";
 import DettaglioPratica from "../components/DettaglioPratica.jsx";
 import { elencaProgetti } from "../lib/dati.js";
 
-/* Area Cliente: l'organizzazione vede solo le proprie pratiche
-   (garantito dalla sicurezza del database), in sola consultazione. */
+/* Pagina principale del cliente.
+   Nessuna prop. Legge i progetti una volta all'apertura e, se l'indirizzo
+   non indica già una pratica, seleziona la prima dell'elenco.
+   La pratica selezionata vive nel parametro ?id= dell'indirizzo. */
 export default function AreaCliente() {
   const { profilo } = useAuth();
   const [progetti, setProgetti] = useState([]);
   // Pratica aperta nell'indirizzo (?id=…), così le notifiche la aprono.
   const [params, setParams] = useSearchParams();
   const selId = params.get("id");
+  // Cambiare pratica = cambiare l'indirizzo (senza id si toglie il parametro).
   const setSelId = (id) => setParams(id ? { id } : {});
   const [caricamento, setCaricamento] = useState(true);
 
+  // Caricamento iniziale (una sola volta). Gli errori di lettura non sono
+  // mostrati: in caso di errore l'elenco resta vuoto.
   useEffect(() => {
     elencaProgetti().then(({ data }) => {
       setProgetti(data || []);
+      // Se si arriva da una notifica l'id è già nell'indirizzo: lo si rispetta.
       if (!params.get("id") && data && data.length) setSelId(data[0].id);
       setCaricamento(false);
     });
@@ -103,7 +126,9 @@ export default function AreaCliente() {
               })}
             </div>
 
-            {/* Dettaglio della pratica selezionata (sola lettura per il cliente) */}
+            {/* Dettaglio della pratica selezionata. key={selId} ricrea il
+                componente a ogni cambio di pratica (stato interno azzerato).
+                onApri permette di passare a un'altra pratica (es. un Rapporto). */}
             {selId && <DettaglioPratica key={selId} praticaId={selId} onApri={setSelId} />}
           </div>
         )}
