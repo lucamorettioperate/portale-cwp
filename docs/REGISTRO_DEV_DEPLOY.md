@@ -308,7 +308,8 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   invece di `resetPasswordForEmail` (commit 21306fb). Il modello italiano
   resta salvato in Supabase ma non è più usato dal portale. Prova in
   produzione: richiesta per luca.moretti@operate.it accettata, collegamento
-  generato (`recovery_sent_at` aggiornato), email inviata con Resend.
+  generato (`recovery_sent_at` aggiornato), email arrivata alle 14:04 in
+  italiano con oggetto, testo e pulsante corretti (confermato da Luca).
 - **Pagina «Il mio profilo»** (`/profilo`, collegamento sotto l'email in alto):
   dati dell'account, «Cambia password» e documenti da scaricare per il ruolo
   (Manuale Utente per tutti; Registro sviluppo e deploy solo per gli

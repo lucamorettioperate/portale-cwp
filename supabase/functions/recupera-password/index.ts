@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
 <tr><td style="padding:22px 24px 6px;font-size:13px;color:#5a5e54">Programma Carbon WastePrint&reg; &middot; Fondazione Operate</td></tr>
 <tr><td style="padding:6px 24px 0;font-size:14px">${esc(saluto)}</td></tr>
 <tr><td style="padding:12px 24px 0;font-size:18px;font-weight:bold">Richiesta di reimpostazione della password</td></tr>
-<tr><td style="padding:8px 24px 0;font-size:14px;line-height:1.5;color:#3a4036">hai ricevuto questa email perché dal <b>Portale Carbon WastePrint (CWP)</b> di Fondazione Operate è stata richiesta la reimpostazione della password dell'account <b>${esc(email)}</b>. Per scegliere una nuova password premi il pulsante qui sotto: si aprirà il portale.</td></tr>
+<tr><td style="padding:8px 24px 0;font-size:14px;line-height:1.5;color:#3a4036">Hai ricevuto questa email perché dal <b>Portale Carbon WastePrint (CWP)</b> di Fondazione Operate è stata richiesta la reimpostazione della password dell'account <b>${esc(email)}</b>. Per scegliere una nuova password premi il pulsante qui sotto: si aprirà il portale.</td></tr>
 <tr><td style="padding:20px 24px">
 <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
 <td bgcolor="#2f5d3a" style="background-color:#2f5d3a;border:2px solid #2f5d3a;border-radius:8px">
