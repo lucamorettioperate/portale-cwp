@@ -41,6 +41,12 @@
       "data": "18/10/2026",
       "descrizione": "Messaggi con la Fondazione (nuovo capitolo), note della Fondazione e modelli nelle fasi, Ente di Validazione, avviso sulle pratiche non attive, pagamenti visibili, consultazione sulla pagina pubblica con conferma dell'email ed errata corrige, nuove notifiche.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.7",
+      "data": "18/10/2026",
+      "descrizione": "Dati per il calcolo dei crediti: il file caricato nella pratica è letto direttamente dalla Fondazione; controllo dei dati personali.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -55,6 +61,12 @@
       "data": "18/10/2026",
       "descrizione": "Note di fase, Ente di Validazione della pratica, consultazione sulla pagina pubblica con conferma dell'email, moderazione con autori e allegati, errata corrige; nuovo capitolo Messaggi con il Comune; pagamenti visibili al Comune; Impostazioni: Enti di Validazione e Modelli di documento; notifiche aggiornate.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.2",
+      "data": "18/10/2026",
+      "descrizione": "Calcolo crediti: importare il tracciato nel calcolo (dai documenti della pratica o dal computer), singole letture, blocco dei dati personali, controlli di coerenza.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -68,6 +80,12 @@
       "rev": "1.1",
       "data": "18/10/2026",
       "descrizione": "Prove per Enti di Validazione, modelli, note di fase, messaggi, pagamenti visibili al Comune, pratica sospesa, consultazione pubblica con conferma dell'email, limiti di invio ed errata corrige.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.2",
+      "data": "18/10/2026",
+      "descrizione": "Calcolo crediti: prove di import del tracciato con i file di esempio (compilato, letture, dati personali) e dei controlli di coerenza.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -106,6 +124,12 @@
       "rev": "1.5",
       "data": "18/10/2026",
       "descrizione": "Capitolo pratiche: script 17, funzione consultazione-pubblica, note di fase, Enti di Validazione, modelli, messaggi, pagamenti al Comune, consultazione pubblica con email confermata ed errata corrige; decisioni A, B, D.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.6",
+      "data": "18/10/2026",
+      "descrizione": "Crediti: import diretto del tracciato, aggregazione delle letture, blocco dei dati personali, controlli di coerenza (backlog 1-5).",
       "autore": "Fondazione Operate"
     }
   ]

@@ -72,7 +72,7 @@ Il portale è lo strumento unico con cui Comune e Fondazione seguono la pratica.
 | Export | Fascicolo completo della pratica in un file ZIP | tutti |
 | Audit | Registro non modificabile di ogni operazione, con motivazione | Amministratore |
 | Utenti e impostazioni | Creazione utenti, associazione ai Comuni, reimpostazione password, durata delle fasi, Enti di Validazione, modelli di documento | Amministratore |
-| Calcolo crediti | Calcolo secondo la Metodologia, conferma definitiva, nuove versioni | Amministratore |
+| Calcolo crediti | Import del tracciato dati del Comune con controllo dei dati personali e della coerenza, calcolo secondo la Metodologia, conferma definitiva, nuove versioni | Amministratore |
 | Formato dati | Pagina pubblica con il tracciato Excel standard per i dati dei Comuni | tutti, anche senza accesso |
 | Documentazione | Manuali e registro tecnico da scaricare | tutti (per ruolo) |
 
@@ -153,14 +153,20 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | N. | Prova | Risultato atteso |
 | --- | --- | --- |
 | 7.1 | Senza accesso, aprite la pagina Formato dati e scaricate il tracciato Excel | Il file si scarica; il foglio Istruzioni spiega ogni colonna |
-| 7.2 | [A] Crediti CWP → + Nuovo calcolo sul Rapporto RM1, ex post, anno precedente | Calcolo in Bozza, con 7 passi |
-| 7.3 | [A] Compilate i passi 2-6: per ogni tabella usate Scarica il modello e poi Importa CSV, oppure + Riga | Dati salvati; nel passo 6 «Ricava dai dati importati» compila il buffer |
-| 7.4 | [A] Passo 7: Calcola | Crediti lordi, buffer, crediti netti (o debito), dettaglio per utenza; riquadro «Da verificare» |
-| 7.5 | [A] Scaricate riepilogo e dettaglio (CSV) | I file si aprono con Excel |
-| 7.6 | [A] Conferma calcolo → Conferma definitivamente | Calcolo Confermato, in sola lettura |
-| 7.7 | [A] Nuova versione | Nasce una bozza «(rev.)»; l'originale non cambia |
+| 7.2 | [C] Nella pratica RM1 caricate il file di esempio «Tracciato_esempio_compilato.xlsx» (Documentazione → file di esempio) | Documento caricato |
+| 7.3 | [A] Crediti CWP → + Nuovo calcolo sul Rapporto RM1, ex post, anno **2025** | Calcolo in Bozza; si apre il passo «Importa il tracciato» |
+| 7.4 | [A] Dai documenti della pratica → Leggi questo file | Anteprima: 4 rifiuti, 2+1 classi, 4 righe e 3 utenze, 1 riuso; nessuna incoerenza |
+| 7.5 | [A] Importa nel calcolo; controllate i passi 2, 3 e 5 | Dati compilati e salvati; «Ultimo import» con il nome del file |
+| 7.6 | [A] Dal computer, importate «Tracciato_esempio_dati_personali.xlsx» | Import bloccato: elenco con foglio, riga e tipo di dato personale |
+| 7.7 | [A] Dal computer, importate «Tracciato_esempio_letture.zip» | Letture sommate (U0001: 18 svuotamenti); avviso di una lettura fuori anno esclusa |
+| 7.8 | [A] Passo 3: cambiate il nome di una classe; aprite il passo 5 | Controllo di coerenza «Classi … assenti nella delibera»; ripristinate il nome |
+| 7.9 | [A] Passo 6: «Ricava dai dati importati» | Il buffer si compila dai dati |
+| 7.10 | [A] Passo 7: Calcola | Crediti lordi, buffer, crediti netti (o debito), dettaglio per utenza; controlli di coerenza e riquadro «Da verificare» |
+| 7.11 | [A] Scaricate riepilogo e dettaglio (CSV) | I file si aprono con Excel |
+| 7.12 | [A] Conferma calcolo → Conferma definitivamente | Calcolo Confermato, in sola lettura; il passo «Importa il tracciato» non permette più l'import |
+| 7.13 | [A] Nuova versione | Nasce una bozza «(rev.)»; l'originale non cambia |
 
-Un esempio di dati di prova si costruisce compilando il tracciato con poche utenze inventate (codici anonimi come U001, U002…): mai dati reali di persone.
+**File di esempio.** I tre file usati sopra si scaricano da `portale-cwp.vercel.app/documentazione/esempi/` (Tracciato_esempio_compilato.xlsx, Tracciato_esempio_letture.zip, Tracciato_esempio_dati_personali.xlsx) e contengono solo dati inventati, con anno 2025. Per prove proprie usate sempre codici anonimi (U0001, U0002…), mai dati reali di persone.
 
 ### 8. Prove trasversali
 
@@ -182,7 +188,6 @@ Un esempio di dati di prova si costruisce compilando il tracciato con poche uten
 
 - Le email (notifiche e conferme della consultazione) arrivano solo all'indirizzo del titolare del servizio email finché il dominio della Fondazione non è verificato.
 - La verifica in due passaggi per lo staff è pronta ma spenta.
-- Il tracciato dati non si importa ancora direttamente nel calcolo: i fogli si importano come CSV, passo per passo.
 - Non c'è ancora l'antivirus sui file caricati.
 
-**In sviluppo** (saranno aggiunti al percorso di prova quando disponibili): per i crediti import diretto del tracciato, aggregazione delle singole letture, controllo dei dati personali, controlli di coerenza, rapporto PDF e registro dei crediti; registro di sicurezza; antivirus.
+**In sviluppo** (saranno aggiunti al percorso di prova quando disponibili): rapporto di calcolo in PDF e registro dei crediti; registro di sicurezza; antivirus.

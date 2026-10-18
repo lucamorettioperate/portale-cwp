@@ -376,16 +376,34 @@ I dati arrivano dal Comune e dal soggetto gestore nel **tracciato dati standard 
 
 | Foglio del tracciato | Passo del calcolo |
 | --- | --- |
-| 1_Anagrafica | 1. Impostazioni |
+| 1_Anagrafica | Ripartizione PEF (passo 3) e tariffa puntuale (passo 6) |
 | 2_Rifiuti | 2. Rifiuti del territorio |
 | 3_Classi_domestiche, 4_Classi_non_domestiche | 3. Delibera tariffaria |
 | 5_Conferimenti (totali per utenza) | 5. Banca Dati Utenze |
-| 6_Letture (singole letture) | 5. Banca Dati Utenze, dopo l'aggregazione |
+| 6_Letture (singole letture) | 5. Banca Dati Utenze: le letture sono sommate per utenza e tipologia |
 | 7_Riuso | 5. Banca Dati Utenze (beni a riuso) |
 
-**Protezione dei dati personali.** La Banca Dati Utenze deve contenere solo un **codice anonimo** per ogni utenza: niente nomi, codici fiscali, indirizzi o numeri di contratto. Se il file del Comune contiene dati personali, non va caricato nel calcolo: chiedete al Comune di sostituirli con codici.
+**Protezione dei dati personali.** La Banca Dati Utenze deve contenere solo un **codice anonimo** per ogni utenza: niente nomi, codici fiscali, indirizzi, email o telefoni. Il portale controlla il file prima dell'import e lo **blocca** se trova dati personali, indicando foglio e riga (con il valore oscurato): chiedete al Comune di sostituirli con codici e di caricare di nuovo il file.
 
-Oggi ogni tabella si importa in **CSV**: dal file Excel del Comune si salva il foglio come «CSV UTF-8» e lo si importa nel passo corrispondente. Ogni tabella ha **Scarica il modello**, che mostra le intestazioni attese. L'import diretto del file Excel e l'aggregazione automatica delle singole letture sono in sviluppo (capitolo «Funzioni in arrivo»).
+Il Comune carica il tracciato tra i documenti della sua pratica: il file Excel (.xlsx) oppure, se è molto grande, uno ZIP con i fogli salvati in CSV (es. `6_Letture.csv`).
+
+### Importare il tracciato nel calcolo
+
+Il primo passo del calcolo, **Importa il tracciato**, legge il file e compila in un colpo solo i passi 2, 3 e 5. Si apre da solo quando il calcolo è ancora vuoto.
+
+1. Nel calcolo aprite **Importa il tracciato**.
+2. Scegliete il file:
+   - in **Dai documenti della pratica** compaiono i file .xlsx e .zip caricati nella pratica del calcolo: premete **Leggi questo file** sulla versione giusta;
+   - oppure, da **Oppure dal computer**, premete **Scegli il file (.xlsx o .zip)**.
+3. Il portale mostra l'**anteprima**: per ogni parte (ripartizione PEF e tariffa puntuale, rifiuti, classi della delibera, Banca Dati Utenze, beni a riuso) quante righe ha trovato, le righe scartate con il motivo e i **controlli di coerenza**.
+4. Togliete la spunta alle parti che non volete importare.
+5. Premete **Importa nel calcolo**. Le parti spuntate **sostituiscono** quelle del calcolo e sono salvate subito. Il calcolo annota il file di origine («Ultimo import»).
+
+**Singole letture.** Se il Comune ha compilato il foglio 6_Letture, il portale somma le letture dell'anno del calcolo per ogni utenza e tipologia: gli svuotamenti domiciliari diventano numero di svuotamenti e volume medio del contenitore; pesi e volumi alle strutture informatizzate e ai centri di raccolta si sommano. Le letture di altri anni sono escluse e il numero compare tra gli avvisi. Se sono compilati sia il foglio 5 sia il foglio 6, vale il foglio 5.
+
+**Controlli di coerenza.** Compaiono nell'anteprima, nel passo 5 e nei risultati, divisi in *da correggere* e *da verificare*. Ad esempio: ripartizione PEF diversa da 100%, indifferenziato mancante, classi della Banca Dati che non esistono nella delibera (spesso scritte in modo diverso), utenze con classi diverse su righe diverse, più utenze nella Banca Dati che nella delibera, più di 366 svuotamenti, contenitori oltre 5.000 litri, conferimenti superiori al totale del territorio, anno dei dati diverso da quello del calcolo. Non bloccano l'import: si correggono nei passi oppure con un file nuovo del Comune.
+
+Le singole tabelle si possono ancora importare a mano in CSV nei passi 2, 3 e 5 (**Importa CSV** e **Scarica il modello**).
 
 ### Creare un calcolo
 
@@ -521,7 +539,7 @@ Il back-office torna accessibile con la sola password. Dopo aver rimesso a posto
 
 Questo manuale descrive il portale alla data della revisione indicata in copertina. Sono in sviluppo, e saranno aggiunte qui quando disponibili:
 
-- **Calcolo crediti:** import diretto del tracciato dati Excel/ZIP caricato dal Comune, riassunto automatico delle singole letture, controllo dei dati personali, controlli di coerenza, rapporto di calcolo in PDF, registro dei crediti.
+- **Calcolo crediti:** rapporto di calcolo in PDF, registro dei crediti calcolati e confermati.
 - **Sicurezza:** registro di sicurezza (accessi e tentativi falliti), verifica in due passaggi attiva, antivirus sui file caricati, piano di protezione dagli attacchi informatici.
 - **Email:** verifica del dominio, per far arrivare le notifiche a tutti gli utenti.
 

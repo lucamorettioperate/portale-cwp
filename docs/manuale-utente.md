@@ -241,7 +241,7 @@ I dati per il calcolo dei crediti si inviano con un unico modello Excel, il **Tr
 3. Compilate le celle gialle del foglio **1_Anagrafica**.
 4. Compilate i fogli da 2 a 7 partendo dalla riga 2, senza modificare le intestazioni. Nelle colonne con il menu a tendina scegliete i codici del foglio **Codici**.
 5. Per i dati delle utenze compilate **uno solo** tra **5_Conferimenti** (totali dell'anno per utenza) e **6_Letture** (singoli svuotamenti, se il vostro sistema esporta questi).
-6. Caricate il file nella vostra pratica, tra i documenti, come descritto al capitolo 5.
+6. Caricate il file nella vostra pratica, tra i documenti, come descritto al capitolo 5. La Fondazione lo legge direttamente dal portale: non serve inviarlo per email.
 
 | Foglio | Dati | Chi li fornisce di solito |
 | --- | --- | --- |
@@ -253,7 +253,7 @@ I dati per il calcolo dei crediti si inviano con un unico modello Excel, il **Tr
 | 6_Letture | In alternativa al 5: le singole letture | Gestore |
 | 7_Riuso | Beni portati al centro del riuso | Gestore o centro del riuso |
 
-**Protezione dei dati personali.** Il file non deve contenere nomi, indirizzi, codici fiscali, partite IVA, email o telefoni delle utenze. Ogni utenza si indica con un codice anonimo, sempre lo stesso negli anni. La tabella che collega codici e persone resta al Comune o al gestore.
+**Protezione dei dati personali.** Il file non deve contenere nomi, indirizzi, codici fiscali, partite IVA, email o telefoni delle utenze: il portale lo controlla e, se li trova, la Fondazione non può usarlo e vi chiederà un file corretto. Ogni utenza si indica con un codice anonimo, sempre lo stesso negli anni. La tabella che collega codici e persone resta al Comune o al gestore.
 
 **File molto grandi.** Oltre 50 MB o oltre 1 milione di righe: salvate ogni foglio come file CSV con le stesse intestazioni (ad esempio `6_Letture.csv`), raccoglieteli in un archivio ZIP e caricate lo ZIP.
 

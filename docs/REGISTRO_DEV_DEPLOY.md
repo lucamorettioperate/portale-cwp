@@ -240,8 +240,10 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
   `crediti/{parametri,calcolo,archivio}.js` (motore di calcolo).
 - `public/loghi/` — loghi Carbon WastePrint, Fondazione Operate, RINA,
   Carbon Credit. `public/modelli/` — tracciato dati Excel.
-- `test/` — test del motore crediti e del lettore CSV (`npm test`).
-- `strumenti/genera_tracciato_dati.py` — rigenera il tracciato Excel.
+- `test/` — test del motore crediti, del lettore CSV e dell'import del
+  tracciato (`npm test`); `test/dati/` file di esempio.
+- `strumenti/genera_tracciato_dati.py` — rigenera il tracciato Excel;
+  `strumenti/genera_esempi_tracciato.py` — file di esempio compilati.
 
 ---
 
@@ -260,7 +262,7 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 | Notifiche (§9) | Fatto | Interne + email (Resend); messaggi Comune-Fondazione nella pratica; manca verifica dominio |
 | Audit (§10) | Fatto | Scritto dal database, immutabile, pagina di consultazione |
 | Export fascicolo (§11) | Fatto | ZIP con documenti e riepiloghi |
-| Calcolo crediti (Metodologia v1.2) | Parziale | Motore formule 1-32, Tabelle 3-5, 8, 15, 16; sei passi di acquisizione; calcoli confermati immutabili; tracciato dati standard pubblicato; mancano import diretto del tracciato, aggregazione letture, rapporto PDF, registro crediti |
+| Calcolo crediti (Metodologia v1.2) | Parziale | Motore formule 1-32, Tabelle 3-5, 8, 15, 16; import diretto del tracciato con aggregazione delle letture, blocco dei dati personali e controlli di coerenza; calcoli confermati immutabili; mancano rapporto PDF e registro crediti |
 | Amministrazione | Fatto | Utenti, audit, impostazioni: durata fasi, Enti di Validazione, modelli di documento |
 | Sicurezza (§13) | Parziale | RLS, audit, controlli file; mancano registro di sicurezza, antivirus, ambiente di prova |
 
@@ -314,6 +316,19 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Crediti: import diretto del tracciato dati (backlog 1-5)** — nuovo passo
+  «Importa il tracciato» nel calcolo: file .xlsx (letto nel browser con
+  JSZip, senza librerie esterne) o ZIP di CSV, scelto dai documenti della
+  pratica del calcolo o dal computer; aggregazione del foglio 6_Letture per
+  utenza e tipologia (letture fuori anno escluse); blocco dell'import se ci
+  sono dati personali (codici fiscali, email, IBAN, telefoni, indirizzi,
+  colonne nome/indirizzo…); controlli di coerenza (PEF, classi, utenze,
+  valori anomali, totali del territorio) mostrati anche nei passi 5 e 7;
+  file di origine annotato nel calcolo (`dati.importazione`). Codice:
+  `src/lib/crediti/tracciato.js`, `src/components/crediti/ImportaTracciato.jsx`;
+  test `test/tracciato.test.mjs` (5 prove) con i file generati da
+  `strumenti/genera_esempi_tracciato.py`, pubblicati anche in
+  `public/documentazione/esempi/` per i collaudatori. Commit `f72cc67`.
 - **Capitolo pratiche (backlog 10-13, 20, 24-27)** — script
   `17_pratiche.sql` (provato sul banco locale: permessi di Comune, Operatore
   e Admin, autore dei messaggi forzato dal database, errata corrige con e
@@ -565,11 +580,11 @@ completato (va barrato qui e annotato in Cronologia).
 
 **Calcolo crediti (back-office)**
 
-- **1.** Import diretto del tracciato dati (Excel/ZIP) nel calcolo.
-- **2.** Aggregazione automatica delle singole letture (foglio 6_Letture).
-- **3.** Controllo privacy all'import (colonne con dati personali).
-- **4.** Scelta del file direttamente dalla pratica del Comune.
-- **5.** Controlli di coerenza (classi, totali, valori anomali).
+- ~~**1.** Import diretto del tracciato dati (Excel/ZIP) nel calcolo~~ — fatto il 18/10.
+- ~~**2.** Aggregazione automatica delle singole letture (foglio 6_Letture)~~ — fatto il 18/10.
+- ~~**3.** Controllo privacy all'import~~ — fatto il 18/10 (blocco dell'import).
+- ~~**4.** Scelta del file direttamente dalla pratica del Comune~~ — fatto il 18/10.
+- ~~**5.** Controlli di coerenza (classi, totali, valori anomali)~~ — fatto il 18/10.
 - **6.** Rapporto di calcolo in PDF.
 - **7.** Registro dei crediti calcolati e confermati (forma da *Guida al Programma* e *Standard CWP*).
 - **8.** Collaudo con dati reali di un Comune.
