@@ -264,6 +264,12 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 **Edge Function**: sorgente nel repository → incolla nell'editor della
 dashboard → *Deploy updates* → controlla *Verify JWT* → prova.
 
+**Manuale Utente (Word/PDF)**: si modifica `docs/manuale-utente.md` (e lo
+stesso testo nel manuale online), si aggiunge una riga in
+`strumenti/manuale_utente_revisioni.json` (nuovo numero di revisione e
+data), si esegue `node strumenti/genera_manuale_utente.cjs` (richiede la
+libreria `docx` e LibreOffice) e si pubblica con commit e push.
+
 **Segreti**: li inserisce solo Luca (Edge Functions → Secrets). Le chiavi non
 si scrivono mai in chat, nel codice o nel registro.
 
@@ -274,6 +280,13 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Manuale Utente in Word, Rev. 1.0** — copertina con loghi, registro delle
+  revisioni, sommario con numeri di pagina, intestazione e piè di pagina;
+  generato da `docs/manuale-utente.md` con
+  `strumenti/genera_manuale_utente.cjs` (revisioni in
+  `strumenti/manuale_utente_revisioni.json`); pubblicato in
+  `public/manuali/` (.docx e .pdf) e collegato dalla pagina di accesso e da
+  "Le mie pratiche". Verificato: rendering PDF di tutte le pagine.
 - **Registro sviluppo e deploy** (questo documento) e **manuali** Utente e
   Amministratore (Claude Doc) creati ripercorrendo chat, repository e
   artefatti; README aggiornato. Commit `bfa9cb6`.
@@ -366,6 +379,7 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 | Analisi requisiti vs portale | Progetto claude.ai: `claude/analisi-requisiti-vs-portale.md` | Stato per modulo, decisioni prese e aperte |
 | Registro sviluppo e deploy | `docs/REGISTRO_DEV_DEPLOY.md` + Progetto: `claude/registro-dev-deploy.md` | Questo documento |
 | Manuale Utente (Comuni) | Claude Doc: https://claude.ai/code/artifact/e2dd2bd5-8042-4744-8d5a-54d34dc50153 (creato 18/10) | Uso del portale per i Clienti, passo per passo |
+| Manuale Utente in Word/PDF (Rev. 1.0) | `public/manuali/Manuale_Utente_Portale_CWP.docx` e `.pdf`, online su `/manuali/…` | Versione rifinita e stampabile per i Comuni |
 | Manuale Amministratore | Claude Doc: https://claude.ai/code/artifact/cc36ab09-61e6-4dad-aaf0-4082ea0a46da (creato 18/10) | Back-office, utenti, impostazioni, calcolo crediti, manutenzione |
 | Tracciato dati CWP v1.0 | `public/modelli/Tracciato_dati_CWP_v1.xlsx`, online su `/formato-dati` | Modello unico dei dati per il calcolo crediti |
 | Note sul calcolo crediti | `docs/crediti-cwp.md` | Corrispondenza con le formule, scelte interpretative |
