@@ -22,7 +22,7 @@
    Audit: trigger trg_audit su calcolo_crediti (non riga per riga sul dettaglio).
 
    Registro sviluppo e deploy: capitolo 4 «Database» (script 11 e 18);
-   capitolo 7 «Funzionalità per area», riga Calcolo crediti.
+   capitolo 15 «Calcolo crediti».
    ========================================================================= */
 import { supabase } from "../supabase.js";
 import { TIPOLOGIE_RIFIUTO, BENI_RIUSO, BUFFER_SOLO_VIRTUOSE } from "./parametri.js";

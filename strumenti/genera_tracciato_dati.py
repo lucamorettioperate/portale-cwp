@@ -1,12 +1,39 @@
-# Genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP).
+# =========================================================================
+# genera_tracciato_dati.py — modello Excel del tracciato dati CWP.
+#
+# Scopo: genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP),
+# il file vuoto che Comuni e gestori compilano per il calcolo dei crediti:
+# fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a
+# tendina, formati delle celle ed esempi di compilazione.
+#
+# Usato da: nessun programma lo esegue in automatico. Il file prodotto si
+# scarica dalla pagina pubblica /formato-dati del portale ed è la base di
+# strumenti/genera_esempi_tracciato.py.
+#
+# Dati/servizi coinvolti: nessuno (solo file locale). Richiede Python 3 e
+# la libreria openpyxl (pip install openpyxl).
+#
+# Attenzione: nomi dei fogli, intestazioni delle colonne e codici (tipologie,
+# beni, punti di conferimento) devono coincidere con quelli letti dal
+# portale in src/lib/crediti/tracciato.js (FOGLI_TRACCIATO, COL) e con gli
+# id di src/lib/crediti/parametri.js. Se si cambiano qui, cambiarli anche lì,
+# rigenerare gli esempi ed eseguire npm test.
+#
 # Uso: python3 strumenti/genera_tracciato_dati.py
+# Poi commit del file .xlsx aggiornato in public/modelli/.
+#
+# Registro sviluppo e deploy: capitolo 6 «Portale (frontend)» (strumenti/);
+# capitolo 15 «Calcolo crediti».
+# =========================================================================
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.utils import get_column_letter
 
 import os
+# File prodotto, relativo alla cartella dello script (si può lanciare da qualsiasi cartella).
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "public", "modelli", "Tracciato_dati_CWP_v1.xlsx")
+# Palette del portale (cwpProgram.js) e stili delle celle.
 VERDE = "2F5D3A"; VERDE_CHIARO = "E4EDE1"; CARTA = "F6F4EE"; GIALLO = "FFF4C2"; GRIGIO = "5A5E54"; ROSSO = "A23B2C"
 F = "Arial"
 f_base = Font(name=F, size=10)
@@ -23,6 +50,10 @@ thin = Side(style="thin", color="D9D4C5")
 box = Border(left=thin, right=thin, top=thin, bottom=thin)
 wrap = Alignment(wrap_text=True, vertical="top")
 
+# Codici ammessi nei menu a tendina (foglio Codici). Il primo valore di ogni
+# coppia/terna è il codice che il portale riconosce: deve essere un id di
+# TIPOLOGIE_RIFIUTO / BENI_RIUSO in parametri.js o un punto di conferimento
+# accettato da tracciato.js (domiciliare, struttura, centro_raccolta).
 TIPOLOGIE = [
   ("indifferenziato", "Indifferenziato (secco residuo)", "200301"),
   ("organico", "Frazione organica (umido)", "200108, 200302"),
@@ -41,6 +72,9 @@ BENI = [("maglietta","Maglietta"),("maglione","Maglione"),("vestito","Vestito ge
 PUNTI = [("domiciliare","Raccolta domiciliare (porta a porta)"),("struttura","Struttura informatizzata (cassonetto con accesso controllato)"),("centro_raccolta","Centro di raccolta")]
 
 # Fogli di dati: (nome, titolo, [(intestazione, larghezza, obbligatorio, formato, lista, nota)], esempio)
+# (tra titolo e colonne c'è anche la descrizione del foglio). "formato" è il
+# formato numerico Excel; "lista" la chiave del menu a tendina in "liste".
+# Le intestazioni sono quelle cercate da COL in tracciato.js.
 FOGLI = [
  ("2_Rifiuti", "Rifiuti raccolti nel territorio comunale",
   "Una riga per codice EER, con le quantità dell'anno di riferimento (Catasto ISPRA, MUD o O.R.So.). Più codici EER possono avere la stessa Tipologia.",
@@ -107,6 +141,9 @@ ist = wb.active; ist.title = "Istruzioni"
 cod = wb.create_sheet("Codici")
 cod["A1"] = "Codici ammessi"; cod["A1"].font = f_tit
 cod["A2"] = "Usate esattamente questi codici nelle colonne con il menu a tendina."; cod["A2"].font = f_sub
+# Scrive una tabella di codici nel foglio Codici a partire da (riga r0,
+# colonna c0): titolo, intestazione, righe. Restituisce (prima, ultima) riga
+# dei valori, usate per gli intervalli dei menu a tendina.
 def tabella_codici(r0, c0, titolo, intest, righe):
     cod.cell(r0, c0, titolo).font = f_b
     for j, h in enumerate(intest):
@@ -122,6 +159,8 @@ r_ben = tabella_codici(19, 1, "Beni a riuso (Metodologia, Tabella 5)", ["Codice"
 r_pun = tabella_codici(19, 5, "Punti di conferimento", ["Codice", "Descrizione"], PUNTI)
 for col, w in zip("ABCDEFG", [18, 36, 30, 3, 18, 58, 3]): cod.column_dimensions[col].width = w
 
+# Intervalli del foglio Codici usati come sorgente dei menu a tendina
+# (convalida dati di Excel); solo la prima colonna di ogni tabella.
 liste = {
  "tipologie": f"Codici!$A${r_tip[0]}:$A${r_tip[1]}",
  "macro": f"Codici!$E${r_mac[0]}:$E${r_mac[1]}",
@@ -134,6 +173,11 @@ liste = {
 an = wb.create_sheet("1_Anagrafica", 1)
 an["A1"] = "Anagrafica e informazioni generali"; an["A1"].font = f_tit
 an["A2"] = "Compilate le celle gialle."; an["A2"].font = f_sub
+# Voci dell'anagrafica: (voce in colonna A, indicazione, formato o "sino").
+# Il portale riconosce le voci dall'inizio del testo (leggiAnagrafica in
+# tracciato.js): non cambiare l'inizio delle voci Ente, Codice ISTAT, Anno,
+# Gestore, Software, Tariffa puntuale attiva, PEF, Estremi della delibera.
+# "@" = cella di testo (mantiene zeri iniziali, es. codice ISTAT).
 campi = [
  ("Ente (Comune o Unione)", "Denominazione ufficiale", None),
  ("Codice ISTAT", "6 cifre", "@"),
@@ -161,6 +205,9 @@ for i, (voce, nota, fmt) in enumerate(campi):
     if fmt == "sino": dv_an.add(b)
     elif fmt: b.number_format = fmt
     c = an.cell(r, 3, nota); c.font = f_es; c.border = box
+# Righe delle due voci PEF (posizioni 8 e 9 dell'elenco campi, dalla riga 5):
+# se si riordina "campi", aggiornare questi numeri. Sotto, una formula Excel
+# mostra la somma, che deve fare 100.
 pef_ud, pef_und = 5+8, 5+9
 r_chk = 5+len(campi)+1
 an.cell(r_chk, 1, "Controllo PEF (deve essere 100)").font = f_es
@@ -174,6 +221,8 @@ for pos, (nome, titolo, descr, colonne, esempio) in enumerate(FOGLI, start=2):
         c = ws.cell(1, j, h); c.font = f_h; c.fill = fill_h; c.border = box
         c.alignment = Alignment(wrap_text=True, vertical="center")
         ws.column_dimensions[get_column_letter(j)].width = w
+        # Righe coperte dal menu a tendina; il formato numerico si applica
+        # solo alle prime 300 per non appesantire il file.
         n_righe = 200000 if nome == "6_Letture" else 20000
         if fmt:
             for r in range(2, 302): ws.cell(r, j).number_format = fmt
@@ -191,6 +240,8 @@ ist.column_dimensions["A"].width = 3
 for col, w in zip("BCDEFGHIJKL", [26, 18, 18, 18, 16, 16, 16, 16, 16, 16, 16]):
     ist.column_dimensions[col].width = w
 r = 1
+# Scrive una riga di testo nel foglio Istruzioni alla riga corrente r (colonne
+# B-L unite), con carattere, sfondo e altezza facoltativi; poi passa alla riga dopo.
 def riga(testo, font=f_base, fill=None, altezza=None, unisci=True):
     global r
     c = ist.cell(r, 2, testo); c.font = font; c.alignment = wrap
@@ -201,6 +252,7 @@ def riga(testo, font=f_base, fill=None, altezza=None, unisci=True):
     r += 1
 
 riga("Programma Carbon WastePrint® — Tracciato dati per il calcolo dei crediti", f_tit, altezza=24)
+# Versione del tracciato: aggiornarla se cambiano fogli o colonne.
 riga("Versione 1.0 · ottobre 2026 · Fondazione Operate", f_sub)
 r += 1
 riga("A cosa serve", Font(name=F, size=12, bold=True, color=VERDE))

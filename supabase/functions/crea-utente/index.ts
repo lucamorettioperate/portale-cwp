@@ -1,6 +1,6 @@
 // =====================================================================
 //  Edge Function: crea-utente
-//  Crea un nuovo utente con password temporanea e imposta ruolo +
+//  Scopo: crea un nuovo utente con password temporanea e imposta ruolo +
 //  organizzazione. L'Admin comunica la password all'utente, che potrà
 //  cambiarla al primo accesso.
 //  Sicurezza:

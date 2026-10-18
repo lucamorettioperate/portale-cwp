@@ -1,5 +1,5 @@
 /* =========================================================================
-   Import del TRACCIATO DATI CWP (v1.0) nel calcolo dei crediti
+   tracciato.js — import del TRACCIATO DATI CWP (v1.0) nel calcolo dei crediti
    (backlog 1-5, 18/10/2026). Funzioni pure, usate dal portale e dai test
    (test/tracciato.test.mjs).
 
@@ -26,8 +26,8 @@
 
    Uso dei test: npm test (comprende test/tracciato.test.mjs).
 
-   Registro sviluppo e deploy: capitolo 7 «Funzionalità per area», riga
-   Calcolo crediti; capitolo 6 «Portale (frontend)».
+   Registro sviluppo e deploy: capitolo 15 «Calcolo crediti»; capitolo 6
+   «Portale (frontend)».
 
    Flusso:
    1. leggiFileTracciato(buffer, nome)  → fogli: { "2_Rifiuti": [[celle]], … }

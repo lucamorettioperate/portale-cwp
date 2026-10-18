@@ -1,7 +1,7 @@
 // =====================================================================
 //  Edge Function: consultazione-pubblica
-//  Pagina pubblica delle consultazioni (requisiti §6, decisioni B e D del
-//  18/10/2026). Chiunque, senza account, può:
+//  Scopo: servizio della pagina pubblica delle consultazioni (requisiti §6,
+//  decisioni B e D del 18/10/2026). Chiunque, senza account, può:
 //   - "elenco":    vedere le consultazioni aperte;
 //   - "dettaglio": leggere documento, errata corrige e osservazioni ammesse;
 //   - "invia":     inviare un'osservazione (nome, email, testo, allegato

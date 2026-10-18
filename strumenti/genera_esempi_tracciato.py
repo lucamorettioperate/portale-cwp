@@ -1,9 +1,31 @@
-# Genera i file di prova del tracciato dati per i test automatici
+# =========================================================================
+# genera_esempi_tracciato.py — file di esempio del tracciato dati CWP.
+#
+# Scopo: genera i file di prova del tracciato dati per i test automatici
 # (test/tracciato.test.mjs) e per il collaudo manuale (Manuale Test):
 #  - test/dati/tracciato_esempio.xlsx  : tracciato compilato, Banca Dati con totali (foglio 5)
 #  - test/dati/tracciato_letture.zip   : ZIP di CSV con le singole letture (foglio 6)
 #  - test/dati/tracciato_privacy.xlsx  : tracciato con dati personali (deve essere bloccato)
-# Uso: python3 strumenti/genera_esempi_tracciato.py
+# I dati sono inventati (Comune di Prova, utenze con codici fittizi).
+#
+# Usato da: nessun programma lo esegue in automatico; i file prodotti sono
+# letti da test/tracciato.test.mjs (npm test) e servono per le prove a mano
+# dell'import nel portale.
+#
+# Dati/servizi coinvolti: nessuno. Parte dal modello
+# public/modelli/Tracciato_dati_CWP_v1.xlsx: rigenerare prima quello
+# (strumenti/genera_tracciato_dati.py) se il tracciato è cambiato.
+# Richiede Python 3 e openpyxl.
+#
+# Attenzione: i valori qui sotto sono quelli attesi da test/tracciato.test.mjs
+# (es. 18 svuotamenti di U0001 nel 2025, PEF 65/35, peso CdR 12,5 kg).
+# Se si cambiano, aggiornare anche i test.
+#
+# Uso: python3 strumenti/genera_esempi_tracciato.py   poi npm test
+#
+# Registro sviluppo e deploy: capitolo 6 «Portale (frontend)» (strumenti/,
+# test/dati/); capitolo 8 «Procedure di rilascio».
+# =========================================================================
 import os, zipfile, io, csv
 from openpyxl import load_workbook
 from datetime import date
@@ -13,6 +35,9 @@ MODELLO = os.path.join(RADICE, "public", "modelli", "Tracciato_dati_CWP_v1.xlsx"
 OUT = os.path.join(RADICE, "test", "dati")
 os.makedirs(OUT, exist_ok=True)
 
+# Contenuto di prova. Le chiavi di ANAGRAFICA sono le voci della colonna A
+# del foglio 1_Anagrafica del modello; le righe degli altri fogli seguono
+# l'ordine delle colonne del modello (None = cella vuota).
 ANAGRAFICA = {"Ente (Comune o Unione)": "Comune di Prova", "Anno di riferimento dei dati": "2025",
               "Tariffa puntuale attiva": "sì", "PEF % utenze domestiche": 65, "PEF % utenze non domestiche": 35}
 RIFIUTI = [["200301", "Rifiuti urbani non differenziati", "indifferenziato", 1250.4, "no"],
@@ -27,6 +52,9 @@ CONFERIMENTI = [["U0001", "UD", "1 componente", "indifferenziato", 18, 40, None,
                 ["N0042", "UnD", "1 - Musei, biblioteche, scuole", "indifferenziato", 52, 120, None, None, 35, None, None]]
 RIUSO = [["U0001", "UD", "1 componente", "maglione", 3, None, None]]
 
+# Compila un modello aperto: valori dell'anagrafica (righe 5-24, colonna B)
+# e righe dei fogli dati dalla riga 2. conferimenti=False lascia vuoto il
+# foglio 5 (oggi sempre True).
 def compila(wb, conferimenti=True):
     an = wb["1_Anagrafica"]
     for r in range(5, 25):
@@ -47,16 +75,23 @@ wb["5_Conferimenti"].cell(3, 1).value = "Via Roma 12"
 wb.save(os.path.join(OUT, "tracciato_privacy.xlsx"))
 
 # ZIP di CSV con singole letture (anno 2025 + una lettura del 2024 da escludere)
+# csv_testo: CSV come lo salva Excel in italiano (BOM, separatore ";",
+# decimali con la virgola), per provare anche il lettore di csv.js.
 def csv_testo(intest, righe):
     b = io.StringIO(); w = csv.writer(b, delimiter=";")
     w.writerow(intest); [w.writerow(["" if v is None else str(v).replace(".", ",") if isinstance(v, float) else v for v in r]) for r in righe]
     return "﻿" + b.getvalue()
+# 18 svuotamenti 2025 di U0001 (date diverse, mesi da 1 a 9), più uno del
+# 31/12/2024 che il portale deve escludere; U0002 ha un conferimento al
+# centro di raccolta e uno domiciliare; N0042 uno a struttura informatizzata.
 letture = []
 for g in range(1, 19): letture.append(["U0001", "UD", "1 componente", "indifferenziato", f"{g:02d}/0{1 + g % 9}/2025", "domiciliare", 40, None])
 letture.append(["U0001", "UD", "1 componente", "indifferenziato", "31/12/2024", "domiciliare", 40, None])
 letture += [["U0002", "UD", "2 componenti", "indifferenziato", "10/03/2025", "centro_raccolta", None, 12.5],
             ["U0002", "UD", "2 componenti", "indifferenziato", "11/03/2025", "domiciliare", 40, None],
             ["N0042", "UnD", "1 - Musei, biblioteche, scuole", "indifferenziato", "05/05/2025", "struttura", None, 35]]
+# I CSV stanno in una sottocartella "dati/" per provare che il portale li
+# trova anche dentro una cartella dello ZIP. Il foglio 5 manca di proposito.
 with zipfile.ZipFile(os.path.join(OUT, "tracciato_letture.zip"), "w", zipfile.ZIP_DEFLATED) as z:
     z.writestr("dati/1_Anagrafica.csv", csv_testo(["Voce", "Valore"], [[k, v] for k, v in ANAGRAFICA.items()]))
     z.writestr("dati/2_Rifiuti.csv", csv_testo(["Codice EER", "Descrizione", "Tipologia", "Quantità (t/anno)", "Solo domestiche"], RIFIUTI))

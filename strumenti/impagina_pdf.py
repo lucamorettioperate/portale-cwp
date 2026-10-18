@@ -1,4 +1,26 @@
 #!/usr/bin/env python3
+# =========================================================================
+# impagina_pdf.py — PDF tipografico di manuali e Registro.
+# Scopo: impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore,
+# Manuale Test e Registro, a partire dagli stessi Markdown del Word.
+# (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.)
+#
+# Usato da: strumenti/genera_documenti.cjs, che lo chiama alla fine di ogni
+# documento (python3 strumenti/impagina_pdf.py <chiave>); si può lanciare
+# anche da solo. Senza argomenti impagina tutti e quattro i documenti.
+#
+# Dati/servizi coinvolti: nessuno (solo file locali): legge docs/*.md,
+# strumenti/revisioni_documenti.json e i loghi in public/loghi/; scrive i
+# PDF in public/manuali/ e public/documentazione/. Richiede anche Pillow
+# (PIL) per i loghi e i caratteri Inter installati nel sistema (altrimenti
+# WeasyPrint usa un carattere sostitutivo).
+#
+# Attenzione: le chiavi e i percorsi di DOCUMENTI devono coincidere con
+# quelli di genera_documenti.cjs e con src/pages/Documentazione.jsx.
+#
+# Registro sviluppo e deploy: capitolo 8 «Procedure di rilascio»
+# (Documenti in Word/PDF); capitolo 10 «Artefatti e documenti».
+# =========================================================================
 """
 Impaginazione tipografica in PDF dei documenti del portale (WeasyPrint).
 
@@ -24,9 +46,13 @@ import tempfile
 from PIL import Image
 from weasyprint import HTML
 
+# Cartella principale del repository; revisioni di ogni documento (l'ultima è la corrente).
 RADICE = Path(__file__).resolve().parent.parent
 REVISIONI = json.loads((RADICE / "strumenti" / "revisioni_documenti.json").read_text(encoding="utf-8"))
 
+# Configurazione di ogni documento: sorgente, PDF prodotto, testi di
+# copertina, numerazione automatica dei capitoli ("numera"; il Registro ha
+# già i numeri nei titoli), fascia «Riservato» in copertina, introduzione.
 DOCUMENTI = {
     "manuale": {
         "sorgente": "docs/manuale-utente.md",
@@ -78,6 +104,10 @@ DOCUMENTI = {
     },
 }
 
+# Foglio di stile della stampa (CSS Paged Media di WeasyPrint): formato A4,
+# margini, testatine e piè di pagina con string-set e counter(page), pagine
+# speciali (copertina, iniziali, apertura dei capitoli), tabelle, riquadri,
+# schema delle fasi. Non inserire commenti "#" qui dentro: è testo CSS.
 CSS = r"""
 @page {
   size: A4;
@@ -188,6 +218,9 @@ table.senza-testa td:first-child { font-weight: 600; width: 32%; color: #2f5d3a;
 """
 
 # Paragrafi che diventano riquadri: inizio in grassetto → tipo e etichetta.
+# (testo iniziale in grassetto, classe CSS, etichetta mostrata). Vale la prima
+# voce che corrisponde; per un nuovo riquadro nei manuali aggiungere qui
+# l'inizio del paragrafo (es. "**Attenzione.** …").
 RIQUADRI = [
     (r"Protezione dei dati personali", "attenzione", "Attenzione"),
     (r"Chi vede cosa", "nota", "Da sapere"),
@@ -207,6 +240,9 @@ RIQUADRI = [
 ]
 
 
+# Restituisce l'indirizzo file:// di una cartella temporanea con i loghi
+# modificati (i pixel quasi bianchi, sopra 245 su 255, diventano trasparenti).
+# I file originali in public/loghi/ non vengono toccati.
 def loghi_trasparenti():
     """Copie dei loghi con lo sfondo bianco reso trasparente (per la copertina colorata)."""
     cartella = Path(tempfile.mkdtemp(prefix="loghi_cwp_"))
@@ -218,6 +254,9 @@ def loghi_trasparenti():
     return cartella.as_uri()
 
 
+# Divide il Markdown in premessa (righe prima del primo "## ") e capitoli
+# [{titolo, righe}]; toglie i commenti HTML e ignora il titolo "# ".
+# Stessa logica di leggi() in genera_documenti.cjs.
 def leggi(file):
     testo = re.sub(r"<!--[\s\S]*?-->", "", (RADICE / file).read_text(encoding="utf-8"))
     premessa, capitoli, corrente = [], [], None
@@ -233,6 +272,9 @@ def leggi(file):
     return premessa, capitoli
 
 
+# I documenti sono scritti con gli elenchi subito sotto il testo; la libreria
+# markdown li riconosce solo dopo una riga vuota. Dentro i blocchi ``` non si
+# tocca nulla; nelle citazioni "> " la riga vuota aggiunta è ">".
 def prepara(testo):
     """Riga vuota prima di ogni elenco che segue del testo (il markdown la richiede)."""
     righe, out, in_codice = testo.split("\n"), [], False
@@ -248,6 +290,9 @@ def prepara(testo):
     return "\n".join(out)
 
 
+# Converte un capitolo da Markdown in HTML e applica le classi
+# dell'impaginazione: elenchi numerati come "passi", tabelle senza
+# intestazione come schede, paragrafi di RIQUADRI e citazioni come riquadri.
 def md_html(testo):
     # elenchi rientrati di 4 spazi come sottoliste; tabelle e blocchi di codice
     testo = re.sub(r"~~(.+?)~~", r"<del>\1</del>", prepara(testo))
@@ -268,6 +313,8 @@ def md_html(testo):
     return h
 
 
+# Schema grafico delle 7 fasi (cerchi numerati), usato nel Manuale Utente.
+# I nomi devono restare uguali a FASI di src/lib/cwpProgram.js.
 def schema_fasi():
     fasi = ["Adesione", "Prima verifica documentale", "Consultazione pubblica", "Risposta ai commenti / pubblicazione",
             "Validazione e verifica", "Seconda verifica documentale", "Chiusura"]
@@ -275,6 +322,9 @@ def schema_fasi():
     return f'<div class="fasi">{celle}</div>'
 
 
+# Costruisce l'HTML completo di un documento (copertina, pagine iniziali con
+# scheda e revisioni, sommario, capitoli) e lo scrive in PDF con WeasyPrint.
+# Parametro: chiave di DOCUMENTI. Effetto: sovrascrive il PDF in cfg["uscita"].
 def costruisci(chiave):
     cfg = DOCUMENTI[chiave]
     rev = REVISIONI[chiave][-1]
@@ -282,6 +332,10 @@ def costruisci(chiave):
     loghi = loghi_trasparenti()
 
     titoli = [(i + 1, c["titolo"]) for i, c in enumerate(capitoli)]
+    # etichetta(): oggi restituisce sempre il titolo così com'è (non usata).
+    # numero(): numero a due cifre del capitolo, progressivo se "numera",
+    # altrimenti preso dal titolo ("3. Servizi" → "03").
+    # titolo_pulito(): titolo senza il numero iniziale.
     def etichetta(n, t):
         return t if not cfg["numera"] else t
     def numero(n, t):
@@ -307,6 +361,8 @@ def costruisci(chiave):
     corpo = []
     for n, c in enumerate(capitoli, 1):
         contenuto = md_html("\n".join(c["righe"]))
+        # Nel capitolo sulle fasi del Manuale Utente il primo elenco numerato
+        # è sostituito dallo schema grafico (l'elenco resta nascosto).
         if chiave == "manuale" and "fasi" in c["titolo"].lower():
             contenuto = contenuto.replace('<ol class="passi">', schema_fasi() + '<ol class="passi" style="display:none">', 1)
         corpo.append(
@@ -350,12 +406,14 @@ def costruisci(chiave):
 <section class="sommario"><div class="titoletto">Sommario</div><ol>{sommario}</ol></section>
 {''.join(corpo)}
 </body></html>"""
+    # base_url = radice del repository: i percorsi relativi nell'HTML partono da lì.
     uscita = RADICE / cfg["uscita"]
     uscita.parent.mkdir(parents=True, exist_ok=True)
     HTML(string=pagina, base_url=str(RADICE)).write_pdf(uscita)
     print(f"{cfg['breve']}: PDF impaginato Rev. {rev['rev']} → {cfg['uscita']}")
 
 
+# Avvio da riga di comando: documenti indicati come argomenti, oppure tutti.
 if __name__ == "__main__":
     for k in sys.argv[1:] or list(DOCUMENTI):
         costruisci(k)

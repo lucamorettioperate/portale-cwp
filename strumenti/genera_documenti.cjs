@@ -1,21 +1,46 @@
 /* =========================================================================
-   Genera in Word (.docx) e PDF i documenti del portale, con copertina e
+   genera_documenti.cjs — manuali e Registro in Word e PDF.
+
+   Scopo: genera in Word (.docx) e PDF i documenti del portale, con copertina e
    loghi, registro delle revisioni, sommario con numeri di pagina,
    intestazione e piè di pagina:
 
    - Manuale Utente           docs/manuale-utente.md
                               → public/manuali/Manuale_Utente_Portale_CWP.{docx,pdf}
+   - Manuale Amministratore   docs/manuale-amministratore.md
+                              → public/documentazione/Manuale_Amministratore_Portale_CWP.{docx,pdf}
+   - Manuale Test             docs/manuale-test.md
+                              → public/documentazione/Manuale_Test_Portale_CWP.{docx,pdf}
    - Registro sviluppo/deploy docs/REGISTRO_DEV_DEPLOY.md
                               → public/documentazione/Registro_Dev_Deploy_Portale_CWP.{docx,pdf}
 
    Le revisioni stanno in strumenti/revisioni_documenti.json (l'ultima di
    ogni documento è quella corrente): a ogni modifica si aggiunge una riga.
 
+   Usato da: nessun programma lo esegue in automatico; si lancia a mano a
+   ogni rilascio. I file prodotti si scaricano dalla pagina /documentazione
+   del portale (src/pages/Documentazione.jsx usa gli stessi nomi di file).
+   Dati/servizi coinvolti: nessuno (solo file locali); chiama i programmi
+   esterni soffice (LibreOffice), pdftotext e python3 (impagina_pdf.py).
+
+   Come funziona, in breve: legge il Markdown (solo il sottoinsieme usato
+   nei documenti: ## capitoli, ### sottotitoli, elenchi, tabelle, codice,
+   citazioni "> " come riquadri); crea il Word; lo converte in PDF con
+   LibreOffice per leggere su quale pagina inizia ogni capitolo; rigenera il
+   Word con i numeri di pagina nel sommario; infine sostituisce il PDF con
+   quello tipografico di impagina_pdf.py, se WeasyPrint è installato.
+
    Uso:  node strumenti/genera_documenti.cjs            (tutti)
          node strumenti/genera_documenti.cjs registro   (uno solo: manuale | amministratore | test | registro)
    Richiede la libreria "docx" (npm install --no-save docx), LibreOffice
    (numeri di pagina del sommario del Word) e pdftotext; il PDF finale è
    impaginato da strumenti/impagina_pdf.py (pip install weasyprint markdown).
+   Variabile facoltativa SOFFICE: percorso di LibreOffice se non è nel PATH.
+   Dopo l'esecuzione: commit e push dei file in public/manuali e
+   public/documentazione.
+
+   Registro sviluppo e deploy: capitolo 8 «Procedure di rilascio»
+   (Documenti in Word/PDF); capitolo 10 «Artefatti e documenti».
    ========================================================================= */
 const fs = require("fs");
 const path = require("path");
@@ -32,6 +57,12 @@ const REVISIONI = JSON.parse(fs.readFileSync(path.join(__dirname, "revisioni_doc
 const LOGO_CWP = fs.readFileSync(path.join(RADICE, "public", "loghi", "carbonwasteprint.png"));
 const LOGO_FO = fs.readFileSync(path.join(RADICE, "public", "loghi", "fondazione-operate.png"));
 
+// Configurazione di ogni documento: sorgente Markdown, cartella e nome dei
+// file prodotti, testi della copertina, numerazione dei capitoli e nota
+// sotto il registro delle revisioni. Le chiavi (manuale, amministratore,
+// test, registro) sono quelle da passare sulla riga di comando e coincidono
+// con le chiavi di revisioni_documenti.json e di impagina_pdf.py.
+// Cambiando "nome" o "uscita" va aggiornato anche Documentazione.jsx.
 const DOCUMENTI = {
   manuale: {
     sorgente: "docs/manuale-utente.md",
@@ -79,12 +110,17 @@ const DOCUMENTI = {
   },
 };
 
+// Palette del portale (cwpProgram.js) e carattere dei documenti.
 const VERDE = "2F5D3A", VERDE_CHIARO = "E4EDE1", INK = "1B2118", GRAFITE = "5A5E54", LINEA = "D9D4C5", CARTA = "F6F4EE";
 const FONT = "Arial";
+// Unità di Word: 1 DXA = 1/20 di punto; 1134 DXA ≈ 2 cm. Le dimensioni dei
+// caratteri (size) sono in mezzi punti: 21 = 10,5 pt.
 const LARGHEZZA = 11906 - 2 * 1134; // A4, margini 2 cm → 9638 DXA
 
 // ---------- lettura del markdown ----------
 // Restituisce { premessa: righe prima del primo "## ", capitoli: [{titolo, righe}] }.
+// I commenti HTML <!-- … --> si tolgono; il titolo "# " del file è ignorato
+// (lo sostituisce la copertina). Stessa logica di leggi() in impagina_pdf.py.
 function leggi(file) {
   const testo = fs.readFileSync(path.join(RADICE, file), "utf8").replace(/<!--[\s\S]*?-->/g, "");
   const premessa = [];
@@ -101,9 +137,14 @@ function leggi(file) {
   return { premessa, capitoli };
 }
 
+// Inizi di riga che chiudono un paragrafo (tabella, elenco, codice, citazione,
+// sottotitolo, linea orizzontale).
 const SPECIALE = /^(\||- |\d+\. |```|> ?|### |---\s*$)/;
 
 // Blocchi: paragrafo, sottotitolo, elenchi, tabella, codice, riquadro.
+// Parametro: righe di Markdown. Restituisce un array di { tipo, … } che
+// rendi() trasforma in elementi Word. Le tabelle saltano la riga |---|.
+// Le citazioni "> " diventano riquadri (anche annidando altri blocchi).
 function blocchi(righe) {
   const out = [];
   let i = 0;
@@ -162,6 +203,8 @@ function blocchi(righe) {
 }
 
 // Testo con **grassetto**, *corsivo*, `codice`, [link](url), indirizzi web.
+// (anche ~~barrato~~). Restituisce i "run" di testo Word; base = stile
+// comune (es. dimensione). I formati non si annidano, tranne dentro ~~ ~~.
 function runs(testo, base = {}) {
   const out = [];
   const re = /(~~[^~]+~~|\*\*[^*]+\*\*|\*[^*\s][^*]*\*|`[^`]+`|\[[^\]]+\]\([^)]+\)|https?:\/\/[^\s)|]+)/g;
@@ -186,8 +229,12 @@ function runs(testo, base = {}) {
 // ---------- elementi grafici ----------
 const bordoSottile = { style: BorderStyle.SINGLE, size: 4, color: LINEA };
 const bordi = { top: bordoSottile, bottom: bordoSottile, left: bordoSottile, right: bordoSottile };
+// Paragrafo vuoto usato come spaziatura (dopo, in DXA).
 const spazio = (dopo = 120) => new Paragraph({ spacing: { after: dopo }, children: [] });
 
+// Larghezze delle colonne di una tabella (in DXA), calcolate dalla lunghezza
+// dei testi; la somma è sempre LARGHEZZA. Word con layout FIXED non adatta le
+// colonne da sé, quindi servono valori espliciti.
 function larghezzeColonne(intestazione, righe) {
   const n = intestazione.length;
   // peso di ogni colonna: metà testo più lungo, metà testo medio (min 11, max 60)
@@ -204,6 +251,8 @@ function larghezzeColonne(intestazione, righe) {
   const sommaMin = minimi.reduce((a, b) => a + b, 0);
   if (sommaMin > 0.9 * LARGHEZZA) minimi = minimi.map((m) => (m * 0.9 * LARGHEZZA) / sommaMin);
   // colonne fissate al minimo; il resto diviso in proporzione ai pesi
+  // (si ripete finché nessuna colonna libera scende sotto il suo minimo;
+  // al massimo n giri, uno per colonna)
   const fisse = new Set();
   let w;
   for (let giro = 0; giro <= n; giro++) {
@@ -215,10 +264,14 @@ function larghezzeColonne(intestazione, righe) {
     nuove.forEach((j) => fisse.add(j));
   }
   w = w.map((x) => Math.round(x));
+  // l'ultima colonna assorbe gli arrotondamenti
   w[n - 1] += LARGHEZZA - w.reduce((a, b) => a + b, 0);
   return w;
 }
 
+// Tabella Word con intestazione verde ripetuta a ogni pagina e righe alterne.
+// Se tutte le intestazioni sono vuote (tabella "chiave | valore" del
+// Markdown) la riga di intestazione non si stampa.
 function tabella(intestazione, righe, larghezze) {
   const senzaTesta = intestazione.every((h) => !h);
   const w = larghezze || larghezzeColonne(intestazione, righe);
@@ -241,7 +294,11 @@ function tabella(intestazione, righe, larghezze) {
 }
 
 // ---------- contenuto ----------
+// Contatore degli elenchi numerati: ogni elenco usa una "istanza" nuova,
+// così la numerazione riparte da 1 (azzerato in documento()).
 let istanza = 0;
+// Trasforma i blocchi in paragrafi e tabelle Word. opz.riquadro = true
+// applica sfondo verde chiaro e bordo sinistro (blocchi dentro "> ").
 function rendi(bl, opz = {}) {
   const out = [];
   const rientro = opz.riquadro ? { left: 240 } : undefined;
@@ -277,8 +334,12 @@ function rendi(bl, opz = {}) {
   return out;
 }
 
+// Titolo del capitolo come appare nel documento (con "n." se numerato).
+// Serve anche a paginePdf() per ritrovare il capitolo nel PDF.
 const etichetta = (cfg, n, cap) => (cfg.numeraCapitoli ? `${n}. ${cap.titolo}` : cap.titolo);
 
+// Un capitolo: titolo su pagina nuova con segnalibro "capN" (destinazione
+// del collegamento nel sommario), poi il contenuto.
 function capitolo(cfg, n, cap) {
   return [
     new Paragraph({
@@ -292,6 +353,8 @@ function capitolo(cfg, n, cap) {
   ];
 }
 
+// Copertina: logo CWP, titolo, sottotitolo, scheda del documento (revisione
+// corrente), logo di Fondazione Operate.
 function copertina(cfg, rev) {
   const info = [
     ["Documento", `${cfg.breve} — Portale Carbon WastePrint`],
@@ -320,6 +383,10 @@ function copertina(cfg, rev) {
   ];
 }
 
+// Registro delle revisioni (dalla più recente), nota, premessa del Markdown
+// (senza la sua tabella iniziale, già nella copertina) e sommario.
+// pagine = numeri di pagina dei capitoli (null alla prima passata: il
+// sommario esce senza numeri).
 function pagineIniziali(cfg, revisioni, rev, sorgente, pagine) {
   const titolo = (t) => new Paragraph({ spacing: { before: 0, after: 200 }, border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: VERDE, space: 6 } }, children: [new TextRun({ text: t, font: FONT, bold: true, size: 30, color: VERDE })] });
   const tabRev = tabella(["Rev.", "Data", "Descrizione", "Autore"], revisioni.slice().reverse().map((r) => [r.rev, r.data, r.descrizione, r.autore]), [800, 1300, LARGHEZZA - 800 - 1300 - 2000, 2000]);
@@ -351,6 +418,7 @@ function pagineIniziali(cfg, revisioni, rev, sorgente, pagine) {
   ];
 }
 
+// Intestazione di pagina: logo piccolo a sinistra, documento e revisione a destra.
 function intestazione(cfg, rev) {
   return new Header({
     children: [
@@ -366,6 +434,7 @@ function intestazione(cfg, rev) {
   });
 }
 
+// Piè di pagina: "Pagina N di M" (campi calcolati da Word all'apertura).
 function pieDiPagina() {
   return new Footer({
     children: [
@@ -381,6 +450,9 @@ function pieDiPagina() {
   });
 }
 
+// Documento Word completo in tre sezioni: copertina (senza intestazione e
+// piè di pagina), pagine iniziali, capitoli. Stili Heading 1/2 per la
+// struttura (navigazione di Word), elenchi "punti" e "numeri".
 function documento(cfg, revisioni, sorgente, pagine) {
   istanza = 0;
   const rev = revisioni[revisioni.length - 1];
@@ -417,6 +489,9 @@ function documento(cfg, revisioni, sorgente, pagine) {
 }
 
 // Pagine dei capitoli lette dal PDF della prima passata, per il sommario.
+// pdftotext separa le pagine con il carattere \f; si cerca, dopo la pagina
+// del Sommario, la prima pagina con una riga uguale al titolo del capitolo.
+// null = capitolo non trovato (nel sommario resta senza numero).
 function paginePdf(cfg, pdf, capitoli) {
   const pagine = execFileSync("pdftotext", ["-layout", pdf, "-"], { encoding: "utf8" }).split("\f");
   const inizio = pagine.findIndex((p) => /Sommario/.test(p)) + 1;
@@ -427,6 +502,8 @@ function paginePdf(cfg, pdf, capitoli) {
   });
 }
 
+// Converte il .docx in PDF con LibreOffice (stessa cartella). Restituisce
+// il percorso del PDF, oppure null se LibreOffice non è disponibile.
 function aPdf(docx, dir) {
   try {
     execFileSync(process.env.SOFFICE || "soffice", ["--headless", "--convert-to", "pdf", "--outdir", dir, docx], { stdio: "ignore" });
@@ -436,6 +513,9 @@ function aPdf(docx, dir) {
   }
 }
 
+// Genera un documento: Word (prima passata, senza numeri nel sommario) →
+// PDF con LibreOffice → lettura delle pagine → Word definitivo e nuovo PDF
+// → PDF tipografico con impagina_pdf.py. Scrive i file in cfg.uscita.
 async function genera(chiave) {
   const cfg = DOCUMENTI[chiave];
   const revisioni = REVISIONI[chiave];
@@ -464,6 +544,7 @@ async function genera(chiave) {
   if (pagine) console.log("  sommario:", pagine.map((p, i) => `${i + 1}→${p ?? "?"}`).join(" "));
 }
 
+// Avvio: documenti indicati sulla riga di comando, oppure tutti.
 (async () => {
   const scelti = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(DOCUMENTI);
   for (const k of scelti) {

@@ -20,7 +20,7 @@
    con AssertionError.
 
    Registro sviluppo e deploy: capitolo 8 «Procedure di rilascio»;
-   capitolo 7, riga Calcolo crediti.
+   capitolo 15 «Calcolo crediti».
    ========================================================================= */
 import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";

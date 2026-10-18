@@ -1,6 +1,6 @@
 // =====================================================================
 //  Edge Function: reimposta-password
-//  L'Amministratore assegna una nuova password temporanea a un utente
+//  Scopo: l'Amministratore assegna una nuova password temporanea a un utente
 //  (Cliente od Operatore) che l'ha dimenticata. Al primo accesso il
 //  portale obbliga l'utente a sceglierne una personale (script 15).
 //  Sicurezza:

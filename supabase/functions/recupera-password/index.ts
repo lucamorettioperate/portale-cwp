@@ -1,6 +1,6 @@
 // =====================================================================
 //  Edge Function: recupera-password
-//  «Password dimenticata?»: genera il collegamento di recupero di Supabase
+//  Scopo: «Password dimenticata?» — genera il collegamento di recupero di Supabase
 //  Auth e spedisce l'email in italiano con Resend (stessa grafica delle
 //  notifiche), invece del modello email di Supabase.
 //  Sicurezza:

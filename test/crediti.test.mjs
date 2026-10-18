@@ -19,7 +19,7 @@
 // valori attesi E spiegare il perché nel Registro.
 //
 // Registro sviluppo e deploy: capitolo 8 «Procedure di rilascio» (npm test
-// prima di ogni rilascio); capitolo 7, riga Calcolo crediti.
+// prima di ogni rilascio); capitolo 15 «Calcolo crediti».
 // =========================================================================
 import assert from "node:assert/strict";
 import { calcolaCrediti, produzioneAttesa, fattoreIndifferenziato, coefficientePrimoAnno, calcolaBuffer } from "../src/lib/crediti/calcolo.js";

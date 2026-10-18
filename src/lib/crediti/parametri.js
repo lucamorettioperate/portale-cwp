@@ -21,8 +21,8 @@
    chiavi usate nei file importati, nel database e nei test. Non rinominarli.
    Dopo ogni modifica eseguire npm test.
 
-   Registro sviluppo e deploy: capitolo 7 «Funzionalità per area», riga
-   Calcolo crediti; note metodologiche in docs/crediti-cwp.md.
+   Registro sviluppo e deploy: capitolo 15 «Calcolo crediti»; note
+   metodologiche in docs/crediti-cwp.md.
    ========================================================================= */
 
 // Tipologie di rifiuto "r" con il fattore di emissione per lo scenario

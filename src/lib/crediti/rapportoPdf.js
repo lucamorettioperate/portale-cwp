@@ -1,6 +1,7 @@
 /* =========================================================================
-   Rapporto di calcolo dei crediti in PDF (backlog 6, 18/10/2026).
-   Genera nel browser, con jsPDF e jspdf-autotable, il rapporto di un
+   rapportoPdf.js — rapporto di calcolo dei crediti in PDF (backlog 6, 18/10/2026).
+
+   Scopo: genera nel browser, con jsPDF e jspdf-autotable, il rapporto di un
    calcolo: scheda, sintesi dei crediti, buffer, dati di ingresso, risultati
    per tipologia e per classe, avvisi, controlli di coerenza e scelte
    interpretative. Il dettaglio per singola utenza NON è incluso (resta nel
@@ -21,8 +22,8 @@
    i simboli non stampabili (CO₂, Δ, ≤ …). Per aggiungere testi nuovi usare
    sempre pdfTesto().
 
-   Registro sviluppo e deploy: capitolo 7 «Funzionalità per area», riga
-   Calcolo crediti; capitolo 6 «Portale (frontend)».
+   Registro sviluppo e deploy: capitolo 15 «Calcolo crediti»; capitolo 6
+   «Portale (frontend)».
    ========================================================================= */
 import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";

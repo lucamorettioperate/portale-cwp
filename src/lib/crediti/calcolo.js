@@ -1,6 +1,7 @@
 /* =========================================================================
-   Motore di calcolo dei crediti — Metodologia Carbon WastePrint® v1.2.
-   Funzioni pure (nessun accesso al database): ricevono i dati del calcolo
+   calcolo.js — motore di calcolo dei crediti — Metodologia Carbon WastePrint® v1.2.
+
+   Scopo: funzioni pure (nessun accesso al database): ricevono i dati del calcolo
    e restituiscono risultati intermedi e finali, con il riferimento alla
    formula della Metodologia accanto a ogni passaggio.
 
@@ -22,8 +23,8 @@
    confermato resta com'era (immutabile nel database) e non viene ricalcolato.
    Le scelte interpretative ancora da confermare sono in docs/crediti-cwp.md.
 
-   Registro sviluppo e deploy: capitolo 7 «Funzionalità per area», riga
-   Calcolo crediti; capitolo 6 «Portale (frontend)» (struttura del codice).
+   Registro sviluppo e deploy: capitolo 15 «Calcolo crediti»; capitolo 6
+   «Portale (frontend)» (struttura del codice).
    ========================================================================= */
 import {
   BUFFER_UTENZE,

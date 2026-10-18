@@ -17,9 +17,8 @@
 
    Uso dei test: npm test (comprende test/csv.test.mjs).
 
-   Registro sviluppo e deploy: capitolo 6 «Portale (frontend)»; capitolo 7
-   «Funzionalità per area», riga Calcolo crediti (vedi anche
-   docs/crediti-cwp.md).
+   Registro sviluppo e deploy: capitolo 6 «Portale (frontend)»; capitolo 15
+   «Calcolo crediti» (vedi anche docs/crediti-cwp.md).
    ========================================================================= */
 
 // Divide il testo in righe e celle, gestendo le virgolette.

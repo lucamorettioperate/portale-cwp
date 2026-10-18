@@ -1,6 +1,6 @@
 // =====================================================================
 //  Edge Function: invia-email-notifica
-//  Invia per email ogni nuova notifica del portale (requisiti §9:
+//  Scopo: invia per email ogni nuova notifica del portale (requisiti §9:
 //  "email + notifica interna").
 //
 //  Viene chiamata dal database: il trigger trg_notifica_email (dopo ogni
