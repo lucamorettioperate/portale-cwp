@@ -86,11 +86,13 @@ export function AuthProvider({ children }) {
   }
 
   // Invia l'email con il collegamento per scegliere una nuova password.
+  // L'email la spedisce il portale (Edge Function "recupera-password", testo
+  // italiano con Resend), non il modello predefinito di Supabase.
   async function richiediRecuperoPassword(email) {
     if (!supabase) return { error: { message: "Backend non configurato." } };
-    return await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reimposta-password`,
-    });
+    const { data, error } = await supabase.functions.invoke("recupera-password", { body: { email } });
+    if (error) return { error: { message: "Invio non riuscito: riprova tra qualche minuto." } };
+    return { data, error: null };
   }
 
   // Cambia la password dell'utente collegato. Se è indicata la password
