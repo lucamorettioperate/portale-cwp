@@ -1,3 +1,22 @@
+// =========================================================================
+// csv.test.mjs — test del lettore e scrittore CSV (src/lib/csv.js).
+//
+// Scopo: verifica che i CSV salvati da Excel in italiano (BOM, separatore
+// ";", virgola decimale, punto delle migliaia, testi tra virgolette con ";"
+// dentro, righe vuote) siano letti correttamente; che intestazioni con
+// maiuscole/accenti diversi e separatore "," siano riconosciute; che le
+// colonne obbligatorie mancanti siano segnalate; che scrittura e rilettura
+// diano gli stessi valori.
+//
+// Usato da: npm test (package.json, script "test").
+// Dati/servizi coinvolti: nessuno.
+//
+// Uso: node test/csv.test.mjs   (oppure npm test per tutti i test)
+// Esito: stampa "CSV: tutte le verifiche superate."; altrimenti AssertionError.
+//
+// Registro sviluppo e deploy: capitolo 8 «Procedure di rilascio»;
+// capitolo 6 «Portale (frontend)» (test/).
+// =========================================================================
 import assert from "node:assert/strict";
 import { leggiCsv, csvInOggetti, scriviCsv } from "../src/lib/csv.js";
 
@@ -27,7 +46,8 @@ assert.equal(e2.righe[0].qtot, 12.5);
 // Colonna obbligatoria mancante
 assert.deepEqual(csvInOggetti("Descrizione\nx\n", schema).colonneMancanti, ["Tipologia", "Quantità (t/anno)"]);
 
-// Andata e ritorno
+// Andata e ritorno: il numero 1.5 torna come testo "1,5" (virgola decimale),
+// la cella con ";" torna intera grazie alle virgolette.
 const out = scriviCsv(["A", "B"], [["x;y", 1.5]]);
 assert.deepEqual(leggiCsv(out), [["A", "B"], ["x;y", "1,5"]]);
 console.log("CSV: tutte le verifiche superate.");

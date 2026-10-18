@@ -1,9 +1,31 @@
-// Verifica del motore di calcolo con un esempio calcolato a mano.
-// Esecuzione: node test/crediti.test.mjs
+// =========================================================================
+// crediti.test.mjs — test del motore di calcolo dei crediti.
+//
+// Scopo: verifica del motore di calcolo con un esempio calcolato a mano
+// (un piccolo Comune con 2 classi domestiche e 1 non domestica). Controlla
+// le formule 1-17, 19-22 e 28-32 (non la 18: peso specifico a consuntivo),
+// i buffer delle Tabelle 15-16 e la doppia
+// interpretazione del riuso (formula 29 come scritta / riuso come credito).
+// I valori attesi sono scritti nei commenti accanto a ogni controllo.
+//
+// Usato da: npm test (package.json, script "test").
+// Dati/servizi coinvolti: nessuno; importa src/lib/crediti/calcolo.js e
+// parametri.js. Nessun accesso a Supabase.
+//
+// Uso: node test/crediti.test.mjs   (oppure npm test per tutti i test)
+// Esito: stampa "Tutte le verifiche superate." e alcuni valori; al primo
+// controllo fallito si ferma con un errore AssertionError.
+// Se si cambia una formula o un default di parametri.js, aggiornare qui i
+// valori attesi E spiegare il perché nel Registro.
+//
+// Registro sviluppo e deploy: capitolo 8 «Procedure di rilascio» (npm test
+// prima di ogni rilascio); capitolo 7, riga Calcolo crediti.
+// =========================================================================
 import assert from "node:assert/strict";
 import { calcolaCrediti, produzioneAttesa, fattoreIndifferenziato, coefficientePrimoAnno, calcolaBuffer } from "../src/lib/crediti/calcolo.js";
 import { TIPOLOGIE_RIFIUTO, BENI_RIUSO } from "../src/lib/crediti/parametri.js";
 
+// Confronto tra numeri decimali con tolleranza (evita errori di arrotondamento).
 const vicino = (a, b, eps = 1e-6) => assert.ok(Math.abs(a - b) < eps, `${a} ≠ ${b}`);
 
 // --- Esempio: comune con 2 classi domestiche e 1 non domestica ---

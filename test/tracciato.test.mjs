@@ -1,14 +1,37 @@
-/* Test dell'import del tracciato dati CWP (src/lib/crediti/tracciato.js).
-   File di prova generati da strumenti/genera_esempi_tracciato.py.
-   Uso: node test/tracciato.test.mjs */
+/* =========================================================================
+   tracciato.test.mjs — test dell'import del tracciato dati CWP
+   (src/lib/crediti/tracciato.js).
+
+   Scopo: cinque prove sui file di esempio: lettura dell'Excel compilato,
+   blocco dei dati personali (con valori oscurati nei messaggi), ZIP di CSV
+   con singole letture (aggregazione ed esclusione delle letture fuori
+   anno), controlli di coerenza, calcolo completo sui dati importati.
+
+   File di prova generati da strumenti/genera_esempi_tracciato.py, in
+   test/dati/: tracciato_esempio.xlsx, tracciato_privacy.xlsx,
+   tracciato_letture.zip. I valori attesi qui sotto dipendono da quei file:
+   se si rigenerano con contenuti diversi, aggiornare anche i controlli.
+
+   Usato da: npm test (package.json, script "test").
+   Dati/servizi coinvolti: nessuno (solo file locali).
+
+   Uso: node test/tracciato.test.mjs   (oppure npm test per tutti i test)
+   Esito: una riga "✓" per prova e "5 prove superate"; altrimenti si ferma
+   con AssertionError.
+
+   Registro sviluppo e deploy: capitolo 8 «Procedure di rilascio»;
+   capitolo 7, riga Calcolo crediti.
+   ========================================================================= */
 import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { leggiFileTracciato, controllaPrivacy, interpretaTracciato, controllaCoerenza } from "../src/lib/crediti/tracciato.js";
 import { calcolaCrediti } from "../src/lib/crediti/calcolo.js";
 import { TIPOLOGIE_RIFIUTO, BENI_RIUSO } from "../src/lib/crediti/parametri.js";
 
+// Legge un file di test/dati/ (percorso relativo a questo file, non alla cartella corrente).
 const dati = (n) => readFileSync(new URL(`./dati/${n}`, import.meta.url));
 let ok = 0;
+// Esegue una prova e ne stampa il nome se passa; un errore interrompe tutto.
 const prova = async (nome, fn) => { await fn(); ok++; console.log("✓", nome); };
 
 await prova("Excel compilato: anagrafica, fogli e numeri", async () => {
@@ -62,6 +85,8 @@ await prova("Coerenza: dati corretti senza errori, dati sbagliati segnalati", as
   const base = { anno: 2025, anagrafica: t.anagrafica, rifiuti: t.rifiuti, pefUd: 65, pefUnd: 35, classiUd: t.classiUd, classiUnd: t.classiUnd, conferimenti: t.conferimenti, riuso: t.riuso, ps: { indifferenziato: 80, organico: 250 } };
   const esiti = controllaCoerenza(base);
   assert.deepEqual(esiti.filter((e) => e.livello === "errore"), []);
+  // Quattro errori voluti: anno diverso, PEF 65 + 30 ≠ 100, classe assente
+  // nella delibera, 400 svuotamenti in un anno.
   const sbagliati = controllaCoerenza({ ...base, anno: 2024, pefUnd: 30, conferimenti: [...t.conferimenti, { utenza: "U0009", macro: "UD", classe: "3 Componenti", tipologia: "indifferenziato", svuotamenti: 400, volume: 40 }] });
   const testi = sbagliati.map((e) => e.testo).join(" | ");
   assert.match(testi, /deve fare 100%/);
