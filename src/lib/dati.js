@@ -43,7 +43,7 @@ export async function elencaRapporti(progettoId) {
 export async function leggiPratica(id) {
   return await supabase
     .from("pratica")
-    .select("*, organizzazione:organizzazione_id (denominazione, tipo), fasi:fase (*)")
+    .select("*, organizzazione:organizzazione_id (denominazione, tipo), ente:ente_validazione_id (id, denominazione), fasi:fase (*)")
     .eq("id", id)
     .single();
 }
@@ -242,7 +242,7 @@ export async function urlDocumento(storagePath) {
 // Colonne del commento leggibili dal portale: l'identità dell'autore
 // resta nota solo alla piattaforma (requisiti, sezione 6).
 const COLONNE_COMMENTO =
-  "id, consultazione_id, pratica_id, testo, allegato_documento_id, stato, motivazione_moderazione, risposta_testo, creato_il";
+  "id, consultazione_id, pratica_id, testo, allegato_documento_id, stato, motivazione_moderazione, risposta_testo, creato_il, firma_pubblica, allegato_path, allegato_nome, email_verificata_il";
 
 // Legge la consultazione (eventuale) di una pratica, con i suoi commenti.
 export async function leggiConsultazione(praticaId) {
@@ -284,21 +284,6 @@ export async function apriConsultazione({ praticaId, documentoId }) {
 // Chiude la consultazione.
 export async function chiudiConsultazione(id) {
   return await supabase.from("consultazione").update({ attiva: false }).eq("id", id);
-}
-
-// Invia un commento (identità nota, pubblicato in forma anonima).
-export async function inviaCommento({ consultazioneId, praticaId, testo, autoreUtenteId }) {
-  return await supabase
-    .from("commento")
-    .insert({
-      consultazione_id: consultazioneId,
-      pratica_id: praticaId,
-      testo,
-      autore_utente_id: autoreUtenteId,
-      stato: "ricevuto",
-    })
-    .select(COLONNE_COMMENTO)
-    .single();
 }
 
 // Modera un commento: pubblica / non pubblica (con motivazione).
@@ -481,4 +466,137 @@ export async function impostaDurataFase(numero, giorni, motivazione) {
     p_giorni: giorni,
     p_motivazione: motivazione,
   });
+}
+
+// ---- Consultazione: errata corrige, autori, allegati (script 17) ----
+
+// Errata corrige: se "riparte" i 30 giorni ripartono da oggi (motivazione obbligatoria).
+export async function pubblicaErrataCorrige({ consultazioneId, documentoId = null, testo, riparte, motivazione = null }) {
+  return await supabase.rpc("staff_errata_corrige", {
+    p_consultazione: consultazioneId,
+    p_documento: documentoId,
+    p_testo: testo,
+    p_riparte: !!riparte,
+    p_motivazione: motivazione,
+  });
+}
+
+export async function elencaErrata(consultazioneId) {
+  return await supabase
+    .from("consultazione_errata")
+    .select("*, documento:documento_id (id, nome, versione, storage_path)")
+    .eq("consultazione_id", consultazioneId)
+    .order("creato_il", { ascending: true });
+}
+
+// Nome ed email degli autori delle osservazioni (solo staff).
+export async function autoriCommenti(consultazioneId) {
+  return await supabase.rpc("staff_autori_commenti", { p_consultazione: consultazioneId });
+}
+
+export async function urlAllegatoCommento(path) {
+  return await supabase.storage.from("allegati-consultazione").createSignedUrl(path, 60);
+}
+
+// Pagina pubblica delle consultazioni (Edge Function, senza accesso).
+export async function consultazionePubblica(azione, dati = {}) {
+  const { data, error } = await supabase.functions.invoke("consultazione-pubblica", { body: { azione, ...dati } });
+  if (error) {
+    let motivo = "Servizio momentaneamente non disponibile. Riprova più tardi.";
+    try {
+      const corpo = await error.context?.json();
+      if (corpo?.errore) motivo = corpo.errore;
+    } catch {
+      /* corpo non leggibile */
+    }
+    return { data: null, error: { message: motivo } };
+  }
+  if (data?.errore) return { data: null, error: { message: data.errore } };
+  return { data, error: null };
+}
+
+// ---- Note di fase (script 17) ----
+export async function elencaNoteFase(praticaId) {
+  return await supabase
+    .from("nota_fase")
+    .select("*")
+    .eq("pratica_id", praticaId)
+    .order("creato_il", { ascending: true });
+}
+
+export async function aggiungiNotaFase({ faseId, praticaId, testo, visibileCliente }) {
+  return await supabase
+    .from("nota_fase")
+    .insert({ fase_id: faseId, pratica_id: praticaId, testo, visibile_cliente: !!visibileCliente })
+    .select()
+    .single();
+}
+
+// ---- Messaggi tra Comune e Fondazione (script 17) ----
+export async function elencaMessaggi(praticaId) {
+  return await supabase
+    .from("messaggio")
+    .select("*")
+    .eq("pratica_id", praticaId)
+    .order("creato_il", { ascending: true });
+}
+
+export async function inviaMessaggio(praticaId, testo) {
+  return await supabase.from("messaggio").insert({ pratica_id: praticaId, testo }).select().single();
+}
+
+// ---- Enti di Validazione (script 17) ----
+export async function elencaEnti() {
+  return await supabase.from("ente_validazione").select("*").order("denominazione", { ascending: true });
+}
+
+export async function salvaEnte(ente) {
+  const { id, ...campi } = ente;
+  campi.aggiornato_il = new Date().toISOString();
+  if (id) return await supabase.from("ente_validazione").update(campi).eq("id", id).select().single();
+  return await supabase.from("ente_validazione").insert(campi).select().single();
+}
+
+export async function impostaEntePratica(praticaId, enteId) {
+  return await supabase.rpc("staff_imposta_ente_validazione", { p_pratica: praticaId, p_ente: enteId || null });
+}
+
+// ---- Modelli di documento (script 17) ----
+export async function elencaModelli({ tutti = false } = {}) {
+  let q = supabase.from("modello_documento").select("*");
+  if (!tutti) q = q.eq("attivo", true);
+  return await q.order("fase_numero", { ascending: true, nullsFirst: true }).order("titolo", { ascending: true });
+}
+
+export async function caricaModello({ file, titolo, descrizione = null, faseNumero = null }) {
+  const verifica = await verificaFile(file);
+  if (!verifica.ok) return { data: null, error: { message: verifica.errore } };
+  const storagePath = `${crypto.randomUUID()}/${verifica.nomeSicuro}`;
+  const { error: errUpload } = await supabase.storage
+    .from("modelli")
+    .upload(storagePath, file, { upsert: false, contentType: verifica.mime });
+  if (errUpload) return { data: null, error: { message: traduciErroreArchivio(errUpload) } };
+  const { data, error } = await supabase
+    .from("modello_documento")
+    .insert({
+      titolo,
+      descrizione,
+      fase_numero: faseNumero || null,
+      storage_path: storagePath,
+      nome_file: file.name,
+      dimensione: file.size,
+      tipo_mime: verifica.mime,
+    })
+    .select()
+    .single();
+  if (error) await supabase.storage.from("modelli").remove([storagePath]).catch(() => {});
+  return { data, error };
+}
+
+export async function aggiornaModello(id, campi) {
+  return await supabase.from("modello_documento").update(campi).eq("id", id);
+}
+
+export async function urlModello(path) {
+  return await supabase.storage.from("modelli").createSignedUrl(path, 60, { download: true });
 }

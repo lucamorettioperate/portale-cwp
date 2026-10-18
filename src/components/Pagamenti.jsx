@@ -6,8 +6,11 @@ import { formatoData, giorniA, oggiIso } from "../lib/date.js";
 
 /* Pagamenti (requisiti §7): nessun incasso online. Il back-office censisce
    il piano previsto (più voci con scadenze diverse) e registra gli incassi.
-   L'operatore e ogni modifica sono registrati dal database. */
-export default function Pagamenti({ praticaId }) {
+   L'operatore e ogni modifica sono registrati dal database.
+   solaLettura: il Comune vede le voci e lo stato dei pagamenti ma non le
+   modifica (decisione del 18/10/2026, backlog 27; regola nel database,
+   script 17). */
+export default function Pagamenti({ praticaId, solaLettura = false }) {
   const [voci, setVoci] = useState([]);
   const [modulo, setModulo] = useState(null); // voce in modifica o nuova
   const [errore, setErrore] = useState("");
@@ -55,7 +58,7 @@ export default function Pagamenti({ praticaId }) {
     <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, padding: "18px 20px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
         <h3 style={{ fontFamily: "'Archivo'", fontSize: 15, margin: 0 }}>Pagamenti</h3>
-        {!modulo && (
+        {!modulo && !solaLettura && (
           <button onClick={() => setModulo({ descrizione: "", importo: "", scadenza: "", pagato: false, riferimento: "" })} style={btnPrimario}>
             + Voce di pagamento
           </button>
@@ -64,7 +67,9 @@ export default function Pagamenti({ praticaId }) {
 
       {voci.length > 0 && (
         <div style={{ fontSize: 12.5, color: C.grafite, marginBottom: 10 }}>
-          Previsto {euro(totale)} · incassato {euro(incassato)} · da incassare {euro(totale - incassato)}
+          {solaLettura
+            ? <>Totale {euro(totale)} · pagato {euro(incassato)} · da pagare {euro(totale - incassato)}</>
+            : <>Previsto {euro(totale)} · incassato {euro(incassato)} · da incassare {euro(totale - incassato)}</>}
         </div>
       )}
       {voci.length === 0 && !modulo && <div style={{ fontSize: 13, color: C.grafite }}>Nessuna voce registrata.</div>}
@@ -79,7 +84,7 @@ export default function Pagamenti({ praticaId }) {
                 <b>{v.descrizione}</b> · {euro(v.importo)}
                 <div style={{ fontSize: 11.5, color: C.grafite }}>
                   {v.scadenza && <>Scadenza {formatoData(v.scadenza)}</>}
-                  {v.pagato && <> · incassato il {formatoData(v.data_pagamento)}</>}
+                  {v.pagato && <> · {solaLettura ? "pagamento registrato il" : "incassato il"} {formatoData(v.data_pagamento)}</>}
                   {v.riferimento && <> · rif. {v.riferimento}</>}
                 </div>
               </div>
@@ -91,7 +96,7 @@ export default function Pagamenti({ praticaId }) {
                 ) : (
                   <Badge bg={C.paperWarm} fg={C.grafite}>Da pagare</Badge>
                 )}
-                {!modulo && (
+                {!modulo && !solaLettura && (
                   <button onClick={() => setModulo({ ...v, importo: v.importo ?? "", scadenza: v.scadenza || "", riferimento: v.riferimento || "" })} style={btnMini}>
                     {v.pagato ? "Modifica" : "Registra incasso"}
                   </button>

@@ -14,7 +14,10 @@ import { ACCEPT, FORMATI_LEGGIBILI } from "../lib/file.js";
    - fase: se passata, i documenti sono filtrati e legati a quella fase
    - altrimenti mostra i documenti generali della pratica (senza fase)
    Il cliente carica le proprie; lo staff carica e imposta la visibilità. */
-export default function Documenti({ praticaId, fase = null, compatto = false }) {
+/* consentiCaricamento: false per il Comune sulle pratiche non attive
+   (sospese, annullate, chiuse): il pulsante «+ Carica» non compare
+   (backlog 24; il database rifiuta comunque il caricamento, script 08). */
+export default function Documenti({ praticaId, fase = null, compatto = false, consentiCaricamento = true }) {
   const { ruolo, utente } = useAuth();
   const staff = ruolo === "operatore" || ruolo === "admin";
   const faseId = fase ? fase.id : null; // null = documenti generali
@@ -93,7 +96,7 @@ export default function Documenti({ praticaId, fase = null, compatto = false }) 
         <h3 style={{ fontFamily: "'Archivo'", fontSize: compatto ? 13 : 15, margin: 0, color: compatto ? C.grafite : C.ink }}>
           {titolo}
         </h3>
-        {staff && !opzioni ? (
+        {!consentiCaricamento ? null : staff && !opzioni ? (
           <button
             onClick={() => setOpzioni(true)}
             style={{
@@ -134,7 +137,7 @@ export default function Documenti({ praticaId, fase = null, compatto = false }) 
         )}
       </div>
 
-      <div style={{ fontSize: 11.5, color: C.grafite, margin: "-6px 0 10px" }}>Formati accettati: {FORMATI_LEGGIBILI}</div>
+      {consentiCaricamento && <div style={{ fontSize: 11.5, color: C.grafite, margin: "-6px 0 10px" }}>Formati accettati: {FORMATI_LEGGIBILI}</div>}
 
       {/* Opzioni dello staff prima di scegliere il file */}
       {staff && opzioni && (

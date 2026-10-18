@@ -3,8 +3,13 @@ import { COLORI as C } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
 import { elencaDurateFasi, impostaDurataFase } from "../lib/dati.js";
+import EntiValidazione from "../components/impostazioni/EntiValidazione.jsx";
+import ModelliDocumento from "../components/impostazioni/ModelliDocumento.jsx";
 
-/* Impostazioni del Programma — solo Amministratori.
+/* Impostazioni del Programma — solo Amministratori. Tre sezioni:
+   - Durata delle fasi (script 13);
+   - Enti di Validazione (script 17, componente EntiValidazione);
+   - Modelli di documento per i Comuni (script 17, componente ModelliDocumento).
    Durata delle 7 fasi: la modifica vale per le fasi aperte da quel momento;
    le scadenze già fissate restano invariate. Ogni modifica richiede una
    motivazione ed è registrata nell'audit trail. */
@@ -194,6 +199,9 @@ export default function Impostazioni() {
           {errore && <div style={{ color: C.red, fontSize: 13, marginTop: 10 }}>{errore}</div>}
           {esito && <div style={{ color: C.green, fontSize: 13, marginTop: 10, fontWeight: 600 }}>{esito}</div>}
         </section>
+
+        <EntiValidazione />
+        <ModelliDocumento />
       </main>
     </div>
   );

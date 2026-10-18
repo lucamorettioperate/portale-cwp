@@ -7,6 +7,8 @@ import Consultazione from "./Consultazione.jsx";
 import Integrazioni from "./Integrazioni.jsx";
 import Rapporti from "./Rapporti.jsx";
 import Pagamenti from "./Pagamenti.jsx";
+import Messaggi from "./Messaggi.jsx";
+import NoteFase from "./NoteFase.jsx";
 import {
   leggiPratica,
   apriFase,
@@ -15,18 +17,29 @@ import {
   cambiaStatoPratica,
   elencaIntegrazioni,
   richiediIntegrazione,
+  elencaNoteFase,
+  elencaModelli,
+  urlModello,
+  elencaEnti,
+  impostaEntePratica,
 } from "../lib/dati.js";
 import { formatoData, giorniA } from "../lib/date.js";
 import { esportaFascicolo } from "../lib/fascicolo.js";
 
 /* Dettaglio di una pratica con le sue 7 fasi.
    L'Operatore/Admin apre e chiude le fasi, modifica le scadenze, richiede
-   integrazioni e cambia lo stato della pratica. Le azioni critiche
-   richiedono una motivazione, registrata nell'audit (requisiti §8). */
+   integrazioni, scrive note di fase, assegna l'Ente di Validazione e cambia
+   lo stato della pratica. Le azioni critiche richiedono una motivazione,
+   registrata nell'audit (requisiti §8).
+   Il Comune vede fasi, note condivise, modelli da scaricare, documenti,
+   pagamenti (sola lettura) e scrive messaggi alla Fondazione.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)». */
 export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
   const { ruolo } = useAuth();
   const [pratica, setPratica] = useState(null);
   const [integrazioni, setIntegrazioni] = useState([]);
+  const [note, setNote] = useState([]);
+  const [modelli, setModelli] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
   const [versione, setVersione] = useState(0); // per ricaricare i documenti
 
@@ -34,12 +47,16 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
 
   async function carica(silenzioso = false) {
     if (!silenzioso) setCaricamento(true);
-    const [{ data }, { data: integr }] = await Promise.all([
+    const [{ data }, { data: integr }, { data: nt }, { data: mod }] = await Promise.all([
       leggiPratica(praticaId),
       elencaIntegrazioni(praticaId),
+      elencaNoteFase(praticaId),
+      elencaModelli(),
     ]);
     setPratica(data);
     setIntegrazioni(integr || []);
+    setNote(nt || []);
+    setModelli(mod || []);
     setCaricamento(false);
   }
 
@@ -92,6 +109,14 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
             Motivazione: {pratica.motivazione_stato}
           </div>
         )}
+        {/* Pratica non attiva: il Comune deve capire perché non può agire (backlog 24) */}
+        {!staff && pratica.stato !== "attiva" && (
+          <div style={{ marginTop: 12, background: C.ocraSoft, border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 12px", fontSize: 13, lineHeight: 1.5 }}>
+            La pratica è <b>{st.label.toLowerCase()}</b>: per ora non è possibile caricare documenti né rispondere alle
+            richieste di integrazione. Potete consultare tutto e scrivere alla Fondazione nella sezione Messaggi.
+          </div>
+        )}
+        <EnteValidazione pratica={pratica} staff={staff} onFatto={dopoAzione} />
         {staff && <CambioStato pratica={pratica} onFatto={dopoAzione} />}
       </div>
 
@@ -104,11 +129,16 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
             pratica={pratica}
             staff={staff}
             richieste={integrazioni.filter((r) => r.fase_id === f.id)}
+            note={note.filter((n) => n.fase_id === f.id)}
+            modelli={modelli.filter((m) => m.fase_numero === f.numero)}
             versione={versione}
             onCambio={dopoAzione}
           />
         ))}
       </div>
+
+      {/* Messaggi tra Comune e Fondazione */}
+      <Messaggi pratica={pratica} />
 
       {/* Consultazione pubblica (fase 3, solo per i Progetti) */}
       {pratica.tipo === "progetto" && <Consultazione praticaId={pratica.id} />}
@@ -118,17 +148,17 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
         <Rapporti progetto={pratica} staff={staff} onApri={onApri} onCreato={onAggiornato} />
       )}
 
-      {/* Pagamenti (solo back-office) */}
-      {staff && <Pagamenti praticaId={pratica.id} />}
+      {/* Pagamenti: lo staff li gestisce, il Comune li consulta */}
+      <Pagamenti praticaId={pratica.id} solaLettura={!staff} />
 
       {/* Documenti generali della pratica (contratto, amministrativi) */}
-      <Documenti key={`gen-${versione}`} praticaId={pratica.id} />
+      <Documenti key={`gen-${versione}`} praticaId={pratica.id} consentiCaricamento={staff || pratica.stato === "attiva"} />
     </div>
   );
 }
 
 /* Una fase: stato, date, azioni dello staff, integrazioni, documenti. */
-function Fase({ fase: f, pratica, staff, richieste, versione, onCambio }) {
+function Fase({ fase: f, pratica, staff, richieste, note, modelli, versione, onCambio }) {
   const [form, setForm] = useState(null); // null | "integrazione" | "scadenza" | "chiusura"
   const [testo, setTesto] = useState("");
   const [data, setData] = useState(f.data_prevista_chiusura || "");
@@ -290,9 +320,73 @@ function Fase({ fase: f, pratica, staff, richieste, versione, onCambio }) {
 
         <Integrazioni pratica={pratica} fase={f} richieste={richieste} onCambio={onCambio} />
 
+        <NoteFase fase={f} pratica={pratica} note={note} staff={staff} onCambio={onCambio} />
+
+        {/* Modelli di documento previsti per questa fase (backlog 12) */}
+        {modelli.length > 0 && <ModelliFase modelli={modelli} />}
+
         {/* Documenti della fase */}
-        <Documenti key={`${f.id}-${versione}`} praticaId={pratica.id} fase={f} compatto />
+        <Documenti key={`${f.id}-${versione}`} praticaId={pratica.id} fase={f} compatto consentiCaricamento={staff || attiva} />
       </div>
+    </div>
+  );
+}
+
+/* Modelli da scaricare per la fase (caricati dall'Amministratore in Impostazioni). */
+function ModelliFase({ modelli }) {
+  async function scarica(m) {
+    const { data } = await urlModello(m.storage_path);
+    if (data?.signedUrl) window.location.href = data.signedUrl;
+  }
+  return (
+    <div style={{ marginTop: 12 }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: C.grafite, marginBottom: 6 }}>Modelli da scaricare</div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {modelli.map((m) => (
+          <button key={m.id} onClick={() => scarica(m)} title={m.descrizione || ""} style={{ ...btnMini, color: C.green }}>
+            ↓ {m.titolo}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* Ente di Validazione della pratica: il Comune lo vede, lo staff lo assegna. */
+function EnteValidazione({ pratica, staff, onFatto }) {
+  const [enti, setEnti] = useState(null);
+  const [scelta, setScelta] = useState(pratica.ente_validazione_id || "");
+  const [errore, setErrore] = useState("");
+
+  async function modifica() {
+    const { data } = await elencaEnti();
+    setEnti((data || []).filter((e) => e.attivo || e.id === pratica.ente_validazione_id));
+  }
+  async function salva() {
+    setErrore("");
+    const { error } = await impostaEntePratica(pratica.id, scelta || null);
+    if (error) return setErrore(error.message);
+    setEnti(null);
+    onFatto();
+  }
+
+  if (!staff && !pratica.ente) return null;
+  return (
+    <div style={{ marginTop: 12, fontSize: 12.5, color: C.grafite, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+      <span>Ente di Validazione: <b style={{ color: C.ink }}>{pratica.ente?.denominazione || "non assegnato"}</b></span>
+      {staff && !enti && <button onClick={modifica} style={{ ...linkBtn, marginTop: 0 }}>{pratica.ente ? "Cambia" : "Assegna"}</button>}
+      {staff && enti && (
+        <>
+          <select value={scelta} onChange={(e) => setScelta(e.target.value)} style={{ ...campo, width: "auto" }}>
+            <option value="">— nessuno —</option>
+            {enti.map((e) => <option key={e.id} value={e.id}>{e.denominazione}</option>)}
+          </select>
+          <button onClick={salva} style={btnPrimario}>Salva</button>
+          <button onClick={() => setEnti(null)} style={btnMini}>Annulla</button>
+          {enti.length === 0 && <span>Nessun ente censito: l'Amministratore li inserisce in Impostazioni.</span>}
+        </>
+      )}
+      {errore && <span style={{ color: C.red }}>{errore}</span>}
     </div>
   );
 }

@@ -126,6 +126,15 @@ function Richiesta({ richiesta: r, pratica, fase, staff, puoRispondere, onCambio
         </div>
       )}
 
+      {/* Cliente: perché non può rispondere (backlog 24) */}
+      {!staff && !r.risolta && !puoRispondere && (
+        <div style={{ fontSize: 12, color: C.grafite, marginTop: 8 }}>
+          {pratica.stato !== "attiva"
+            ? "La pratica non è attiva: non è possibile rispondere finché la Fondazione non la riattiva."
+            : "La fase è chiusa: non è più possibile rispondere a questa richiesta."}
+        </div>
+      )}
+
       {/* Cliente: carica il documento richiesto */}
       {puoRispondere && (
         <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap", alignItems: "center" }}>

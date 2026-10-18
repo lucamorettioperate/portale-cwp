@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { COLORI as C, TIPOLOGIE_DOCUMENTO } from "../lib/cwpProgram.js";
 import Header from "../components/Header.jsx";
 import Badge from "../components/Badge.jsx";
-import { elencaDocumentiOrganizzazione, urlDocumento } from "../lib/dati.js";
+import { elencaDocumentiOrganizzazione, urlDocumento, elencaModelli, urlModello } from "../lib/dati.js";
 import { formatoData } from "../lib/date.js";
 import { ElencoDocumenti } from "./Documentazione.jsx";
 
@@ -97,10 +97,45 @@ export default function TuoiDocumenti() {
           ))}
         </div>
 
+        {/* Modelli generali da scaricare (caricati dalla Fondazione, backlog 12) */}
+        <ModelliGenerali />
+
         {/* Manuale del portale, sempre disponibile anche qui */}
         <h2 style={{ fontFamily: "'Archivo'", fontSize: 15, margin: "26px 0 10px" }}>Manuale del portale</h2>
         <ElencoDocumenti compatto />
       </main>
     </div>
+  );
+}
+
+/* Modelli di documento generali (non legati a una fase): moduli e
+   fac-simile pubblicati dalla Fondazione in Impostazioni. */
+function ModelliGenerali() {
+  const [modelli, setModelli] = useState([]);
+  useEffect(() => {
+    elencaModelli().then(({ data }) => setModelli((data || []).filter((m) => !m.fase_numero)));
+  }, []);
+  if (!modelli.length) return null;
+  async function scarica(m) {
+    const { data } = await urlModello(m.storage_path);
+    if (data?.signedUrl) window.location.href = data.signedUrl;
+  }
+  return (
+    <>
+      <h2 style={{ fontFamily: "'Archivo'", fontSize: 15, margin: "26px 0 10px" }}>Modelli da scaricare</h2>
+      <div style={{ display: "grid", gap: 8 }}>
+        {modelli.map((m) => (
+          <div key={m.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: C.white, border: `1px solid ${C.line}`, borderRadius: 9, padding: "9px 12px" }}>
+            <div>
+              <b style={{ fontSize: 13.5 }}>{m.titolo}</b>
+              {m.descrizione && <div style={{ fontSize: 11.5, color: C.grafite, marginTop: 2 }}>{m.descrizione}</div>}
+            </div>
+            <button onClick={() => scarica(m)} style={{ background: "transparent", color: C.green, border: `1px solid ${C.line}`, borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+              Scarica
+            </button>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

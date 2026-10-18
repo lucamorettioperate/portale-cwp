@@ -12,6 +12,7 @@ import VerificaMfa from "./pages/VerificaMfa.jsx";
 import Crediti from "./pages/Crediti.jsx";
 import CalcoloCrediti from "./pages/CalcoloCrediti.jsx";
 import Impostazioni from "./pages/Impostazioni.jsx";
+import { ElencoConsultazioni, PaginaConsultazione, ConfermaOsservazione } from "./pages/ConsultazioniPubbliche.jsx";
 import FormatoDati from "./pages/FormatoDati.jsx";
 import Documentazione from "./pages/Documentazione.jsx";
 import CambiaPassword from "./pages/CambiaPassword.jsx";
@@ -87,6 +88,10 @@ export default function App() {
       />
       {/* Pagina pubblica, senza login: formato dei dati per Comuni e gestori */}
       <Route path="/formato-dati" element={<FormatoDati />} />
+      {/* Consultazioni pubbliche: senza accesso (script 17, funzione consultazione-pubblica) */}
+      <Route path="/consultazioni" element={<ElencoConsultazioni />} />
+      <Route path="/consultazioni/conferma" element={<ConfermaOsservazione />} />
+      <Route path="/consultazioni/:id" element={<PaginaConsultazione />} />
       <Route
         path="/"
         element={
