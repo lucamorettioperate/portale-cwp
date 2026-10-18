@@ -95,12 +95,15 @@ async function immagine(url) {
    - dati: dati del calcolo (rifiuti, delibera, fattori, opzioni, importazione);
    - risultato: riepilogo salvato del calcolo (calcolo.risultato);
    - coerenza: esiti di controllaCoerenza (facoltativo);
+   - qualita: controlli della Gestione qualità dei dati (qualita.js:
+     popolazione, cluster, scostamenti dalla Tabella 3, motivazione,
+     indicatori; facoltativo);
    - confermatoDa: nome di chi ha confermato (facoltativo).
    Restituisce { blob, nomeFile, impronta }.
    Coordinate in millimetri su A4 (210 × 297); "y" è la posizione verticale
    corrente e avanza a ogni blocco. Su una bozza ogni pagina ha la
    filigrana «BOZZA» e il nome del file finisce con _BOZZA. */
-export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza = [], confermatoDa = null }) {
+export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza = [], qualita = null, confermatoDa = null }) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const M = 16; // margine
@@ -283,6 +286,25 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
 
   // ---------- Verifiche ----------
   titolo("6. Avvisi e controlli di coerenza");
+  // Gestione qualità dei dati: indicatori e confronto con la Tabella 3.
+  if (qualita) {
+    tabella({
+      head: [["Indicatore di qualità", "Valore", "Nota"]],
+      body: qualita.indicatori.map((i) => [pdfTesto(i.nome), pdfTesto(i.valore), pdfTesto(i.nota)]),
+      columnStyles: { 1: { cellWidth: 22, halign: "right" } },
+    });
+    y += 5;
+    if (qualita.scostamenti?.length) {
+      paragrafo(pdfTesto(`Confronto con la Tabella 3 dello Standard CWP (cluster ${qualita.cluster}, popolazione ${num(qualita.popolazione, 0)}), soglia +/-30%.`));
+      tabella({
+        head: [["Tipologia", "kg/ab/anno", "Tabella 3", "Scostamento"]],
+        body: qualita.scostamenti.map((s) => [pdfTesto(tipNome(s.tipologia)), num(s.procapite, 1), num(s.riferimento, 0), s.scostamento == null ? "-" : `${num(s.scostamento, 1)} %`]),
+        columnStyles: { 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right" } },
+      });
+      y += 5;
+      if (qualita.motivazione) paragrafo(pdfTesto("Motivazione degli scostamenti: " + qualita.motivazione));
+    }
+  }
   const voci = [
     ...(r.avvisi || []).map((a) => ["Avviso del calcolo", a]),
     ...coerenza.map((c) => [c.livello === "errore" ? "Da correggere" : "Da verificare", c.testo]),

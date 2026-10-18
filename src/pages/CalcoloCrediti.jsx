@@ -45,6 +45,7 @@ import Badge from "../components/Badge.jsx";
 import TabellaDati from "../components/crediti/TabellaDati.jsx";
 import ImportaTracciato, { ControlliCoerenza } from "../components/crediti/ImportaTracciato.jsx";
 import { controllaCoerenza } from "../lib/crediti/tracciato.js";
+import { scostamentiTabella3, indicatoriQualita, CLUSTER, SOGLIA_SCOSTAMENTO } from "../lib/crediti/qualita.js";
 import { caricaDocumento, nomeUtente } from "../lib/dati.js";
 import {
   leggiCalcolo,
@@ -352,6 +353,9 @@ export default function CalcoloCrediti() {
       importatoIl: new Date().toISOString(),
       parti: Object.keys(parti).filter((k) => parti[k]),
       conteggi: t.conteggi,
+      // Anno indicato nel foglio 1_Anagrafica: controllo di tempestività
+      // (Gestione qualità dati, qualita.js).
+      annoDati: t.anagrafica.anno || dati.importazione?.annoDati || null,
     };
     setInCorso("Salvataggio dei dati importati…");
     const { error } = await salvaCalcolo(id, {
@@ -404,6 +408,7 @@ export default function CalcoloCrediti() {
         dati,
         risultato: calcolo.risultato,
         coerenza: esiti,
+        qualita: qualitaDati(),
         confermatoDa: await nomeUtente(calcolo.confermato_da),
       });
       if (!archivia) {
@@ -444,6 +449,20 @@ export default function CalcoloCrediti() {
   const coerenza = ["utenze", "risultati"].includes(passo)
     ? controllaCoerenza({ anno: testa.anno, rifiuti: dati.rifiuti, pefUd: dati.pefUd, pefUnd: dati.pefUnd, classiUd: dati.classiUd, classiUnd: dati.classiUnd, conferimenti, riuso, ps: psTipologie })
     : null;
+
+  // Controlli della Gestione qualità dei dati (qualita.js): confronto con la
+  // Tabella 3 dello Standard e indicatori. Oltre la soglia del 30% serve una
+  // motivazione prima della conferma.
+  function qualitaDati() {
+    const q = dati.qualita || {};
+    return {
+      ...q,
+      scostamenti: scostamentiTabella3({ rifiuti: dati.rifiuti, popolazione: q.popolazione, cluster: q.cluster }),
+      indicatori: indicatoriQualita({ anno: testa.anno, annoDati: dati.importazione?.annoDati, classiUd: dati.classiUd, classiUnd: dati.classiUnd, conferimenti, conteggi: dati.importazione?.conteggi }),
+    };
+  }
+  const qualita = passo === "risultati" || conferma ? qualitaDati() : null;
+  const manca = qualita && qualita.scostamenti.some((s) => s.oltre) && !(dati.qualita?.motivazione || "").trim();
 
   // Tipologie di rifiuto ammesse (dai fattori), per le tendine e gli import CSV.
   const tipologieOpzioni = dati.fattori.map((f) => ({ valore: f.id, etichetta: f.nome }));
@@ -495,7 +514,13 @@ export default function CalcoloCrediti() {
               Per eventuali correzioni si creerà una nuova versione. Crediti netti: <b>{fmt(calcolo.crediti_netti, 3)} tCO₂eq</b>.
             </p>
             <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={confermaCalcolo} style={btnPrimario}>Conferma definitivamente</button>
+              {/* Gestione qualità dati 3.1.2: scostamento oltre il 30% → motivazione obbligatoria */}
+              {manca && (
+                <div style={{ color: C.red, fontSize: 12.5, width: "100%" }}>
+                  Ci sono scostamenti oltre il {SOGLIA_SCOSTAMENTO}% dalla Tabella 3 dello Standard: scrivi la motivazione nel passo «Risultati» e ricalcola.
+                </div>
+              )}
+              <button onClick={confermaCalcolo} disabled={manca} style={{ ...btnPrimario, opacity: manca ? 0.5 : 1 }}>Conferma definitivamente</button>
               <button onClick={() => setConferma(false)} style={btnMini}>Annulla</button>
             </div>
           </div>
@@ -542,6 +567,7 @@ export default function CalcoloCrediti() {
             {/* Un solo passo visibile alla volta; ogni passo riceve i dati e
                 la funzione per modificarli, e `sola` se il calcolo è confermato. */}
             {(passo === "utenze" || passo === "risultati") && <ControlliCoerenza esiti={coerenza} />}
+            {passo === "risultati" && <QualitaDati qualita={qualita} aggiorna={aggiornaDati} sola={confermato} />}
             {passo === "impostazioni" && (
               <Impostazioni testa={testa} aggiorna={aggiornaTesta} sola={confermato} />
             )}
@@ -1369,3 +1395,67 @@ const tabella = { width: "100%", borderCollapse: "collapse", fontSize: 12.5, bor
 const thS = { padding: "7px 9px", textAlign: "left", fontWeight: 700, color: C.grafite, whiteSpace: "nowrap" };
 const tdS = { padding: "6px 9px" };
 const tdN = { padding: "6px 9px", textAlign: "right", fontVariantNumeric: "tabular-nums" };
+
+/* Controlli della Gestione qualità dei dati (qualita.js) nel passo
+   «Risultati»: popolazione e cluster SOSE del territorio, confronto della
+   produzione pro capite con la Tabella 3 dello Standard CWP (soglia ±30%,
+   motivazione obbligatoria se superata) e indicatori di completezza,
+   unicità, letture a buon fine e tempestività. Popolazione, cluster e
+   motivazione si salvano nei dati del calcolo (dati.qualita).
+   Props: qualita (da qualitaDati), aggiorna(parziale), sola. */
+function QualitaDati({ qualita, aggiorna, sola }) {
+  if (!qualita) return null;
+  const set = (k) => (e) => aggiorna({ qualita: { popolazione: qualita.popolazione || "", cluster: qualita.cluster || "", motivazione: qualita.motivazione || "", [k]: e.target.value } });
+  const oltre = qualita.scostamenti.filter((s) => s.oltre);
+  const colore = { ok: C.green, avviso: C.amber, nd: C.grafite };
+  return (
+    <div style={{ marginBottom: 16, padding: 12, background: C.paper, border: `1px solid ${C.line}`, borderRadius: 10 }}>
+      <div style={{ fontWeight: 700, fontSize: 13.5, marginBottom: 6 }}>Qualità dei dati (documento «Gestione della qualità dei dati» del Programma)</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10 }}>
+        <label style={lbl}>
+          Popolazione residente del territorio
+          <input type="number" min="0" value={qualita.popolazione || ""} onChange={set("popolazione")} disabled={sola} style={campo} />
+        </label>
+        <label style={lbl}>
+          Cluster SOSE (Standard, Tabella 2)
+          <select value={qualita.cluster || ""} onChange={set("cluster")} disabled={sola} style={campo}>
+            <option value="">— scegli —</option>
+            {CLUSTER.map((c, i) => <option key={i} value={i + 1}>{i + 1}. {c}</option>)}
+          </select>
+        </label>
+      </div>
+      {qualita.scostamenti.length > 0 && (
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, margin: "6px 0 10px" }}>
+          <thead><tr style={{ textAlign: "left", color: C.grafite }}><th>Tipologia</th><th style={{ textAlign: "right" }}>kg/ab/anno</th><th style={{ textAlign: "right" }}>Tabella 3</th><th style={{ textAlign: "right" }}>Scostamento</th></tr></thead>
+          <tbody>
+            {qualita.scostamenti.map((s) => (
+              <tr key={s.tipologia} style={{ color: s.oltre ? C.red : C.ink }}>
+                <td>{TIPOLOGIE_RIFIUTO.find((t) => t.id === s.tipologia)?.nome || s.tipologia}</td>
+                <td style={{ textAlign: "right" }}>{fmt(s.procapite, 1)}</td>
+                <td style={{ textAlign: "right" }}>{fmt(s.riferimento, 0)}</td>
+                <td style={{ textAlign: "right", fontWeight: s.oltre ? 700 : 400 }}>{s.scostamento == null ? "—" : `${s.scostamento > 0 ? "+" : ""}${fmt(s.scostamento, 1)}%`}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {qualita.scostamenti.length === 0 && (
+        <div style={{ fontSize: 12.5, color: C.grafite, marginBottom: 8 }}>Indica popolazione e cluster per il confronto con la Tabella 3 dello Standard.</div>
+      )}
+      {(oltre.length > 0 || qualita.motivazione) && (
+        <label style={lbl}>
+          Motivazione degli scostamenti oltre il {SOGLIA_SCOSTAMENTO}% {oltre.length > 0 && "(obbligatoria per confermare)"}
+          <textarea rows={2} value={qualita.motivazione || ""} onChange={set("motivazione")} disabled={sola} style={{ ...campo, resize: "vertical" }} />
+        </label>
+      )}
+      <div style={{ display: "grid", gap: 3 }}>
+        {qualita.indicatori.map((i) => (
+          <div key={i.nome} style={{ fontSize: 12.5 }}>
+            <b style={{ color: colore[i.esito] }}>{i.esito === "ok" ? "✓" : i.esito === "avviso" ? "!" : "–"}</b> {i.nome}: <b>{i.valore}</b>
+            <span style={{ color: C.grafite }}> — {i.nota}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
