@@ -392,9 +392,7 @@ Il Comune carica il tracciato tra i documenti della sua pratica: il file Excel (
 Il primo passo del calcolo, **Importa il tracciato**, legge il file e compila in un colpo solo i passi 2, 3 e 5. Si apre da solo quando il calcolo è ancora vuoto.
 
 1. Nel calcolo aprite **Importa il tracciato**.
-2. Scegliete il file:
-   - in **Dai documenti della pratica** compaiono i file .xlsx e .zip caricati nella pratica del calcolo: premete **Leggi questo file** sulla versione giusta;
-   - oppure, da **Oppure dal computer**, premete **Scegli il file (.xlsx o .zip)**.
+2. Scegliete il file. In **Dai documenti della pratica** compaiono i file .xlsx e .zip caricati nella pratica del calcolo: premete **Leggi questo file** sulla versione giusta. In alternativa, in **Oppure dal computer** premete **Scegli il file (.xlsx o .zip)**.
 3. Il portale mostra l'**anteprima**: per ogni parte (ripartizione PEF e tariffa puntuale, rifiuti, classi della delibera, Banca Dati Utenze, beni a riuso) quante righe ha trovato, le righe scartate con il motivo e i **controlli di coerenza**.
 4. Togliete la spunta alle parti che non volete importare.
 5. Premete **Importa nel calcolo**. Le parti spuntate **sostituiscono** quelle del calcolo e sono salvate subito. Il calcolo annota il file di origine («Ultimo import»).
