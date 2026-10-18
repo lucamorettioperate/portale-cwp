@@ -13,6 +13,7 @@ function vociMenu(ruolo) {
       ["/utenti", "Utenti"],
       ["/audit", "Audit"],
       ["/crediti", "Crediti CWP"],
+      ["/impostazioni", "Impostazioni"],
     ];
   }
   if (ruolo === "operatore") {

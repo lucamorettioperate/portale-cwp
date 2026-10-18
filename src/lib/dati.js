@@ -438,3 +438,17 @@ export async function elencaAudit({ praticaId = null, limite = 200 } = {}) {
 export async function impostaUtenteAttivo(utenteId, attivo) {
   return await supabase.rpc("admin_imposta_attivo", { p_utente: utenteId, p_attivo: attivo });
 }
+
+// ---- Durata delle fasi (script 13) ----
+export async function elencaDurateFasi() {
+  return await supabase.from("durata_fase").select("*").order("numero", { ascending: true });
+}
+
+// Solo Amministratori; motivazione obbligatoria (registrata nell'audit).
+export async function impostaDurataFase(numero, giorni, motivazione) {
+  return await supabase.rpc("admin_imposta_durata_fase", {
+    p_numero: numero,
+    p_giorni: giorni,
+    p_motivazione: motivazione,
+  });
+}
