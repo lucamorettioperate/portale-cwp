@@ -101,7 +101,7 @@ In breve: **GitHub conserva** il codice, **Vercel mostra** il portale,
 |---|---|---|---|---|
 | GitHub | Codice sorgente, storico | Free (repo pubblico) | github.com/lucamorettioperate/portale-cwp | — |
 | Vercel | Pubblicazione del portale; deploy automatico a ogni push su `main` | Hobby (gratuito) | Dashboard Vercel → progetto portale-cwp | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` |
-| Supabase | Database, autenticazione, archivio file, funzioni, cron | Free | supabase.com → organizzazione Fondazione Operate → progetto `ajxrnofgunynkynozmrn` | Edge Functions → Secrets: `RESEND_API_KEY` (impostata 17/10), `EMAIL_MITTENTE` (da impostare dopo verifica dominio), `PORTALE_URL` (facoltativo) |
+| Supabase | Database, autenticazione, archivio file, funzioni, cron | Free | supabase.com → organizzazione Fondazione Operate → progetto `ajxrnofgunynkynozmrn`; Auth: Site URL `https://portale-cwp.vercel.app`, Redirect URL `https://portale-cwp.vercel.app/**` | Edge Functions → Secrets: `RESEND_API_KEY` (impostata 17/10), `EMAIL_MITTENTE` (da impostare dopo verifica dominio), `PORTALE_URL` (facoltativo) |
 | Resend | Invio email delle notifiche | Free (3.000 email/mese, 100/giorno) | resend.com (account di Luca) | Chiave API → in Supabase |
 
 **Note sui servizi**
@@ -302,9 +302,11 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   l'email in alto, «Reimposta password» in Gestione utenti; dopo l'accesso
   da un link email si torna alla pagina richiesta. Verificato: banco di
   prova locale (flag, protezione, audit) e controllo in produzione (2
-  utenti esistenti non obbligati). **Da completare in Supabase** per il
-  recupero via email: Site URL e Redirect URLs (oggi `localhost:3000`) e
-  SMTP personalizzato con Resend.
+  utenti esistenti non obbligati). Supabase Auth → URL Configuration:
+  Site URL `https://portale-cwp.vercel.app` e Redirect URL
+  `https://portale-cwp.vercel.app/**` impostati e verificati. **Da completare**
+  per il recupero via email: SMTP personalizzato con Resend (Luca inserisce
+  la chiave) e, dopo, testo italiano dell'email di recupero.
 - **PDF impaginati tipograficamente** (Manuale Utente e Registro): copertina
   a tutta pagina con loghi, scheda del documento e revisioni, sommario con
   pagine reali, aperture di capitolo numerate, passi numerati, riquadri
@@ -538,5 +540,5 @@ completato (va barrato qui e annotato in Cronologia).
 | La procedura guidata dei Database Webhook di Supabase selezionava la tabella sbagliata | Annullata senza creare nulla; webhook realizzato via SQL (script 12) |
 | Email con pulsante invisibile nel tema scuro dei client di posta | Pulsante "a prova di tema scuro" e link testuale di riserva |
 | Mittente di prova Resend consegna solo al titolare | Verifica del dominio da completare |
-| Site URL di Supabase Auth ancora `http://localhost:3000` e nessun Redirect URL: i link delle email di Supabase (recupero password) non funzionerebbero | Da impostare `https://portale-cwp.vercel.app` e `https://portale-cwp.vercel.app/**` (in attesa di conferma di Luca) |
+| Site URL di Supabase Auth ancora `http://localhost:3000` e nessun Redirect URL: i link delle email di Supabase (recupero password) non funzionavano | Impostati il 18/10 (autorizzazione di Luca): Site URL `https://portale-cwp.vercel.app`, Redirect URL `https://portale-cwp.vercel.app/**` |
 | Il servizio email predefinito di Supabase Auth consegna solo ai membri del progetto | Configurare SMTP personalizzato (Resend) in Authentication → Emails |
