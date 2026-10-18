@@ -8,12 +8,27 @@
    Il rapporto riporta un'impronta SHA-256 dei dati e del risultato: chi lo
    riceve può verificare che corrisponda al calcolo archiviato nel portale.
    Usato da src/pages/CalcoloCrediti.jsx («Scarica il rapporto (PDF)» e
-   «Archivia nella pratica»). Registro sviluppo e deploy: «Calcolo crediti».
+   «Archivia nella pratica»), con import dinamico: jsPDF si scarica solo
+   quando serve, non appesantisce il primo caricamento del portale.
+
+   Dati/servizi coinvolti: nessuna chiamata al database. Legge i loghi da
+   public/loghi/ (carbonwasteprint.png, fondazione-operate.png); se mancano,
+   il rapporto esce senza loghi. L'archiviazione nella pratica la fa la
+   pagina (caricaDocumento di src/lib/dati.js, archivio `documenti`).
+
+   Nota sui caratteri: si usa il font standard "helvetica" del PDF, che
+   copre solo Latin-1. Ogni testo passa da pdfTesto(), che converte o toglie
+   i simboli non stampabili (CO₂, Δ, ≤ …). Per aggiungere testi nuovi usare
+   sempre pdfTesto().
+
+   Registro sviluppo e deploy: capitolo 7 «Funzionalità per area», riga
+   Calcolo crediti; capitolo 6 «Portale (frontend)».
    ========================================================================= */
 import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
 import { TIPOLOGIE_RIFIUTO } from "./parametri.js";
 
+// Colori RGB del rapporto, uguali alla palette COLORI di cwpProgram.js.
 const VERDE = [47, 93, 58];
 const VERDE_CHIARO = [228, 237, 225];
 const INK = [27, 33, 24];
@@ -29,6 +44,9 @@ const pdfTesto = (s) =>
     .replace(/Δ/g, "Delta ").replace(/[−–]/g, "-").replace(/×/g, "x").replace(/[“”]/g, '"').replace(/[‘’]/g, "'")
     .replace(/[^\x00-\xFF€—…·•]/g, "");
 
+// Formattazione italiana: num(v, d) con d decimali ("—" se non numerico);
+// dataIt = gg/mm/aaaa; dataOraIt = gg/mm/aaaa hh:mm; tipNome = nome leggibile
+// della tipologia di rifiuto.
 const num = (v, d = 2) =>
   v == null || !Number.isFinite(Number(v)) ? "—" : Number(v).toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d });
 const dataIt = (v) => (v ? new Date(v).toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—");
@@ -36,6 +54,10 @@ const dataOraIt = (v) => (v ? new Date(v).toLocaleString("it-IT", { day: "2-digi
 const tipNome = (t) => TIPOLOGIE_RIFIUTO.find((x) => x.id === t)?.nome || t;
 
 // Impronta SHA-256 (esadecimale) di un oggetto, con chiavi in ordine stabile.
+// Le chiavi si ordinano a ogni livello prima di JSON.stringify: lo stesso
+// contenuto dà sempre la stessa impronta, qualunque sia l'ordine dei campi.
+// Attenzione: cambiare questa funzione cambia le impronte dei rapporti
+// già emessi (non sarebbero più verificabili).
 export async function impronta(oggetto) {
   const ordina = (v) => (Array.isArray(v) ? v.map(ordina) : v && typeof v === "object" ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, ordina(v[k])])) : v);
   const byte = new TextEncoder().encode(JSON.stringify(ordina(oggetto)));
@@ -44,6 +66,8 @@ export async function impronta(oggetto) {
 }
 
 // Logo come immagine per il PDF (null se non disponibile).
+// Scarica il file, lo converte in data URL e ne legge le dimensioni per
+// mantenere le proporzioni. Restituisce { dataUrl, w, h } oppure null.
 async function immagine(url) {
   try {
     const blob = await (await fetch(url)).blob();
@@ -71,12 +95,17 @@ async function immagine(url) {
    - risultato: riepilogo salvato del calcolo (calcolo.risultato);
    - coerenza: esiti di controllaCoerenza (facoltativo);
    - confermatoDa: nome di chi ha confermato (facoltativo).
-   Restituisce { blob, nomeFile, impronta }. */
+   Restituisce { blob, nomeFile, impronta }.
+   Coordinate in millimetri su A4 (210 × 297); "y" è la posizione verticale
+   corrente e avanza a ogni blocco. Su una bozza ogni pagina ha la
+   filigrana «BOZZA» e il nome del file finisce con _BOZZA. */
 export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza = [], confermatoDa = null }) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const M = 16; // margine
   const confermato = calcolo.stato === "confermato";
+  // L'impronta copre dati di ingresso e risultato salvato: per verificarla
+  // si ricalcola impronta({ dati, risultato }) sul calcolo archiviato.
   const hash = await impronta({ dati, risultato: r });
   const codice = calcolo.pratica?.codice || "pratica";
   const tabellaBase = {
@@ -131,6 +160,8 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
   y += 8;
 
   // ---------- Sintesi ----------
+  // titolo(): intestazione di sezione; paragrafo(): testo a capo automatico.
+  // Entrambi vanno a pagina nuova se manca spazio in fondo.
   const titolo = (t) => {
     if (y > 240) { doc.addPage(); y = 24; }
     doc.setFont("helvetica", "bold").setFontSize(12).setTextColor(...VERDE).text(pdfTesto(t), M, y);
@@ -145,6 +176,7 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
     y += righe.length * 4 + 2;
   };
   titolo("1. Sintesi");
+  // Tre riquadri: con ΔI > 0 il territorio è in debito (nessun credito).
   const riquadri = r.crediti.debito > 0
     ? [["Debito del territorio", `${num(r.crediti.debito, 3)} tCO2eq`, ROSSO], ["Delta I del territorio", `${num(r.deltaI, 1)} kgCO2eq`, INK], ["Buffer", `${num(r.buffer.totale, 1)} %`, INK]]
     : [["Crediti netti", `${num(r.crediti.netti, 3)} tCO2eq`, VERDE], ["Crediti lordi (-Delta I)", `${num(r.crediti.lordi, 3)} tCO2eq`, INK], ["Buffer applicato", `${num(r.buffer.totale, 1)} % (${num(r.crediti.buffer, 3)} t)`, INK]];
@@ -195,6 +227,7 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
     columnStyles: { 2: { halign: "right" }, 3: { halign: "right" }, 4: { halign: "right" }, 5: { halign: "right" } },
   });
   y += 5;
+  // Si elencano solo i fattori delle tipologie presenti nel calcolo.
   const usate = new Set((r.attesa?.tipologie || []).map((t) => t.tipologia).concat(r.tipologieMisurate || []));
   paragrafo("Fattori di emissione FErid(r) e pesi specifici usati (Metodologia, Tabelle 3, 4 e 8, salvo diversa indicazione).");
   tabella({
@@ -265,6 +298,8 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
   }
 
   titolo("7. Scelte interpretative applicate");
+  // Testi allineati a docs/crediti-cwp.md («Scelte interpretative da
+  // confermare»): se cambia una scelta nel motore, aggiornare entrambi.
   const scelte = [
     "FEdes(r): si usa FErid(r) delle Tabelle 3 e 4, salvo valori diversi indicati nel Progetto.",
     "Emissioni attese per utenza: calcolate sulle tipologie di rifiuto misurate; le altre sono coperte dal buffer.",
@@ -284,6 +319,7 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
   );
 
   // ---------- Piè di pagina e filigrana ----------
+  // Si aggiungono alla fine, quando il numero totale di pagine è noto.
   const pagine = doc.getNumberOfPages();
   for (let i = 1; i <= pagine; i++) {
     doc.setPage(i);
@@ -304,6 +340,7 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
     doc.text(`Pagina ${i} di ${pagine}`, W - M, 289, { align: "right" });
   }
 
+  // Nome file solo con caratteri sicuri (lettere, cifre, . _ -).
   const nomeFile = `Rapporto_calcolo_crediti_${codice}_${calcolo.anno}${confermato ? "" : "_BOZZA"}.pdf`.replace(/[^A-Za-z0-9._-]+/g, "_");
   return { blob: doc.output("blob"), nomeFile, impronta: hash };
 }

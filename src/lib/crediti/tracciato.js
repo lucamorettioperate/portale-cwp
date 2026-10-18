@@ -1,8 +1,33 @@
 /* =========================================================================
    Import del TRACCIATO DATI CWP (v1.0) nel calcolo dei crediti
    (backlog 1-5, 18/10/2026). Funzioni pure, usate dal portale e dai test
-   (test/tracciato.test.mjs). Registro sviluppo e deploy: capitolo
-   «Calcolo crediti».
+   (test/tracciato.test.mjs).
+
+   Scopo: legge il file del tracciato compilato dal Comune o dal gestore,
+   blocca l'import se trova dati personali, converte i fogli nei dati del
+   motore di calcolo (calcolo.js) e segnala le incoerenze.
+
+   Usato da: src/components/crediti/ImportaTracciato.jsx (tutte le
+   funzioni) e src/pages/CalcoloCrediti.jsx (controllaCoerenza);
+   test/tracciato.test.mjs (con i file di test/dati/).
+
+   Dati/servizi coinvolti: nessuna chiamata al database; il salvataggio lo
+   fa la pagina con archivio.js. Il modello vuoto da compilare è
+   public/modelli/Tracciato_dati_CWP_v1.xlsx (generato da
+   strumenti/genera_tracciato_dati.py):
+   nomi dei fogli (FOGLI_TRACCIATO) e intestazioni delle colonne (COL) qui
+   devono restare uguali a quelli del modello. Se si cambia il tracciato,
+   aggiornare insieme: questo file, lo script Python, i file di esempio
+   (strumenti/genera_esempi_tracciato.py) e i test.
+
+   Sicurezza / privacy: il controllo dei dati personali avviene nel browser,
+   PRIMA che qualunque dato venga salvato. È un controllo euristico
+   (intestazioni e forme tipiche dei valori), non una garanzia assoluta.
+
+   Uso dei test: npm test (comprende test/tracciato.test.mjs).
+
+   Registro sviluppo e deploy: capitolo 7 «Funzionalità per area», riga
+   Calcolo crediti; capitolo 6 «Portale (frontend)».
 
    Flusso:
    1. leggiFileTracciato(buffer, nome)  → fogli: { "2_Rifiuti": [[celle]], … }
@@ -19,11 +44,14 @@ import JSZip from "jszip";
 import { leggiCsv } from "../csv.js";
 import { TIPOLOGIE_RIFIUTO, BENI_RIUSO } from "./parametri.js";
 
+// Nomi dei fogli del tracciato, nell'ordine del modello Excel.
 export const FOGLI_TRACCIATO = ["1_Anagrafica", "2_Rifiuti", "3_Classi_domestiche", "4_Classi_non_domestiche", "5_Conferimenti", "6_Letture", "7_Riuso"];
 const ID_TIPOLOGIE = TIPOLOGIE_RIFIUTO.map((t) => t.id);
 const ID_BENI = BENI_RIUSO.map((b) => b.id);
 
 // "Peso strutture informatizzate (kg)" → "pesostruttureinformatizzatekg"
+// Rende il confronto di intestazioni e codici indipendente da maiuscole,
+// accenti, spazi e punteggiatura.
 export const normalizza = (s) =>
   String(s ?? "")
     .toLowerCase()
@@ -36,6 +64,7 @@ export const normalizza = (s) =>
    --------------------------------------------------------------------- */
 
 // Decodifica le entità XML (&amp; &lt; … &#233;).
+// &amp; va sostituito per ultimo, altrimenti "&amp;lt;" diventerebbe "<".
 function xmlTesto(s) {
   return s
     .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
@@ -43,6 +72,7 @@ function xmlTesto(s) {
     .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'")
     .replace(/&amp;/g, "&");
 }
+// Valore di un attributo XML in un tag (es. name="2_Rifiuti"), già decodificato; null se assente.
 const attributo = (tag, nome) => {
   const m = new RegExp(`\\b${nome}="([^"]*)"`).exec(tag);
   return m ? xmlTesto(m[1]) : null;
@@ -57,6 +87,11 @@ function colonna(rif) {
 }
 
 // Legge un .xlsx: restituisce { nomeFoglio: [[valori]] } con le sole celle valorizzate.
+// Lettore minimo scritto apposta (nessuna libreria Excel): workbook.xml dà
+// i nomi dei fogli, workbook.xml.rels il file XML di ciascuno,
+// sharedStrings.xml i testi condivisi. Non legge formule (solo il valore
+// già calcolato e salvato da Excel) né formati: le date arrivano come
+// numeri seriali (vedi data()).
 async function leggiXlsx(zip) {
   const leggi = async (p) => (zip.file(p) ? await zip.file(p).async("string") : null);
   const workbook = await leggi("xl/workbook.xml");
@@ -86,6 +121,9 @@ async function leggiXlsx(zip) {
       const nRiga = Number(attributo(r[1], "r")) - 1;
       const celle = [];
       for (const c of r[2].matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
+        // Tipo di cella: s = testo condiviso, inlineStr = testo nella cella,
+        // str = risultato testuale di formula, b = booleano, e = errore,
+        // assente = numero.
         const tipo = attributo(c[1], "t");
         const corpo = c[2] || "";
         const v = /<v>([\s\S]*?)<\/v>/.exec(corpo)?.[1];
@@ -99,6 +137,8 @@ async function leggiXlsx(zip) {
         if (valore === null || valore === "") continue;
         celle[colonna(attributo(c[1], "r") || "A")] = valore;
       }
+      // Si rispetta il numero di riga di Excel (attributo r): le righe vuote
+      // saltate da Excel restano buchi, poi riempiti con [].
       if (celle.length) righe[nRiga >= 0 ? nRiga : righe.length] = celle;
     }
     fogli[nome] = Array.from(righe, (x) => x || []);
@@ -107,6 +147,10 @@ async function leggiXlsx(zip) {
 }
 
 // Legge il file caricato (Excel o ZIP di CSV). nome serve per riconoscere il tipo.
+// Parametri: contenuto del file (ArrayBuffer o Buffer), nome (usato nei
+// messaggi d'errore). Restituisce { tipo: "xlsx" | "zip-csv", fogli }.
+// Un CSV si riconosce anche senza il numero iniziale ("Letture.csv").
+// Lancia un errore se il file non è uno ZIP o non contiene fogli del tracciato.
 export async function leggiFileTracciato(buffer, nome = "") {
   const zip = await JSZip.loadAsync(buffer);
   if (zip.file("xl/workbook.xml")) return { tipo: "xlsx", fogli: await leggiXlsx(zip) };
@@ -130,7 +174,11 @@ export async function leggiFileTracciato(buffer, nome = "") {
       codici fiscali»). Il foglio 1_Anagrafica è escluso: contiene i dati
       dell'ufficio comunale, non delle utenze.
    --------------------------------------------------------------------- */
+// Intestazioni (già normalizzate) che indicano una colonna di dati personali.
+// Il controllo è "inizia con": anche "nomeutente" o "viaecivico" sono bloccati.
 const INTESTAZIONI_PERSONALI = /^(nome|cognome|nominativo|ragionesociale|intestatario|contribuente|indirizzo|via|civico|residenza|codicefiscale|cf|partitaiva|piva|email|mail|pec|telefono|tel|cellulare|iban)/;
+// Forme tipiche di valori personali, cercate in ogni cella di testo:
+// codice fiscale (16 caratteri), email, IBAN italiano, telefono, indirizzo.
 const CONTROLLI_VALORI = [
   { tipo: "codice fiscale", re: /\b[A-Z]{6}\d{2}[A-EHLMPRST]\d{2}[A-Z]\d{3}[A-Z]\b/i },
   { tipo: "email", re: /[^\s@]+@[^\s@]+\.[a-z]{2,}/i },
@@ -139,11 +187,17 @@ const CONTROLLI_VALORI = [
   { tipo: "indirizzo", re: /\b(via|viale|piazza|p\.zza|corso|vicolo|località|loc\.)\s+[a-zà-ù]/i },
 ];
 // Oscura un valore trovato: "RSSMRA80A01H501U" → "RSS…01U"
+// (il dato personale non viene mostrato per intero nemmeno nel messaggio).
 const oscura = (s) => {
   const t = String(s);
   return t.length <= 6 ? "…" : `${t.slice(0, 3)}…${t.slice(-3)}`;
 };
 
+// Cerca dati personali nei fogli da 2 a 7.
+// Parametro: fogli come restituiti da leggiFileTracciato.
+// Restituisce al massimo 50 segnalazioni { foglio, riga, tipo, esempio };
+// elenco non vuoto = import da bloccare. Una colonna "personale" conta solo
+// se ha almeno un valore sotto l'intestazione.
 export function controllaPrivacy(fogli) {
   const trovati = [];
   for (const nome of FOGLI_TRACCIATO.slice(1)) {
@@ -171,6 +225,9 @@ export function controllaPrivacy(fogli) {
    --------------------------------------------------------------------- */
 
 // Numero da cella: accetta numeri Excel e testi "1.234,5" o "1234.5".
+// Restituisce null se la cella è vuota, NaN se il testo non è un numero
+// (così il chiamante distingue "manca" da "sbagliato").
+// Se c'è la virgola, i punti sono separatori delle migliaia.
 export function numero(v) {
   if (v === null || v === undefined || v === "") return null;
   if (typeof v === "number") return Number.isFinite(v) ? v : null;
@@ -180,9 +237,14 @@ export function numero(v) {
   const n = Number(t);
   return Number.isFinite(n) ? n : NaN;
 }
+// Valore sì/no da cella: booleano di Excel o testi come "sì", "x", "1".
 const siNo = (v) => v === true || /^(si|sì|s|true|1|x|vero|yes)$/i.test(String(v ?? "").trim());
 
 // Data da cella: numero seriale di Excel o testo gg/mm/aaaa (o aaaa-mm-gg).
+// Restituisce una Date in UTC (usare getUTCFullYear ecc.) oppure null.
+// Seriale Excel: giorni dal 30/12/1899 (questa base compensa il finto
+// 29/02/1900 di Excel per tutte le date dal 1° marzo 1900 in poi).
+// Non controlla che giorno e mese esistano (31/02 diventa 3 marzo).
 export function data(v) {
   if (typeof v === "number") return new Date(Date.UTC(1899, 11, 30) + Math.round(v) * 86400000);
   const s = String(v ?? "").trim();
@@ -193,18 +255,25 @@ export function data(v) {
   return null;
 }
 
+// Macrocategoria da cella: "UD" (domestica) o "UnD" (non domestica); null se non riconosciuta.
 function macro(v) {
   const s = normalizza(v);
   if (["ud", "domestica", "domestiche", "d"].includes(s)) return "UD";
   if (["und", "nondomestica", "nondomestiche", "nd"].includes(s)) return "UnD";
   return null;
 }
+// Tipologia di rifiuto da cella: deve coincidere con un id di
+// TIPOLOGIE_RIFIUTO (parametri.js), es. "organico"; altrimenti null.
 function tipologia(v) {
   const s = normalizza(v);
   return ID_TIPOLOGIE.find((t) => normalizza(t) === s) || null;
 }
 
 // Trasforma un foglio in oggetti secondo le colonne attese (intestazioni della riga 1).
+// Parametri: righe del foglio, colonne (voce di COL), nome del foglio per i
+// messaggi, array "errori" da riempire. Restituisce oggetti con le chiavi di
+// COL più _riga (numero di riga Excel). Un foglio vuoto non è un errore;
+// un foglio compilato senza una colonna obbligatoria viene ignorato tutto.
 function righeFoglio(righe, colonne, nomeFoglio, errori) {
   if (!righe?.length) return [];
   const intest = (righe[0] || []).map((h) => normalizza(h));
@@ -233,6 +302,9 @@ function righeFoglio(righe, colonne, nomeFoglio, errori) {
   });
 }
 
+// Colonne attese in ciascun foglio: chiave interna, intestazioni ammesse
+// (la prima è quella del modello, le altre varianti tollerate), obbligatoria.
+// Le chiavi coincidono con i campi usati da calcolo.js e archivio.js.
 const COL = {
   rifiuti: [
     { chiave: "codice", titoli: ["Codice EER"], obbligatorio: true },
@@ -287,6 +359,9 @@ const COL = {
 };
 
 // Voci del foglio 1_Anagrafica (colonna A = voce, colonna B = valore).
+// Riconosce le voci dall'inizio del testo normalizzato (es. "Ente …").
+// Restituisce { ente, istat, anno, gestore, software, tariffaPuntuale,
+// pefUd, pefUnd, delibera } con le sole voci compilate.
 function leggiAnagrafica(righe) {
   const a = {};
   for (const r of righe || []) {
@@ -307,7 +382,12 @@ function leggiAnagrafica(righe) {
 }
 
 /* Interpreta i fogli letti. annoCalcolo: anno di riferimento del calcolo
-   (le singole letture fuori da quell'anno sono escluse). */
+   (le singole letture fuori da quell'anno sono escluse).
+   Restituisce { anagrafica, rifiuti, classiUd, classiUnd, conferimenti,
+   riuso, conteggi, errori (fogli inutilizzabili), avvisi, scarti (prime
+   200 righe scartate con il motivo), scartiTotali }.
+   Le righe con valori non validi si scartano una per una: il resto del
+   foglio viene comunque importato. */
 export function interpretaTracciato(fogli, annoCalcolo) {
   const errori = [];
   const avvisi = [];
@@ -363,6 +443,10 @@ export function interpretaTracciato(fogli, annoCalcolo) {
   }
 
   // 6_Letture (dati grezzi) → totali annui per utenza e tipologia
+  // Ogni riga è un singolo conferimento (una lettura del contenitore o una
+  // pesata). Si sommano per utenza + macro + classe + tipologia e diventano
+  // righe equivalenti a quelle del foglio 5. Il foglio 5, se compilato, ha
+  // la precedenza.
   const letture = righeFoglio(fogli["6_Letture"], COL.letture, "6_Letture", errori);
   let lettureUsate = 0;
   let lettureFuoriAnno = 0;
@@ -382,6 +466,7 @@ export function interpretaTracciato(fogli, annoCalcolo) {
       if (!["domiciliare", "struttura", "centroraccolta"].includes(punto)) { scarta("6_Letture", r._riga, `punto di conferimento «${r.punto}» sconosciuto`); continue; }
       if (!numeri(r, ["volume", "peso"], "6_Letture")) continue;
       if (annoCalcolo && d.getUTCFullYear() !== Number(annoCalcolo)) { lettureFuoriAnno++; continue; }
+      // Separatore \u0001: non compare mai nei dati, quindi le chiavi non si confondono.
       const chiave = [String(r.utenza).trim(), m, String(r.classe).trim(), t].join("\u0001");
       if (!somme.has(chiave)) {
         somme.set(chiave, { utenza: String(r.utenza).trim(), macro: m, classe: String(r.classe).trim(), tipologia: t, svuotamenti: 0, litriDom: 0, pesoStrutture: 0, volumeStrutture: 0, pesoCdr: 0, volumeCdr: 0 });
@@ -390,9 +475,12 @@ export function interpretaTracciato(fogli, annoCalcolo) {
       lettureUsate++;
       if (punto === "domiciliare") {
         // Metodologia (formula 19): svuotamenti × volume del contenitore.
+        // Ogni lettura domiciliare con volume = uno svuotamento.
         if (r.volume) { s.svuotamenti += 1; s.litriDom += r.volume; }
         else if (r.peso) { s.pesoStrutture += r.peso; pesoDomiciliareIgnorato++; }
       } else if (punto === "struttura") {
+        // Strutture informatizzate e centri di raccolta: il peso, se c'è,
+        // prevale sul volume (più preciso, non serve il peso specifico).
         if (r.peso) s.pesoStrutture += r.peso; else s.volumeStrutture += r.volume || 0;
       } else {
         if (r.peso) s.pesoCdr += r.peso; else s.volumeCdr += r.volume || 0;
@@ -452,8 +540,15 @@ export function interpretaTracciato(fogli, annoCalcolo) {
       { livello: "errore" | "avviso", testo }. Gli "errori" indicano dati
       che falserebbero il calcolo; gli "avvisi" valori da verificare.
    --------------------------------------------------------------------- */
+// Numero "tollerante" per i controlli: vuoto o non valido → 0.
 const n0 = (v) => Number(String(v ?? "").replace(",", ".")) || 0;
 
+// Parametri: anno del calcolo, anagrafica del tracciato, rifiuti, PEF,
+// classi della delibera, Banca Dati Utenze (conferimenti, riuso) e pesi
+// specifici di default { tipologia: kg/m³ } per stimare i kg conferiti.
+// Le soglie (1,05 × utenze in delibera, 50% di copertura, 366 svuotamenti,
+// 5.000 litri, 1,1 × totale del territorio) sono scelte di buon senso, non
+// regole della Metodologia: si possono tarare.
 export function controllaCoerenza({ anno, anagrafica = {}, rifiuti = [], pefUd, pefUnd, classiUd = [], classiUnd = [], conferimenti = [], riuso = [], ps = {} }) {
   const esiti = [];
   const errore = (testo) => esiti.push({ livello: "errore", testo });
@@ -513,6 +608,7 @@ export function controllaCoerenza({ anno, anagrafica = {}, rifiuti = [], pefUd, 
   if (dup.size) avviso(`Stessa utenza e tipologia su più righe (verranno sommate): ${elenco(dup)}.`);
 
   // Utenze della Banca Dati rispetto alla delibera, per classe
+  // (un'utenza ambigua si conta solo nella prima classe trovata).
   const contaPerClasse = new Map();
   for (const [u, s] of perUtenza) {
     const [k] = [...s];
