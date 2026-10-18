@@ -20,7 +20,7 @@ Nel portale la Fondazione lavora con due ruoli:
 | Export del fascicolo | sì | sì |
 | Gestione utenti | — | sì |
 | Audit trail | — | sì |
-| Impostazioni (durata delle fasi) | — | sì |
+| Impostazioni (durata delle fasi, Enti di Validazione, modelli) | — | sì |
 | Calcolo dei crediti CWP | — | sì |
 | Documentazione (Registro e questo manuale) | — | sì |
 
@@ -112,6 +112,10 @@ Le azioni sulle fasi compaiono nella scheda di ciascuna fase, **solo se la prati
 | **Richiedi integrazione** | Fase aperta | Vedi il capitolo «Richieste di integrazione» |
 | **Modifica scadenza** | Fase aperta | Nuova data e **Motivazione (obbligatoria)**, poi **Salva scadenza** |
 
+**Note di fase.** Sotto ogni fase, **+ Aggiungi nota** apre un campo di testo. Senza spunta la nota è **interna** (la vede solo la Fondazione, bordo arancione); con la spunta **Visibile al Comune** la nota è **condivisa** (bordo verde) e il Comune riceve la notifica «Nuova nota della Fondazione». Le note non si modificano né si cancellano e finiscono nell'audit: per correggere, aggiungete una nuova nota.
+
+**Ente di Validazione della pratica.** Nell'intestazione della pratica, accanto a «Ente di Validazione», premete **Assegna** (o **Cambia**), scegliete l'ente e premete **Salva**. L'elenco degli enti si gestisce in Impostazioni (capitolo «Impostazioni»). Il Comune vede il nome dell'ente assegnato. L'assegnazione è registrata nell'audit.
+
 **Nuove versioni durante una fase.** Se il Comune carica una nuova versione di un documento mentre la fase è aperta, la scadenza **non riparte** (decisione della Fondazione del 18/10/2026). Se serve più tempo si usa **Modifica scadenza** con la motivazione.
 
 **Cambiare lo stato della pratica.** I pulsanti sono nell'intestazione della pratica:
@@ -127,7 +131,7 @@ Le azioni sulle fasi compaiono nella scheda di ciascuna fase, **solo se la prati
 2. Scrivete la **Motivazione (obbligatoria)**, almeno 3 caratteri.
 3. Premete **Conferma**.
 
-Il Comune riceve la notifica con la motivazione, che resta visibile nell'intestazione della pratica. Con la pratica sospesa, annullata o chiusa il Comune non può caricare documenti né rispondere alle integrazioni.
+Il Comune riceve la notifica con la motivazione, che resta visibile nell'intestazione della pratica. Con la pratica sospesa, annullata o chiusa il Comune vede un avviso che lo spiega, non ha il pulsante **+ Carica** e non può rispondere alle integrazioni; può sempre scrivere nella sezione Messaggi (non sulle pratiche annullate).
 
 ## Documenti e visibilità
 
@@ -162,30 +166,48 @@ Quando non restano richieste aperte la fase torna *In corso*. Nel Cruscotto i ri
 
 ## Consultazione pubblica
 
-La consultazione pubblica riguarda solo i Progetti (fase 3) e dura 30 giorni.
+La consultazione pubblica riguarda solo i Progetti (fase 3) e dura 30 giorni. Si svolge sulla **pagina pubblica** del portale (`/consultazioni`), aperta a tutti senza credenziali e collegata anche dalla pagina di accesso.
 
 **Aprire la consultazione**
 
 1. Caricate prima il documento da sottoporre a consultazione (capitolo «Documenti e visibilità»).
-2. Nel riquadro **Consultazione pubblica** scegliete il documento.
-3. Premete **Apri consultazione**. Il periodo va da oggi a 30 giorni dopo e il Comune riceve la notifica.
+2. Nel riquadro **Consultazione pubblica** della pratica scegliete il documento.
+3. Premete **Apri consultazione**. Il periodo va da oggi a 30 giorni dopo, il Comune riceve la notifica e la consultazione compare nell'elenco pubblico.
 
-**Moderare le osservazioni.** Ogni osservazione arriva come *Ricevuto* (notifica «Nuova osservazione da moderare»). L'autore compare sempre come *Partecipante*.
+Nel riquadro trovate il periodo, i giorni rimanenti, il documento e il **link alla pagina pubblica** da diffondere.
+
+**Come arriva un'osservazione.** Sulla pagina pubblica chiunque scrive nome, email, testo e, se vuole, un allegato (PDF, JPG, PNG, DOCX o ODT, massimo 10 MB). Deve acconsentire al trattamento dei dati e può scegliere di pubblicare il proprio nome. Il portale gli invia un'email con il pulsante **Conferma e invia l'osservazione →**, valido 48 ore e una sola volta: solo dopo la conferma l'osservazione arriva alla Fondazione come *Ricevuto*, con la notifica «Nuova osservazione da moderare». Il portale limita gli invii (3 all'ora per indirizzo) e blocca i robot.
+
+**Moderare le osservazioni.** Lo staff vede di ogni osservazione nome, email («email confermata»), data e ora, allegato e se l'autore ha scelto di pubblicare il nome.
 
 | Pulsante | Effetto |
 | --- | --- |
-| Pubblica | L'osservazione diventa *Pubblicato* e il Comune può rispondere |
+| Pubblica | L'osservazione diventa *Pubblicato*: compare sulla pagina pubblica e il Comune può rispondere |
 | Non pubblicare | L'osservazione diventa *Non pubblicato* (motivazione «Non ammesso dal moderatore») |
 
-Le risposte alle osservazioni le scrive il Comune; lo staff le vede sotto il testo («Risposta: …»).
+Sulla pagina pubblica e per il Comune l'autore compare come *Partecipante*, oppure con il nome se l'ha scelto; l'email non è mai pubblicata. Le risposte le scrive il Comune e compaiono anche sulla pagina pubblica.
 
-**Chiudere la consultazione.** Dopo 30 giorni il portale non accetta più osservazioni, ma lo stato va chiuso a mano con **Chiudi consultazione**.
+**Errata corrige.** Se il documento in consultazione contiene un errore:
 
-**Decisioni prese per i prossimi sviluppi** (18/10/2026): chi commenta dall'esterno dovrà confermare il proprio indirizzo email con un collegamento prima che l'osservazione venga ricevuta; in caso di errata corrige sarà l'Operatore a scegliere, caso per caso e con motivazione, se far ripartire i 30 giorni.
+1. Se serve, caricate il documento corretto tra i documenti della pratica.
+2. Nel riquadro premete **+ Pubblica errata corrige**.
+3. Descrivete la correzione in **Cosa viene corretto** e scegliete l'eventuale **Documento corretto**.
+4. Decidete se spuntare **Fai ripartire i 30 giorni da oggi**: in questo caso la **Motivazione** è obbligatoria (decisione della Fondazione del 18/10/2026: si decide caso per caso).
+5. Premete **Pubblica errata corrige**.
+
+L'errata corrige compare nella pratica e sulla pagina pubblica, il Comune riceve la notifica e l'operazione (con l'eventuale proroga) finisce nell'audit.
+
+**Chiudere la consultazione.** Dopo la data di chiusura il portale non accetta più osservazioni, ma lo stato va chiuso a mano con **Chiudi consultazione**.
+
+**Da sapere.** Finché il dominio della Fondazione non è verificato sul servizio email, le email di conferma arrivano solo all'indirizzo del titolare del servizio: prima di una consultazione reale il dominio va verificato.
+
+## Messaggi con il Comune
+
+In ogni pratica la sezione **Messaggi** è la conversazione tra Fondazione e Comune su quella pratica. Scrivete nel campo «Scrivi un messaggio…» e premete **Invia**. I messaggi della Fondazione sono firmati «Fondazione Operate · nome dell'operatore». A ogni messaggio l'altra parte riceve una notifica e un'email (staff: «Nuovo messaggio dal Cliente»). I messaggi non si modificano né si cancellano e sono registrati nell'audit.
 
 ## Pagamenti
 
-Ogni pratica ha la sezione **Pagamenti** con il riepilogo *Previsto · incassato · da incassare*. Il portale non incassa pagamenti online: la Fondazione registra le voci previste e gli incassi.
+Ogni pratica ha la sezione **Pagamenti** con il riepilogo *Previsto · incassato · da incassare*. Il portale non incassa pagamenti online: la Fondazione registra le voci previste e gli incassi. Il Comune vede le stesse voci in sola lettura e riceve una notifica quando se ne aggiunge una.
 
 **Aggiungere una voce**
 
@@ -199,7 +221,7 @@ Ogni pratica ha la sezione **Pagamenti** con il riepilogo *Previsto · incassato
 2. Spuntate **Pagamento registrato** e controllate la data del pagamento (di norma oggi).
 3. Premete **Salva**.
 
-Ogni voce mostra *Da pagare*, *Scaduto* o *Pagato*. Il portale registra automaticamente chi ha inserito l'incasso, e l'operazione finisce nell'audit. Per decisione del 18/10/2026 le voci di pagamento saranno visibili anche al Comune, in sola lettura.
+Ogni voce mostra *Da pagare*, *Scaduto* o *Pagato*. Il portale registra automaticamente chi ha inserito l'incasso, e l'operazione finisce nell'audit.
 
 ## Export del fascicolo
 
@@ -224,8 +246,10 @@ La campanella in alto mostra le notifiche interne; le stesse arrivano anche per 
 | --- | --- |
 | il Comune carica un documento | si apre o si chiude una fase |
 | il Comune risponde a un'integrazione | arriva una richiesta di integrazione |
-| arriva un'osservazione da moderare | la Fondazione carica un documento visibile al Cliente |
-| una fase è vicina alla scadenza o scaduta | si apre la consultazione pubblica |
+| arriva un'osservazione (email confermata) da moderare | la Fondazione carica un documento visibile al Cliente |
+| una fase è vicina alla scadenza o scaduta | si apre la consultazione pubblica o esce un'errata corrige |
+| il Comune scrive un messaggio | la Fondazione scrive un messaggio o una nota condivisa |
+| | si aggiunge una voce di pagamento |
 | | la pratica cambia stato |
 
 Gli avvisi di scadenza partono ogni mattina (3 giorni prima e a scadenza superata, una sola volta). Le email partono da «Portale CWP»; le email non partite vengono ritentate da sole ogni 15 minuti per 6 ore.
@@ -275,9 +299,13 @@ Sono registrati, tra gli altri: apertura e chiusura delle fasi, modifiche di sca
 
 Il registro non si può modificare né cancellare, neppure dagli Amministratori.
 
-## Impostazioni: durata delle fasi
+## Impostazioni: fasi, Enti di Validazione e modelli
 
-La pagina **Impostazioni** fissa quanti giorni dura ogni fase. Quando un Operatore apre una fase, la scadenza è calcolata con questi valori.
+La pagina **Impostazioni** ha tre sezioni: durata delle fasi, Enti di Validazione e modelli di documento.
+
+### Durata delle fasi
+
+La sezione fissa quanti giorni dura ogni fase. Quando un Operatore apre una fase, la scadenza è calcolata con questi valori.
 
 | Fase | Durata iniziale (giorni) | Giorni del percorso |
 | --- | --- | --- |
@@ -296,6 +324,27 @@ La pagina **Impostazioni** fissa quanti giorni dura ogni fase. Quando un Operato
 3. Premete **Salva la modifica** (o **Salva N modifiche**).
 
 Valori ammessi: da 0 a 365 giorni. La nuova durata vale per le fasi **aperte da quel momento**: le scadenze già fissate restano e si cambiano pratica per pratica con *Modifica scadenza*. Ogni modifica è registrata nell'audit.
+
+### Enti di Validazione
+
+Anagrafica degli enti che validano i Progetti (ad esempio RINA). Gli enti non accedono al portale.
+
+1. Premete **+ Nuovo ente**.
+2. Compilate **Denominazione** (obbligatoria) e, se disponibili, **Identificativo**, **Accreditamento**, **Referente**, **Email**, **Telefono**, **Note**.
+3. Premete **Salva**.
+
+**Modifica** cambia i dati. Un ente non si cancella: togliendo **Attivo** non si può più assegnare a nuove pratiche, ma resta su quelle a cui era assegnato. L'assegnazione alle pratiche si fa dall'intestazione della pratica.
+
+### Modelli di documento
+
+Moduli e fac-simile che i Comuni scaricano dal portale.
+
+1. Premete **+ Nuovo modello**.
+2. Scrivete il **Titolo** (es. «Modulo di adesione») e, se serve, una **Descrizione**.
+3. In **Dove compare** scegliete una fase (il modello comparirà dentro quella fase in ogni pratica, sotto «Modelli da scaricare») oppure **Generale** (comparirà nella pagina «I tuoi documenti» dei Comuni).
+4. Scegliete il **File** (stessi formati e limiti dei documenti) e premete **Carica e pubblica**.
+
+Per aggiornare un modello caricate la nuova versione e premete **Ritira** su quella vecchia: i file non si sovrascrivono. Un modello ritirato si può ripubblicare con **Ripubblica**. Ogni operazione è registrata nell'audit.
 
 ## Calcolo dei crediti CWP
 
@@ -432,9 +481,10 @@ Dalla voce **Documentazione** del menu (e da **Il mio profilo**) l'Amministrator
 | --- | --- | --- |
 | Manuale Utente | tutti i ruoli | Guida per Comuni, enti e soggetti gestori |
 | Manuale Amministratore | solo Amministratori | Questo manuale: funzioni della Fondazione e calcolo dei crediti |
+| Manuale Test | solo Amministratori | Guida sintetica per chi collauda il portale: metodo CWP, ruolo del portale, percorso di prova con i risultati attesi |
 | Registro sviluppo e deploy | solo Amministratori | Architettura, servizi, database, codice, cronologia dei rilasci, decisioni e backlog |
 
-Operatori e Comuni trovano il Manuale Utente nella voce **Manuale** del menu; i Comuni anche in **I tuoi documenti**. Ogni documento riporta in copertina il numero di revisione e la data; a ogni nuova funzione i manuali e il registro vengono aggiornati insieme.
+Operatori e Comuni trovano il Manuale Utente nella voce **Manuale** del menu; i Comuni anche in **I tuoi documenti**. Ogni documento riporta in copertina il numero di revisione e la data; a ogni nuova funzione i tre manuali e il registro vengono aggiornati insieme.
 
 ## Manutenzione ed emergenze
 
@@ -471,8 +521,6 @@ Il back-office torna accessibile con la sola password. Dopo aver rimesso a posto
 
 Questo manuale descrive il portale alla data della revisione indicata in copertina. Sono in sviluppo, e saranno aggiunte qui quando disponibili:
 
-- **Pratiche:** note di fase, anagrafica degli Enti di Validazione, modelli di documento scaricabili dai Comuni, messaggi tra Comune e Fondazione nella pratica, pagamenti visibili al Comune in sola lettura.
-- **Consultazione pubblica:** pagina pubblica con conferma dell'email di chi commenta, errata corrige con eventuale ripartenza dei 30 giorni, allegati alle osservazioni.
 - **Calcolo crediti:** import diretto del tracciato dati Excel/ZIP caricato dal Comune, riassunto automatico delle singole letture, controllo dei dati personali, controlli di coerenza, rapporto di calcolo in PDF, registro dei crediti.
 - **Sicurezza:** registro di sicurezza (accessi e tentativi falliti), verifica in due passaggi attiva, antivirus sui file caricati, piano di protezione dagli attacchi informatici.
 - **Email:** verifica del dominio, per far arrivare le notifiche a tutti gli utenti.

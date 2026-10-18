@@ -61,16 +61,17 @@ Il portale è lo strumento unico con cui Comune e Fondazione seguono la pratica.
 | --- | --- | --- |
 | Accesso | Email e password, password temporanea da cambiare al primo accesso, recupero della password, profilo | tutti |
 | Pratiche | Progetti e Rapporti di Monitoraggio, codice automatico (CWP-AAAA-NNNN), stati attiva / sospesa / annullata / chiusa | Fondazione; il Comune consulta |
-| Fasi | 7 fasi con apertura, scadenza calcolata, chiusura, modifica della scadenza con motivazione | Fondazione |
+| Fasi | 7 fasi con apertura, scadenza calcolata, chiusura, modifica della scadenza con motivazione; note di fase interne o condivise; modelli da scaricare per fase | Fondazione; il Comune consulta |
+| Messaggi | Conversazione tra Comune e Fondazione dentro ogni pratica | tutti |
 | Documenti | Caricamento con versioni (mai sovrascritte), visibilità, controllo di formato e contenuto, impronta di integrità | tutti |
 | Integrazioni | Richiesta della Fondazione → risposta del Comune con documento → chiusura | tutti |
-| Consultazione pubblica | Pubblicazione per 30 giorni, osservazioni, moderazione, risposte del Comune | tutti |
-| Pagamenti | Voci previste e incassi registrati a mano (nessun pagamento online) | Fondazione |
+| Consultazione pubblica | Pagina pubblica per 30 giorni; osservazioni con email confermata e allegato; moderazione; risposte del Comune; errata corrige | tutti, anche senza accesso |
+| Pagamenti | Voci previste e incassi registrati a mano (nessun pagamento online) | Fondazione; il Comune consulta |
 | Notifiche | Campanella nel portale ed email per ogni evento importante; avvisi di scadenza | tutti |
 | Cruscotto | Tutte le pratiche con fase, scadenza e cose da fare, filtri e ricerca | Fondazione |
 | Export | Fascicolo completo della pratica in un file ZIP | tutti |
 | Audit | Registro non modificabile di ogni operazione, con motivazione | Amministratore |
-| Utenti e impostazioni | Creazione utenti, associazione ai Comuni, reimpostazione password, durata delle fasi | Amministratore |
+| Utenti e impostazioni | Creazione utenti, associazione ai Comuni, reimpostazione password, durata delle fasi, Enti di Validazione, modelli di documento | Amministratore |
 | Calcolo crediti | Calcolo secondo la Metodologia, conferma definitiva, nuove versioni | Amministratore |
 | Formato dati | Pagina pubblica con il tracciato Excel standard per i dati dei Comuni | tutti, anche senza accesso |
 | Documentazione | Manuali e registro tecnico da scaricare | tutti (per ruolo) |
@@ -88,6 +89,8 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 1.3 | [A] Utenti → + Nuovo utente, ruolo Cliente, associato a «Comune di Prova» | L'utente compare in elenco; annotate la password temporanea |
 | 1.4 | [C] Accedete con la password temporanea | Il portale chiede subito una nuova password (min. 10 caratteri, lettere e numeri) |
 | 1.5 | [C] Aprite Il mio profilo e il Manuale | Dati dell'account; manuale scaricabile in PDF |
+| 1.6 | [A] Impostazioni → Enti di Validazione: + Nuovo ente «RINA (prova)» | L'ente compare in elenco |
+| 1.7 | [A] Impostazioni → Modelli di documento: un modello per la fase 1 e uno Generale | Pubblicati; il Comune vede il primo nella fase 1 e il secondo in I tuoi documenti |
 
 ### 2. Fase 1 — Adesione
 
@@ -97,7 +100,11 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 2.2 | [O] Caricate di nuovo lo stesso file (stesso nome) | Nasce la v2; la v1 resta consultabile |
 | 2.3 | [O] Caricate un documento togliendo «Visibile al Cliente» | Il Comune non lo vede |
 | 2.4 | [O] Pagamenti → + Voce di pagamento (quota di adesione, importo, scadenza), poi Registra incasso | Voce Pagato con data; operazione in Audit |
-| 2.5 | [O] Chiudi fase 1 | Fase Completata; notifica al Comune |
+| 2.5 | [C] Aprite la pratica: sezione Pagamenti | La voce è visibile in sola lettura, senza pulsanti |
+| 2.6 | [O] Nella fase 1 + Aggiungi nota: una interna e una «Visibile al Comune» | Il Comune vede solo la seconda e riceve la notifica |
+| 2.7 | [C] Messaggi: scrivete una domanda; [O] rispondete | Ognuno riceve la notifica del messaggio dell'altro |
+| 2.8 | [O] Intestazione della pratica: Ente di Validazione → Assegna «RINA (prova)» | Il Comune vede il nome dell'ente |
+| 2.9 | [O] Chiudi fase 1 | Fase Completata; notifica al Comune |
 
 ### 3. Fase 2 — Prima verifica documentale
 
@@ -114,11 +121,15 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 
 | N. | Prova | Risultato atteso |
 | --- | --- | --- |
-| 4.1 | [O] Apri fase 3; nel riquadro Consultazione pubblica scegliete il documento di progetto e Apri consultazione | Consultazione Attiva per 30 giorni; notifica al Comune |
-| 4.2 | [C] Nel riquadro Consultazione pubblica scrivete un'osservazione e premete Invia | Arriva allo staff come Ricevuto, con la notifica «Nuova osservazione da moderare» |
-| 4.3 | [O] Pubblica un'osservazione e Non pubblicare un'altra | Il Comune vede solo quella pubblicata, con autore «Partecipante» |
-| 4.4 | [C] Rispondete all'osservazione pubblicata | Stato Risposto; lo staff vede la risposta |
-| 4.5 | [O] Chiudi consultazione, chiudi la fase 3, apri e chiudi la fase 4 | Consultazione Chiusa; fasi Completate |
+| 4.1 | [O] Apri fase 3; nel riquadro Consultazione pubblica scegliete il documento di progetto e Apri consultazione | Consultazione Attiva per 30 giorni; notifica al Comune; link alla pagina pubblica |
+| 4.2 | Senza accesso, aprite Consultazioni pubbliche (link nella pagina di accesso) e la consultazione | Si leggono documento e osservazioni pubblicate |
+| 4.3 | Inviate un'osservazione con nome, email (quella del titolare del servizio email, vedi limiti) e un PDF allegato | Messaggio «Controlla la tua email»; arriva l'email di conferma |
+| 4.4 | Premete il pulsante dell'email; riprovate lo stesso collegamento | Prima volta: «osservazione ricevuta», notifica allo staff; seconda volta: collegamento già utilizzato |
+| 4.5 | Provate a inviare 4 osservazioni in un'ora con lo stesso indirizzo; un allegato .exe | La quarta e l'allegato sono rifiutati con un messaggio chiaro |
+| 4.6 | [O] Pubblica un'osservazione e Non pubblicare un'altra | Lo staff vede nome, email e allegato; il Comune e la pagina pubblica vedono solo quella pubblicata, firmata «Partecipante» |
+| 4.7 | [O] + Pubblica errata corrige spuntando «Fai ripartire i 30 giorni», prima senza e poi con motivazione | Senza motivazione: errore; con motivazione: nuova chiusura a 30 giorni, visibile anche sulla pagina pubblica; notifica al Comune |
+| 4.8 | [C] Rispondete all'osservazione pubblicata | Stato Risposto; la risposta compare anche sulla pagina pubblica |
+| 4.9 | [O] Chiudi consultazione, chiudi la fase 3, apri e chiudi la fase 4 | Consultazione Chiusa; fasi Completate |
 
 ### 5. Fasi 5, 6 e 7 — Validazione e chiusura
 
@@ -134,7 +145,7 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | N. | Prova | Risultato atteso |
 | --- | --- | --- |
 | 6.1 | [O] Sospendi la pratica con motivazione | Notifica al Comune con la motivazione |
-| 6.2 | [C] Provate a caricare un documento nella pratica sospesa | Caricamento rifiutato |
+| 6.2 | [C] Aprite la pratica sospesa | Avviso «La pratica è sospesa…»; nessun pulsante + Carica; i Messaggi funzionano |
 | 6.3 | [O] Riattiva la pratica; nella sezione Rapporti di Monitoraggio premete + Rapporto anno 1 | Nasce la pratica CWP-…-RM1 con le sue 7 fasi |
 
 ### 7. Calcolo dei crediti (solo Amministratore)
@@ -169,9 +180,9 @@ Un esempio di dati di prova si costruisce compilando il tracciato con poche uten
 
 **Limiti noti oggi (non sono errori da segnalare).**
 
-- Le email arrivano solo all'indirizzo del titolare del servizio email finché il dominio della Fondazione non è verificato.
+- Le email (notifiche e conferme della consultazione) arrivano solo all'indirizzo del titolare del servizio email finché il dominio della Fondazione non è verificato.
 - La verifica in due passaggi per lo staff è pronta ma spenta.
 - Il tracciato dati non si importa ancora direttamente nel calcolo: i fogli si importano come CSV, passo per passo.
 - Non c'è ancora l'antivirus sui file caricati.
 
-**In sviluppo** (saranno aggiunti al percorso di prova quando disponibili): note di fase, anagrafica degli Enti di Validazione, modelli di documento, messaggi tra Comune e Fondazione, pagamenti visibili al Comune, pagina pubblica della consultazione con conferma dell'email di chi commenta, errata corrige, allegati alle osservazioni; per i crediti import diretto del tracciato, controlli di coerenza, rapporto PDF e registro dei crediti.
+**In sviluppo** (saranno aggiunti al percorso di prova quando disponibili): per i crediti import diretto del tracciato, aggregazione delle singole letture, controllo dei dati personali, controlli di coerenza, rapporto PDF e registro dei crediti; registro di sicurezza; antivirus.

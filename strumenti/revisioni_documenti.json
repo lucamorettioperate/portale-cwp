@@ -35,6 +35,12 @@
       "data": "18/10/2026",
       "descrizione": "Manuale scaricabile anche dalla pagina «I tuoi documenti»; per gli utenti il manuale è disponibile solo in PDF.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.6",
+      "data": "18/10/2026",
+      "descrizione": "Messaggi con la Fondazione (nuovo capitolo), note della Fondazione e modelli nelle fasi, Ente di Validazione, avviso sulle pratiche non attive, pagamenti visibili, consultazione sulla pagina pubblica con conferma dell'email ed errata corrige, nuove notifiche.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -43,6 +49,12 @@
       "data": "18/10/2026",
       "descrizione": "Prima emissione in Word e PDF: introduzione e ruoli, accesso e profilo, cruscotto, pratiche e fasi, documenti, integrazioni, consultazione, pagamenti, fascicolo, notifiche, utenti, audit, impostazioni, calcolo dei crediti CWP (concetti, dati, sette passi, risultati, conferma, scelte da confermare), documentazione, manutenzione.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.1",
+      "data": "18/10/2026",
+      "descrizione": "Note di fase, Ente di Validazione della pratica, consultazione sulla pagina pubblica con conferma dell'email, moderazione con autori e allegati, errata corrige; nuovo capitolo Messaggi con il Comune; pagamenti visibili al Comune; Impostazioni: Enti di Validazione e Modelli di documento; notifiche aggiornate.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -50,6 +62,12 @@
       "rev": "1.0",
       "data": "18/10/2026",
       "descrizione": "Prima emissione: il metodo CWP in breve, il ruolo del portale, percorso di prova in 8 blocchi (preparazione, fasi 1-7, stato della pratica e Rapporto di Monitoraggio, calcolo dei crediti, prove trasversali), limiti noti.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.1",
+      "data": "18/10/2026",
+      "descrizione": "Prove per Enti di Validazione, modelli, note di fase, messaggi, pagamenti visibili al Comune, pratica sospesa, consultazione pubblica con conferma dell'email, limiti di invio ed errata corrige.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -82,6 +100,12 @@
       "rev": "1.4",
       "data": "18/10/2026",
       "descrizione": "Manuale Test; regole di lavoro (quattro documenti aggiornati insieme, codice commentato); backlog 31 e 32.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.5",
+      "data": "18/10/2026",
+      "descrizione": "Capitolo pratiche: script 17, funzione consultazione-pubblica, note di fase, Enti di Validazione, modelli, messaggi, pagamenti al Comune, consultazione pubblica con email confermata ed errata corrige; decisioni A, B, D.",
       "autore": "Fondazione Operate"
     }
   ]

@@ -16,6 +16,8 @@ Nel portale potete:
 - caricare i documenti richiesti e scaricare quelli messi a disposizione dalla Fondazione;
 - rispondere alle richieste di integrazione;
 - rispondere ai commenti ricevuti durante la consultazione pubblica;
+- scrivere alla Fondazione nella sezione Messaggi di ogni pratica;
+- vedere le voci di pagamento e scaricare i modelli di documento;
 - ricevere notifiche nel portale e per email;
 - scaricare il tracciato per inviare i dati utili al calcolo dei crediti.
 
@@ -59,7 +61,7 @@ Il collegamento vale una sola volta e per un tempo limitato; se è scaduto compa
 
 ## La pagina Le mie pratiche
 
-La pagina elenca i Progetti della vostra organizzazione (o delle organizzazioni che seguite), dal più recente. I Rapporti di Monitoraggio annuali si trovano dentro ciascun Progetto (capitolo 8).
+La pagina elenca i Progetti della vostra organizzazione (o delle organizzazioni che seguite), dal più recente. I Rapporti di Monitoraggio annuali si trovano dentro ciascun Progetto (capitolo 9).
 
 Ogni riquadro mostra il titolo del progetto, lo stato e il codice della pratica con il nome dell'ente.
 
@@ -99,7 +101,16 @@ Ogni fase ha uno stato:
 
 La fase aperta ha il bordo verde e il conto alla rovescia: «N gg alla scadenza» (in arancione negli ultimi 3 giorni), «scade oggi» oppure «scaduta da N gg» in rosso. Sotto il nome trovate, quando presenti, il responsabile, la data di apertura, la scadenza e la data di chiusura.
 
-Dentro ogni fase ci sono le eventuali **Richieste di integrazione** e i **Documenti della fase**.
+Dentro ogni fase trovate, quando presenti:
+
+- le **Richieste di integrazione** (capitolo 6);
+- le **Note della Fondazione**: indicazioni che la Fondazione vi lascia su quella fase, con data e ora;
+- i **Modelli da scaricare**: moduli o fac-simile da compilare per quella fase;
+- i **Documenti della fase**.
+
+**Ente di Validazione.** Quando la Fondazione assegna l'Ente di Validazione al vostro Progetto, il suo nome compare nell'intestazione della pratica.
+
+**Pratica sospesa, annullata o chiusa.** In alto compare un avviso: finché la pratica non torna attiva non si caricano documenti (il pulsante **+ Carica** non c'è) e non si risponde alle integrazioni. Potete sempre consultare tutto e scrivere alla Fondazione nella sezione **Messaggi**.
 
 ## Caricare documenti
 
@@ -143,7 +154,11 @@ Quando la fase è chiusa compare la scritta «La fase è chiusa: non è più pos
 
 Nella fase 3 la Fondazione apre la consultazione pubblica sul vostro Progetto, di norma per 30 giorni: ricevete la notifica «Aperta la consultazione pubblica». Il riquadro **Consultazione pubblica** si trova nel dettaglio del Progetto e mostra il periodo e i giorni rimanenti.
 
-**Osservazioni.** I partecipanti inviano osservazioni anonime (nel portale compaiono come *Partecipante*). La Fondazione le modera: vedete solo quelle *Pubblicate* o già *Risposte*.
+**Dove si partecipa.** La consultazione si svolge sulla pagina pubblica del portale **Consultazioni pubbliche** ([portale-cwp.vercel.app/consultazioni](https://portale-cwp.vercel.app/consultazioni)), raggiungibile senza credenziali anche dal link nella pagina di accesso. Chiunque può leggere il documento e inviare un'osservazione: per farla arrivare deve confermare il proprio indirizzo email con il collegamento che riceve. Il link alla pagina pubblica del vostro Progetto compare nel riquadro **Consultazione pubblica**: potete diffonderlo ai cittadini.
+
+**Osservazioni.** La Fondazione modera le osservazioni: voi vedete solo quelle *Pubblicate* o già *Risposte*, firmate *Partecipante* oppure con il nome, se l'autore ha scelto di pubblicarlo. Se un'osservazione ha un allegato compare il collegamento **Allegato**.
+
+**Errata corrige.** Se il documento in consultazione contiene un errore, la Fondazione pubblica un'**errata corrige** (con l'eventuale documento corretto) e ricevete la notifica. In alcuni casi la Fondazione può far ripartire i 30 giorni: la nuova data di chiusura compare nell'errata corrige.
 
 **Rispondere a un'osservazione:**
 
@@ -153,7 +168,16 @@ Nella fase 3 la Fondazione apre la consultazione pubblica sul vostro Progetto, d
 
 Per correggere una risposta premete **Modifica risposta**. Si può rispondere anche dopo la chiusura della consultazione, durante la fase 4.
 
-Durante la consultazione anche voi potete inviare un'osservazione con il campo «Scrivi un'osservazione…» e il pulsante **Invia**: sarà visibile dopo la moderazione.
+Se volete inviare anche voi un'osservazione, usate la pagina pubblica come tutti i partecipanti.
+
+## Messaggi con la Fondazione
+
+In ogni pratica, sotto le fasi, la sezione **Messaggi** è una conversazione tra il vostro ente e Fondazione Operate su quella pratica.
+
+1. Scrivete il testo nel campo «Scrivi un messaggio…».
+2. Premete **Invia**.
+
+I vostri messaggi compaiono a destra; quelli della Fondazione, firmati «Fondazione Operate», a sinistra, con data e ora. A ogni messaggio l'altra parte riceve una notifica nel portale e un'email. I messaggi non si possono modificare né cancellare. Sulle pratiche annullate non si può più scrivere.
 
 ## Rapporti di monitoraggio e pagamenti
 
@@ -166,7 +190,7 @@ Dopo la conclusione del Progetto, ogni anno si presenta un **Rapporto di Monitor
 
 Il codice del Rapporto è quello del Progetto con l'anno, ad esempio `CWP-2026-0001-RM1`.
 
-**Pagamenti.** Le voci di pagamento sono gestite dalla Fondazione e oggi non sono visibili nel portale per i Comuni. Fatture e documenti amministrativi, quando caricati dalla Fondazione, si trovano in **I tuoi documenti**.
+**Pagamenti.** In ogni pratica la sezione **Pagamenti** mostra le voci previste dalla Fondazione (ad esempio la quota di adesione) con importo, scadenza e stato: *Da pagare*, *Scaduto* o *Pagato*, con la data in cui la Fondazione ha registrato il pagamento. In alto trovate il riepilogo *Totale · pagato · da pagare*. La sezione è in sola lettura: i pagamenti si effettuano fuori dal portale, secondo le indicazioni della Fondazione, che poi li registra. Quando la Fondazione aggiunge una voce ricevete una notifica. Fatture e documenti amministrativi, quando caricati dalla Fondazione, si trovano in **I tuoi documenti**.
 
 ## I tuoi documenti
 
@@ -175,6 +199,8 @@ La pagina **I tuoi documenti** (menu in alto) raccoglie in un solo posto i docum
 - I documenti sono raggruppati per tipologia: Contratto, Allegato al contratto, Documentazione amministrativa, Documento di progetto, Rapporto dell'Ente di Validazione, Integrazione, Altro, Senza tipologia (dove finiscono i file caricati da voi).
 - Per ogni documento vedete nome, versione, codice della pratica, ente e data, e il pulsante **Scarica**.
 - Di norma vedete solo la versione corrente. Per vedere anche le precedenti spuntate **Mostra anche le versioni precedenti**.
+
+**Modelli da scaricare.** Se la Fondazione ha pubblicato modelli generali (moduli, fac-simile), li trovate in questa pagina con il pulsante **Scarica**. I modelli che riguardano una fase precisa compaiono invece dentro quella fase, nella pratica.
 
 In fondo alla pagina, nel riquadro **Manuale del portale**, aprite e scaricate questo manuale in PDF.
 
@@ -199,8 +225,12 @@ Il portale vi avvisa degli eventi delle vostre pratiche con la **campanella** in
 | Scadenza vicina: «fase» (data) | Mancano 3 giorni o meno alla scadenza di una fase |
 | Fase scaduta: «fase» | La scadenza è passata |
 | Pratica sospesa, riattivata, annullata o chiusa | Cambia lo stato della pratica, con la motivazione |
+| Nuovo messaggio dalla Fondazione | La Fondazione vi scrive nella sezione Messaggi |
+| Nuova nota della Fondazione | La Fondazione lascia una nota su una fase |
+| Nuova voce di pagamento | La Fondazione registra una voce di pagamento |
+| Errata corrige pubblicata in consultazione | La Fondazione corregge il documento in consultazione |
 
-Le email partono da un indirizzo automatico: non rispondete all'email, usate i canali indicati dalla Fondazione.
+Le email partono da un indirizzo automatico: non rispondete all'email, scrivete alla Fondazione nella sezione **Messaggi** della pratica.
 
 ## Dati per il calcolo dei crediti
 

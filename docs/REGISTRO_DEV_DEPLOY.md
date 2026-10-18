@@ -142,6 +142,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `13_durata_fasi.sql` | Durata delle fasi in tabella, modificabile dall'Admin con motivazione | 18/10/2026 |
 | `14_controlli_file.sql` | Limite 50 MB, formati ammessi, controllo tipo/estensione/cartella; ZIP ammesso | 18/10/2026 (riesecuzione per ZIP lo stesso giorno) |
 | `15_password.sql` | Cambio obbligatorio dopo password temporanea (`password_temporanea`), funzione `password_cambiata`, audit dei cambi password | 18/10/2026 |
+| `17_pratiche.sql` | Pagamenti leggibili dal Comune; note di fase (`nota_fase`); anagrafica Enti di Validazione (solo Admin) e `staff_imposta_ente_validazione`; modelli di documento (`modello_documento`, archivio `modelli`); messaggi (`messaggio`); consultazione pubblica: dati dell'autore sul commento, `commento_in_attesa`, archivio `allegati-consultazione`, errata corrige (`consultazione_errata`, `staff_errata_corrige`), `staff_autori_commenti`; inserimento diretto dei commenti dal portale tolto; audit e notifiche per le nuove tabelle | 18/10/2026 |
 | `16_recupero_password.sql` | Tabella `recupero_password_richiesta` (ultima richiesta di recupero per indirizzo, nessuna policy: la usa solo la funzione `recupera-password`) | 18/10/2026 |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
@@ -151,7 +152,13 @@ script successivi.
 ente_validazione, profilo, pratica, fase, durata_fase, documento,
 richiesta_integrazione, consultazione, commento, pagamento, notifica,
 audit_event, impostazione, calcolo_crediti, calcolo_conferimento,
-calcolo_riuso, recupero_password_richiesta.
+calcolo_riuso, recupero_password_richiesta, nota_fase, messaggio,
+modello_documento, consultazione_errata, commento_in_attesa.
+
+**Archivi (Storage)**: `documenti` (file delle pratiche, 50 MB),
+`modelli` (modelli di documento, lettura per chi ha l'accesso),
+`allegati-consultazione` (allegati alle osservazioni, 10 MB, scritto solo
+dalla funzione `consultazione-pubblica`).
 
 **Funzioni del database usate dal portale** (selezione):
 `staff_apri_fase`, `staff_chiudi_fase`, `staff_modifica_scadenza`,
@@ -185,6 +192,7 @@ autenticazione, dal SQL Editor:
 |---|---|---|---|
 | `crea-utente` | L'Amministratore crea un utente con password temporanea e lo associa a organizzazioni | Verifica che il chiamante sia Admin (`sono_admin`) | Dashboard Supabase (editor web); ripubblicata 17/10 |
 | `reimposta-password` | L'Amministratore assegna una password temporanea a un Cliente o Operatore; il flag obbliga al cambio al primo accesso; audit | Verifica `sono_admin`; esclusi amministratori e sé stessi | Dashboard Supabase (editor web), 18/10; Verify JWT attivo |
+| `consultazione-pubblica` | Pagine pubbliche della consultazione: elenco, dettaglio (documento, errata corrige, osservazioni ammesse), invio di un'osservazione con allegato facoltativo ed email di conferma, conferma dell'email (l'osservazione diventa *Ricevuto*) | Verify JWT **disattivato** di proposito (pubblico senza account): nessun dato personale restituito, 3 invii/ora per indirizzo e 100/ora per consultazione, campo trappola anti-robot, allegati max 10 MB con controllo del contenuto, token monouso 48 ore salvato come SHA-256 | Dashboard Supabase (editor web), 18/10 |
 | `recupera-password` | «Password dimenticata?»: genera il collegamento di recupero (`auth.admin.generateLink`) e spedisce con Resend l'email in italiano «Portale Carbon WastePrint (CWP) — Richiesta di reimpostazione della password», al posto del modello email di Supabase | Verify JWT **disattivato** di proposito (la chiama chi non ha fatto l'accesso): risponde sempre `ok` senza rivelare se l'indirizzo esiste; niente email agli utenti disattivati; massimo una richiesta ogni 2 minuti per indirizzo; il collegamento porta solo al portale | Dashboard Supabase (editor web), 18/10 |
 | `invia-email-notifica` | Spedisce per email una notifica interna (pulsante "Apri nel portale") tramite Resend | Verify JWT **disattivato** di proposito: usa solo l'id ricevuto e rilegge tutto dal database; ogni notifica parte una volta sola | Dashboard Supabase; prima pubblicazione 17/10, aggiornata 17/10 (pulsante per tema scuro) |
 
@@ -207,21 +215,24 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 | `/reimposta-password` | Nuova password dal link dell'email di recupero | **pubblica** (sessione di recupero) |
 | `/profilo` | Il mio profilo: account, cambio password, manuali e documentazione per ruolo | tutti |
 | `/password` | Cambio password volontario | tutti |
+| `/consultazioni`, `/consultazioni/:id`, `/consultazioni/conferma` | Consultazioni pubbliche: elenco, documento e osservazioni, invio con conferma dell'email | **pubbliche**, senza login |
 | `/formato-dati` | Formato dei dati per il calcolo crediti, download del tracciato Excel | **pubblica**, senza login |
 | `/` | Cruscotto (staff) oppure Le mie pratiche (cliente) | tutti |
 | `/pratiche` | Back-office: elenco e dettaglio pratiche (`?id=` apre una pratica) | Operatore, Admin |
-| `/documenti` | I tuoi documenti | Cliente |
+| `/documenti` | I tuoi documenti, modelli generali, manuale | Cliente |
 | `/utenti` | Gestione utenti | Admin |
 | `/audit` | Audit trail | Admin |
 | `/crediti`, `/crediti/:id` | Calcolo crediti CWP | Admin |
-| `/impostazioni` | Durata delle fasi | Admin |
+| `/impostazioni` | Durata delle fasi, Enti di Validazione, Modelli di documento | Admin |
 | `/documentazione` | Documentazione: Manuale Utente (PDF; Word solo Admin), Manuale Amministratore e Registro (solo Admin) | tutti (contenuto per ruolo) |
 
 **Struttura del codice**
-- `src/pages/` — pagine elencate sopra (+ `VerificaMfa.jsx`).
+- `src/pages/` — pagine elencate sopra (+ `VerificaMfa.jsx`;
+  `ConsultazioniPubbliche.jsx` contiene le tre pagine pubbliche).
 - `src/components/` — `DettaglioPratica`, `Documenti`, `Integrazioni`,
   `Consultazione`, `Rapporti`, `Pagamenti`, `Notifiche`, `NuovoProgetto`,
-  `Header`, `crediti/TabellaDati`; (`Timeline`, `AzioniRuolo`, `ProjectCard`,
+  `Header`, `Messaggi`, `NoteFase`, `stili.js` (stili condivisi),
+  `impostazioni/{EntiValidazione,ModelliDocumento}`, `crediti/TabellaDati`; (`Timeline`, `AzioniRuolo`, `ProjectCard`,
   `Stat` sono resti del prototipo, non più usati).
 - `src/lib/` — `dati.js` (accesso ai dati), `AuthContext.jsx` (sessione,
   ruolo, MFA), `file.js` (controlli sui file), `fascicolo.js` (export ZIP),
@@ -240,17 +251,17 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 |---|---|---|
 | Accesso e ruoli (§3, §13) | Fatto | Email+password, tre ruoli, utenti multi-organizzazione, disattivazione; password temporanea da cambiare al primo accesso, cambio e recupero password, reimpostazione dall'Admin; MFA pronta ma spenta |
 | Pratiche (§2) | Fatto | Progetti e Rapporti di Monitoraggio annuali, codice automatico, stati attiva/sospesa/annullata/chiusa con motivazione |
-| Fasi (§4) | Fatto (manca note di fase) | 7 fasi, apertura con scadenza automatica, chiusura, modifica scadenza; durata modificabile dall'Admin |
+| Fasi (§4) | Fatto | 7 fasi, apertura con scadenza automatica, chiusura, modifica scadenza; durata modificabile dall'Admin; note di fase interne o condivise |
 | Documenti (§5) | Fatto (manca antivirus) | Versioni mai sovrascritte, hash SHA-256, visibilità Cliente/Fondazione/Pubblico, per fase o generali; limite 50 MB, formati ammessi, controllo contenuto |
 | Integrazioni (§4) | Fatto | Richiesta → risposta del Cliente con documento → chiusura; fase "in attesa di integrazione" |
-| Consultazione pubblica (§6) | Parziale | 30 giorni, commenti anonimi moderati, risposte; mancano errata corrige, allegati ai commenti, identificazione commentatori esterni |
-| Pagamenti (§7) | Fatto | Voci, incassi, operatore registrato |
+| Consultazione pubblica (§6) | Fatto | Pagina pubblica, osservazioni con email confermata e allegato, moderazione, firma «Partecipante» o nome a scelta dell'autore, risposte del Comune, errata corrige con ripartenza facoltativa dei 30 giorni |
+| Pagamenti (§7) | Fatto | Voci, incassi, operatore registrato; visibili al Comune in sola lettura |
 | Back-office (§8) | Fatto | Cruscotto con scadenze/scaduti, ricerca, azioni con motivazione |
-| Notifiche (§9) | Fatto | Interne + email (Resend); manca verifica dominio |
+| Notifiche (§9) | Fatto | Interne + email (Resend); messaggi Comune-Fondazione nella pratica; manca verifica dominio |
 | Audit (§10) | Fatto | Scritto dal database, immutabile, pagina di consultazione |
 | Export fascicolo (§11) | Fatto | ZIP con documenti e riepiloghi |
 | Calcolo crediti (Metodologia v1.2) | Parziale | Motore formule 1-32, Tabelle 3-5, 8, 15, 16; sei passi di acquisizione; calcoli confermati immutabili; tracciato dati standard pubblicato; mancano import diretto del tracciato, aggregazione letture, rapporto PDF, registro crediti |
-| Amministrazione | Parziale | Utenti, audit, impostazioni (durata fasi); mancano template documenti e schermata Enti di Validazione |
+| Amministrazione | Fatto | Utenti, audit, impostazioni: durata fasi, Enti di Validazione, modelli di documento |
 | Sicurezza (§13) | Parziale | RLS, audit, controlli file; mancano registro di sicurezza, antivirus, ambiente di prova |
 
 ---
@@ -303,6 +314,22 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Capitolo pratiche (backlog 10-13, 20, 24-27)** — script
+  `17_pratiche.sql` (provato sul banco locale: permessi di Comune, Operatore
+  e Admin, autore dei messaggi forzato dal database, errata corrige con e
+  senza motivazione, notifiche e voci di audit; eseguito in produzione e
+  verificato: 5 tabelle, 2 archivi, 3 funzioni, 10 trigger di notifica);
+  Edge Function `consultazione-pubblica` (Verify JWT disattivato; provati
+  elenco, dettaglio e invio con email di conferma a luca.moretti@operate.it).
+  Portale: note di fase (`NoteFase`), messaggi (`Messaggi`), Ente di
+  Validazione nell'intestazione della pratica, modelli per fase e generali,
+  pagamenti in sola lettura per il Comune, avviso e niente «+ Carica» sulle
+  pratiche non attive, consultazione rifatta (date gg/mm/aaaa, autori e
+  allegati per lo staff, errata corrige, link alla pagina pubblica; tolto
+  l'invio di osservazioni dal portale), pagine pubbliche `/consultazioni`
+  con link dalla pagina di accesso, Impostazioni con Enti di Validazione e
+  Modelli di documento. Decisioni A, B, D e pagamenti registrate. Commit
+  `502e5ce`.
 - **Manuale Test (test-user)** — richiesta di Luca: guida sintetica per
   chi collauda il portale senza conoscere il Programma (metodo CWP in breve,
   ruolo del portale, percorso di prova in 8 blocchi dalla fase 1 al calcolo
@@ -516,11 +543,15 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   impedisce), nessuna pausa del database per inattività, backup automatici
   giornalieri di Supabase, limite per file caricato aumentabile oltre 50 MB.
 
+- 18/10 — **A**: una nuova versione di un documento durante una fase **non**
+  fa ripartire il termine (resta la modifica manuale della scadenza).
+- 18/10 — **B**: con un'errata corrige in consultazione decide lo staff, caso
+  per caso e con motivazione, se far ripartire i 30 giorni.
+- 18/10 — **D**: chi commenta dall'esterno conferma la propria email; nome ed
+  email li vede solo lo staff; il nome è pubblicato solo se l'autore lo sceglie.
+- 18/10 — Pagamenti visibili al Comune in sola lettura.
+
 **Aperte**
-- A. Una nuova versione di documento durante una fase fa ripartire il
-  termine?
-- B. Errata corrige in consultazione: i 30 giorni ripartono?
-- D. Identificazione dei commentatori esterni.
 - Scelte interpretative del calcolo crediti (soprattutto il segno del riuso,
   formule 26 e 29).
 - Antivirus: ClamAV su server proprio o servizio a pagamento.
@@ -546,10 +577,10 @@ completato (va barrato qui e annotato in Cronologia).
 
 **Pratiche**
 
-- **10.** Note di fase.
-- **11.** Schermata Enti di Validazione.
-- **12.** Template di documenti scaricabili dai Comuni.
-- **13.** Consultazione: errata corrige, allegati ai commenti, identificazione dei commentatori esterni.
+- ~~**10.** Note di fase~~ — fatto il 18/10 (script 17).
+- ~~**11.** Schermata Enti di Validazione~~ — fatto il 18/10 (Impostazioni).
+- ~~**12.** Template di documenti scaricabili dai Comuni~~ — fatto il 18/10 (Impostazioni → Modelli).
+- ~~**13.** Consultazione: errata corrige, allegati ai commenti, identificazione dei commentatori esterni~~ — fatto il 18/10 (pagina pubblica, funzione `consultazione-pubblica`).
 
 **Sicurezza**
 
@@ -562,16 +593,16 @@ completato (va barrato qui e annotato in Cronologia).
 **Chiusura**
 
 - **19.** Collaudo completo e pulizia dei dati di test (comprese le notifiche "Email di prova").
-- **20.** Decisioni A e B della Fondazione.
+- ~~**20.** Decisioni A e B della Fondazione~~ — prese il 18/10 (capitolo Decisioni).
 
 **Rifiniture emerse dalla stesura del Manuale Utente (18/10)**
 
 - ~~**22.** Recupero e cambio password per gli utenti~~ — fatto il 18/10 (resta la configurazione di Site URL, Redirect URLs e SMTP in Supabase per l'email di recupero).
 - ~~**23.** Dopo l'accesso da un link email, riportare l'utente alla pratica del link~~ — fatto il 18/10.
-- **24.** Pratica non attiva: spiegare perché i pulsanti di risposta alle integrazioni non compaiono e nascondere "+ Carica".
-- **25.** Date della consultazione in formato gg/mm/aaaa (oggi aaaa-mm-gg).
-- **26.** Canale di messaggi tra Comune e Fondazione nella pratica (oggi solo la nota delle integrazioni).
-- **27.** Valutare se mostrare ai Comuni le voci di pagamento (oggi solo staff).
+- ~~**24.** Pratica non attiva: spiegare perché i pulsanti di risposta alle integrazioni non compaiono e nascondere "+ Carica"~~ — fatto il 18/10.
+- ~~**25.** Date della consultazione in formato gg/mm/aaaa~~ — fatto il 18/10.
+- ~~**26.** Canale di messaggi tra Comune e Fondazione nella pratica~~ — fatto il 18/10 (sezione Messaggi).
+- ~~**27.** Mostrare ai Comuni le voci di pagamento~~ — fatto il 18/10 (sola lettura).
 - **28.** Riservatezza della documentazione: il registro è nel repository pubblico e i suoi file Word/PDF sono raggiungibili da chi conosce l'indirizzo (il portale li mostra solo agli Amministratori). Per renderli davvero riservati: archivio privato su Supabase con accesso solo Admin, o repository privato (oggi incompatibile con il piano gratuito di Vercel).
 
 **Infrastruttura**
