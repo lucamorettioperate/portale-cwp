@@ -274,6 +274,9 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Registro sviluppo e deploy** (questo documento) e **manuali** Utente e
+  Amministratore (Claude Doc) creati ripercorrendo chat, repository e
+  artefatti; README aggiornato. Commit `bfa9cb6`.
 - **Tracciato dati standard CWP v1.0** — file Excel
   `public/modelli/Tracciato_dati_CWP_v1.xlsx` (istruzioni, anagrafica,
   rifiuti per EER, classi della delibera, Banca Dati Utenze come totali o
@@ -362,8 +365,8 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 | Portale CWP — Documento di progetto | Claude Doc: https://claude.ai/artifact/L9duSXhNfKejbz6RKXDQQv | Obiettivi, attori, fasi, architettura, piano di lavoro (17/10) |
 | Analisi requisiti vs portale | Progetto claude.ai: `claude/analisi-requisiti-vs-portale.md` | Stato per modulo, decisioni prese e aperte |
 | Registro sviluppo e deploy | `docs/REGISTRO_DEV_DEPLOY.md` + Progetto: `claude/registro-dev-deploy.md` | Questo documento |
-| Manuale Utente (Comuni) | Claude Doc (link in §10 appena creato) | Uso del portale per i Clienti |
-| Manuale Amministratore | Claude Doc (link in §10 appena creato) | Uso del back-office, utenti, impostazioni, calcolo crediti |
+| Manuale Utente (Comuni) | Claude Doc: https://claude.ai/code/artifact/e2dd2bd5-8042-4744-8d5a-54d34dc50153 (creato 18/10) | Uso del portale per i Clienti, passo per passo |
+| Manuale Amministratore | Claude Doc: https://claude.ai/code/artifact/cc36ab09-61e6-4dad-aaf0-4082ea0a46da (creato 18/10) | Back-office, utenti, impostazioni, calcolo crediti, manutenzione |
 | Tracciato dati CWP v1.0 | `public/modelli/Tracciato_dati_CWP_v1.xlsx`, online su `/formato-dati` | Modello unico dei dati per il calcolo crediti |
 | Note sul calcolo crediti | `docs/crediti-cwp.md` | Corrispondenza con le formule, scelte interpretative |
 | Notifiche email | `docs/email-notifiche.md` | Funzionamento e configurazione Resend |
@@ -424,6 +427,16 @@ commentatori esterni).
 
 **Chiusura**: 19. collaudo completo e pulizia dati di test (comprese le
 notifiche "Email di prova") · 20. decisioni A e B.
+
+**Da rifinire**: 21. **Agente AI (Claude) integrato nel portale** —
+richiesto da Luca il 18/10. Ambito da definire; usi possibili: assistente
+per gli utenti dei Comuni (come compilare, cosa manca nella pratica),
+supporto agli Operatori (controllo completezza dei documenti, bozze di
+richieste di integrazione e di risposte ai commenti), verifica del tracciato
+dati prima dell'import, spiegazione dei risultati del calcolo crediti.
+Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che
+faccia da tramite, regole su quali dati l'agente può leggere (privacy) e
+registrazione delle sue azioni nell'audit.
 
 ---
 
