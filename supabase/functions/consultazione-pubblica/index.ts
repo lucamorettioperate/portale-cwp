@@ -1,5 +1,7 @@
 // =====================================================================
 //  Edge Function: consultazione-pubblica
+//  (dal 18/10/2026 serve anche la pagina pubblica /programma: azioni
+//  "programma" e "file", script 24)
 //  Scopo: servizio della pagina pubblica delle consultazioni (requisiti §6,
 //  decisioni B e D del 18/10/2026). Chiunque, senza account, può:
 //   - "elenco":    vedere le consultazioni aperte;
@@ -86,6 +88,8 @@ Deno.serve(async (req) => {
       case "dettaglio": return json(await dettaglio(admin, String(body.id || "")));
       case "invia": return json(await invia(admin, body));
       case "conferma": return json(await conferma(admin, String(body.token || "")));
+      case "programma": return json(await programma(admin));
+      case "file": return json(await filePubblico(admin, String(body.tipo || ""), String(body.id || "")));
       default: return json({ errore: "Richiesta non valida" }, 400);
     }
   } catch (e) {
@@ -144,6 +148,32 @@ async function elenco(admin: any) {
     .eq("attiva", true).order("data_chiusura", { ascending: true });
   if (error) throw error;
   return { consultazioni: (data || []).filter((c: any) => c.pratica && aperta(c)).map(pubblica) };
+}
+
+// Azione "programma" (dal 18/10/2026, Guida al Programma 3.7): i dati
+// pubblici della piattaforma online (informazioni del Programma, enti di
+// validazione e verifica, registri, metodologie, documenti e modulistica,
+// Progetti con stato, documenti pubblici, Rapporti e crediti emessi). Li
+// prepara la funzione SQL pubblico_programma (script 24), eseguibile solo
+// con la chiave di servizio: niente dati personali né percorsi dei file.
+async function programma(admin: any) {
+  const { data, error } = await admin.rpc("pubblico_programma");
+  if (error) throw error;
+  return { programma: data };
+}
+
+// Azione "file": collegamento temporaneo (1 ora) a un documento pubblico
+// di una pratica (tipo "documento") o a un modello pubblico (tipo
+// "modello"). Il percorso lo dà pubblico_percorso_file (script 24) solo se
+// il file è pubblico; contratti e versioni private non lo sono mai.
+async function filePubblico(admin: any, tipo: string, id: string) {
+  if (!UUID.test(id) || !["documento", "modello"].includes(tipo)) return { errore: "File non trovato" };
+  const { data: path, error } = await admin.rpc("pubblico_percorso_file", { p_tipo: tipo, p_id: id });
+  if (error) throw error;
+  if (!path) return { errore: "File non trovato o non pubblico" };
+  const archivio = tipo === "modello" ? "modelli" : "documenti";
+  const { data } = await admin.storage.from(archivio).createSignedUrl(path, 3600);
+  return data?.signedUrl ? { url: data.signedUrl } : { errore: "File non disponibile" };
 }
 
 // URL firmato (valido 1 ora) per scaricare un documento pubblicato

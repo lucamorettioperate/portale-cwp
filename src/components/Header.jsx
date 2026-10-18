@@ -37,7 +37,9 @@ function vociMenu(ruolo) {
       ["/utenti", "Utenti"],
       ["/audit", "Audit"],
       ["/anagrafiche", "Anagrafiche"],
-      ["/crediti", "Crediti CWP"],
+      ["/crediti", "Calcolo crediti"],
+      ["/crediti-emessi", "Crediti emessi"],
+      ["/reclami", "Reclami"],
       ["/impostazioni", "Impostazioni"],
       ["/documentazione", "Documentazione"],
     ];
@@ -47,6 +49,8 @@ function vociMenu(ruolo) {
       ["/", "Cruscotto"],
       ["/pratiche", "Pratiche"],
       ["/anagrafiche", "Anagrafiche"],
+      ["/crediti-emessi", "Crediti emessi"],
+      ["/reclami", "Reclami"],
       ["/documentazione", "Manuale"],
     ];
   }
@@ -54,6 +58,8 @@ function vociMenu(ruolo) {
     ["/", "Le mie pratiche"],
     ["/documenti", "I tuoi documenti"],
     ["/formato-dati", "Formato dati"],
+    ["/reclami", "Reclami"],
+    ["/programma", "Il Programma"],
     ["/documentazione", "Manuale"],
   ];
 }

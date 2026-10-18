@@ -170,7 +170,7 @@ export default function Login() {
         </form>
         )}
         <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${C.line}`, fontSize: 12.5, color: C.grafite }}>
-          Comuni e gestori: <a href="/formato-dati" style={{ color: C.green, fontWeight: 600 }}>formato dei dati per il calcolo dei crediti</a> · <a href="/consultazioni" style={{ color: C.green, fontWeight: 600 }}>feedback pubblico</a>
+          Comuni e gestori: <a href="/formato-dati" style={{ color: C.green, fontWeight: 600 }}>formato dei dati per il calcolo dei crediti</a> · <a href="/consultazioni" style={{ color: C.green, fontWeight: 600 }}>feedback pubblico</a> · <a href="/programma" style={{ color: C.green, fontWeight: 600 }}>il Programma</a>
           {" · "}
           <a href="/manuali/Manuale_Utente_Portale_CWP.pdf" target="_blank" rel="noreferrer" style={{ color: C.green, fontWeight: 600 }}>manuale utente (PDF)</a>
         </div>

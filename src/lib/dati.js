@@ -808,7 +808,10 @@ export async function elencaModelli({ tutti = false } = {}) {
 // documenti (file.js). Se la registrazione fallisce il file viene rimosso.
 // tipoPratica ("progetto" | "rapporto") serve solo ai modelli legati a una
 // fase: la fase 3 del Progetto non è la fase 3 del Rapporto (script 21).
-export async function caricaModello({ file, titolo, descrizione = null, faseNumero = null, tipoPratica = null }) {
+// pubblico / categoria (script 24): un modello pubblico compare nella
+// pagina pubblica /programma come documento del Programma ("programma") o
+// come modulistica ("modulistica").
+export async function caricaModello({ file, titolo, descrizione = null, faseNumero = null, tipoPratica = null, pubblico = false, categoria = "modulistica" }) {
   const verifica = await verificaFile(file);
   if (!verifica.ok) return { data: null, error: { message: verifica.errore } };
   // Cartella casuale: due modelli con lo stesso nome file non si scontrano.
@@ -828,6 +831,8 @@ export async function caricaModello({ file, titolo, descrizione = null, faseNume
       nome_file: file.name,
       dimensione: file.size,
       tipo_mime: verifica.mime,
+      pubblico: !!pubblico,
+      categoria,
     })
     .select()
     .single();
@@ -835,7 +840,8 @@ export async function caricaModello({ file, titolo, descrizione = null, faseNume
   return { data, error };
 }
 
-// Aggiorna i campi di un modello (titolo, descrizione, fase, attivo).
+// Aggiorna i campi di un modello (titolo, descrizione, fase, attivo,
+// pubblico, categoria).
 // Tabella `modello_documento`; RLS modello_write (17_pratiche.sql): solo Admin.
 export async function aggiornaModello(id, campi) {
   return await supabase.from("modello_documento").update(campi).eq("id", id);
@@ -883,4 +889,136 @@ export async function nomeUtente(id) {
   if (!id) return null;
   const { data } = await supabase.from("profilo").select("nome_completo").eq("id", id).maybeSingle();
   return data?.nome_completo || null;
+}
+
+// =====================================================================
+// Piattaforma pubblica, registri, metodologie, crediti emessi e reclami
+// (script 24, allineamento alla Guida al Programma del 18/10/2026)
+// =====================================================================
+
+// ---- Informazioni del Programma (Guida 3.1 e 3.6) ----
+
+// { soggetto_promotore, pec, email, sito }. RPC `info_programma`: tutti gli
+// utenti autenticati.
+export async function leggiInfoProgramma() {
+  return await supabase.rpc("info_programma");
+}
+
+// Solo Admin: chiave tra soggetto_promotore, pec, email, sito. Nell'audit.
+export async function impostaInfoProgramma(chiave, valore) {
+  return await supabase.rpc("admin_imposta_info_programma", { p_chiave: chiave, p_valore: valore });
+}
+
+// ---- Registri di scambio (Guida 3.5, Standard 6) ----
+
+// Tutti i registri (anche disattivati). Tabella `registro_scambio`: lettura
+// per chi ha l'accesso, scrittura per lo staff.
+export async function elencaRegistri() {
+  return await supabase.from("registro_scambio").select("*").order("denominazione");
+}
+
+// Crea (senza id) o aggiorna (con id) un registro. Nessuna cancellazione.
+export async function salvaRegistro({ id, ...campi }) {
+  campi.aggiornato_il = new Date().toISOString();
+  if (id) return await supabase.from("registro_scambio").update(campi).eq("id", id).select().single();
+  return await supabase.from("registro_scambio").insert(campi).select().single();
+}
+
+// ---- Metodologie approvate (Guida 5) ----
+
+// Tabella `metodologia`: lettura per chi ha l'accesso, scrittura solo Admin.
+export async function elencaMetodologie() {
+  return await supabase.from("metodologia").select("*").order("nome");
+}
+
+export async function salvaMetodologia({ id, ...campi }) {
+  campi.aggiornato_il = new Date().toISOString();
+  if (id) return await supabase.from("metodologia").update(campi).eq("id", id).select().single();
+  return await supabase.from("metodologia").insert(campi).select().single();
+}
+
+// ---- Crediti emessi (Guida 6.3.2 e 6.3.3) ----
+
+// Lotti di crediti con le vendite. Con rapportoId solo quelli del Rapporto,
+// altrimenti tutti (staff). Tabelle `credito_lotto` e `credito_vendita`:
+// lo staff vede tutto, il Comune i propri; si scrive solo con le funzioni
+// qui sotto.
+export async function elencaLotti(rapportoId = null) {
+  let q = supabase
+    .from("credito_lotto")
+    .select("*, registro:registro_id (denominazione), vendite:credito_vendita (*), rapporto:rapporto_id (codice, anno_monitoraggio, organizzazione:organizzazione_id (denominazione))")
+    .order("creato_il", { ascending: true });
+  if (rapportoId) q = q.eq("rapporto_id", rapportoId);
+  return await q;
+}
+
+// Emissione (solo Admin): RPC `admin_emetti_crediti`. Il Rapporto deve
+// essere registrato (fase 6 completata) e non sospeso; con un calcolo ex
+// post confermato il totale non supera i crediti netti.
+export async function emettiCrediti(rapportoId, quantita, calcoloId = null, note = null) {
+  return await supabase.rpc("admin_emetti_crediti", { p_rapporto: rapportoId, p_quantita: quantita, p_calcolo: calcoloId, p_note: note });
+}
+
+// Caricamento del lotto sul registro scelto (staff).
+export async function caricaSuRegistro(lottoId, registroId, data = null) {
+  return await supabase.rpc("staff_carica_su_registro", { p_lotto: lottoId, p_registro: registroId, p_data: data });
+}
+
+// Vendita comunicata dal registro (staff). Il documento «Comunicazione di
+// vendita» (della pratica del Rapporto) diventa pubblico.
+export async function registraVendita({ lottoId, quantita, data, beneficiario, obiettivo = null, valore = null, comunicazioneId = null }) {
+  return await supabase.rpc("staff_registra_vendita", {
+    p_lotto: lottoId,
+    p_quantita: quantita,
+    p_data: data,
+    p_beneficiario: beneficiario,
+    p_obiettivo: obiettivo,
+    p_valore: valore,
+    p_comunicazione: comunicazioneId,
+  });
+}
+
+// Dichiarazione di cancellazione tombale (staff): i crediti venduti
+// diventano «ritirati»; il documento diventa pubblico.
+export async function registraCancellazione(venditaId, documentoId, data = null) {
+  return await supabase.rpc("staff_registra_cancellazione", { p_vendita: venditaId, p_documento: documentoId, p_data: data });
+}
+
+// Calcoli ex post confermati (solo Admin), per collegarli all'emissione.
+export async function elencaCalcoliConfermati() {
+  return await supabase
+    .from("calcolo_crediti")
+    .select("id, pratica_id, titolo, anno, numero_registro, crediti_netti")
+    .eq("stato", "confermato")
+    .eq("tipo", "ex_post")
+    .order("confermato_il", { ascending: false });
+}
+
+// ---- Reclami e richieste di chiarimento (Politica di reclamo) ----
+
+// Tutti i reclami (staff). Tabella `reclamo`.
+export async function elencaReclami() {
+  return await supabase.from("reclamo").select("*, pratica:pratica_id (codice)").order("creato_il", { ascending: false });
+}
+
+// I reclami inviati da chi è collegato (senza note interne): RPC `miei_reclami`.
+export async function mieiReclami() {
+  return await supabase.rpc("miei_reclami");
+}
+
+// Invio dal portale (qualsiasi utente): RPC `invia_reclamo`. Restituisce
+// il codice (REC-AAAA-NNN o CHI-AAAA-NNN).
+export async function inviaReclamo({ tipo, oggetto, dettagli, praticaId = null, conflitto = null }) {
+  return await supabase.rpc("invia_reclamo", { p_tipo: tipo, p_oggetto: oggetto, p_dettagli: dettagli, p_pratica: praticaId, p_conflitto: conflitto });
+}
+
+// Registrazione (es. reclamo arrivato via PEC) o aggiornamento (staff).
+export async function salvaReclamo({ id, pratica, ...campi }) {
+  if (id) return await supabase.from("reclamo").update(campi).eq("id", id).select().single();
+  return await supabase.from("reclamo").insert(campi).select().single();
+}
+
+// Utenti dello staff (per assegnare il gestore di un reclamo).
+export async function elencaStaff() {
+  return await supabase.from("profilo").select("id, nome_completo, ruolo").in("ruolo", ["operatore", "admin"]).eq("attivo", true).order("nome_completo");
 }

@@ -50,6 +50,7 @@ import Consultazione from "./Consultazione.jsx";
 import Integrazioni from "./Integrazioni.jsx";
 import Rapporti from "./Rapporti.jsx";
 import Pagamenti from "./Pagamenti.jsx";
+import CreditiEmessi from "./CreditiEmessi.jsx";
 import Messaggi from "./Messaggi.jsx";
 import NoteFase from "./NoteFase.jsx";
 import {
@@ -234,6 +235,9 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
       {pratica.tipo === "progetto" && (
         <Rapporti progetto={pratica} staff={staff} onApri={onApri} onCreato={onAggiornato} />
       )}
+
+      {/* Crediti emessi dal Rapporto registrato (Guida 6.3.2-6.3.3, script 24) */}
+      {pratica.tipo === "rapporto" && <CreditiEmessi rapporto={pratica} onCambio={onAggiornato} />}
 
       {/* Pagamenti: lo staff li gestisce, il Comune li consulta */}
       <Pagamenti praticaId={pratica.id} pratica={pratica} solaLettura={!staff} />

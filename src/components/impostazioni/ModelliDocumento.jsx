@@ -7,7 +7,10 @@
      essere generale (compare in «I tuoi documenti»). Per
      aggiornare un modello se ne carica uno nuovo e si ritira il vecchio: i
      file non si sovrascrivono. «Ritira» / «Ripubblica» cambia solo il
-     campo attivo.
+     campo attivo. Un modello «pubblico» (script 24) compare anche nella
+     pagina pubblica /programma, tra i documenti del Programma (Guida,
+     Standard, Politica di reclamo, Schema tariffario…) o tra la modulistica
+     (Guida 3.7).
    Usato da: pagina Impostazioni (/impostazioni).
    Chi lo vede: admin.
    Dati: elencaModelli({ tutti: true }), caricaModello, aggiornaModello,
@@ -61,6 +64,8 @@ export default function ModelliDocumento() {
       descrizione: (modulo.descrizione || "").trim() || null,
       faseNumero: modulo.fase ? Number(modulo.fase.split(":")[1]) : null,
       tipoPratica: modulo.fase ? modulo.fase.split(":")[0] : null,
+      pubblico: !!modulo.pubblico,
+      categoria: modulo.categoria || "modulistica",
     });
     setInCorso(false);
     if (error) return setErrore("Modello non caricato: " + error.message);
@@ -115,6 +120,17 @@ export default function ModelliDocumento() {
               {m.attivo
                 ? <Badge bg={C.greenSoft} fg={C.green}>pubblicato</Badge>
                 : <Badge bg={C.paperWarm} fg={C.grafite}>ritirato</Badge>}
+              {/* Pagina pubblica /programma (script 24) */}
+              <label style={{ display: "flex", gap: 4, alignItems: "center", fontSize: 11.5, color: C.grafite }}>
+                <input type="checkbox" checked={!!m.pubblico} onChange={(e) => aggiornaModello(m.id, { pubblico: e.target.checked }).then(carica)} />
+                pubblico
+              </label>
+              {m.pubblico && (
+                <select value={m.categoria || "modulistica"} onChange={(e) => aggiornaModello(m.id, { categoria: e.target.value }).then(carica)} style={{ ...campo, width: "auto", padding: "4px 6px", fontSize: 11.5 }} aria-label="Sezione della pagina pubblica">
+                  <option value="programma">Documento del Programma</option>
+                  <option value="modulistica">Modulistica</option>
+                </select>
+              )}
               <button onClick={() => cambiaAttivo(m, !m.attivo)} style={btnMini}>{m.attivo ? "Ritira" : "Ripubblica"}</button>
             </div>
           </div>
@@ -138,6 +154,18 @@ export default function ModelliDocumento() {
             </label>
           </div>
           <label style={etichetta}>Descrizione (facoltativa)<input value={modulo.descrizione} onChange={(e) => setModulo({ ...modulo, descrizione: e.target.value })} style={campo} placeholder="Es. Da compilare, firmare e caricare nella fase 1" /></label>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", fontSize: 12.5, marginBottom: 10 }}>
+            <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <input type="checkbox" checked={!!modulo.pubblico} onChange={(e) => setModulo({ ...modulo, pubblico: e.target.checked })} />
+              Anche sulla pagina pubblica del Programma
+            </label>
+            {modulo.pubblico && (
+              <select value={modulo.categoria || "modulistica"} onChange={(e) => setModulo({ ...modulo, categoria: e.target.value })} style={{ ...campo, width: "auto" }}>
+                <option value="programma">Documento del Programma</option>
+                <option value="modulistica">Modulistica</option>
+              </select>
+            )}
+          </div>
           <label style={etichetta}>
             File *
             <input ref={inputRef} type="file" accept={ACCEPT} style={{ fontSize: 13 }} />

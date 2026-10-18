@@ -38,8 +38,8 @@ import { campo, etichetta, btnPrimario, dataOra } from "../components/stili.js";
 /* Cornice comune delle pagine pubbliche: intestazione con loghi e link
    (elenco consultazioni, accesso al portale) e area centrale.
    Prop `children`: il contenuto della pagina. Non usa Header, che richiede
-   l'accesso. */
-function Cornice({ children }) {
+   l'accesso. Usata anche dalla pagina pubblica /programma (Programma.jsx). */
+export function Cornice({ children }) {
   return (
     <div style={{ background: C.paper, minHeight: "100vh" }}>
       <header style={{ background: C.white, borderBottom: `1px solid ${C.line}` }}>
@@ -48,6 +48,7 @@ function Cornice({ children }) {
           <span style={{ fontSize: 12, color: C.grafite }}>Programma di</span>
           <img src="/loghi/fondazione-operate.png" alt="Fondazione Operate" style={{ height: 34, width: "auto" }} />
           <span style={{ flex: 1 }} />
+          <Link to="/programma" style={{ fontSize: 13, color: C.green, fontWeight: 600 }}>Il Programma</Link>
           <Link to="/consultazioni" style={{ fontSize: 13, color: C.green, fontWeight: 600 }}>Feedback pubblico</Link>
           <Link to="/" style={{ fontSize: 13, color: C.green, fontWeight: 600 }}>Accedi al portale</Link>
         </div>
@@ -58,7 +59,7 @@ function Cornice({ children }) {
 }
 
 // Stile dei riquadri bianchi usati in tutte e tre le pagine.
-const scheda = { background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, padding: "18px 20px" };
+export const scheda = { background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, padding: "18px 20px" };
 
 /* ---------- Elenco ---------- */
 /* Pagina «/consultazioni». Nessuna prop.

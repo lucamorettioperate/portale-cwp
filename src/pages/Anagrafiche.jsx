@@ -9,6 +9,8 @@
        Un'organizzazione non si cancella.
      - Enti di Validazione: componente EntiValidazione, con i Progetti a
        cui ogni ente è assegnato.
+     - Registri di scambio dei crediti (Guida 3.5, script 24): componente
+       Registri.
    Chi la usa: Operatori e Amministratori (gli altri vedono un messaggio).
    Dati: elencaOrganizzazioni, salvaOrganizzazione, elencaPraticheAnagrafiche
      (src/lib/dati.js) sulle tabelle organizzazione e pratica.
@@ -23,6 +25,7 @@ import { COLORI as C } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
 import EntiValidazione from "../components/impostazioni/EntiValidazione.jsx";
+import Registri from "../components/impostazioni/Registri.jsx";
 import { elencaOrganizzazioni, salvaOrganizzazione, elencaPraticheAnagrafiche } from "../lib/dati.js";
 import { riquadro, campo, etichetta, btnPrimario, btnMini } from "../components/stili.js";
 
@@ -72,6 +75,7 @@ export default function Anagrafiche() {
         </p>
         <Organizzazioni pratiche={pratiche} />
         <EntiValidazione pratiche={pratiche} />
+        <Registri />
       </main>
     </div>
   );

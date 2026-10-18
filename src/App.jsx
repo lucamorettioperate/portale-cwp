@@ -42,6 +42,9 @@ import FormatoDati from "./pages/FormatoDati.jsx";
 import Documentazione from "./pages/Documentazione.jsx";
 import CambiaPassword from "./pages/CambiaPassword.jsx";
 import Profilo from "./pages/Profilo.jsx";
+import Programma from "./pages/Programma.jsx";
+import Reclami from "./pages/Reclami.jsx";
+import CreditiEmessiPagina from "./pages/CreditiEmessiPagina.jsx";
 import { COLORI as C } from "./lib/cwpProgram.js";
 
 // Schermata di caricamento mentre si verifica la sessione.
@@ -123,6 +126,8 @@ export default function App() {
       {/* Pagina pubblica, senza login: formato dei dati per Comuni e gestori */}
       <Route path="/formato-dati" element={<FormatoDati />} />
       {/* Consultazioni pubbliche: senza accesso (script 17, funzione consultazione-pubblica) */}
+      {/* Piattaforma pubblica del Programma (Guida 3.7, script 24) */}
+      <Route path="/programma" element={<Programma />} />
       <Route path="/consultazioni" element={<ElencoConsultazioni />} />
       <Route path="/consultazioni/conferma" element={<ConfermaOsservazione />} />
       <Route path="/consultazioni/:id" element={<PaginaConsultazione />} />
@@ -197,6 +202,22 @@ export default function App() {
         element={
           <Protetta>
             <Documentazione />
+          </Protetta>
+        }
+      />
+      <Route
+        path="/reclami"
+        element={
+          <Protetta>
+            <Reclami />
+          </Protetta>
+        }
+      />
+      <Route
+        path="/crediti-emessi"
+        element={
+          <Protetta>
+            <CreditiEmessiPagina />
           </Protetta>
         }
       />

@@ -5,8 +5,10 @@
        (script 13 e 21, componente DurateFasi);
      - Documenti richiesti per fase (script 21, componente
        DocumentiRichiesti);
-     - Modelli di documento per i Comuni (script 17, componente
-       ModelliDocumento).
+     - Modelli di documento per i Comuni e documenti pubblici del
+       Programma (script 17 e 24, componente ModelliDocumento);
+     - informazioni del Programma e metodologie approvate per la pagina
+       pubblica /programma (script 24, componente InfoProgramma).
    Gli Enti di Validazione si gestiscono nella pagina Anagrafiche
    (/anagrafiche), aperta anche agli Operatori (script 21).
    Chi la usa: solo Amministratori (gli altri vedono un messaggio).
@@ -22,6 +24,7 @@ import Header from "../components/Header.jsx";
 import DurateFasi from "../components/impostazioni/DurateFasi.jsx";
 import DocumentiRichiesti from "../components/impostazioni/DocumentiRichiesti.jsx";
 import ModelliDocumento from "../components/impostazioni/ModelliDocumento.jsx";
+import InfoProgramma from "../components/impostazioni/InfoProgramma.jsx";
 
 /* Pagina delle impostazioni. Nessuna prop. */
 export default function Impostazioni() {
@@ -46,6 +49,7 @@ export default function Impostazioni() {
         <p style={{ fontSize: 13.5, color: C.grafite, margin: "0 0 18px" }}>
           Parametri del Programma Carbon WastePrint modificabili dagli amministratori.
         </p>
+        <InfoProgramma />
         <DurateFasi tipo="progetto" />
         <DurateFasi tipo="rapporto" />
         <DocumentiRichiesti />
