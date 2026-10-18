@@ -155,6 +155,12 @@
       "data": "18/10/2026",
       "descrizione": "Crediti: rapporto di calcolo in PDF, numero di registro (script 18) e registro dei crediti; avvisi di npm audit nel punto 30.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.8",
+      "data": "18/10/2026",
+      "descrizione": "Codice sorgente interamente commentato (punto 31 completato); nuovi rinforzi nel punto 33; intestazione aggiornata alla versione 0.19.",
+      "autore": "Fondazione Operate"
     }
   ]
 }

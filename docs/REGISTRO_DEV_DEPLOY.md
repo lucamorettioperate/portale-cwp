@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Ultimo aggiornamento** | 18 ottobre 2026 |
-| **Versione del portale** | 0.14 (ultimo script database: `14_controlli_file.sql`) |
+| **Versione del portale** | 0.19 (ultimo script database: `19_correzioni_revisione_codice.sql`) |
 | **Indirizzo** | https://portale-cwp.vercel.app |
 | **Repository** | https://github.com/lucamorettioperate/portale-cwp (pubblico: solo codice, nessun dato) |
 | **Responsabile** | Luca Moretti — Fondazione Operate |
@@ -403,6 +403,16 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Codice commentato: punto 31 completato** — commentati anche le
+  librerie (`src/lib`, compresi i moduli del calcolo crediti), l'avvio del
+  portale (`main.jsx`, `App.jsx`), le cinque Edge Functions, le prove
+  automatiche e gli strumenti di generazione dei documenti. Verifica: il
+  portale compilato è identico byte per byte a quello di prima, le prove
+  automatiche passano, gli script Python si compilano. Le Edge Functions
+  pubblicate non vanno ridistribuite (cambiano solo i commenti). Corretti
+  due commenti sbagliati: l'email di notifica parte dal trigger
+  `trg_notifica_email` e dal job `cwp_riprova_email` (non da un webhook).
+  Nuovi rinforzi aggiunti al punto 33.
 - **Codice commentato e correzioni dalla revisione (punto 31)** — tutti i
   file del portale, delle Edge Functions, dei test e degli strumenti hanno
   ora intestazione e commenti in italiano; verifica: il portale compilato è
@@ -754,7 +764,7 @@ completato (va barrato qui e annotato in Cronologia).
 
 **Codice e documentazione — richieste di Luca del 18/10**
 
-- **31.** Codice sorgente commentato per sviluppatori umani: ogni file (portale, script SQL, Edge Functions, strumenti) deve avere in testa lo scopo e il collegamento al capitolo del registro, e commenti in italiano su funzioni, regole di sicurezza e passaggi non ovvi. Vale anche per tutto il codice nuovo. Da completare con una revisione file per file.
+- ~~**31.** Codice sorgente commentato per sviluppatori umani~~ — fatto il 18/10: ogni file (portale, script SQL, Edge Functions, prove, strumenti) ha in testa lo scopo e il collegamento al capitolo del registro, e commenti in italiano su funzioni, regole di sicurezza e passaggi non ovvi. **Regola permanente:** vale anche per tutto il codice nuovo o modificato.
 - **32.** Manuale Test (test-user): guida sintetica per i collaudatori, riservata agli Amministratori, da aggiornare a ogni rilascio insieme a registro, Manuale Utente e Manuale Amministratore.
 
 - **33.** Pulizia e rinforzi emersi dalla revisione del codice del 18/10:
@@ -763,7 +773,10 @@ completato (va barrato qui e annotato in Cronologia).
     - password temporanee: la funzione `crea-utente` accetta 8 caratteri, le password personali ne chiedono 10 con lettere e numeri: allineare;
     - obbligo di cambio della password temporanea: oggi lo impone l'interfaccia (il database impedisce solo di togliersi l'obbligo);
     - audit leggibile dal database da tutto lo staff (serve all'export del fascicolo degli Operatori), mentre la pagina Audit è solo Admin: decidere se limitarlo;
-    - eliminare i componenti del prototipo non usati (`Timeline`, `AzioniRuolo`, `ProjectCard`, `Stat`, `Pill`) e lo stile `avviso`.
+    - eliminare i componenti del prototipo non usati (`Timeline`, `AzioniRuolo`, `ProjectCard`, `Stat`, `Pill`), lo stile `avviso`, il file `src/lib/datiEsempio.js` e la funzione `etichetta()` di `strumenti/impagina_pdf.py`;
+    - altre operazioni in più passaggi non atomici: modifica di un utente (`aggiornaUtente`), sostituzione e nuova versione di un documento, creazione di un utente (`crea-utente` non controlla l'esito dell'aggiornamento del profilo);
+    - apertura della consultazione: la scadenza è calcolata come 30 giorni esatti in orario UTC; valutare la chiusura a fine giornata (ora italiana);
+    - limite di 10 Rapporti di monitoraggio: oggi lo applica solo l'interfaccia, portarlo nel database.
 
 **Da rifinire**
 
@@ -938,7 +951,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 91 file, 19.189 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 91 file, 19.494 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1002,11 +1015,11 @@ Inventario generato da `strumenti/inventario_codice.py`: 91 file, 19.189 righe i
 |---|---|---|
 | `src/lib/AuthContext.jsx` | 189 | tiene in memoria la sessione Supabase Auth, il profilo applicativo (ruolo, organizzazione, flag password temporanea) e lo stato MFA. Espone le funzioni accedi, esci, richiediRecuperoPassword, cambiaPassword e caricaMfa. Ogni… |
 | `src/lib/crediti/archivio.js` | 252 | crea, legge, aggiorna ed elimina i calcoli (testata e dati in calcolo_crediti) e la loro Banca Dati Utenze (righe di conferimento e di riuso), anche quando le righe sono centinaia di migliaia (invio e lettura a blocchi). Crea le… |
-| `src/lib/crediti/calcolo.js` | 456 | Converte un valore in numero: accetta numeri, testi con virgola decimale |
+| `src/lib/crediti/calcolo.js` | 457 | funzioni pure (nessun accesso al database): ricevono i dati del calcolo e restituiscono risultati intermedi e finali, con il riferimento alla formula della Metodologia accanto a ogni passaggio. |
 | `src/lib/crediti/parametri.js` | 95 | tabelle numeriche della Metodologia usate come valori iniziali di ogni calcolo: fattori di emissione per tipologia di rifiuto (Tab. 3, 4, 7), pesi specifici (Tab. 8), beni a riuso (Tab. 5), buffer (Tab. 15 e Cap. 7), giorni… |
-| `src/lib/crediti/rapportoPdf.js` | 346 | Colori RGB del rapporto, uguali alla palette COLORI di cwpProgram.js. |
-| `src/lib/crediti/tracciato.js` | 646 | legge il file del tracciato compilato dal Comune o dal gestore, blocca l'import se trova dati personali, converte i fogli nei dati del motore di calcolo (calcolo.js) e segnala le incoerenze. |
-| `src/lib/csv.js` | 158 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
+| `src/lib/crediti/rapportoPdf.js` | 347 | genera nel browser, con jsPDF e jspdf-autotable, il rapporto di un calcolo: scheda, sintesi dei crediti, buffer, dati di ingresso, risultati per tipologia e per classe, avvisi, controlli di coerenza e scelte interpretative. Il… |
+| `src/lib/crediti/tracciato.js` | 657 | legge il file del tracciato compilato dal Comune o dal gestore, blocca l'import se trova dati personali, converte i fogli nei dati del motore di calcolo (calcolo.js) e segnala le incoerenze. |
+| `src/lib/csv.js` | 157 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
 | `src/lib/cwpProgram.js` | 103 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di documento. |
 | `src/lib/date.js` | 50 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO. |
 | `src/lib/dati.js` | 838 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
@@ -1046,28 +1059,28 @@ Inventario generato da `strumenti/inventario_codice.py`: 91 file, 19.189 righe i
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `supabase/functions/consultazione-pubblica/index.ts` | 391 | Edge Function: consultazione-pubblica |
-| `supabase/functions/crea-utente/index.ts` | 129 | Edge Function: crea-utente |
-| `supabase/functions/invia-email-notifica/index.ts` | 160 | Edge Function: invia-email-notifica |
-| `supabase/functions/recupera-password/index.ts` | 155 | Edge Function: recupera-password |
-| `supabase/functions/reimposta-password/index.ts` | 109 | Edge Function: reimposta-password |
+| `supabase/functions/consultazione-pubblica/index.ts` | 391 | servizio della pagina pubblica delle consultazioni (requisiti §6, decisioni B e D del 18/10/2026). Chiunque, senza account, può: - "elenco": vedere le consultazioni aperte; - "dettaglio": leggere documento, errata corrige e… |
+| `supabase/functions/crea-utente/index.ts` | 129 | crea un nuovo utente con password temporanea e imposta ruolo + organizzazione. L'Admin comunica la password all'utente, che potrà cambiarla al primo accesso. |
+| `supabase/functions/invia-email-notifica/index.ts` | 160 | invia per email ogni nuova notifica del portale (requisiti §9: "email + notifica interna"). |
+| `supabase/functions/recupera-password/index.ts` | 155 | «Password dimenticata?» — genera il collegamento di recupero di Supabase Auth e spedisce l'email in italiano con Resend (stessa grafica delle notifiche), invece del modello email di Supabase. |
+| `supabase/functions/reimposta-password/index.ts` | 109 | l'Amministratore assegna una nuova password temporanea a un utente (Cliente od Operatore) che l'ha dimenticata. Al primo accesso il portale obbliga l'utente a sceglierne una personale (script 15). |
 
 **Test (test)**
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `test/crediti.test.mjs` | 122 | Verifica del motore di calcolo con un esempio calcolato a mano. |
-| `test/csv.test.mjs` | 33 | File in stile Excel italiano: BOM, ";" e virgola decimale, virgolette, riga vuota finale. |
-| `test/tracciato.test.mjs` | 85 | Test dell'import del tracciato dati CWP (src/lib/crediti/tracciato.js). |
+| `test/crediti.test.mjs` | 144 | verifica del motore di calcolo con un esempio calcolato a mano (un piccolo Comune con 2 classi domestiche e 1 non domestica). Controlla le formule 1-17, 19-22 e 28-32 (non la 18: peso specifico a consuntivo), i buffer delle… |
+| `test/csv.test.mjs` | 53 | verifica che i CSV salvati da Excel in italiano (BOM, separatore ";", virgola decimale, punto delle migliaia, testi tra virgolette con ";" dentro, righe vuote) siano letti correttamente; che intestazioni con maiuscole/accenti… |
+| `test/tracciato.test.mjs` | 110 | cinque prove sui file di esempio: lettura dell'Excel compilato, blocco dei dati personali (con valori oscurati nei messaggi), ZIP di CSV con singole letture (aggregazione ed esclusione delle letture fuori anno), controlli di… |
 
 **Strumenti (strumenti)**
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `strumenti/genera_documenti.cjs` | 473 | — |
-| `strumenti/genera_esempi_tracciato.py` | 66 | Genera i file di prova del tracciato dati per i test automatici |
-| `strumenti/genera_tracciato_dati.py` | 260 | Genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP). |
-| `strumenti/impagina_pdf.py` | 361 | — |
+| `strumenti/genera_documenti.cjs` | 554 | genera in Word (.docx) e PDF i documenti del portale, con copertina e loghi, registro delle revisioni, sommario con numeri di pagina, intestazione e piè di pagina: |
+| `strumenti/genera_esempi_tracciato.py` | 101 | genera i file di prova del tracciato dati per i test automatici (test/tracciato.test.mjs) e per il collaudo manuale (Manuale Test): - test/dati/tracciato_esempio.xlsx : tracciato compilato, Banca Dati con totali (foglio 5) -… |
+| `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
+| `strumenti/impagina_pdf.py` | 419 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/revisioni_documenti.json` | 160 | — |
 <!-- INVENTARIO-FINE -->
