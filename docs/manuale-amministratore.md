@@ -459,6 +459,8 @@ Dopo **Calcola** il passo 7 mostra in evidenza **Crediti netti** e **Crediti lor
 
 Il riquadro **Da verificare** elenca i dati mancanti o incoerenti (ad esempio un rifiuto senza fattore di emissione o una classe senza utenze). Va letto sempre prima di confermare.
 
+**Scarica il rapporto (PDF)** crea il **rapporto di calcolo**: scheda (pratica, ente, anno, tipo di stima, stato, numero di registro, file di origine dei dati e impronta SHA-256 dei dati), sintesi dei crediti, buffer voce per voce, dati di ingresso (rifiuti, delibera, fattori di emissione usati), risultati per tipologia e per classe, avvisi e controlli di coerenza, scelte interpretative applicate. Il rapporto di una bozza porta la scritta «BOZZA» su ogni pagina. Il dettaglio per singola utenza non è nel rapporto, per riservatezza: resta nel CSV.
+
 **Scarica il riepilogo (CSV)** e **Scarica il dettaglio per utenza (CSV)** esportano i risultati in file che si aprono con Excel.
 
 ### Confermare e correggere
@@ -471,9 +473,24 @@ Il riquadro **Da verificare** elenca i dati mancanti o incoerenti (ad esempio un
 
 Un calcolo confermato riporta *Confermato il gg/mm/aaaa* ed è in sola lettura: dati, Banca Dati Utenze e risultato non si possono più modificare né cancellare. **Calcola** mostra di nuovo il dettaglio senza cambiare nulla.
 
+**Numero di registro.** Alla conferma, un calcolo **ex post** riceve dal portale un numero di registro progressivo, ad esempio `CWP-REG-2026-0001`, che compare accanto a «Confermato il», nell'elenco dei calcoli e nel rapporto. Le stime ex ante non hanno numero.
+
+**Archiviare il rapporto.** Su un calcolo confermato, **Archivia il rapporto nella pratica** salva il PDF tra i documenti generali della pratica, con tipologia *Rapporto di calcolo dei crediti* e **non visibile al Comune**: per mostrarlo al Comune spuntate «Cliente» sul documento nella pratica. Archiviandolo di nuovo nasce una nuova versione.
+
 **Correggere un calcolo confermato.** Premete **Nuova versione**: il portale crea una bozza copia («… (rev.)») collegata all'originale, che resta intatto. Una bozza si può eliminare con **Elimina**.
 
 Creazione, ricalcolo e conferma sono registrati nell'audit.
+
+### Registro dei crediti
+
+Nella pagina **Crediti CWP** la vista **Registro dei crediti** elenca i calcoli ex post confermati, in ordine di numero di registro: pratica ed ente, anno, crediti lordi, buffer, crediti netti, data e autore della conferma, stato.
+
+- **Valido**: i crediti della riga contano nei totali.
+- **Sostituito da CWP-REG-…**: il calcolo è stato corretto con una nuova versione confermata; il numero resta nel registro e non si riusa, ma i crediti non contano.
+
+In alto compaiono il totale dei crediti netti validi e i totali per ente e anno. **Solo le righe valide** nasconde le sostituite; **Scarica il registro (CSV)** esporta tutto il registro. Fate clic su una riga per aprire il calcolo.
+
+**Da completare.** Le regole dello *Standard CWP* e della *Guida al Programma* per emissione, trasferimento e annullamento dei crediti verranno aggiunte al registro quando i documenti saranno disponibili.
 
 ### Scelte da confermare
 
@@ -537,7 +554,7 @@ Il back-office torna accessibile con la sola password. Dopo aver rimesso a posto
 
 Questo manuale descrive il portale alla data della revisione indicata in copertina. Sono in sviluppo, e saranno aggiunte qui quando disponibili:
 
-- **Calcolo crediti:** rapporto di calcolo in PDF, registro dei crediti calcolati e confermati.
+- **Calcolo crediti:** regole del registro previste dallo Standard CWP (emissione, trasferimento, annullamento dei crediti).
 - **Sicurezza:** registro di sicurezza (accessi e tentativi falliti), verifica in due passaggi attiva, antivirus sui file caricati, piano di protezione dagli attacchi informatici.
 - **Email:** verifica del dominio, per far arrivare le notifiche a tutti gli utenti.
 

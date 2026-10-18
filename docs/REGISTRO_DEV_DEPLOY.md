@@ -142,6 +142,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `13_durata_fasi.sql` | Durata delle fasi in tabella, modificabile dall'Admin con motivazione | 18/10/2026 |
 | `14_controlli_file.sql` | Limite 50 MB, formati ammessi, controllo tipo/estensione/cartella; ZIP ammesso | 18/10/2026 (riesecuzione per ZIP lo stesso giorno) |
 | `15_password.sql` | Cambio obbligatorio dopo password temporanea (`password_temporanea`), funzione `password_cambiata`, audit dei cambi password | 18/10/2026 |
+| `18_registro_crediti.sql` | Numero di registro `CWP-REG-AAAA-NNNN` assegnato alla conferma dei calcoli ex post (contatore per anno `contatore_registro`, funzione `cwp_numero_registro`, `calcolo_immutabile` aggiornata, numero vietato su inserimento e bozze); funzione `admin_registro_crediti` (stato valido / sostituito) | 18/10/2026 |
 | `17_pratiche.sql` | Pagamenti leggibili dal Comune; note di fase (`nota_fase`); anagrafica Enti di Validazione (solo Admin) e `staff_imposta_ente_validazione`; modelli di documento (`modello_documento`, archivio `modelli`); messaggi (`messaggio`); consultazione pubblica: dati dell'autore sul commento, `commento_in_attesa`, archivio `allegati-consultazione`, errata corrige (`consultazione_errata`, `staff_errata_corrige`), `staff_autori_commenti`; inserimento diretto dei commenti dal portale tolto; audit e notifiche per le nuove tabelle | 18/10/2026 |
 | `16_recupero_password.sql` | Tabella `recupero_password_richiesta` (ultima richiesta di recupero per indirizzo, nessuna policy: la usa solo la funzione `recupera-password`) | 18/10/2026 |
 
@@ -204,7 +205,7 @@ pubblicazione verificare che l'impostazione *Verify JWT* sia quella attesa.
 
 ## 6. Portale (frontend)
 
-React 18 + Vite 5, React Router 6, `@supabase/supabase-js`, `jszip` (export
+React 18 + Vite 5, React Router 6, `@supabase/supabase-js`, `jspdf` e `jspdf-autotable` (rapporto di calcolo), `jszip` (lettura del tracciato ed export
 fascicolo). Nessun server proprio: tutto passa da Supabase.
 
 **Pagine**
@@ -262,7 +263,7 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 | Notifiche (§9) | Fatto | Interne + email (Resend); messaggi Comune-Fondazione nella pratica; manca verifica dominio |
 | Audit (§10) | Fatto | Scritto dal database, immutabile, pagina di consultazione |
 | Export fascicolo (§11) | Fatto | ZIP con documenti e riepiloghi |
-| Calcolo crediti (Metodologia v1.2) | Parziale | Motore formule 1-32, Tabelle 3-5, 8, 15, 16; import diretto del tracciato con aggregazione delle letture, blocco dei dati personali e controlli di coerenza; calcoli confermati immutabili; mancano rapporto PDF e registro crediti |
+| Calcolo crediti (Metodologia v1.2) | Parziale | Motore formule 1-32, Tabelle 3-5, 8, 15, 16; import diretto del tracciato con aggregazione delle letture, blocco dei dati personali e controlli di coerenza; calcoli confermati immutabili con numero di registro; rapporto PDF; registro dei crediti (manca la parte prevista dallo Standard CWP) |
 | Amministrazione | Fatto | Utenti, audit, impostazioni: durata fasi, Enti di Validazione, modelli di documento |
 | Sicurezza (§13) | Parziale | RLS, audit, controlli file; mancano registro di sicurezza, antivirus, ambiente di prova |
 
@@ -316,6 +317,20 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Crediti: rapporto di calcolo in PDF e registro dei crediti (backlog 6,
+  7)** — `src/lib/crediti/rapportoPdf.js` (jsPDF 4.2.1 + jspdf-autotable
+  5.0.9, caricati solo quando servono): scheda con numero di registro e
+  impronta SHA-256 di dati e risultato, sintesi, buffer, dati di ingresso,
+  risultati per tipologia e classe, avvisi e coerenza, scelte
+  interpretative, filigrana BOZZA; pulsanti «Scarica il rapporto (PDF)» e
+  «Archivia il rapporto nella pratica» (documento non visibile al Comune,
+  nuova tipologia «Rapporto di calcolo dei crediti»). Script
+  `18_registro_crediti.sql` (provato sul banco locale: numero assegnato solo
+  agli ex post alla conferma, non falsificabile, sostituzione con nuova
+  versione, accesso solo Admin; eseguito in produzione e verificato);
+  vista «Registro dei crediti» in Crediti CWP (`RegistroCrediti`), con
+  totali per ente e anno ed export CSV. Regole di emissione e annullamento
+  in attesa dello Standard CWP. Commit `f84e49a`.
 - **Crediti: import diretto del tracciato dati (backlog 1-5)** — nuovo passo
   «Importa il tracciato» nel calcolo: file .xlsx (letto nel browser con
   JSZip, senza librerie esterne) o ZIP di CSV, scelto dai documenti della
@@ -585,8 +600,8 @@ completato (va barrato qui e annotato in Cronologia).
 - ~~**3.** Controllo privacy all'import~~ — fatto il 18/10 (blocco dell'import).
 - ~~**4.** Scelta del file direttamente dalla pratica del Comune~~ — fatto il 18/10.
 - ~~**5.** Controlli di coerenza (classi, totali, valori anomali)~~ — fatto il 18/10.
-- **6.** Rapporto di calcolo in PDF.
-- **7.** Registro dei crediti calcolati e confermati (forma da *Guida al Programma* e *Standard CWP*).
+- ~~**6.** Rapporto di calcolo in PDF~~ — fatto il 18/10.
+- **7.** Registro dei crediti calcolati e confermati — base fatta il 18/10 (numero di registro, stato valido/sostituito, totali); da completare con le regole di *Guida al Programma* e *Standard CWP* (emissione, trasferimento, annullamento).
 - **8.** Collaudo con dati reali di un Comune.
 - **9.** Conferma delle scelte interpretative.
 
@@ -630,7 +645,7 @@ completato (va barrato qui e annotato in Cronologia).
     - **Verifica di sicurezza** del portale secondo le linee OWASP (accessi, permessi, caricamento file, iniezioni) e controllo automatico delle regole del database con il *Security Advisor* di Supabase; a fine sviluppo, test di intrusione (penetration test) affidato a terzi.
     - **Intestazioni di sicurezza** del sito (Content-Security-Policy, HSTS, protezione dal clickjacking, nessun riferimento esterno non necessario) configurate su Vercel.
     - **Protezione degli accessi**: limiti ai tentativi di login e di recupero password, CAPTCHA sulle pagine pubbliche, verifica in due passaggi per lo staff (punto 15), regole sulle password, scadenza delle sessioni inattive.
-    - **Dipendenze e segreti**: controllo periodico delle librerie vulnerabili (npm audit, avvisi automatici di GitHub), scansione dei segreti nel repository, rotazione delle chiavi.
+    - **Dipendenze e segreti**: controllo periodico delle librerie vulnerabili (npm audit, avvisi automatici di GitHub), scansione dei segreti nel repository, rotazione delle chiavi. `npm audit` del 18/10 segnala due avvisi moderati da risolvere con aggiornamenti maggiori: esbuild/vite (solo server di sviluppo, non il portale pubblicato) e react-router 6 (open redirect: aggiornare a react-router 7).
     - **Monitoraggio e allarmi**: registro di sicurezza (punto 14), avvisi su accessi anomali, errori e indisponibilità del portale.
     - **Continuità**: backup verificati e prova di ripristino (punti 18 e 29), antivirus sui file (punto 16).
     - **Organizzazione e privacy**: procedura di risposta agli incidenti, valutazione d'impatto sulla protezione dei dati (DPIA) e registro dei trattamenti per i dati delle utenze, nomina dei fornitori (Vercel, Supabase, Resend) come responsabili del trattamento.

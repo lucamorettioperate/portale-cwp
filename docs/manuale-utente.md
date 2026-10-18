@@ -196,7 +196,7 @@ Il codice del Rapporto è quello del Progetto con l'anno, ad esempio `CWP-2026-0
 
 La pagina **I tuoi documenti** (menu in alto) raccoglie in un solo posto i documenti generali di tutte le vostre pratiche, Progetti e Rapporti: contratto, allegati, documentazione amministrativa e così via. I documenti delle singole fasi restano dentro le fasi.
 
-- I documenti sono raggruppati per tipologia: Contratto, Allegato al contratto, Documentazione amministrativa, Documento di progetto, Rapporto dell'Ente di Validazione, Integrazione, Altro, Senza tipologia (dove finiscono i file caricati da voi).
+- I documenti sono raggruppati per tipologia: Contratto, Allegato al contratto, Documentazione amministrativa, Documento di progetto, Rapporto dell'Ente di Validazione, Rapporto di calcolo dei crediti, Integrazione, Altro, Senza tipologia (dove finiscono i file caricati da voi).
 - Per ogni documento vedete nome, versione, codice della pratica, ente e data, e il pulsante **Scarica**.
 - Di norma vedete solo la versione corrente. Per vedere anche le precedenti spuntate **Mostra anche le versioni precedenti**.
 

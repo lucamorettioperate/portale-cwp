@@ -47,6 +47,12 @@
       "data": "18/10/2026",
       "descrizione": "Dati per il calcolo dei crediti: il file caricato nella pratica è letto direttamente dalla Fondazione; controllo dei dati personali.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.8",
+      "data": "18/10/2026",
+      "descrizione": "Nuova tipologia di documento «Rapporto di calcolo dei crediti».",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -67,6 +73,12 @@
       "data": "18/10/2026",
       "descrizione": "Calcolo crediti: importare il tracciato nel calcolo (dai documenti della pratica o dal computer), singole letture, blocco dei dati personali, controlli di coerenza.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.3",
+      "data": "18/10/2026",
+      "descrizione": "Rapporto di calcolo in PDF, archiviazione nella pratica, numero di registro, registro dei crediti.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -86,6 +98,12 @@
       "rev": "1.2",
       "data": "18/10/2026",
       "descrizione": "Calcolo crediti: prove di import del tracciato con i file di esempio (compilato, letture, dati personali) e dei controlli di coerenza.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.3",
+      "data": "18/10/2026",
+      "descrizione": "Prove del rapporto PDF, del numero di registro e del registro dei crediti con le nuove versioni.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -130,6 +148,12 @@
       "rev": "1.6",
       "data": "18/10/2026",
       "descrizione": "Crediti: import diretto del tracciato, aggregazione delle letture, blocco dei dati personali, controlli di coerenza (backlog 1-5).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.7",
+      "data": "18/10/2026",
+      "descrizione": "Crediti: rapporto di calcolo in PDF, numero di registro (script 18) e registro dei crediti; avvisi di npm audit nel punto 30.",
       "autore": "Fondazione Operate"
     }
   ]

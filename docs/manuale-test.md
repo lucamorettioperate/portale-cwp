@@ -72,7 +72,7 @@ Il portale è lo strumento unico con cui Comune e Fondazione seguono la pratica.
 | Export | Fascicolo completo della pratica in un file ZIP | tutti |
 | Audit | Registro non modificabile di ogni operazione, con motivazione | Amministratore |
 | Utenti e impostazioni | Creazione utenti, associazione ai Comuni, reimpostazione password, durata delle fasi, Enti di Validazione, modelli di documento | Amministratore |
-| Calcolo crediti | Import del tracciato dati del Comune con controllo dei dati personali e della coerenza, calcolo secondo la Metodologia, conferma definitiva, nuove versioni | Amministratore |
+| Calcolo crediti | Import del tracciato dati del Comune con controllo dei dati personali e della coerenza, calcolo secondo la Metodologia, rapporto PDF, conferma con numero di registro, registro dei crediti, nuove versioni | Amministratore |
 | Formato dati | Pagina pubblica con il tracciato Excel standard per i dati dei Comuni | tutti, anche senza accesso |
 | Documentazione | Manuali e registro tecnico da scaricare | tutti (per ruolo) |
 
@@ -162,9 +162,11 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 7.8 | [A] Passo 3: cambiate il nome di una classe; aprite il passo 5 | Controllo di coerenza «Classi … assenti nella delibera»; ripristinate il nome |
 | 7.9 | [A] Passo 6: «Ricava dai dati importati» | Il buffer si compila dai dati |
 | 7.10 | [A] Passo 7: Calcola | Crediti lordi, buffer, crediti netti (o debito), dettaglio per utenza; controlli di coerenza e riquadro «Da verificare» |
-| 7.11 | [A] Scaricate riepilogo e dettaglio (CSV) | I file si aprono con Excel |
-| 7.12 | [A] Conferma calcolo → Conferma definitivamente | Calcolo Confermato, in sola lettura; il passo «Importa il tracciato» non permette più l'import |
-| 7.13 | [A] Nuova versione | Nasce una bozza «(rev.)»; l'originale non cambia |
+| 7.11 | [A] Scaricate riepilogo e dettaglio (CSV) e Scarica il rapporto (PDF) | I CSV si aprono con Excel; il PDF ha la scritta BOZZA su ogni pagina |
+| 7.12 | [A] Conferma calcolo → Conferma definitivamente | Calcolo Confermato con numero di registro CWP-REG-…; in sola lettura; il passo «Importa il tracciato» non permette più l'import |
+| 7.13 | [A] Scarica il rapporto (PDF), poi Archivia il rapporto nella pratica | PDF senza BOZZA, con numero di registro e impronta; nella pratica compare il documento «Rapporto di calcolo dei crediti», non visibile al Comune |
+| 7.14 | [A] Crediti CWP → Registro dei crediti | Il calcolo compare come Valido; totali per ente e anno; CSV scaricabile |
+| 7.15 | [A] Nuova versione, poi Calcola e conferma la nuova versione | Nasce una bozza «(rev.)»; alla conferma riceve un nuovo numero e nel registro la riga precedente diventa «Sostituito da …» |
 
 **File di esempio.** I tre file usati sopra si scaricano da `portale-cwp.vercel.app/documentazione/esempi/` (Tracciato_esempio_compilato.xlsx, Tracciato_esempio_letture.zip, Tracciato_esempio_dati_personali.xlsx) e contengono solo dati inventati, con anno 2025. Per prove proprie usate sempre codici anonimi (U0001, U0002…), mai dati reali di persone.
 
@@ -190,4 +192,4 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 - La verifica in due passaggi per lo staff è pronta ma spenta.
 - Non c'è ancora l'antivirus sui file caricati.
 
-**In sviluppo** (saranno aggiunti al percorso di prova quando disponibili): rapporto di calcolo in PDF e registro dei crediti; registro di sicurezza; antivirus.
+**In sviluppo** (saranno aggiunti al percorso di prova quando disponibili): regole del registro dei crediti previste dallo Standard CWP; registro di sicurezza; antivirus.
