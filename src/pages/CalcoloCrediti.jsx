@@ -5,6 +5,8 @@ import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
 import Badge from "../components/Badge.jsx";
 import TabellaDati from "../components/crediti/TabellaDati.jsx";
+import ImportaTracciato, { ControlliCoerenza } from "../components/crediti/ImportaTracciato.jsx";
+import { controllaCoerenza } from "../lib/crediti/tracciato.js";
 import {
   leggiCalcolo,
   salvaCalcolo,
@@ -24,6 +26,7 @@ const fmt = (v, d = 2) =>
   v == null || !Number.isFinite(Number(v)) ? "—" : Number(v).toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d });
 
 const PASSI = [
+  ["importa", "Importa il tracciato"],
   ["impostazioni", "1. Impostazioni"],
   ["rifiuti", "2. Rifiuti del territorio"],
   ["delibera", "3. Delibera tariffaria"],
@@ -63,6 +66,8 @@ export default function CalcoloCrediti() {
     setConferimenti(c.data || []);
     setRiuso(r.data || []);
     setModificato(false);
+    // Calcolo ancora vuoto: si parte dall'import del tracciato.
+    if (!data.dati?.rifiuti?.length && !(c.data || []).length && data.stato !== "confermato") setPasso("importa");
   }
 
   useEffect(() => {
@@ -205,6 +210,62 @@ export default function CalcoloCrediti() {
     else navigate("/crediti");
   }
 
+  /* Import del tracciato dati (passo «Importa il tracciato»): sostituisce le
+     parti scelte e salva subito, annotando nel calcolo il file di origine. */
+  async function importaTracciato({ tracciato: t, parti, origine }) {
+    setMessaggio(null);
+    const nuovi = { ...dati };
+    if (parti.rifiuti) nuovi.rifiuti = t.rifiuti;
+    if (parti.delibera) {
+      nuovi.classiUd = t.classiUd;
+      nuovi.classiUnd = t.classiUnd;
+    }
+    if (parti.anagrafica) {
+      if (t.anagrafica.pefUd != null) nuovi.pefUd = String(t.anagrafica.pefUd);
+      if (t.anagrafica.pefUnd != null) nuovi.pefUnd = String(t.anagrafica.pefUnd);
+      if (t.anagrafica.tariffaPuntuale != null) nuovi.opzioni = { ...nuovi.opzioni, tariffaPuntuale: t.anagrafica.tariffaPuntuale };
+    }
+    nuovi.importazione = {
+      file: origine.nome,
+      documentoId: origine.documentoId || null,
+      hash: origine.hash || null,
+      importatoIl: new Date().toISOString(),
+      parti: Object.keys(parti).filter((k) => parti[k]),
+      conteggi: t.conteggi,
+    };
+    setInCorso("Salvataggio dei dati importati…");
+    const { error } = await salvaCalcolo(id, {
+      titolo: testa.titolo, anno: Number(testa.anno), tipo: testa.tipo,
+      data_avvio: testa.data_avvio || null, note: testa.note || null, dati: nuovi,
+    });
+    if (error) {
+      setInCorso("");
+      return setMessaggio({ errore: true, testo: "Import non salvato: " + error.message });
+    }
+    if (parti.utenze) {
+      const r = await salvaConferimenti(id, t.conferimenti, (f, tot) => setInCorso(`Banca Dati Utenze: ${f} di ${tot} righe…`));
+      if (r.error) { setInCorso(""); return setMessaggio({ errore: true, testo: "Banca Dati Utenze non salvata: " + r.error.message }); }
+      setConferimenti(t.conferimenti);
+    }
+    if (parti.riuso) {
+      const r = await salvaRiuso(id, t.riuso);
+      if (r.error) { setInCorso(""); return setMessaggio({ errore: true, testo: "Beni a riuso non salvati: " + r.error.message }); }
+      setRiuso(t.riuso);
+    }
+    setDati(nuovi);
+    setModificato(false);
+    setRisultato(null);
+    setInCorso("");
+    setMessaggio({ testo: `Tracciato «${origine.nome}» importato e salvato. Controlla i passi e premi «Calcola».` });
+    setPasso("utenze");
+  }
+
+  // Controlli di coerenza sui dati attuali (solo dove servono: costano su grandi Banche Dati).
+  const psTipologie = Object.fromEntries(dati.fattori.map((f) => [f.id, Number(String(f.ps ?? "").replace(",", ".")) || 0]));
+  const coerenza = ["utenze", "risultati"].includes(passo)
+    ? controllaCoerenza({ anno: testa.anno, rifiuti: dati.rifiuti, pefUd: dati.pefUd, pefUnd: dati.pefUnd, classiUd: dati.classiUd, classiUnd: dati.classiUnd, conferimenti, riuso, ps: psTipologie })
+    : null;
+
   const tipologieOpzioni = dati.fattori.map((f) => ({ valore: f.id, etichetta: f.nome }));
   const salvato = calcolo.risultato;
 
@@ -292,6 +353,10 @@ export default function CalcoloCrediti() {
           </nav>
 
           <section style={riquadro}>
+            {passo === "importa" && (
+              <ImportaTracciato calcolo={calcolo} anno={testa.anno} ps={psTipologie} sola={confermato} ultima={dati.importazione} onImporta={importaTracciato} />
+            )}
+            {(passo === "utenze" || passo === "risultati") && <ControlliCoerenza esiti={coerenza} />}
             {passo === "impostazioni" && (
               <Impostazioni testa={testa} aggiorna={aggiornaTesta} sola={confermato} />
             )}
