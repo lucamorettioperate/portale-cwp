@@ -36,6 +36,7 @@ function vociMenu(ruolo) {
       ["/pratiche", "Pratiche"],
       ["/utenti", "Utenti"],
       ["/audit", "Audit"],
+      ["/anagrafiche", "Anagrafiche"],
       ["/crediti", "Crediti CWP"],
       ["/impostazioni", "Impostazioni"],
       ["/documentazione", "Documentazione"],
@@ -45,6 +46,7 @@ function vociMenu(ruolo) {
     return [
       ["/", "Cruscotto"],
       ["/pratiche", "Pratiche"],
+      ["/anagrafiche", "Anagrafiche"],
       ["/documentazione", "Manuale"],
     ];
   }

@@ -13,8 +13,9 @@
 
    Sicurezza: questi controlli servono all'esperienza d'uso (cosa mostrare).
    Il controllo del ruolo per le pagine Admin (/utenti, /audit, /crediti,
-   /impostazioni) è fatto anche dentro le pagine e, soprattutto, dal
-   database con RLS e funzioni: una rotta aperta per errore non espone dati.
+   /impostazioni) e per la pagina dello staff /anagrafiche è fatto anche
+   dentro le pagine e, soprattutto, dal database con RLS e funzioni: una
+   rotta aperta per errore non espone dati.
 
    Per aggiungere una pagina: importarla qui, aggiungere la <Route> e
    aggiornare la tabella «Pagine» del Registro.
@@ -35,6 +36,7 @@ import VerificaMfa from "./pages/VerificaMfa.jsx";
 import Crediti from "./pages/Crediti.jsx";
 import CalcoloCrediti from "./pages/CalcoloCrediti.jsx";
 import Impostazioni from "./pages/Impostazioni.jsx";
+import Anagrafiche from "./pages/Anagrafiche.jsx";
 import { ElencoConsultazioni, PaginaConsultazione, ConfermaOsservazione } from "./pages/ConsultazioniPubbliche.jsx";
 import FormatoDati from "./pages/FormatoDati.jsx";
 import Documentazione from "./pages/Documentazione.jsx";
@@ -171,6 +173,14 @@ export default function App() {
         element={
           <Protetta>
             <CalcoloCrediti />
+          </Protetta>
+        }
+      />
+      <Route
+        path="/anagrafiche"
+        element={
+          <Protetta>
+            <Anagrafiche />
           </Protetta>
         }
       />

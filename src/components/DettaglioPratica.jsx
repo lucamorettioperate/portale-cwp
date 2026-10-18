@@ -1,7 +1,8 @@
 /* =========================================================================
    DettaglioPratica
    Scopo: pagina di dettaglio di una pratica (Progetto o Rapporto di
-     Monitoraggio) con le sue 7 fasi. Riunisce in un'unica vista:
+     Monitoraggio) con le sue fasi (7 per il Progetto, 4 per il Rapporto).
+     Riunisce in un'unica vista:
      intestazione e stato, Ente di Validazione, cambio di stato, le fasi
      (azioni, integrazioni, note, modelli, documenti), messaggi,
      consultazione pubblica, Rapporti annuali, pagamenti, documenti generali
@@ -55,6 +56,8 @@ import {
   richiediIntegrazione,
   elencaNoteFase,
   elencaModelli,
+  elencaDocumentiRichiesti,
+  elencaDocumenti,
   urlModello,
   elencaEnti,
   impostaEntePratica,
@@ -62,7 +65,7 @@ import {
 import { formatoData, giorniA } from "../lib/date.js";
 import { esportaFascicolo } from "../lib/fascicolo.js";
 
-/* Dettaglio di una pratica con le sue 7 fasi (componente principale).
+/* Dettaglio di una pratica con le sue fasi (componente principale).
    Props:
    - praticaId: id della pratica da mostrare;
    - onAggiornato(): facoltativa, avvisa la pagina che qualcosa è cambiato
@@ -74,6 +77,10 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
   const [integrazioni, setIntegrazioni] = useState([]);
   const [note, setNote] = useState([]);
   const [modelli, setModelli] = useState([]);
+  // Documenti richiesti per fase (script 21) e documenti della pratica, per
+  // l'indicatore «presente / manca» di ogni fase.
+  const [richiesti, setRichiesti] = useState([]);
+  const [documenti, setDocumenti] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
   // Contatore usato nella key dei componenti Documenti: cambiandolo, React
   // li ricrea e quindi rileggono i documenti dopo ogni azione.
@@ -82,21 +89,33 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
   const staff = ruolo === "operatore" || ruolo === "admin";
 
   // Legge in parallelo pratica (con fasi, organizzazione, ente),
-  // integrazioni, note di fase e modelli attivi.
+  // integrazioni, note di fase, modelli attivi, documenti richiesti e
+  // documenti della pratica.
   // silenzioso = true: non mostra «Caricamento…» (ricarica dopo un'azione).
   async function carica(silenzioso = false) {
     if (!silenzioso) setCaricamento(true);
-    const [{ data }, { data: integr }, { data: nt }, { data: mod }] = await Promise.all([
+    const [{ data }, { data: integr }, { data: nt }, { data: mod }, { data: ric }, { data: docs }] = await Promise.all([
       leggiPratica(praticaId),
       elencaIntegrazioni(praticaId),
       elencaNoteFase(praticaId),
       elencaModelli(),
+      elencaDocumentiRichiesti(),
+      elencaDocumenti(praticaId),
     ]);
     setPratica(data);
     setIntegrazioni(integr || []);
     setNote(nt || []);
     setModelli(mod || []);
+    setRichiesti(ric || []);
+    setDocumenti(docs || []);
     setCaricamento(false);
+  }
+
+  // Dopo un caricamento: rilegge solo l'elenco dei documenti (indicatore
+  // dei documenti richiesti), senza ricreare i riquadri dei documenti.
+  async function ricaricaDocumenti() {
+    const { data } = await elencaDocumenti(praticaId);
+    setDocumenti(data || []);
   }
 
   // Dopo ogni azione: ricarica i dati, forza la rilettura dei documenti e
@@ -116,7 +135,7 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
   // Pratica inesistente oppure non visibile per le RLS (es. di un altro Comune).
   if (!pratica) return <Pannello>Pratica non trovata.</Pannello>;
 
-  // Fasi in ordine 1 → 7 (il database non garantisce l'ordine).
+  // Fasi in ordine (il database non garantisce l'ordine).
   const fasi = (pratica.fasi || []).sort((a, b) => a.numero - b.numero);
   const st = STATI_PRATICA[pratica.stato] || STATI_PRATICA.attiva;
 
@@ -152,6 +171,13 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
             Motivazione: {pratica.motivazione_stato}
           </div>
         )}
+        {/* Conservazione per 10 anni (requisiti §12, script 21): la data la
+            imposta il database alla chiusura o all'annullamento. */}
+        {pratica.conservare_fino_al && (
+          <div style={{ fontSize: 12.5, color: C.grafite, marginTop: 6 }}>
+            Da conservare fino al {formatoData(pratica.conservare_fino_al)}
+          </div>
+        )}
         {/* Pratica non attiva: il Comune deve capire perché non può agire (backlog 24) */}
         {!staff && pratica.stato !== "attiva" && (
           <div style={{ marginTop: 12, background: C.ocraSoft, border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 12px", fontSize: 13, lineHeight: 1.5 }}>
@@ -163,7 +189,7 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
         {staff && <CambioStato pratica={pratica} onFatto={dopoAzione} />}
       </div>
 
-      {/* Le 7 fasi */}
+      {/* Le fasi (7 per il Progetto, 4 per il Rapporto) */}
       <div style={{ display: "grid", gap: 10 }}>
         {fasi.map((f) => (
           <Fase
@@ -173,7 +199,10 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
             staff={staff}
             richieste={integrazioni.filter((r) => r.fase_id === f.id)}
             note={note.filter((n) => n.fase_id === f.id)}
-            modelli={modelli.filter((m) => m.fase_numero === f.numero)}
+            modelli={modelli.filter((m) => m.fase_numero === f.numero && (m.tipo_pratica || "progetto") === pratica.tipo)}
+            richiesti={richiesti.filter((r) => r.fase_numero === f.numero && r.tipo_pratica === pratica.tipo)}
+            documentiFase={documenti.filter((d) => d.fase_id === f.id)}
+            onCaricato={ricaricaDocumenti}
             versione={versione}
             onCambio={dopoAzione}
           />
@@ -203,11 +232,13 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
 
 /* Una fase: stato, date, azioni dello staff, integrazioni, documenti.
    Props: fase (riga della tabella fase), pratica, staff, richieste / note /
-   modelli (già filtrati per questa fase dal genitore), versione (per
-   ricaricare i documenti), onCambio() (dopo ogni azione riuscita).
+   modelli / richiesti (documenti richiesti) / documentiFase (già filtrati
+   per questa fase dal genitore), versione (per
+   ricaricare i documenti), onCambio() (dopo ogni azione riuscita),
+   onCaricato() (dopo un caricamento di documento).
    Le azioni (apri, chiudi, richiedi integrazione, modifica scadenza)
    compaiono solo allo staff e solo su pratica attiva. */
-function Fase({ fase: f, pratica, staff, richieste, note, modelli, versione, onCambio }) {
+function Fase({ fase: f, pratica, staff, richieste, note, modelli, richiesti, documentiFase, versione, onCambio, onCaricato }) {
   const [form, setForm] = useState(null); // null | "integrazione" | "scadenza" | "chiusura"
   // Testo del modulo aperto: descrizione dell'integrazione o motivazione.
   const [testo, setTesto] = useState("");
@@ -390,8 +421,13 @@ function Fase({ fase: f, pratica, staff, richieste, note, modelli, versione, onC
         {/* Modelli di documento previsti per questa fase (backlog 12) */}
         {modelli.length > 0 && <ModelliFase modelli={modelli} />}
 
-        {/* Documenti della fase (il Comune non carica su pratica non attiva) */}
-        <Documenti key={`${f.id}-${versione}`} praticaId={pratica.id} fase={f} compatto consentiCaricamento={staff || attiva} />
+        {/* Documenti richiesti per la fase: presente / manca (script 21) */}
+        {richiesti.length > 0 && <DocumentiRichiesti richiesti={richiesti} documenti={documentiFase} />}
+
+        {/* Documenti della fase. Il Comune carica solo su pratica attiva e
+            fase aperta (lo impone anche il database, policy doc_insert dello
+            script 21): l'integrazione termina con la chiusura della fase. */}
+        <Documenti key={`${f.id}-${versione}`} praticaId={pratica.id} fase={f} compatto consentiCaricamento={staff || (attiva && aperta)} richiesti={richiesti.map((r) => r.tipologia)} onCaricato={onCaricato} />
       </div>
     </div>
   );
@@ -420,11 +456,43 @@ function ModelliFase({ modelli }) {
   );
 }
 
+/* Documenti richiesti per la fase (configurati dall'Amministratore in
+   Impostazioni, script 21). Una voce è «presente» se nella fase c'è almeno
+   un documento corrente con quella tipologia. È solo un indicatore: non
+   blocca la chiusura della fase (decisione di Luca del 18/10/2026).
+   Props: richiesti (voci di documento_richiesto per questo tipo e numero di
+   fase), documenti (documenti della fase visibili a chi guarda). */
+function DocumentiRichiesti({ richiesti, documenti }) {
+  const presenti = new Set(documenti.filter((d) => d.corrente).map((d) => d.tipologia));
+  const mancano = richiesti.filter((r) => !presenti.has(r.tipologia)).length;
+  return (
+    <div style={{ marginTop: 12 }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: C.grafite, marginBottom: 6 }}>
+        Documenti richiesti {mancano === 0 ? "· tutti presenti" : `· ne mancano ${mancano}`}
+      </div>
+      <div style={{ display: "grid", gap: 4 }}>
+        {richiesti.map((r) => {
+          const ok = presenti.has(r.tipologia);
+          return (
+            <div key={r.id} style={{ fontSize: 12.5, display: "flex", gap: 8, alignItems: "baseline" }}>
+              <span style={{ fontWeight: 700, color: ok ? C.green : C.amber, minWidth: 64 }}>{ok ? "✓ presente" : "○ manca"}</span>
+              <span>
+                {r.tipologia}
+                {r.descrizione && <span style={{ color: C.grafite }}> — {r.descrizione}</span>}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* Ente di Validazione della pratica: il Comune lo vede, lo staff lo assegna.
    Props: pratica (con l'ente collegato), staff, onFatto() dopo il salvataggio.
    L'assegnazione passa da staff_imposta_ente_validazione (script 17), che
    accetta solo enti attivi e solo dallo staff. L'anagrafica degli enti si
-   gestisce in Impostazioni (impostazioni/EntiValidazione.jsx). */
+   gestisce nella pagina Anagrafiche (impostazioni/EntiValidazione.jsx). */
 function EnteValidazione({ pratica, staff, onFatto }) {
   // null = selettore chiuso; un elenco = selettore aperto con quegli enti.
   const [enti, setEnti] = useState(null);
@@ -459,7 +527,7 @@ function EnteValidazione({ pratica, staff, onFatto }) {
           </select>
           <button onClick={salva} style={btnPrimario}>Salva</button>
           <button onClick={() => setEnti(null)} style={btnMini}>Annulla</button>
-          {enti.length === 0 && <span>Nessun ente censito: l'Amministratore li inserisce in Impostazioni.</span>}
+          {enti.length === 0 && <span>Nessun ente censito: si inseriscono nella pagina Anagrafiche.</span>}
         </>
       )}
       {errore && <span style={{ color: C.red }}>{errore}</span>}

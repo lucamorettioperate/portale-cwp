@@ -20,7 +20,7 @@
 import React, { useEffect, useState } from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import Badge from "./Badge.jsx";
-import { elencaPagamenti, salvaPagamento } from "../lib/dati.js";
+import { elencaPagamenti, salvaPagamento, nomiUtenti } from "../lib/dati.js";
 import { formatoData, giorniA, oggiIso } from "../lib/date.js";
 
 /* Riquadro dei pagamenti di una pratica.
@@ -31,11 +31,15 @@ export default function Pagamenti({ praticaId, solaLettura = false }) {
   const [modulo, setModulo] = useState(null); // voce in modifica o nuova
   const [errore, setErrore] = useState("");
   const [inCorso, setInCorso] = useState(false);
+  // Nomi degli operatori che hanno registrato le voci (solo per lo staff,
+  // requisiti §7: «operatore»): { [id]: nome }.
+  const [operatori, setOperatori] = useState({});
 
   // Rilegge le voci, ordinate per scadenza (prima le più vicine).
   async function carica() {
     const { data } = await elencaPagamenti(praticaId);
     setVoci(data || []);
+    if (!solaLettura) setOperatori(await nomiUtenti((data || []).map((v) => v.registrato_da)));
   }
 
   useEffect(() => {
@@ -112,6 +116,7 @@ export default function Pagamenti({ praticaId, solaLettura = false }) {
                   {v.scadenza && <>Scadenza {formatoData(v.scadenza)}</>}
                   {v.pagato && <> · {solaLettura ? "pagamento registrato il" : "incassato il"} {formatoData(v.data_pagamento)}</>}
                   {v.riferimento && <> · rif. {v.riferimento}</>}
+                  {!solaLettura && v.registrato_da && <> · registrato da {operatori[v.registrato_da] || "—"}</>}
                 </div>
               </div>
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>

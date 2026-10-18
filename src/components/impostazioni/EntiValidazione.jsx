@@ -1,18 +1,20 @@
 /* =========================================================================
    EntiValidazione
    Scopo: anagrafica degli Enti di Validazione (backlog 11), sezione della
-     pagina Impostazioni. Elenco degli enti, inserimento di un nuovo ente,
-     modifica e disattivazione. L'ente non accede al portale: serve per
+     pagina Anagrafiche. Elenco degli enti con i Progetti a cui sono
+     assegnati (requisiti §3), inserimento di un nuovo ente, modifica e
+     disattivazione. L'ente non accede al portale: serve per
      assegnarlo alle pratiche (intestazione della pratica, componente
      EnteValidazione in DettaglioPratica.jsx). Un ente non si cancella, si
      disattiva: resta sulle pratiche a cui era assegnato.
-   Usato da: pagina Impostazioni (/impostazioni).
-   Chi lo vede: admin.
+   Usato da: pagina Anagrafiche (/anagrafiche).
+   Chi lo vede: operatore e admin.
    Dati: elencaEnti, salvaEnte (src/lib/dati.js) sulla tabella
      ente_validazione (script 17).
    Sicurezza (garantita dal database, script 17): leggono gli enti tutti
-     gli utenti autenticati; solo gli Amministratori inseriscono e
-     modificano (RLS ente_write con app_is_admin); un ente disattivato non
+     gli utenti autenticati; Operatori e Amministratori inseriscono e
+     modificano (RLS ente_insert / ente_update, script 21), nessuno
+     cancella; un ente disattivato non
      si può assegnare a nuove pratiche (staff_imposta_ente_validazione). Le
      modifiche sono registrate nell'audit.
    Registro sviluppo e deploy: capitolo «Portale (frontend)»
@@ -23,8 +25,10 @@ import Badge from "../Badge.jsx";
 import { elencaEnti, salvaEnte } from "../../lib/dati.js";
 import { riquadro, campo, etichetta, btnPrimario, btnMini } from "../stili.js";
 
-/* Sezione «Enti di Validazione» delle Impostazioni. Nessuna prop. */
-export default function EntiValidazione() {
+/* Sezione «Enti di Validazione» delle Anagrafiche.
+   Props: pratiche (elenco sintetico di tutte le pratiche, per mostrare i
+   Progetti assegnati a ogni ente). */
+export default function EntiValidazione({ pratiche = [] }) {
   const [enti, setEnti] = useState([]);
   // null = modulo chiuso; un oggetto = ente in modifica (con id) o nuovo (senza id).
   const [modulo, setModulo] = useState(null);
@@ -75,8 +79,8 @@ export default function EntiValidazione() {
         {!modulo && <button onClick={() => setModulo(nuovo)} style={btnPrimario}>+ Nuovo ente</button>}
       </div>
       <p style={{ fontSize: 13, color: C.grafite, margin: "6px 0 14px", lineHeight: 1.5 }}>
-        Gli enti che validano e verificano i Progetti (ad esempio RINA). Non accedono al portale: Operatori e
-        Amministratori li assegnano alle pratiche dall'intestazione della pratica.
+        Gli enti che validano e verificano i Progetti (ad esempio RINA). Non accedono al portale: si assegnano
+        alle pratiche dall'intestazione della pratica.
       </p>
 
       {enti.length === 0 && !modulo && <div style={{ fontSize: 13, color: C.grafite }}>Nessun ente censito.</div>}
@@ -88,6 +92,12 @@ export default function EntiValidazione() {
               {e.identificativo && <> · {e.identificativo}</>}
               <div style={{ fontSize: 11.5, color: C.grafite }}>
                 {[e.accreditamento && `Accreditamento: ${e.accreditamento}`, e.referente, e.email, e.telefono].filter(Boolean).join(" · ") || "—"}
+              </div>
+              <div style={{ fontSize: 11.5, color: C.grafite }}>
+                {(() => {
+                  const assegnate = pratiche.filter((p) => p.ente_validazione_id === e.id);
+                  return assegnate.length ? `Pratiche assegnate: ${assegnate.map((p) => p.codice || p.titolo).join(", ")}` : "Nessuna pratica assegnata";
+                })()}
               </div>
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>

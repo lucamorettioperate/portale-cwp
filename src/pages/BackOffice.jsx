@@ -2,7 +2,7 @@
    Pratiche (Back-office) — indirizzo «/pratiche» (con «?id=<pratica>» si
    apre direttamente una pratica)
    Scopo: a sinistra l'elenco dei Progetti (con ricerca oltre 4 voci), a
-     destra il dettaglio della pratica scelta con le 7 fasi, documenti,
+     destra il dettaglio della pratica scelta con le sue fasi, documenti,
      integrazioni, consultazione, pagamenti, rapporti. Pulsante
      «+ Nuovo progetto» per registrare un nuovo Progetto.
    Chi la usa: Operatore e Amministratore. Un cliente che apre l'indirizzo

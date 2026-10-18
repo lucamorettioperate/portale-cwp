@@ -5,7 +5,8 @@
    alle scadenze e ottenere la data di oggi in formato ISO (anche la data
    italiana, indipendente dal fuso del computer).
 
-   Usato da: src/lib/dati.js (apertura della consultazione); pagine Cruscotto, CalcoloCrediti, Crediti, TuoiDocumenti,
+   Usato da: src/lib/fascicolo.js e crediti/RegistroCrediti (nomi dei file
+   con la data italiana); pagine Cruscotto, CalcoloCrediti, Crediti, TuoiDocumenti,
    ConsultazioniPubbliche; componenti DettaglioPratica, Consultazione,
    Integrazioni, Notifiche, Pagamenti, crediti/ImportaTracciato,
    crediti/RegistroCrediti.

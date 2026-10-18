@@ -20,8 +20,11 @@
      «allegati-consultazione»; funzioni rispondi_commento (script 07),
      staff_errata_corrige e staff_autori_commenti (script 17).
    Sicurezza:
-     - garantito dal database: solo lo staff apre, chiude e modera
-       (RLS consult_write, commento_update); nome ed email degli autori non
+     - garantito dal database: solo lo staff apre e chiude (funzioni
+       staff_apri_consultazione e staff_chiudi_consultazione, script 21) e
+       modera (RLS commento_update); il documento in consultazione diventa
+       pubblico e resta bloccato finché la consultazione è attiva (si
+       sostituisce solo con l'errata corrige, script 21); nome ed email degli autori non
        sono leggibili dal portale (colonne escluse, script 17) e lo staff li
        ottiene solo con staff_autori_commenti; il Comune risponde solo alle
        osservazioni ammesse (rispondi_commento); gli allegati delle
@@ -31,8 +34,10 @@
      - il Comune legge solo le osservazioni ammesse (Pubblicato /
        Risposto): lo garantisce la policy commento_select dello script 19;
        il filtro commentiVisibili qui sotto resta come seconda difesa.
-     Notifiche: apertura della consultazione (al Comune) e nuove
-     osservazioni (allo staff) le genera il database.
+     Notifiche: apertura della consultazione e osservazione ammessa (al
+     Comune), nuove osservazioni (allo staff) le genera il database.
+     Ogni osservazione ha un numero progressivo per consultazione
+     (commento.numero, script 21), mostrato come «Osservazione n. X».
    Registro sviluppo e deploy: capitolo «Portale (frontend)»
    ========================================================================= */
 import React, { useEffect, useState } from "react";
@@ -83,6 +88,10 @@ export default function Consultazione({ praticaId }) {
   // true mentre un'azione è in corso: disabilita i pulsanti.
   const [azione, setAzione] = useState(false);
   const [errore, setErrore] = useState("");
+  // Moderazione «Non pubblicare»: id dell'osservazione con il modulo della
+  // motivazione aperto (facoltativa, requisiti §6) e testo in scrittura.
+  const [rifiuto, setRifiuto] = useState(null);
+  const [motivoRifiuto, setMotivoRifiuto] = useState("");
 
   // Legge consultazione, documenti, errata corrige e (solo staff) gli autori.
   // Se non c'è consultazione, preseleziona il documento più recente.
@@ -167,6 +176,7 @@ export default function Consultazione({ praticaId }) {
             <div>
               <p style={{ fontSize: 13, color: C.grafite, margin: "0 0 10px" }}>
                 Pubblica un documento per avviare la consultazione di 30 giorni sulla pagina pubblica del portale.
+                Il documento diventa pubblico e resta bloccato fino alla chiusura: per sostituirlo si usa l'errata corrige.
               </p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <select value={docSel} onChange={(e) => setDocSel(e.target.value)} style={{ ...campo, width: "auto", minWidth: 260 }}>
@@ -238,6 +248,7 @@ export default function Consultazione({ praticaId }) {
                 <div key={c.id} style={{ border: `1px solid ${C.line}`, borderRadius: 9, padding: "11px 13px", background: c.stato === "non_pubblicato" ? "#faf8f3" : C.white }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 12, fontWeight: 600, color: C.grafite }}>
+                      {c.numero && <b style={{ color: C.ink }}>Osservazione n. {c.numero} · </b>}
                       {/* Staff: identità reale dell'autore; Comune: solo la firma pubblica. */}
                       {staff && a ? (
                         <>
@@ -256,6 +267,9 @@ export default function Consultazione({ praticaId }) {
                   {c.allegato_path && (
                     <button onClick={() => apriAllegato(c.allegato_path)} style={{ ...btnLink, marginTop: 6 }}>Allegato: {c.allegato_nome || "file"}</button>
                   )}
+                  {staff && c.stato === "non_pubblicato" && c.motivazione_moderazione && (
+                    <div style={{ fontSize: 12, color: C.grafite, marginTop: 6 }}>Motivazione della non pubblicazione: {c.motivazione_moderazione}</div>
+                  )}
                   {c.risposta_testo && (
                     <div style={{ fontSize: 12.5, marginTop: 8, padding: "8px 10px", background: C.greenSoft, borderRadius: 7 }}>
                       <b>Risposta del Comune:</b> {c.risposta_testo}
@@ -269,12 +283,32 @@ export default function Consultazione({ praticaId }) {
                   {/* Moderazione (staff, consultazione attiva): «ricevuto» →
                       Pubblica o Non pubblicare; «pubblicato» → Non pubblicare.
                       Un'osservazione già risposta non si modera più. */}
-                  {staff && cons.attiva && (c.stato === "ricevuto" || c.stato === "pubblicato") && (
+                  {staff && cons.attiva && (c.stato === "ricevuto" || c.stato === "pubblicato") && rifiuto !== c.id && (
                     <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                       {c.stato === "ricevuto" && (
                         <button onClick={() => esegui(() => moderaCommento(c.id, "pubblicato", null))} disabled={azione} style={{ ...btnMini, color: C.green, borderColor: C.green }}>Pubblica</button>
                       )}
-                      <button onClick={() => esegui(() => moderaCommento(c.id, "non_pubblicato", "Non ammesso dal moderatore"))} disabled={azione} style={{ ...btnMini, color: C.red }}>Non pubblicare</button>
+                      <button onClick={() => { setRifiuto(c.id); setMotivoRifiuto(""); }} disabled={azione} style={{ ...btnMini, color: C.red }}>Non pubblicare</button>
+                    </div>
+                  )}
+                  {/* «Non pubblicare»: l'osservazione non si cancella; la
+                      motivazione (facoltativa) resta nella pratica e nell'audit. */}
+                  {staff && rifiuto === c.id && (
+                    <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+                      <label style={etichetta}>
+                        Motivazione (facoltativa, non è pubblica)
+                        <input value={motivoRifiuto} onChange={(e) => setMotivoRifiuto(e.target.value)} style={campo} placeholder="Es. fuori tema, contenuto offensivo, duplicato dell'osservazione n. 2" />
+                      </label>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          onClick={async () => { if (await esegui(() => moderaCommento(c.id, "non_pubblicato", motivoRifiuto.trim() || null))) setRifiuto(null); }}
+                          disabled={azione}
+                          style={{ ...btnMini, color: C.red }}
+                        >
+                          Conferma: non pubblicare
+                        </button>
+                        <button onClick={() => setRifiuto(null)} style={btnMini}>Annulla</button>
+                      </div>
                     </div>
                   )}
                 </div>

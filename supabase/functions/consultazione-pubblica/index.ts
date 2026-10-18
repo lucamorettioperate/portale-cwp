@@ -164,8 +164,8 @@ async function dettaglio(admin: any, id: string) {
     .select("testo, riparte, nuova_chiusura, creato_il, documento:documento_id (nome, versione, storage_path)")
     .eq("consultazione_id", id).order("creato_il", { ascending: true });
   const { data: commenti } = await admin.from("commento")
-    .select("testo, firma_pubblica, risposta_testo, creato_il")
-    .eq("consultazione_id", id).in("stato", ["pubblicato", "risposto"]).order("creato_il", { ascending: true });
+    .select("numero, testo, firma_pubblica, risposta_testo, creato_il")
+    .eq("consultazione_id", id).in("stato", ["pubblicato", "risposto"]).order("numero", { ascending: true });
 
   return {
     consultazione: {
@@ -179,7 +179,9 @@ async function dettaglio(admin: any, id: string) {
         documento: e.documento ? `${e.documento.nome} (v${e.documento.versione})` : null,
         documento_url: await firma(admin, e.documento?.storage_path),
       }))),
+      // numero: progressivo dell'osservazione nella consultazione (script 21).
       osservazioni: (commenti || []).map((o: any) => ({
+        numero: o.numero,
         testo: o.testo,
         autore: o.firma_pubblica || "Partecipante",
         risposta: o.risposta_testo,

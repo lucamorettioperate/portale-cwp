@@ -48,10 +48,17 @@ import { ACCEPT, FORMATI_LEGGIBILI } from "../lib/file.js";
      altrimenti mostra i documenti generali della pratica (senza fase);
    - compatto: true sotto una fase (niente riquadro, titolo più piccolo);
    - consentiCaricamento: false per il Comune sulle pratiche non attive
-     (sospese, annullate, chiuse): il pulsante «+ Carica» non compare
-     (backlog 24; il database rifiuta comunque il caricamento, script 08).
+     (sospese, annullate, chiuse) e sulle fasi non aperte: il pulsante
+     «+ Carica» non compare (backlog 24; il database rifiuta comunque il
+     caricamento, script 08 e 21).
+   - richiesti: tipologie dei documenti richiesti per la fase (script 21);
+     compaiono per prime nel menu della tipologia e, se ci sono, anche il
+     Comune sceglie la tipologia del file (serve all'indicatore
+     «presente / manca» della fase);
+   - onCaricato(): facoltativa, chiamata dopo un caricamento riuscito (la
+     pratica aggiorna l'indicatore dei documenti richiesti).
    Il cliente carica i propri; lo staff carica e imposta la visibilità. */
-export default function Documenti({ praticaId, fase = null, compatto = false, consentiCaricamento = true }) {
+export default function Documenti({ praticaId, fase = null, compatto = false, consentiCaricamento = true, richiesti = [], onCaricato }) {
   const { ruolo, utente } = useAuth();
   const staff = ruolo === "operatore" || ruolo === "admin";
   const faseId = fase ? fase.id : null; // null = documenti generali
@@ -65,7 +72,11 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
   // opzioni = true: lo staff ha premuto «+ Carica» e vede la barra delle
   // opzioni con il pulsante «Scegli il file».
   const [opzioni, setOpzioni] = useState(false);
-  const [tipologia, setTipologia] = useState(fase ? "Documento di progetto" : "Contratto");
+  // Voci del menu della tipologia: prima i documenti richiesti dalla fase.
+  const opzioniTipologia = [...new Set([...richiesti, ...TIPOLOGIE_DOCUMENTO])];
+  const [tipologia, setTipologia] = useState(richiesti[0] || (fase ? "Documento di progetto" : "Contratto"));
+  // Il Comune sceglie la tipologia solo se la fase ha documenti richiesti.
+  const clienteSceglie = !staff && richiesti.length > 0;
   const [visCliente, setVisCliente] = useState(true);
   const [pubblico, setPubblico] = useState(false);
 
@@ -94,7 +105,7 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
       praticaId,
       faseId,
       file,
-      tipologia: staff ? tipologia : null,
+      tipologia: staff || clienteSceglie ? tipologia : null,
       visibileCliente: staff ? visCliente : true,
       visibileFondazione: true,
       pubblico: staff ? pubblico : false,
@@ -105,6 +116,7 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
       setErrore("Caricamento non riuscito: " + error.message);
     } else {
       await carica();
+      onCaricato && onCaricato();
     }
     setInUpload(false);
     // Svuota il selettore: così si può ricaricare anche lo stesso file.
@@ -187,11 +199,21 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
 
       {consentiCaricamento && <div style={{ fontSize: 11.5, color: C.grafite, margin: "-6px 0 10px" }}>Formati accettati: {FORMATI_LEGGIBILI}</div>}
 
+      {/* Comune: quale dei documenti richiesti sta caricando */}
+      {consentiCaricamento && clienteSceglie && (
+        <label style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", fontSize: 12.5, marginBottom: 10 }}>
+          Che documento state caricando?
+          <select value={tipologia} onChange={(e) => setTipologia(e.target.value)} style={{ padding: "6px 8px", border: `1px solid ${C.line}`, borderRadius: 7, fontSize: 12.5 }}>
+            {opzioniTipologia.map((t) => <option key={t}>{t}</option>)}
+          </select>
+        </label>
+      )}
+
       {/* Opzioni dello staff prima di scegliere il file */}
       {staff && opzioni && (
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", padding: 10, background: C.paper, border: `1px solid ${C.line}`, borderRadius: 9, marginBottom: 10, fontSize: 12.5 }}>
           <select value={tipologia} onChange={(e) => setTipologia(e.target.value)} aria-label="Tipologia del documento" style={{ padding: "6px 8px", border: `1px solid ${C.line}`, borderRadius: 7, fontSize: 12.5 }}>
-            {TIPOLOGIE_DOCUMENTO.map((t) => <option key={t}>{t}</option>)}
+            {opzioniTipologia.map((t) => <option key={t}>{t}</option>)}
           </select>
           <label style={{ display: "flex", gap: 5, alignItems: "center" }}>
             <input type="checkbox" checked={visCliente} onChange={(e) => setVisCliente(e.target.checked)} /> Visibile al Cliente

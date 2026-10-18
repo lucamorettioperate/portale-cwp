@@ -2,8 +2,9 @@
    ModelliDocumento
    Scopo: modelli di documento (backlog 12), sezione della pagina
      Impostazioni. L'Amministratore carica i modelli che i Comuni scaricano:
-     un modello può valere per una fase (compare dentro quella fase in ogni
-     pratica) o essere generale (compare in «I tuoi documenti»). Per
+     un modello può valere per una fase di un tipo di pratica (Progetto o
+     Rapporto: compare dentro quella fase in ogni pratica di quel tipo) o
+     essere generale (compare in «I tuoi documenti»). Per
      aggiornare un modello se ne carica uno nuovo e si ritira il vecchio: i
      file non si sovrascrivono. «Ritira» / «Ripubblica» cambia solo il
      campo attivo.
@@ -20,7 +21,7 @@
    Registro sviluppo e deploy: capitolo «Portale (frontend)»
    ========================================================================= */
 import React, { useEffect, useRef, useState } from "react";
-import { COLORI as C, FASI } from "../../lib/cwpProgram.js";
+import { COLORI as C, fasiDi, TIPI_PRATICA } from "../../lib/cwpProgram.js";
 import Badge from "../Badge.jsx";
 import { elencaModelli, caricaModello, aggiornaModello, urlModello } from "../../lib/dati.js";
 import { ACCEPT, FORMATI_LEGGIBILI } from "../../lib/file.js";
@@ -30,7 +31,8 @@ import { riquadro, campo, etichetta, btnPrimario, btnMini, btnLink } from "../st
 export default function ModelliDocumento() {
   const [modelli, setModelli] = useState([]);
   // null = modulo chiuso; { titolo, descrizione, fase } = nuovo modello.
-  // fase è una stringa: "" = generale, "1"…"7" = numero della fase.
+  // fase è una stringa: "" = generale, "progetto:3" / "rapporto:2" = tipo
+  // di pratica e numero della fase.
   const [modulo, setModulo] = useState(null);
   const [errore, setErrore] = useState("");
   const [inCorso, setInCorso] = useState(false);
@@ -57,7 +59,8 @@ export default function ModelliDocumento() {
       file,
       titolo: modulo.titolo.trim(),
       descrizione: (modulo.descrizione || "").trim() || null,
-      faseNumero: modulo.fase ? Number(modulo.fase) : null,
+      faseNumero: modulo.fase ? Number(modulo.fase.split(":")[1]) : null,
+      tipoPratica: modulo.fase ? modulo.fase.split(":")[0] : null,
     });
     setInCorso(false);
     if (error) return setErrore("Modello non caricato: " + error.message);
@@ -80,8 +83,10 @@ export default function ModelliDocumento() {
     if (data?.signedUrl) window.location.href = data.signedUrl;
   }
 
-  // Testo «Fase N · nome» oppure «Generale» (fase_numero null).
-  const nomeFase = (n) => (n ? `Fase ${n} · ${FASI.find((f) => f.numero === n)?.nome || ""}` : "Generale");
+  // Testo «Progetto · Fase N · nome» oppure «Generale» (fase_numero null).
+  // I modelli caricati prima dello script 21 senza tipo valgono per i Progetti.
+  const nomeFase = (n, tipo = "progetto") =>
+    n ? `${TIPI_PRATICA[tipo]} · Fase ${n} · ${fasiDi(tipo).find((f) => f.numero === n)?.nome || ""}` : "Generale";
 
   return (
     <section style={{ ...riquadro, marginTop: 18 }}>
@@ -99,7 +104,7 @@ export default function ModelliDocumento() {
         {modelli.map((m) => (
           <div key={m.id} style={{ border: `1px solid ${C.line}`, borderRadius: 9, padding: "9px 12px", display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", opacity: m.attivo ? 1 : 0.6 }}>
             <div style={{ fontSize: 13, minWidth: 0 }}>
-              <b>{m.titolo}</b> <span style={{ color: C.grafite }}>· {nomeFase(m.fase_numero)}</span>
+              <b>{m.titolo}</b> <span style={{ color: C.grafite }}>· {nomeFase(m.fase_numero, m.tipo_pratica || "progetto")}</span>
               <div style={{ fontSize: 11.5, color: C.grafite }}>
                 <button onClick={() => scarica(m)} style={{ ...btnLink, fontSize: 11.5 }}>{m.nome_file}</button>
                 {m.descrizione && <> · {m.descrizione}</>}
@@ -124,7 +129,11 @@ export default function ModelliDocumento() {
               Dove compare
               <select value={modulo.fase} onChange={(e) => setModulo({ ...modulo, fase: e.target.value })} style={campo}>
                 <option value="">Generale (I tuoi documenti)</option>
-                {FASI.map((f) => <option key={f.numero} value={f.numero}>Fase {f.numero} · {f.nome}</option>)}
+                {["progetto", "rapporto"].map((tipo) => (
+                  <optgroup key={tipo} label={TIPI_PRATICA[tipo]}>
+                    {fasiDi(tipo).map((f) => <option key={f.numero} value={`${tipo}:${f.numero}`}>Fase {f.numero} · {f.nome}</option>)}
+                  </optgroup>
+                ))}
               </select>
             </label>
           </div>

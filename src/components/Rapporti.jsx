@@ -2,15 +2,17 @@
    Rapporti
    Scopo: elenco dei Rapporti di Monitoraggio annuali di un Progetto
      (requisiti §2): fino a 10, uno per anno, in sequenza. Ognuno è una
-     pratica autonoma (tipo «rapporto») con le sue 7 fasi. Lo staff può
+     pratica autonoma (tipo «rapporto») con le sue 4 fasi (Caricamento del
+     rapporto, Verifica documentale, Validazione e verifica, Chiusura; script
+     21). Lo staff può
      creare il Rapporto dell'anno successivo; un clic apre il Rapporto.
    Usato da: DettaglioPratica.jsx (solo per le pratiche di tipo progetto).
    Chi lo vede: cliente/Comune (sola consultazione), operatore e admin
      (anche il pulsante «+ Rapporto anno N»).
    Dati: elencaRapporti, creaRapporto (src/lib/dati.js) sulla tabella
      pratica (righe con progetto_padre_id = progetto) e fase.
-   Sicurezza: solo lo staff può creare pratiche (RLS pratica_write,
-     script 02). Il limite di 10 è controllato da creaRapporto e dal vincolo
+   Sicurezza: solo lo staff può creare pratiche (staff_crea_pratica e RLS
+     pratica_insert, script 20-21). Il limite di 10 è controllato da creaRapporto e dal vincolo
      della tabella (anno_monitoraggio tra 1 e 10, script 01). Il codice
      (es. CWP-2026-0001-RM1) lo assegna un trigger del database (script 09).
    Registro sviluppo e deploy: capitolo «Portale (frontend)»
@@ -40,7 +42,7 @@ export default function Rapporti({ progetto, staff, onApri, onCreato }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progetto.id]);
 
-  // Crea il Rapporto dell'anno successivo (con le 7 fasi, la prima in
+  // Crea il Rapporto dell'anno successivo (con le 4 fasi, la prima in
   // corso), ricarica l'elenco e apre subito il nuovo Rapporto.
   async function nuovo() {
     setErrore("");

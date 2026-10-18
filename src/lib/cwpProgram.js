@@ -2,7 +2,7 @@
    cwpProgram.js — dati di riferimento del Programma Carbon WastePrint.
 
    Scopo: costanti condivise da tutto il portale, allineate all'analisi
-   funzionale: le 7 fasi, i 3 ruoli applicativi, gli stati di pratica e di
+   funzionale: le 7 fasi del Progetto e le 4 del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di
    fase (con i colori dei badge), la palette e le tipologie di documento.
 
    Usato da: quasi tutte le pagine e i componenti (COLORI in particolare),
@@ -29,6 +29,22 @@ export const FASI = [
   { numero: 6, nome: "Seconda verifica documentale", g_da: 135, g_a: 150, responsabile: "Soggetto Promotore" },
   { numero: 7, nome: "Chiusura", g_da: 150, g_a: 150, responsabile: "Soggetto Promotore" },
 ];
+
+// Le 4 fasi di un Rapporto di Monitoraggio annuale (decisione di Luca del
+// 18/10/2026, script 21): nessuna consultazione pubblica. Durate iniziali
+// in durata_fase con tipo_pratica = 'rapporto' (0/10/75/15 giorni).
+export const FASI_RAPPORTO = [
+  { numero: 1, nome: "Caricamento del rapporto", g_da: 0, g_a: 0, responsabile: "Soggetto Promotore" },
+  { numero: 2, nome: "Verifica documentale", g_da: 0, g_a: 10, responsabile: "Soggetto Promotore" },
+  { numero: 3, nome: "Validazione e verifica", g_da: 10, g_a: 85, responsabile: "Ente di Validazione" },
+  { numero: 4, nome: "Chiusura", g_da: 85, g_a: 100, responsabile: "Soggetto Promotore" },
+];
+
+// Fasi del percorso di un tipo di pratica ("progetto" | "rapporto").
+export const fasiDi = (tipo) => (tipo === "rapporto" ? FASI_RAPPORTO : FASI);
+
+// Nomi dei tipi di pratica, per elenchi e menu.
+export const TIPI_PRATICA = { progetto: "Progetto", rapporto: "Rapporto di Monitoraggio" };
 
 // I tre ruoli applicativi (chiavi = valori di profilo.ruolo).
 // label/short/sub: testi mostrati; color/soft: colori del badge.

@@ -108,7 +108,8 @@ export function ElencoConsultazioni() {
    se la consultazione è aperta, il modulo di invio.
    La consultazione `c` arriva dalla Edge Function con: codice, ente,
    titolo, date, aperta, documento e documento_url (indirizzo firmato
-   temporaneo), errata[], osservazioni[] (autore = «Partecipante» o nome). */
+   temporaneo), errata[], osservazioni[] (numero progressivo, autore =
+   «Partecipante» o nome). */
 export function PaginaConsultazione() {
   const { id } = useParams();
   const [stato, setStato] = useState({ caricamento: true });
@@ -164,7 +165,7 @@ export function PaginaConsultazione() {
             {c.osservazioni.length === 0 && <div style={{ fontSize: 13.5, color: C.grafite }}>Nessuna osservazione pubblicata finora.</div>}
             {c.osservazioni.map((o, i) => (
               <div key={i} style={{ borderTop: i ? `1px solid ${C.line}` : "none", paddingTop: i ? 12 : 0, marginTop: i ? 12 : 0 }}>
-                <div style={{ fontSize: 12, color: C.grafite, fontWeight: 600 }}>{o.autore} · {formatoData(o.creato_il)}</div>
+                <div style={{ fontSize: 12, color: C.grafite, fontWeight: 600 }}>{o.numero ? `Osservazione n. ${o.numero} · ` : ""}{o.autore} · {formatoData(o.creato_il)}</div>
                 <div style={{ fontSize: 14, marginTop: 4, lineHeight: 1.55, whiteSpace: "pre-wrap" }}>{o.testo}</div>
                 {o.risposta && (
                   <div style={{ fontSize: 13.5, marginTop: 8, padding: "8px 10px", background: C.greenSoft, borderRadius: 8 }}>

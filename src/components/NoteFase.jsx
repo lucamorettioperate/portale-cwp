@@ -1,6 +1,6 @@
 /* =========================================================================
    NoteFase
-   Scopo: note scritte sotto una delle 7 fasi di una pratica (backlog 10).
+   Scopo: note scritte sotto una delle fasi di una pratica (backlog 10).
      Lo staff legge tutte le note e ne aggiunge di nuove, interne (solo
      Fondazione) o condivise con il Comune; il Comune vede solo le condivise.
    Usato da: DettaglioPratica.jsx (una volta per ogni fase).
