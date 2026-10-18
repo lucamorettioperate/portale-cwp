@@ -1,8 +1,27 @@
+/* =========================================================================
+   Accesso — indirizzo «/login»
+   Scopo: accesso con email e password; «Password dimenticata?» per farsi
+     mandare il collegamento di reimpostazione; link alle pagine pubbliche
+     (formato dei dati, consultazioni pubbliche, Manuale Utente in PDF).
+     Dopo l'accesso riuscito non naviga da sola: è PaginaLogin in
+     src/App.jsx che, vedendo la sessione, porta alla pagina richiesta
+     all'inizio (es. il link di un'email) o a «/».
+   Chi la usa: tutti, prima dell'accesso.
+   Dati: accedi() e richiediRecuperoPassword() di src/lib/AuthContext.jsx
+     (Supabase Auth signInWithPassword; Edge Function "recupera-password",
+     che spedisce l'email in italiano con Resend).
+   Sicurezza: credenziali verificate da Supabase Auth. I messaggi d'errore
+     sono volutamente generici: non dicono se l'email esiste. Password
+     temporanea e verifica a due fattori sono gestite dopo l'accesso
+     (Protetta in App.jsx).
+   Registro sviluppo e deploy: capitolo «Portale (frontend)».
+   ========================================================================= */
 import React, { useState } from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 
-/* Pagina di accesso — email e password. */
+/* Pagina di accesso — email e password. Nessuna prop.
+   Al posto del modulo può mostrare RecuperoPassword (vedi stato `recupero`). */
 export default function Login() {
   const { accedi, backendPronto, richiediRecuperoPassword } = useAuth();
   // "Password dimenticata?": null = modulo di accesso; "modulo"; "inviata".

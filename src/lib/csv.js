@@ -28,6 +28,7 @@
 // Il separatore si deduce dalla prima riga: ";" se compare almeno quante
 // volte la ",", altrimenti ",". Dentro le virgolette "" vale come ".
 export function leggiCsv(testo) {
+  // Toglie l'eventuale BOM UTF-8 iniziale aggiunto da Excel.
   const pulito = testo.replace(/^﻿/, "");
   const primaRiga = pulito.split(/\r?\n/)[0] || "";
   const sep = (primaRiga.match(/;/g) || []).length >= (primaRiga.match(/,/g) || []).length ? ";" : ",";
@@ -141,6 +142,9 @@ export function scriviCsv(intestazioni, righe) {
 }
 
 // Fa scaricare un file di testo al browser.
+// Parametri: nome del file, contenuto (testo), tipo MIME (predefinito CSV).
+// Crea un collegamento temporaneo e lo "clicca"; l'indirizzo blob si libera
+// dopo 5 secondi, quando il download è già partito.
 export function scaricaTesto(nome, contenuto, tipo = "text/csv;charset=utf-8") {
   const blob = new Blob([contenuto], { type: tipo });
   const url = URL.createObjectURL(blob);

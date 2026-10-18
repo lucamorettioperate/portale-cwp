@@ -37,8 +37,8 @@ const FOGLI = [
   ["Codici", "Codici ammessi per tipologie di rifiuto, utenze, beni e punti di conferimento", "—"],
 ];
 
-/* Pagina pubblica: standard dei dati da inviare per il calcolo dei crediti.
-   Il link si può mandare a Comuni e gestori anche senza credenziali. */
+/* Pagina pubblica, solo testo e link di download. Nessuna prop.
+   Ha una propria intestazione (non usa Header, che richiede l'accesso). */
 export default function FormatoDati() {
   return (
     <div style={{ background: C.paper, minHeight: "100vh" }}>
@@ -128,6 +128,7 @@ export default function FormatoDati() {
   );
 }
 
+// Stili della pagina.
 const riquadro = { background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, padding: "18px 20px", marginTop: 22 };
 const h2 = { fontFamily: "'Archivo'", fontSize: 17, margin: "0 0 10px" };
 const p = { fontSize: 14, lineHeight: 1.6, margin: 0 };

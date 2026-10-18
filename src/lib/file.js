@@ -1,13 +1,38 @@
 /* =========================================================================
-   Controlli sui file prima del caricamento (requisiti §13 "Upload").
+   file.js — controlli sui file prima del caricamento (requisiti §13 "Upload").
+
+   Scopo: prima di inviare un file all'archivio controlla formato ammesso,
+   dimensione, contenuto reale (primi byte, "firma" del formato) e prepara
+   un nome sicuro per il percorso nell'archivio. Traduce anche gli errori
+   dello Storage di Supabase.
+
    Gli stessi limiti sono imposti anche dal database e dall'archivio
    (script 14): qui servono a dare subito un messaggio chiaro e a
    verificare il contenuto reale del file, non solo il nome.
+
+   Usato da: src/lib/dati.js (caricamento documenti, integrazioni, modelli),
+   src/components/Documenti.jsx, src/components/Integrazioni.jsx,
+   src/components/impostazioni/ModelliDocumento.jsx.
+
+   Dati/servizi coinvolti: nessuna chiamata diretta. I limiti devono restare
+   allineati a supabase/14_controlli_file.sql (funzione cwp_formati_ammessi,
+   limite 52428800 byte, trigger sul documento) e alla configurazione del
+   bucket `documenti`.
+
+   Sicurezza: il controllo nel browser si può aggirare; quello che conta è
+   il controllo del database/archivio. Manca ancora l'antivirus (backlog).
+
+   Registro sviluppo e deploy: capitolo 4 «Database» (14_controlli_file.sql);
+   capitolo 6 «Portale (frontend)»; vedi anche docs/controlli-file.md.
    ========================================================================= */
 
+// Limite per singolo file: 50 MB (massimo del piano Supabase Free).
 export const DIMENSIONE_MASSIMA = 50 * 1024 * 1024; // 50 MB
 
 // Estensione → tipo MIME canonico e famiglia di contenuto attesa.
+// Aggiungendo un formato qui va aggiunto anche in cwp_formati_ammessi()
+// (14_controlli_file.sql), altrimenti il database rifiuta il file.
+// "firma" indica quale controllo dei primi byte applicare (contenutoCompatibile).
 export const FORMATI = {
   pdf: { mime: "application/pdf", firma: "pdf" },
   p7m: { mime: "application/pkcs7-mime", firma: "p7m" },

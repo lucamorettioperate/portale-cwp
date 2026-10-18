@@ -1,10 +1,30 @@
+/* =========================================================================
+   Rapporti
+   Scopo: elenco dei Rapporti di Monitoraggio annuali di un Progetto
+     (requisiti §2): fino a 10, uno per anno, in sequenza. Ognuno è una
+     pratica autonoma (tipo «rapporto») con le sue 7 fasi. Lo staff può
+     creare il Rapporto dell'anno successivo; un clic apre il Rapporto.
+   Usato da: DettaglioPratica.jsx (solo per le pratiche di tipo progetto).
+   Chi lo vede: cliente/Comune (sola consultazione), operatore e admin
+     (anche il pulsante «+ Rapporto anno N»).
+   Dati: elencaRapporti, creaRapporto (src/lib/dati.js) sulla tabella
+     pratica (righe con progetto_padre_id = progetto) e fase.
+   Sicurezza: solo lo staff può creare pratiche (RLS pratica_write,
+     script 02). Il limite di 10 è controllato da creaRapporto e dal vincolo
+     della tabella (anno_monitoraggio tra 1 e 10, script 01). Il codice
+     (es. CWP-2026-0001-RM1) lo assegna un trigger del database (script 09).
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import React, { useEffect, useState } from "react";
 import { COLORI as C, STATI_PRATICA } from "../lib/cwpProgram.js";
 import Badge from "./Badge.jsx";
 import { elencaRapporti, creaRapporto } from "../lib/dati.js";
 
 /* Rapporti di Monitoraggio annuali di un Progetto (requisiti §2):
-   fino a 10, uno per anno, in sequenza. Ognuno è una pratica autonoma. */
+   fino a 10, uno per anno, in sequenza. Ognuno è una pratica autonoma.
+   Props: progetto (pratica di tipo progetto), staff (true per
+   operatore/admin), onApri(id) (apre un Rapporto nel dettaglio),
+   onCreato() (avvisa il genitore che l'elenco pratiche è cambiato). */
 export default function Rapporti({ progetto, staff, onApri, onCreato }) {
   const [rapporti, setRapporti] = useState([]);
   const [errore, setErrore] = useState("");
@@ -20,6 +40,8 @@ export default function Rapporti({ progetto, staff, onApri, onCreato }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progetto.id]);
 
+  // Crea il Rapporto dell'anno successivo (con le 7 fasi, la prima in
+  // corso), ricarica l'elenco e apre subito il nuovo Rapporto.
   async function nuovo() {
     setErrore("");
     setInCorso(true);
@@ -33,6 +55,8 @@ export default function Rapporti({ progetto, staff, onApri, onCreato }) {
     }
   }
 
+  // Numero mostrato sul pulsante. L'anno vero lo calcola creaRapporto
+  // (massimo anno esistente + 1), quindi resta corretto anche con buchi.
   const prossimo = rapporti.length + 1;
 
   return (
@@ -41,6 +65,7 @@ export default function Rapporti({ progetto, staff, onApri, onCreato }) {
         <h3 style={{ fontFamily: "'Archivo'", fontSize: 15, margin: 0 }}>
           Rapporti di Monitoraggio <span style={{ color: C.grafite, fontWeight: 600 }}>({rapporti.length}/10)</span>
         </h3>
+        {/* Nuovo Rapporto: solo staff, solo su Progetto attivo, massimo 10 */}
         {staff && progetto.stato === "attiva" && prossimo <= 10 && (
           <button onClick={nuovo} disabled={inCorso} style={btnPrimario}>
             {inCorso ? "Creazione…" : `+ Rapporto anno ${prossimo}`}
@@ -69,6 +94,7 @@ export default function Rapporti({ progetto, staff, onApri, onCreato }) {
   );
 }
 
+// Stili locali (questo componente non usa ancora stili.js).
 const btnPrimario = {
   background: C.green,
   color: C.white,
@@ -79,6 +105,7 @@ const btnPrimario = {
   fontWeight: 600,
   cursor: "pointer",
 };
+// Riga cliccabile dell'elenco Rapporti.
 const riga = {
   display: "flex",
   justifyContent: "space-between",
