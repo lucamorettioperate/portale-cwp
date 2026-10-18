@@ -2,7 +2,7 @@
 """
 Impaginazione tipografica in PDF dei documenti del portale (WeasyPrint).
 
-Uso:  python3 strumenti/impagina_pdf.py manuale|amministratore|registro
+Uso:  python3 strumenti/impagina_pdf.py manuale|amministratore|test|registro
 Legge lo stesso testo e le stesse revisioni del Word (strumenti/genera_documenti.cjs)
 e scrive il PDF accanto al .docx, sostituendo quello convertito da LibreOffice.
 
@@ -51,6 +51,18 @@ DOCUMENTI = {
         "numera": True,
         "riservato": True,
         "intro": "Questo manuale guida gli Amministratori di Fondazione Operate in tutte le funzioni del portale: gestione delle pratiche dei Comuni, amministrazione di utenti e impostazioni, audit e calcolo dei crediti CWP secondo la Metodologia v1.2.",
+    },
+    "test": {
+        "sorgente": "docs/manuale-test.md",
+        "uscita": "public/documentazione/Manuale_Test_Portale_CWP.pdf",
+        "sopratitolo": "Manuale test",
+        "titolo": "Portale Carbon WastePrint®",
+        "sottotitolo": "Il metodo CWP, il portale e il percorso di prova delle funzionalità",
+        "breve": "Manuale Test",
+        "destinatari": "Collaudatori del portale (test-user) — documento riservato",
+        "numera": True,
+        "riservato": True,
+        "intro": "Questa guida permette a chi non conosce il Programma Carbon WastePrint® di collaudare il portale con metodo: in poche pagine il metodo CWP, il ruolo del portale e un percorso di prova che va dall'adesione del Comune al calcolo dei crediti.",
     },
     "registro": {
         "sorgente": "docs/REGISTRO_DEV_DEPLOY.md",
@@ -187,6 +199,9 @@ RIQUADRI = [
     (r"Il manuale", "suggerimento", "Suggerimento"),
     (r"Attenzione", "attenzione", "Attenzione"),
     (r"Prima di confermare", "attenzione", "Prima di confermare"),
+    (r"Cosa serve", "nota", "Prima di iniziare"),
+    (r"Come annotare l'esito", "suggerimento", "Suggerimento"),
+    (r"Limiti noti oggi", "attenzione", "Da sapere"),
     (r"Limite attuale", "nota", "Da sapere"),
     (r"Nuove versioni durante una fase", "nota", "Da sapere"),
 ]

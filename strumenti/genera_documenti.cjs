@@ -12,7 +12,7 @@
    ogni documento è quella corrente): a ogni modifica si aggiunge una riga.
 
    Uso:  node strumenti/genera_documenti.cjs            (tutti)
-         node strumenti/genera_documenti.cjs registro   (uno solo: manuale | amministratore | registro)
+         node strumenti/genera_documenti.cjs registro   (uno solo: manuale | amministratore | test | registro)
    Richiede la libreria "docx" (npm install --no-save docx), LibreOffice
    (numeri di pagina del sommario del Word) e pdftotext; il PDF finale è
    impaginato da strumenti/impagina_pdf.py (pip install weasyprint markdown).
@@ -54,6 +54,17 @@ const DOCUMENTI = {
     destinatari: "Amministratori di Fondazione Operate — documento riservato",
     numeraCapitoli: true,
     nota: (r) => `Questo documento descrive il portale alla revisione ${r.rev} del ${r.data}. A ogni modifica del portale il manuale viene aggiornato e la revisione incrementata; la versione corrente si scarica dall'area Documentazione del portale (solo Amministratori).`,
+  },
+  test: {
+    sorgente: "docs/manuale-test.md",
+    uscita: "public/documentazione",
+    nome: "Manuale_Test_Portale_CWP",
+    titolo: "MANUALE TEST",
+    breve: "Manuale Test",
+    sottotitolo: "Il metodo CWP, il portale e il percorso di prova delle funzionalità",
+    destinatari: "Collaudatori del portale (test-user) — documento riservato",
+    numeraCapitoli: true,
+    nota: (r) => `Guida alla revisione ${r.rev} del ${r.data}, allineata al portale e agli altri manuali. È aggiornata a ogni rilascio; la versione corrente si scarica dall'area Documentazione del portale (solo Amministratori).`,
   },
   registro: {
     sorgente: "docs/REGISTRO_DEV_DEPLOY.md",

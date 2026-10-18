@@ -285,6 +285,14 @@ push. I file vanno in
 `public/manuali/` e `public/documentazione/` e si scaricano dalla pagina
 Documentazione del portale.
 
+**Regole di lavoro (richieste di Luca del 18/10)**
+- A ogni rilascio si aggiornano insieme quattro documenti: questo Registro,
+  il Manuale Utente, il Manuale Amministratore e il Manuale Test
+  (`docs/manuale-test.md`, sintetico, per i collaudatori).
+- Il codice si commenta in italiano mentre si scrive: in testa a ogni file
+  lo scopo e il capitolo del registro di riferimento; sopra ogni funzione
+  cosa fa; nel corpo le regole di sicurezza e i passaggi non ovvi (punto 31).
+
 **Segreti**: li inserisce solo Luca (Edge Functions → Secrets). Le chiavi non
 si scrivono mai in chat, nel codice o nel registro.
 
@@ -295,6 +303,13 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Manuale Test (test-user)** — richiesta di Luca: guida sintetica per
+  chi collauda il portale senza conoscere il Programma (metodo CWP in breve,
+  ruolo del portale, percorso di prova in 8 blocchi dalla fase 1 al calcolo
+  dei crediti con i risultati attesi, limiti noti). Sorgente
+  `docs/manuale-test.md`, file `public/documentazione/Manuale_Test_Portale_CWP.{docx,pdf}`,
+  scaricabile da Documentazione e dal profilo (solo Admin). Rev. 1.0.
+  Aggiunti al backlog i punti 31 (codice commentato) e 32.
 - **Manuale Amministratore in Word e PDF** (richiesta di Luca) — terzo
   documento, riservato agli Amministratori: funzioni della Fondazione
   (back-office, utenti, audit, impostazioni, notifiche, documentazione,
@@ -573,6 +588,11 @@ completato (va barrato qui e annotato in Cronologia).
     - **Monitoraggio e allarmi**: registro di sicurezza (punto 14), avvisi su accessi anomali, errori e indisponibilità del portale.
     - **Continuità**: backup verificati e prova di ripristino (punti 18 e 29), antivirus sui file (punto 16).
     - **Organizzazione e privacy**: procedura di risposta agli incidenti, valutazione d'impatto sulla protezione dei dati (DPIA) e registro dei trattamenti per i dati delle utenze, nomina dei fornitori (Vercel, Supabase, Resend) come responsabili del trattamento.
+
+**Codice e documentazione — richieste di Luca del 18/10**
+
+- **31.** Codice sorgente commentato per sviluppatori umani: ogni file (portale, script SQL, Edge Functions, strumenti) deve avere in testa lo scopo e il collegamento al capitolo del registro, e commenti in italiano su funzioni, regole di sicurezza e passaggi non ovvi. Vale anche per tutto il codice nuovo. Da completare con una revisione file per file.
+- **32.** Manuale Test (test-user): guida sintetica per i collaudatori, riservata agli Amministratori, da aggiornare a ogni rilascio insieme a registro, Manuale Utente e Manuale Amministratore.
 
 **Da rifinire**
 

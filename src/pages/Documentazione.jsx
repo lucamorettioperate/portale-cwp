@@ -6,7 +6,7 @@ import REVISIONI from "../../strumenti/revisioni_documenti.json";
 
 /* Documentazione scaricabile.
    - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori).
-   - Manuale Amministratore e Registro sviluppo e deploy: solo Amministratori.
+   - Manuale Amministratore, Manuale Test e Registro sviluppo e deploy: solo Amministratori.
    I file sono generati da strumenti/genera_documenti.cjs; revisione e data
    arrivano dallo stesso registro delle revisioni. */
 const DOCUMENTI = [
@@ -22,6 +22,13 @@ const DOCUMENTI = [
     titolo: "Manuale Amministratore",
     descrizione: "Funzioni della Fondazione passo per passo: cruscotto, pratiche e fasi, documenti, integrazioni, consultazione, pagamenti, utenti, audit, impostazioni e calcolo dei crediti CWP. Documento riservato agli Amministratori.",
     percorso: "/documentazione/Manuale_Amministratore_Portale_CWP",
+    soloAdmin: true,
+  },
+  {
+    chiave: "test",
+    titolo: "Manuale Test",
+    descrizione: "Guida sintetica per chi collauda il portale: il metodo CWP, il ruolo del portale e un percorso di prova dall'adesione del Comune al calcolo dei crediti, con i risultati attesi. Documento riservato agli Amministratori.",
+    percorso: "/documentazione/Manuale_Test_Portale_CWP",
     soloAdmin: true,
   },
   {
