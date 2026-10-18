@@ -12,7 +12,7 @@
    ogni documento è quella corrente): a ogni modifica si aggiunge una riga.
 
    Uso:  node strumenti/genera_documenti.cjs            (tutti)
-         node strumenti/genera_documenti.cjs registro   (uno solo: manuale | registro)
+         node strumenti/genera_documenti.cjs registro   (uno solo: manuale | amministratore | registro)
    Richiede la libreria "docx" (npm install --no-save docx), LibreOffice
    (numeri di pagina del sommario del Word) e pdftotext; il PDF finale è
    impaginato da strumenti/impagina_pdf.py (pip install weasyprint markdown).
@@ -43,6 +43,17 @@ const DOCUMENTI = {
     destinatari: "Comuni, enti locali e soggetti gestori aderenti al Programma",
     numeraCapitoli: true,
     nota: (r) => `Questo documento descrive il portale alla revisione ${r.rev} del ${r.data}. A ogni modifica del portale il manuale viene aggiornato e la revisione incrementata; la versione corrente si scarica dal portale.`,
+  },
+  amministratore: {
+    sorgente: "docs/manuale-amministratore.md",
+    uscita: "public/documentazione",
+    nome: "Manuale_Amministratore_Portale_CWP",
+    titolo: "MANUALE AMMINISTRATORE",
+    breve: "Manuale Amministratore",
+    sottotitolo: "Funzioni della Fondazione e calcolo dei crediti CWP",
+    destinatari: "Amministratori di Fondazione Operate — documento riservato",
+    numeraCapitoli: true,
+    nota: (r) => `Questo documento descrive il portale alla revisione ${r.rev} del ${r.data}. A ogni modifica del portale il manuale viene aggiornato e la revisione incrementata; la versione corrente si scarica dall'area Documentazione del portale (solo Amministratori).`,
   },
   registro: {
     sorgente: "docs/REGISTRO_DEV_DEPLOY.md",

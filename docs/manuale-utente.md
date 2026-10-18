@@ -42,7 +42,7 @@ In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato da
 | Email o password non corretti. | Credenziali sbagliate | Ricontrollate maiuscole e spazi, poi riprovate |
 | Accesso non riuscito. Riprova. | Problema temporaneo | Riprovate dopo qualche minuto |
 
-**Il manuale.** La voce **Manuale** del menu, la pagina **I tuoi documenti** e la pagina **Il mio profilo** permettono di scaricare questo manuale in PDF o in Word, sempre nella revisione più recente.
+**Il manuale.** La voce **Manuale** del menu, la pagina **I tuoi documenti** e la pagina **Il mio profilo** permettono di aprire e scaricare questo manuale in PDF, sempre nella revisione più recente.
 
 **Il mio profilo.** Fate clic sul vostro indirizzo email in alto (sotto c'è scritto **Il mio profilo**): trovate i dati del vostro account, il pulsante **Cambia password** e il manuale da scaricare.
 
@@ -176,7 +176,7 @@ La pagina **I tuoi documenti** (menu in alto) raccoglie in un solo posto i docum
 - Per ogni documento vedete nome, versione, codice della pratica, ente e data, e il pulsante **Scarica**.
 - Di norma vedete solo la versione corrente. Per vedere anche le precedenti spuntate **Mostra anche le versioni precedenti**.
 
-In fondo alla pagina, nel riquadro **Manuale del portale**, scaricate questo manuale in PDF o in Word.
+In fondo alla pagina, nel riquadro **Manuale del portale**, aprite e scaricate questo manuale in PDF.
 
 Da questa pagina non si caricano documenti: per caricare usate la pratica (capitolo 5).
 

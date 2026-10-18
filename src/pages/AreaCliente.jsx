@@ -43,9 +43,7 @@ export default function AreaCliente() {
           </h1>
           <p style={{ fontSize: 13.5, color: C.grafite, margin: 0 }}>
             Stato e avanzamento dei progetti della tua organizzazione. Serve aiuto? Consulta il{" "}
-            <a href="/manuali/Manuale_Utente_Portale_CWP.pdf" target="_blank" rel="noreferrer" style={{ color: C.green, fontWeight: 600 }}>manuale utente (PDF)</a>
-            {" "}oppure scarica la{" "}
-            <a href="/manuali/Manuale_Utente_Portale_CWP.docx" style={{ color: C.green, fontWeight: 600 }}>versione Word</a>.
+            <a href="/manuali/Manuale_Utente_Portale_CWP.pdf" target="_blank" rel="noreferrer" style={{ color: C.green, fontWeight: 600 }}>manuale utente (PDF)</a>.
           </p>
         </div>
 

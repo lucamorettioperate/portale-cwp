@@ -2,7 +2,7 @@
 """
 Impaginazione tipografica in PDF dei documenti del portale (WeasyPrint).
 
-Uso:  python3 strumenti/impagina_pdf.py manuale|registro
+Uso:  python3 strumenti/impagina_pdf.py manuale|amministratore|registro
 Legge lo stesso testo e le stesse revisioni del Word (strumenti/genera_documenti.cjs)
 e scrive il PDF accanto al .docx, sostituendo quello convertito da LibreOffice.
 
@@ -39,6 +39,18 @@ DOCUMENTI = {
         "numera": True,
         "riservato": False,
         "intro": "Questo manuale accompagna i referenti di Comuni, enti e soggetti gestori nell'uso del portale: dall'accesso alla consultazione delle pratiche, dal caricamento dei documenti alla risposta alle richieste della Fondazione.",
+    },
+    "amministratore": {
+        "sorgente": "docs/manuale-amministratore.md",
+        "uscita": "public/documentazione/Manuale_Amministratore_Portale_CWP.pdf",
+        "sopratitolo": "Manuale amministratore",
+        "titolo": "Portale Carbon WastePrint®",
+        "sottotitolo": "Funzioni della Fondazione e calcolo dei crediti CWP",
+        "breve": "Manuale Amministratore",
+        "destinatari": "Amministratori di Fondazione Operate — documento riservato",
+        "numera": True,
+        "riservato": True,
+        "intro": "Questo manuale guida gli Amministratori di Fondazione Operate in tutte le funzioni del portale: gestione delle pratiche dei Comuni, amministrazione di utenti e impostazioni, audit e calcolo dei crediti CWP secondo la Metodologia v1.2.",
     },
     "registro": {
         "sorgente": "docs/REGISTRO_DEV_DEPLOY.md",
@@ -173,6 +185,10 @@ RIQUADRI = [
     (r"Cosa serve", "nota", "Prima di iniziare"),
     (r"Pagamenti", "nota", "Da sapere"),
     (r"Il manuale", "suggerimento", "Suggerimento"),
+    (r"Attenzione", "attenzione", "Attenzione"),
+    (r"Prima di confermare", "attenzione", "Prima di confermare"),
+    (r"Limite attuale", "nota", "Da sapere"),
+    (r"Nuove versioni durante una fase", "nota", "Da sapere"),
 ]
 
 
@@ -310,7 +326,7 @@ def costruisci(chiave):
     <tr><td>Destinatari</td><td>{html.escape(cfg['destinatari'])}</td></tr>
     <tr><td>Revisione corrente</td><td>Rev. {html.escape(rev['rev'])} del {html.escape(rev['data'])}</td></tr>
     <tr><td>Redatto da</td><td>Fondazione Operate</td></tr>
-    <tr><td>Versione sempre aggiornata</td><td>{'Area Documentazione del portale (solo Amministratori)' if cfg['riservato'] else 'Voce «Manuale» del portale (PDF e Word)'}</td></tr>
+    <tr><td>Versione sempre aggiornata</td><td>{'Area Documentazione del portale (solo Amministratori)' if cfg['riservato'] else 'Voce «Manuale» del portale (PDF)'}</td></tr>
   </table>
   <div class="titoletto" style="margin-top:8mm">Registro delle revisioni</div>
   <table><thead><tr><th style="width:11%">Rev.</th><th style="width:15%">Data</th><th>Descrizione</th><th style="width:22%">Autore</th></tr></thead><tbody>{revisioni}</tbody></table>

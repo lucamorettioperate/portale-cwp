@@ -5,8 +5,8 @@ import Header from "../components/Header.jsx";
 import REVISIONI from "../../strumenti/revisioni_documenti.json";
 
 /* Documentazione scaricabile.
-   - Manuale Utente: per tutti i ruoli.
-   - Registro sviluppo e deploy: solo Amministratori.
+   - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori).
+   - Manuale Amministratore e Registro sviluppo e deploy: solo Amministratori.
    I file sono generati da strumenti/genera_documenti.cjs; revisione e data
    arrivano dallo stesso registro delle revisioni. */
 const DOCUMENTI = [
@@ -16,6 +16,13 @@ const DOCUMENTI = [
     descrizione: "Guida passo per passo al portale per Comuni, enti e soggetti gestori: accesso, pratiche e fasi, documenti, integrazioni, consultazione pubblica, notifiche, tracciato dati.",
     percorso: "/manuali/Manuale_Utente_Portale_CWP",
     soloAdmin: false,
+  },
+  {
+    chiave: "amministratore",
+    titolo: "Manuale Amministratore",
+    descrizione: "Funzioni della Fondazione passo per passo: cruscotto, pratiche e fasi, documenti, integrazioni, consultazione, pagamenti, utenti, audit, impostazioni e calcolo dei crediti CWP. Documento riservato agli Amministratori.",
+    percorso: "/documentazione/Manuale_Amministratore_Portale_CWP",
+    soloAdmin: true,
   },
   {
     chiave: "registro",
@@ -53,7 +60,7 @@ export function ElencoDocumenti({ compatto = false }) {
             {!compatto && rev && <p style={{ fontSize: 12.5, color: C.grafite, margin: "0 0 12px" }}>Ultima revisione: {rev.descrizione}</p>}
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: compatto ? 10 : 0 }}>
               <a href={`${d.percorso}.pdf`} target="_blank" rel="noreferrer" style={pulsante(true)}>Apri PDF</a>
-              <a href={`${d.percorso}.docx`} download style={pulsante(false)}>Scarica Word</a>
+              {admin && <a href={`${d.percorso}.docx`} download style={pulsante(false)}>Scarica Word</a>}
             </div>
           </section>
         );
@@ -74,7 +81,7 @@ export default function Documentazione() {
         <p style={{ fontSize: 13.5, color: C.grafite, margin: "0 0 18px" }}>
           {admin
             ? "Documenti del portale da scaricare in Word o PDF. Sono aggiornati a ogni nuova funzione o rilascio: la revisione indica la versione."
-            : "Il manuale del portale da scaricare in PDF o Word. È aggiornato a ogni nuova funzione: la revisione indica la versione."}
+            : "Il manuale del portale in PDF. È aggiornato a ogni nuova funzione: la revisione indica la versione."}
         </p>
 
         <ElencoDocumenti />

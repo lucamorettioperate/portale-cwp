@@ -215,7 +215,7 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 | `/audit` | Audit trail | Admin |
 | `/crediti`, `/crediti/:id` | Calcolo crediti CWP | Admin |
 | `/impostazioni` | Durata delle fasi | Admin |
-| `/documentazione` | Documentazione: Registro (solo Admin) e Manuale Utente, in Word e PDF | tutti (contenuto per ruolo) |
+| `/documentazione` | Documentazione: Manuale Utente (PDF; Word solo Admin), Manuale Amministratore e Registro (solo Admin) | tutti (contenuto per ruolo) |
 
 **Struttura del codice**
 - `src/pages/` — pagine elencate sopra (+ `VerificaMfa.jsx`).
@@ -275,8 +275,8 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 **Edge Function**: sorgente nel repository → incolla nell'editor della
 dashboard → *Deploy updates* → controlla *Verify JWT* → prova.
 
-**Documenti in Word/PDF (Manuale Utente e questo Registro)**: si modifica il
-testo (`docs/manuale-utente.md`, e lo stesso nel manuale online;
+**Documenti in Word/PDF (Manuale Utente, Manuale Amministratore e questo Registro)**: si modifica il
+testo (`docs/manuale-utente.md` o `docs/manuale-amministratore.md`, e lo stesso nel manuale online;
 `docs/REGISTRO_DEV_DEPLOY.md`), si aggiunge una riga in
 `strumenti/revisioni_documenti.json` (nuovo numero di revisione e data), si
 esegue `node strumenti/genera_documenti.cjs` (richiede la libreria `docx`,
@@ -295,6 +295,19 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Manuale Amministratore in Word e PDF** (richiesta di Luca) — terzo
+  documento, riservato agli Amministratori: funzioni della Fondazione
+  (back-office, utenti, audit, impostazioni, notifiche, documentazione,
+  manutenzione) e capitolo dettagliato sul **calcolo dei crediti CWP**
+  (concetti, preparazione dei dati dal tracciato, sette passi, lettura dei
+  risultati, conferma e nuove versioni, scelte da confermare). Sorgente
+  `docs/manuale-amministratore.md`, generato da `strumenti/genera_documenti.cjs`
+  e `strumenti/impagina_pdf.py` (chiave `amministratore`), file in
+  `public/documentazione/Manuale_Amministratore_Portale_CWP.{docx,pdf}`;
+  scaricabile da Documentazione e dal profilo (solo Admin). Rev. 1.0.
+- **Manuale Utente solo in PDF per gli utenti** (richiesta di Luca): il
+  pulsante «Scarica Word» resta solo agli Amministratori; tolto il link Word
+  da «Le mie pratiche».
 - **Manuale anche in «I tuoi documenti»** — su segnalazione di Luca (prova come
   referente): riquadro «Manuale del portale» in fondo alla pagina
   `/documenti` (componente `ElencoDocumenti`). Manuale Utente Rev. 1.5.
@@ -456,7 +469,8 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 | Manuale Utente (Comuni) | Claude Doc: https://claude.ai/code/artifact/e2dd2bd5-8042-4744-8d5a-54d34dc50153 (creato 18/10) | Uso del portale per i Clienti, passo per passo |
 | Manuale Utente in Word/PDF (Rev. 1.0) | `public/manuali/Manuale_Utente_Portale_CWP.docx` e `.pdf`, online su `/manuali/…` | Versione rifinita e stampabile per i Comuni |
 | Registro sviluppo e deploy in Word/PDF | `public/documentazione/Registro_Dev_Deploy_Portale_CWP.docx` e `.pdf`, scaricabile da `/documentazione` (Admin) | Versione impaginata di questo registro |
-| Manuale Amministratore | Claude Doc: https://claude.ai/code/artifact/cc36ab09-61e6-4dad-aaf0-4082ea0a46da (creato 18/10) | Back-office, utenti, impostazioni, calcolo crediti, manutenzione |
+| Manuale Amministratore in Word/PDF | `docs/manuale-amministratore.md` → `public/documentazione/Manuale_Amministratore_Portale_CWP.docx` e `.pdf`, scaricabile da `/documentazione` (Admin) | Versione impaginata e riservata del manuale per la Fondazione |
+| Manuale Amministratore online | Claude Doc: https://claude.ai/code/artifact/cc36ab09-61e6-4dad-aaf0-4082ea0a46da (creato 18/10) | Back-office, utenti, impostazioni, calcolo crediti, manutenzione |
 | Tracciato dati CWP v1.0 | `public/modelli/Tracciato_dati_CWP_v1.xlsx`, online su `/formato-dati` | Modello unico dei dati per il calcolo crediti |
 | Note sul calcolo crediti | `docs/crediti-cwp.md` | Corrispondenza con le formule, scelte interpretative |
 | Notifiche email | `docs/email-notifiche.md` | Funzionamento e configurazione Resend |
