@@ -415,7 +415,7 @@ export default function CalcoloCrediti() {
   // Controlli di coerenza sui dati attuali (solo dove servono: costano su grandi Banche Dati).
   // psTipologie: peso specifico (kg/m³) per tipologia, dai fattori del
   // passo 4; accetta la virgola decimale, valore assente = 0.
-  const psTipologie =Object.fromEntries(dati.fattori.map((f) => [f.id, Number(String(f.ps ?? "").replace(",", ".")) || 0]));
+  const psTipologie = Object.fromEntries(dati.fattori.map((f) => [f.id, Number(String(f.ps ?? "").replace(",", ".")) || 0]));
   const coerenza = ["utenze", "risultati"].includes(passo)
     ? controllaCoerenza({ anno: testa.anno, rifiuti: dati.rifiuti, pefUd: dati.pefUd, pefUnd: dati.pefUnd, classiUd: dati.classiUd, classiUnd: dati.classiUnd, conferimenti, riuso, ps: psTipologie })
     : null;
@@ -622,7 +622,7 @@ function Impostazioni({ testa, aggiorna, sola }) {
    Le percentuali PEF si salvano come testo con il punto decimale. */
 function Delibera({ dati, aggiorna, sola }) {
   // Somma delle due quote PEF: solo un avviso se diversa da 100%, non blocca.
-  const somma =(Number(String(dati.pefUd).replace(",", ".")) || 0) + (Number(String(dati.pefUnd).replace(",", ".")) || 0);
+  const somma = (Number(String(dati.pefUd).replace(",", ".")) || 0) + (Number(String(dati.pefUnd).replace(",", ".")) || 0);
   return (
     <Passo titolo="Delibera tariffaria dell'Ente" nota="Capitolo 3 (formule 2-12): ripartizione PEF tra utenze domestiche e non domestiche, classi con numero di utenze e coefficienti della quota variabile (Kb per le domestiche, Kd per le non domestiche).">
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 6 }}>
@@ -1113,7 +1113,7 @@ function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermat
   // emissioni attese EA, emissioni di progetto EP e ΔI (kgCO₂eq).
   // Le colonne delle tipologie sono quelle presenti in almeno un'utenza.
   function esportaUtenze() {
-    const tipologie =[...new Set(dettaglio.flatMap((u) => Object.keys(u.ptot)))];
+    const tipologie = [...new Set(dettaglio.flatMap((u) => Object.keys(u.ptot)))];
     scaricaTesto(
       `crediti_dettaglio_utenze_${testa.anno}.csv`,
       scriviCsv(

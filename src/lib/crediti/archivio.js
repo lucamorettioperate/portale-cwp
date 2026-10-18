@@ -1,11 +1,41 @@
-/* Lettura e salvataggio dei calcoli dei crediti (tabelle dello script 11).
-   Accessibili solo agli Amministratori con verifica a due fattori. */
+/* =========================================================================
+   archivio.js — lettura e salvataggio dei calcoli dei crediti (tabelle dello script 11).
+
+   Scopo: crea, legge, aggiorna ed elimina i calcoli (testata e dati in
+   calcolo_crediti) e la loro Banca Dati Utenze (righe di conferimento e di
+   riuso), anche quando le righe sono centinaia di migliaia (invio e
+   lettura a blocchi). Crea le nuove versioni di un calcolo confermato.
+
+   Usato da: src/pages/Crediti.jsx (elenco, creazione) e
+   src/pages/CalcoloCrediti.jsx (tutto il resto).
+
+   Dati/servizi coinvolti: tabelle calcolo_crediti, calcolo_conferimento,
+   calcolo_riuso (11_crediti.sql; numero di registro e regole aggiornate in
+   18_registro_crediti.sql).
+
+   Sicurezza: accessibili solo agli Amministratori con verifica a due
+   fattori (policy calcolo_admin, conferimento_admin, riuso_admin con
+   app_is_admin). Un calcolo confermato è immutabile: il trigger
+   calcolo_immutabile rifiuta modifiche e cancellazioni, anche delle sue
+   righe di dettaglio. Il numero di registro CWP-REG-AAAA-NNNN lo assegna il
+   database alla conferma (solo ex post), mai il portale.
+   Audit: trigger trg_audit su calcolo_crediti (non riga per riga sul dettaglio).
+
+   Registro sviluppo e deploy: capitolo 4 «Database» (script 11 e 18);
+   capitolo 7 «Funzionalità per area», riga Calcolo crediti.
+   ========================================================================= */
 import { supabase } from "../supabase.js";
 import { TIPOLOGIE_RIFIUTO, BENI_RIUSO, BUFFER_SOLO_VIRTUOSE } from "./parametri.js";
 
+// Righe per invio / lettura: 1000 è anche il massimo che l'API di Supabase
+// restituisce per richiesta (impostazione predefinita).
 const BLOCCO = 1000; // righe per invio / lettura
 
 // Dati iniziali di un nuovo calcolo: fattori e parametri della Metodologia.
+// Restituisce l'oggetto da salvare in calcolo_crediti.dati: tabelle vuote,
+// fattori e beni copiati da parametri.js (scenario "riutilizzo"), buffer con
+// tutte le utenze monitorate e il solo indifferenziato misurato.
+// La copia rende il calcolo indipendente da modifiche future dei default.
 export function datiIniziali() {
   return {
     rifiuti: [],
@@ -41,6 +71,8 @@ export function datiIniziali() {
   };
 }
 
+// Elenco dei calcoli (senza dati né risultato) con pratica e organizzazione,
+// dal più recente. Tabella calcolo_crediti.
 export async function elencaCalcoli() {
   return await supabase
     .from("calcolo_crediti")
@@ -48,6 +80,8 @@ export async function elencaCalcoli() {
     .order("aggiornato_il", { ascending: false });
 }
 
+// Un calcolo completo (testata, dati, risultato) con la sua pratica.
+// La Banca Dati Utenze si legge a parte con leggiConferimenti / leggiRiuso.
 export async function leggiCalcolo(id) {
   return await supabase
     .from("calcolo_crediti")
@@ -56,6 +90,10 @@ export async function leggiCalcolo(id) {
     .single();
 }
 
+// Crea un nuovo calcolo in bozza. Parametri: pratica, titolo, anno, tipo
+// ("ex_ante" | "ex_post"), data di avvio (primo anno parziale), dati
+// (predefiniti: datiIniziali()), versioneDi = id del calcolo di origine.
+// Effetti: riga in calcolo_crediti e voce di audit (trigger).
 export async function creaCalcolo({ praticaId, titolo, anno, tipo, dataAvvio = null, dati = null, versioneDi = null }) {
   return await supabase
     .from("calcolo_crediti")
@@ -72,15 +110,23 @@ export async function creaCalcolo({ praticaId, titolo, anno, tipo, dataAvvio = n
     .single();
 }
 
+// Aggiorna i campi di un calcolo (dati, risultato, totali, stato).
+// Con stato = "confermato" il database registra chi e quando conferma e,
+// per gli ex post, assegna il numero di registro (18_registro_crediti.sql).
+// Rifiutato se il calcolo è già confermato.
 export async function salvaCalcolo(id, campi) {
   return await supabase.from("calcolo_crediti").update(campi).eq("id", id).select().single();
 }
 
+// Elimina un calcolo in bozza; le righe di dettaglio si cancellano a cascata.
+// Un calcolo confermato non si può eliminare (trigger calcolo_immutabile).
 export async function eliminaCalcolo(id) {
   return await supabase.from("calcolo_crediti").delete().eq("id", id);
 }
 
 // Legge tutte le righe di una tabella di dettaglio, a blocchi.
+// L'ordine per id rende stabile la paginazione con range(). Si ferma al
+// primo blocco incompleto. Restituisce { data: righe del database, error }.
 async function leggiTutto(tabella, calcoloId) {
   const tutte = [];
   for (let da = 0; ; da += BLOCCO) {
@@ -98,6 +144,10 @@ async function leggiTutto(tabella, calcoloId) {
 }
 
 // Sostituisce tutte le righe di una tabella di dettaglio.
+// Prima cancella, poi inserisce a blocchi; onAvanzamento(fatte, totale)
+// aggiorna la barra di avanzamento. Non è una transazione: se un blocco
+// fallisce, nel database resta solo una parte delle righe; ripetere il
+// salvataggio le sostituisce di nuovo tutte.
 async function sostituisci(tabella, calcoloId, righe, onAvanzamento) {
   const { error: e1 } = await supabase.from(tabella).delete().eq("calcolo_id", calcoloId);
   if (e1) return { error: e1 };
@@ -111,6 +161,9 @@ async function sostituisci(tabella, calcoloId, righe, onAvanzamento) {
 }
 
 // Conversione tra righe del database e oggetti del motore di calcolo.
+// Database: nomi con trattino basso (peso_strutture); motore: camelCase
+// (pesoStrutture). Utenza e classe si salvano sempre come testo; i campi
+// assenti diventano null (non 0), n_utenze vale almeno 1.
 const daDbConferimento = (r) => ({
   utenza: r.utenza,
   macro: r.macro,
@@ -156,22 +209,30 @@ const aDbRiuso = (c) => ({
   n_utenze: c.nUtenze || 1,
 });
 
+// Conferimenti della Banca Dati Utenze di un calcolo (tabella calcolo_conferimento).
 export async function leggiConferimenti(calcoloId) {
   const { data, error } = await leggiTutto("calcolo_conferimento", calcoloId);
   return { data: data ? data.map(daDbConferimento) : null, error };
 }
+// Sostituisce tutti i conferimenti di un calcolo in bozza. Restituisce { error }.
 export async function salvaConferimenti(calcoloId, righe, onAvanzamento) {
   return await sostituisci("calcolo_conferimento", calcoloId, righe.map(aDbConferimento), onAvanzamento);
 }
+// Beni a riuso della Banca Dati Utenze di un calcolo (tabella calcolo_riuso).
 export async function leggiRiuso(calcoloId) {
   const { data, error } = await leggiTutto("calcolo_riuso", calcoloId);
   return { data: data ? data.map(daDbRiuso) : null, error };
 }
+// Sostituisce tutte le righe di riuso di un calcolo in bozza. Restituisce { error }.
 export async function salvaRiuso(calcoloId, righe, onAvanzamento) {
   return await sostituisci("calcolo_riuso", calcoloId, righe.map(aDbRiuso), onAvanzamento);
 }
 
 // Nuova versione (bozza) di un calcolo: copia dati e Banca Dati Utenze.
+// Serve per correggere un calcolo confermato senza toccarlo: la copia
+// porta versione_di = id dell'originale e titolo con "(rev.)". Il
+// risultato non si copia: va ricalcolato. Restituisce { data: nuovo calcolo,
+// error }; in caso di errore sul dettaglio la bozza esiste già (data valorizzato).
 export async function nuovaVersione(calcolo) {
   const { data: nuovo, error } = await creaCalcolo({
     praticaId: calcolo.pratica_id,
