@@ -295,6 +295,9 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Manuale anche in «I tuoi documenti»** — su segnalazione di Luca (prova come
+  referente): riquadro «Manuale del portale» in fondo alla pagina
+  `/documenti` (componente `ElencoDocumenti`). Manuale Utente Rev. 1.5.
 - **Email di recupero password spedita dal portale** — le email di recupero
   arrivavano con il testo inglese predefinito di Supabase anche dopo aver
   salvato il modello italiano (tre prove, anche dopo il riavvio del servizio

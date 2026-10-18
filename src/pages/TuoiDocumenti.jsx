@@ -4,6 +4,7 @@ import Header from "../components/Header.jsx";
 import Badge from "../components/Badge.jsx";
 import { elencaDocumentiOrganizzazione, urlDocumento } from "../lib/dati.js";
 import { formatoData } from "../lib/date.js";
+import { ElencoDocumenti } from "./Documentazione.jsx";
 
 /* "I tuoi documenti" (requisiti §5): contratto, allegati, documentazione
    amministrativa e altri documenti della Fondazione, raccolti da tutte le
@@ -95,6 +96,10 @@ export default function TuoiDocumenti() {
             </section>
           ))}
         </div>
+
+        {/* Manuale del portale, sempre disponibile anche qui */}
+        <h2 style={{ fontFamily: "'Archivo'", fontSize: 15, margin: "26px 0 10px" }}>Manuale del portale</h2>
+        <ElencoDocumenti compatto />
       </main>
     </div>
   );

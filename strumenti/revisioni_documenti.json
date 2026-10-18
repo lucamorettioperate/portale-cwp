@@ -29,6 +29,12 @@
       "data": "18/10/2026",
       "descrizione": "Recupero della password: nuova email in italiano dal portale (oggetto e pulsante), limite di una richiesta ogni 2 minuti.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.5",
+      "data": "18/10/2026",
+      "descrizione": "Manuale scaricabile anche dalla pagina «I tuoi documenti».",
+      "autore": "Fondazione Operate"
     }
   ],
   "registro": [
