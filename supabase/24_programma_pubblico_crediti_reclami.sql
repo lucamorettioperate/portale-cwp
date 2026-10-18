@@ -525,7 +525,7 @@ language sql stable security definer set search_path = public as $$
                                                                  'stato', stato, 'descrizione', descrizione, 'modello_id', modello_id)
                                               order by nome) from metodologia where stato <> 'ritirata'), '[]'::jsonb),
     'documenti', coalesce((select jsonb_agg(jsonb_build_object('id', id, 'titolo', titolo, 'descrizione', descrizione,
-                                                               'categoria', categoria, 'nome_file', nome_file) order by categoria desc, titolo)
+                                                               'categoria', categoria, 'nome_file', nome_file) order by categoria desc, nome_file, titolo)
                              from modello_documento where attivo and pubblico), '[]'::jsonb),
     'progetti', coalesce((select jsonb_agg(jsonb_build_object(
         'codice', pr.codice, 'titolo', pr.titolo,
