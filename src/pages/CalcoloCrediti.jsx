@@ -126,6 +126,17 @@ export default function CalcoloCrediti() {
     if (!data.dati?.rifiuti?.length && !(c.data || []).length && data.stato !== "confermato") setPasso("importa");
   }
 
+  // Rilegge solo la testata del calcolo (non la Banca Dati Utenze). Serve
+  // dopo un salvataggio della Banca Dati: il database azzera il risultato
+  // salvato quando cambiano le righe (20_rinforzi_integrita.sql) e la
+  // pagina deve mostrarlo, nascondendo «Conferma calcolo».
+  async function ricaricaTestata() {
+    const { data } = await leggiCalcolo(id);
+    if (!data) return;
+    setCalcolo(data);
+    if (!data.risultato) setRisultato(null);
+  }
+
   // Ricarica quando cambia il calcolo nell'indirizzo (es. dopo «Nuova versione»).
   useEffect(() => {
     if (ruolo === "admin") carica();
@@ -198,8 +209,9 @@ export default function CalcoloCrediti() {
     else {
       setModificato(false);
       setMessaggio({ testo: "Dati salvati." });
-      const { data } = await leggiCalcolo(id);
-      if (data) setCalcolo(data);
+      // Se i dati sono cambiati il database ha azzerato il risultato
+      // salvato (20_rinforzi_integrita.sql): va ripremuto «Calcola».
+      await ricaricaTestata();
     }
   }
 
@@ -233,7 +245,14 @@ export default function CalcoloCrediti() {
       perClasse[k].deltaI += u.deltaI;
     });
     const { dettaglio, ...utenzeSenzaDettaglio } = r.utenze;
-    const riepilogo = { ...r, utenze: { ...utenzeSenzaDettaglio, perClasse: Object.values(perClasse) } };
+    // righe: quante righe della Banca Dati Utenze ha usato il calcolo. Alla
+    // conferma il database le confronta con quelle salvate e rifiuta la
+    // conferma se non coincidono (20_rinforzi_integrita.sql).
+    const riepilogo = {
+      ...r,
+      utenze: { ...utenzeSenzaDettaglio, perClasse: Object.values(perClasse) },
+      righe: { conferimenti: conferimenti.length, riuso: riuso.length },
+    };
     // Un calcolo confermato non si scrive (lo rifiuterebbe anche il database).
     if (confermato) return;
     setInCorso("Salvataggio del risultato…");
@@ -262,9 +281,11 @@ export default function CalcoloCrediti() {
     }
   }
 
-  // Conferma definitiva: basta impostare stato = "confermato". Il trigger
-  // del database verifica che esista un risultato, registra chi e quando e,
-  // per gli ex post, assegna il numero di registro. Poi si ricarica tutto.
+  // Conferma definitiva: basta impostare stato = "confermato". I trigger
+  // del database verificano che esista un risultato calcolato sulla Banca
+  // Dati Utenze salvata (trg_calcolo_coerenza, script 20), registrano chi e
+  // quando e, per gli ex post, assegnano il numero di registro (script 18).
+  // Poi si ricarica tutto.
   async function confermaCalcolo() {
     setInCorso("Conferma…");
     const { error } = await salvaCalcolo(id, { stato: "confermato" });
@@ -276,8 +297,8 @@ export default function CalcoloCrediti() {
 
   // «Nuova versione» di un calcolo confermato: crea una bozza «(rev.)» che
   // copia dati e Banca Dati Utenze (versione_di = id attuale) e la apre.
-  // Se la copia della Banca Dati fallisce, la bozza esiste comunque: si
-  // mostra l'errore e si apre lo stesso.
+  // La copia avviene nel database in un'unica operazione (script 20): se
+  // fallisce non resta nessuna bozza a metà.
   async function revisione() {
     setInCorso("Creazione della nuova versione…");
     const { data, error } = await nuovaVersione(calcolo);
@@ -304,8 +325,10 @@ export default function CalcoloCrediti() {
      - origine: { nome, documentoId?, hash? } del file importato.
      Ordine dei salvataggi: prima il JSON `dati`, poi conferimenti, poi riuso.
      Non è una transazione unica: se un passo fallisce, quelli precedenti
-     restano salvati e si mostra l'errore. Alla fine azzera il risultato
-     (va ricalcolato) e porta al passo «Banca Dati Utenze». */
+     restano salvati e si mostra l'errore; un import rimasto a metà non si
+     può comunque confermare (controllo delle righe, script 20). Alla fine
+     il risultato è azzerato (va ricalcolato) e si passa a «Banca Dati
+     Utenze». */
   async function importaTracciato({ tracciato: t, parti, origine }) {
     setMessaggio(null);
     const nuovi = { ...dati };
@@ -352,6 +375,8 @@ export default function CalcoloCrediti() {
     setDati(nuovi);
     setModificato(false);
     setRisultato(null);
+    // Il database ha azzerato il risultato salvato (dati e righe cambiati).
+    await ricaricaTestata();
     setInCorso("");
     setMessaggio({ testo: `Tracciato «${origine.nome}» importato e salvato. Controlla i passi e premi «Calcola».` });
     setPasso("utenze");
@@ -562,8 +587,8 @@ export default function CalcoloCrediti() {
                 sola={confermato}
                 conferimenti={conferimenti}
                 riuso={riuso}
-                onConferimenti={setConferimenti}
-                onRiuso={setRiuso}
+                onConferimenti={(righe) => { setConferimenti(righe); ricaricaTestata(); }}
+                onRiuso={(righe) => { setRiuso(righe); ricaricaTestata(); }}
                 tipologie={tipologieOpzioni}
               />
             )}
@@ -796,7 +821,9 @@ function normalizzaMacro(v) {
    - tipologie: [{ valore, etichetta }] ammesse.
    ATTENZIONE: l'import CSV salva SUBITO nel database e sostituisce tutte
    le righe esistenti (cancella e reinserisce a blocchi di 1000, senza
-   transazione: un errore a metà lascia la tabella incompleta). */
+   transazione: un errore a metà lascia la tabella incompleta, ma il
+   calcolo non si può confermare finché non si ripete il salvataggio e non
+   si ripreme «Calcola», script 20). */
 function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso, onConferimenti, onRiuso, tipologie }) {
   // Esito dell'ultima operazione: { testo, errore? } oppure null.
   const [stato, setStato] = useState(null);

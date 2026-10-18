@@ -145,9 +145,14 @@ async function leggiTutto(tabella, calcoloId) {
 
 // Sostituisce tutte le righe di una tabella di dettaglio.
 // Prima cancella, poi inserisce a blocchi; onAvanzamento(fatte, totale)
-// aggiorna la barra di avanzamento. Non è una transazione: se un blocco
-// fallisce, nel database resta solo una parte delle righe; ripetere il
-// salvataggio le sostituisce di nuovo tutte.
+// aggiorna la barra di avanzamento. Non è una transazione (una sola
+// chiamata non reggerebbe centinaia di migliaia di righe): se un blocco
+// fallisce, nel database resta solo una parte delle righe e ripetere il
+// salvataggio le sostituisce di nuovo tutte. Un salvataggio a metà non si
+// può però confermare (20_rinforzi_integrita.sql): ogni modifica delle
+// righe azzera il risultato salvato del calcolo e, alla conferma, il
+// database controlla che le righe salvate siano quante quelle usate nel
+// calcolo (risultato.righe, scritto da «Calcola» in CalcoloCrediti.jsx).
 async function sostituisci(tabella, calcoloId, righe, onAvanzamento) {
   const { error: e1 } = await supabase.from(tabella).delete().eq("calcolo_id", calcoloId);
   if (e1) return { error: e1 };
@@ -232,21 +237,8 @@ export async function salvaRiuso(calcoloId, righe, onAvanzamento) {
 // Serve per correggere un calcolo confermato senza toccarlo: la copia
 // porta versione_di = id dell'originale e titolo con "(rev.)". Il
 // risultato non si copia: va ricalcolato. Restituisce { data: nuovo calcolo,
-// error }; in caso di errore sul dettaglio la bozza esiste già (data valorizzato).
+// error }. RPC `admin_nuova_versione_calcolo` (20_rinforzi_integrita.sql):
+// copia tutto nel database in un'unica operazione (o tutto o niente).
 export async function nuovaVersione(calcolo) {
-  const { data: nuovo, error } = await creaCalcolo({
-    praticaId: calcolo.pratica_id,
-    titolo: `${calcolo.titolo} (rev.)`,
-    anno: calcolo.anno,
-    tipo: calcolo.tipo,
-    dataAvvio: calcolo.data_avvio,
-    dati: calcolo.dati,
-    versioneDi: calcolo.id,
-  });
-  if (error) return { data: null, error };
-  const [c, r] = await Promise.all([leggiConferimenti(calcolo.id), leggiRiuso(calcolo.id)]);
-  if (c.error || r.error) return { data: nuovo, error: c.error || r.error };
-  const e1 = await salvaConferimenti(nuovo.id, c.data);
-  const e2 = await salvaRiuso(nuovo.id, r.data);
-  return { data: nuovo, error: e1.error || e2.error };
+  return await supabase.rpc("admin_nuova_versione_calcolo", { p_calcolo: calcolo.id });
 }

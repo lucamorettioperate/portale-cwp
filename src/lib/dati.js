@@ -38,6 +38,7 @@
    ========================================================================= */
 import { supabase } from "./supabase.js";
 import { FASI } from "./cwpProgram.js";
+import { oggiItalia, aggiungiGiorni } from "./date.js";
 import { verificaFile, traduciErroreArchivio } from "./file.js";
 
 // ---- Organizzazioni ----
@@ -94,35 +95,23 @@ export async function leggiPratica(id) {
     .single();
 }
 
-// Crea una pratica e genera automaticamente le sue 7 fasi.
-// Parametro: colonne della pratica (tipo, organizzazione_id, titolo, …).
-// Restituisce la pratica creata. Scritture: una riga in `pratica` e sette
-// in `fase` (01_schema.sql; RLS pratica_write e fase_write in
-// 02_sicurezza.sql: solo staff). Il codice CWP-AAAA-NNNN (o -RMn per i
-// rapporti) lo assegna il trigger trg_pratica_codice (09_cruscotto_pagamenti_notifiche.sql).
-// Attenzione: le due insert non sono una transazione. Se fallisce la
-// seconda, la pratica resta senza fasi e l'errore viene restituito.
+// Crea una pratica e le sue 7 fasi in un'unica operazione (o tutto o niente).
+// Parametro: colonne della pratica (tipo, organizzazione_id, codice, titolo,
+// stato, progetto_padre_id, anno_monitoraggio). Restituisce { data: pratica
+// creata, error }. RPC `staff_crea_pratica` (20_rinforzi_integrita.sql):
+// solo staff; valgono le regole RLS pratica_write e fase_write
+// (02_sicurezza.sql). Il codice CWP-AAAA-NNNN (o -RMn per i rapporti) lo
+// assegna il trigger trg_pratica_codice (09_cruscotto_pagamenti_notifiche.sql).
 export async function creaPratica(dati) {
-  const { data: pratica, error } = await supabase
-    .from("pratica")
-    .insert(dati)
-    .select()
-    .single();
-  if (error) return { data: null, error };
-
-  // Genera le 7 fasi standard (cwpProgram.js): la fase 1 "Adesione" parte
-  // già in corso, le altre si aprono dal back-office con staff_apri_fase.
+  // Le 7 fasi standard (cwpProgram.js): la fase 1 "Adesione" parte già in
+  // corso, le altre si aprono dal back-office con staff_apri_fase.
   const fasi = FASI.map((f) => ({
-    pratica_id: pratica.id,
     numero: f.numero,
     nome: f.nome,
     responsabile: f.responsabile,
     stato: f.numero === 1 ? "in_corso" : "non_iniziata",
   }));
-  const { error: errFasi } = await supabase.from("fase").insert(fasi);
-  if (errFasi) return { data: pratica, error: errFasi };
-
-  return { data: pratica, error: null };
+  return await supabase.rpc("staff_crea_pratica", { p_pratica: dati, p_fasi: fasi });
 }
 
 // ---- Azioni del back-office (funzioni del database, script 08) ----
@@ -378,18 +367,18 @@ export async function leggiConsultazione(praticaId) {
 // Scrive una riga in `consultazione` (01_schema.sql; RLS consult_write in
 // 02_sicurezza.sql: solo staff). La consultazione diventa visibile sulla
 // pagina pubblica /consultazioni (Edge Function consultazione-pubblica).
-// Nota: le date sono calcolate in UTC (toISOString); i 30 giorni sono fissi
-// nel codice, non letti da durata_fase.
+// Date in ora italiana (oggiItalia, src/lib/date.js), come nel database
+// (20_rinforzi_integrita.sql): aperta da oggi fino a oggi + 30 giorni
+// compreso. I 30 giorni sono fissi nel codice, non letti da durata_fase.
 export async function apriConsultazione({ praticaId, documentoId }) {
-  const oggi = new Date();
-  const chiusura = new Date(oggi.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const oggi = oggiItalia();
   return await supabase
     .from("consultazione")
     .insert({
       pratica_id: praticaId,
       documento_id: documentoId,
-      data_apertura: oggi.toISOString().slice(0, 10),
-      data_chiusura: chiusura.toISOString().slice(0, 10),
+      data_apertura: oggi,
+      data_chiusura: aggiungiGiorni(oggi, 30),
       attiva: true,
     })
     .select()
@@ -436,44 +425,32 @@ export async function elencaUtenti() {
 // - organizzazioniIds: elenco delle organizzazioni (comuni/aziende) associate;
 //   la prima resta anche come "organizzazione principale" sul profilo.
 // - per gli operatori le associazioni vengono azzerate.
-// RPC `admin_aggiorna_utente` (05_gestione_utenti.sql, rivista in
-// 10_mfa_profilo.sql: solo Admin, vietato nominare altri Admin) e poi
-// `admin_imposta_organizzazioni`. Due chiamate separate: se la seconda
-// fallisce il ruolo resta già aggiornato.
+// RPC `admin_aggiorna_utente_completo` (20_rinforzi_integrita.sql): ruolo e
+// organizzazioni in un'unica operazione; i controlli sono quelli di
+// admin_aggiorna_utente (19_correzioni_revisione_codice.sql: solo Admin,
+// niente nomine di Admin, non su se stessi) e admin_imposta_organizzazioni.
 export async function aggiornaUtente(utenteId, ruolo, organizzazioniIds = []) {
-  const ids = ruolo === "cliente" ? organizzazioniIds : [];
-  const r1 = await supabase.rpc("admin_aggiorna_utente", {
+  return await supabase.rpc("admin_aggiorna_utente_completo", {
     p_utente: utenteId,
     p_ruolo: ruolo,
-    p_organizzazione: ids[0] || null,
-  });
-  if (r1.error) return r1;
-  return await impostaOrganizzazioniUtente(utenteId, ids);
-}
-
-// Imposta l'elenco completo delle organizzazioni associate a un utente.
-// Sostituisce le associazioni esistenti nella tabella `utente_organizzazione`.
-// RPC `admin_imposta_organizzazioni` (06_utente_multi_org.sql, riviste in 07
-// e 10_mfa_profilo.sql): solo Admin.
-export async function impostaOrganizzazioniUtente(utenteId, organizzazioniIds) {
-  return await supabase.rpc("admin_imposta_organizzazioni", {
-    p_utente: utenteId,
-    p_organizzazioni: organizzazioniIds,
+    p_organizzazioni: ruolo === "cliente" ? organizzazioniIds : [],
   });
 }
 
 // Crea un nuovo utente con password temporanea (via Edge Function).
 // Edge Function `crea-utente` (supabase/functions/crea-utente): verifica che
 // il chiamante sia Admin e crea l'account con la chiave service_role, che il
-// browser non ha. Le altre organizzazioni si associano dopo con
-// impostaOrganizzazioniUtente.
-export async function creaUtente({ email, password, ruolo, organizzazioneId, nomeCompleto }) {
+// browser non ha. Imposta anche tutte le organizzazioni del cliente; se un
+// passo fallisce l'account non resta creato a metà.
+// organizzazioniIds: elenco completo per i clienti (la prima è la principale).
+export async function creaUtente({ email, password, ruolo, organizzazioniIds = [], nomeCompleto }) {
   return await supabase.functions.invoke("crea-utente", {
     body: {
       email,
       password,
       ruolo,
-      organizzazione_id: organizzazioneId,
+      organizzazione_id: organizzazioniIds[0] || null,
+      organizzazioni: organizzazioniIds,
       nome_completo: nomeCompleto,
     },
   });
@@ -519,8 +496,10 @@ export async function leggiCruscotto() {
 // Parametro: riga del progetto (serve id e organizzazione_id).
 // Tabelle `pratica` e `fase` tramite creaPratica. Il trigger
 // trg_rapporto_coerente (09_cruscotto_pagamenti_notifiche.sql) impone
-// l'organizzazione del Progetto e la sequenza degli anni.
-// Il limite di 10 rapporti è controllato solo qui nel portale.
+// l'organizzazione del Progetto e la sequenza degli anni; il limite di 10
+// lo garantisce anche il database (vincolo chk_anno_range e indice
+// uq_rapporto_anno, 01_schema.sql). Il controllo qui serve solo a dare un
+// messaggio chiaro.
 export async function creaRapporto(progetto) {
   const { data: esistenti } = await elencaRapporti(progetto.id);
   const anno = (esistenti || []).reduce((m, r) => Math.max(m, r.anno_monitoraggio || 0), 0) + 1;

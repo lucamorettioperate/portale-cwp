@@ -6,7 +6,7 @@
    fase (con i colori dei badge), la palette e le tipologie di documento.
 
    Usato da: quasi tutte le pagine e i componenti (COLORI in particolare),
-   src/App.jsx, src/lib/dati.js, src/lib/stato.js.
+   src/App.jsx, src/lib/dati.js.
    Dati/servizi coinvolti: nessuna chiamata. Le chiavi di STATI_PRATICA,
    STATI_FASE e RUOLI devono coincidere con i tipi enumerati del database
    (stato_pratica, stato_fase, ruolo_utente in supabase/01_schema.sql):

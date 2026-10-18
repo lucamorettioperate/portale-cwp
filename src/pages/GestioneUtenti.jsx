@@ -9,8 +9,9 @@
    Chi la usa: solo Amministratori (gli altri vedono un messaggio).
    Dati (src/lib/dati.js): elencaUtenti (RPC admin_elenco_utenti),
      elencaOrganizzazioni (tabella "organizzazione"), creaUtente (Edge
-     Function "crea-utente"), aggiornaUtente (RPC admin_aggiorna_utente +
-     admin_imposta_organizzazioni), impostaUtenteAttivo (RPC
+     Function "crea-utente", che registra anche le organizzazioni),
+     aggiornaUtente (RPC admin_aggiorna_utente_completo, script 20: ruolo e
+     organizzazioni in un'unica operazione), impostaUtenteAttivo (RPC
      admin_imposta_attivo), reimpostaPassword (Edge Function
      "reimposta-password"). Password generate con generaPasswordTemporanea
      di src/lib/password.js.
@@ -34,7 +35,6 @@ import {
   elencaOrganizzazioni,
   creaUtente,
   aggiornaUtente,
-  impostaOrganizzazioniUtente,
   impostaUtenteAttivo,
   reimpostaPassword,
 } from "../lib/dati.js";
@@ -432,14 +432,13 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
   const [ruolo, setRuolo] = useState("cliente");
   const [orgIds, setOrgIds] = useState([]);
   const [errore, setErrore] = useState("");
-  // Avviso non bloccante: utente creato ma organizzazioni non tutte salvate.
-  const [avviso, setAvviso] = useState("");
   // Vero dopo la creazione riuscita: la finestra mostra l'esito.
   const [ok, setOk] = useState(false);
   const [inCorso, setInCorso] = useState(false);
 
-  // Creazione in due passi: 1) utente + profilo con l'organizzazione
-  // principale (Edge Function); 2) elenco completo delle organizzazioni.
+  // Creazione in un solo passo: la Edge Function crea-utente crea l'account,
+  // completa il profilo e registra tutte le organizzazioni; se qualcosa non
+  // riesce l'account viene eliminato e si mostra l'errore.
   async function invia(e) {
     e.preventDefault();
     setErrore("");
@@ -447,11 +446,11 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
       setErrore("Seleziona almeno un'organizzazione per l'utente cliente.");
       return;
     }
-    // Minimo 8 caratteri, come richiesto dalla Edge Function crea-utente.
-    // Nota: è meno della regola per le password scelte dagli utenti
-    // (10 caratteri, src/lib/password.js); la password generata ne ha 12.
-    if (password.length < 8) {
-      setErrore("La password deve avere almeno 8 caratteri.");
+    // Stessa regola delle password scelte dagli utenti e della Edge
+    // Function crea-utente: almeno 10 caratteri con lettere e numeri
+    // (REGOLE_PASSWORD, src/lib/password.js). La password generata ne ha 12.
+    if (password.length < 10 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+      setErrore("La password temporanea deve avere almeno 10 caratteri, con lettere e numeri.");
       return;
     }
     setInCorso(true);
@@ -459,7 +458,7 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
       email: email.trim(),
       password,
       ruolo,
-      organizzazioneId: ruolo === "cliente" ? orgIds[0] : null,
+      organizzazioniIds: ruolo === "cliente" ? orgIds : [],
       nomeCompleto: nome.trim() || null,
     });
     // La Edge Function può riportare l'errore anche nel corpo (data.error).
@@ -467,26 +466,6 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
       setInCorso(false);
       setErrore("Creazione non riuscita: " + (data?.error || error.message));
       return;
-    }
-
-    // Registra tutte le organizzazioni selezionate (anche quando è una sola,
-    // così l'associazione è sempre nella tabella molti-a-molti).
-    // L'id del nuovo utente si ricava cercandolo per email nell'elenco.
-    if (ruolo === "cliente") {
-      const { data: elenco } = await elencaUtenti();
-      const nuovo = (elenco || []).find(
-        (u) => (u.email || "").toLowerCase() === email.trim().toLowerCase()
-      );
-      const res = nuovo
-        ? await impostaOrganizzazioniUtente(nuovo.id, orgIds)
-        : { error: { message: "utente non trovato" } };
-      if (res.error) {
-        setAvviso(
-          "Utente creato, ma le organizzazioni aggiuntive non sono state salvate (" +
-            res.error.message +
-            "). Aggiungile da «Modifica»."
-        );
-      }
     }
     setInCorso(false);
     setOk(true);
@@ -506,7 +485,6 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
             Comunica all'utente la password temporanea: <b style={{ fontFamily: "monospace" }}>{password}</b>
             <br />
             Al primo accesso il portale gli chiederà di sceglierne una personale.
-            {avviso && <div style={{ color: C.red, marginTop: 10, fontSize: 13 }}>{avviso}</div>}
             <div style={{ marginTop: 14 }}>
               <button type="button" onClick={onInvitato} style={btnPrimario}>Chiudi</button>
             </div>

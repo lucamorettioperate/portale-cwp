@@ -94,8 +94,13 @@ Deno.serve(async (req) => {
   }
 });
 
-// Data di oggi aaaa-mm-gg (in UTC: il server della funzione lavora in UTC).
-const oggi = () => new Date().toISOString().slice(0, 10);
+// Data di oggi aaaa-mm-gg in ora italiana (Europe/Rome), come il database
+// (20_rinforzi_integrita.sql) e il portale (oggiItalia in src/lib/date.js).
+// Il server della funzione lavora in UTC: senza fuso, tra mezzanotte e le
+// 2 di notte la consultazione risulterebbe ancora al giorno prima.
+// Il formato svedese (sv-SE) produce già aaaa-mm-gg.
+const oggi = () =>
+  new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Rome", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 // Formato di un id uuid: si controlla prima di interrogare il database.
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

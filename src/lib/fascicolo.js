@@ -23,6 +23,7 @@
    «Funzionalità per area» (Export fascicolo).
    ========================================================================= */
 import { supabase } from "./supabase.js";
+import { oggiItalia } from "./date.js";
 import {
   leggiPratica,
   elencaDocumenti,
@@ -245,7 +246,7 @@ export async function esportaFascicolo(praticaId, { staff, onAvanzamento = () =>
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = pulisci(`Fascicolo_${pratica.codice || pratica.id}_${new Date().toISOString().slice(0, 10)}`) + ".zip";
+  a.download = pulisci(`Fascicolo_${pratica.codice || pratica.id}_${oggiItalia()}`) + ".zip";
   document.body.appendChild(a);
   a.click();
   a.remove();

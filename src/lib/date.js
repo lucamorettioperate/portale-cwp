@@ -2,9 +2,10 @@
    date.js — utilità per le date mostrate nel portale (formato italiano).
 
    Scopo: formattare le date del database (gg/mm/aaaa), contare i giorni
-   alle scadenze e ottenere la data di oggi in formato ISO.
+   alle scadenze e ottenere la data di oggi in formato ISO (anche la data
+   italiana, indipendente dal fuso del computer).
 
-   Usato da: pagine Cruscotto, CalcoloCrediti, Crediti, TuoiDocumenti,
+   Usato da: src/lib/dati.js (apertura della consultazione); pagine Cruscotto, CalcoloCrediti, Crediti, TuoiDocumenti,
    ConsultazioniPubbliche; componenti DettaglioPratica, Consultazione,
    Integrazioni, Notifiche, Pagamenti, crediti/ImportaTracciato,
    crediti/RegistroCrediti.
@@ -47,4 +48,20 @@ export function oggiIso() {
   const d = new Date();
   const p = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+// Oggi in Italia (fuso Europe/Rome) in formato aaaa-mm-gg, qualunque sia il
+// fuso del computer che usa il portale. È lo stesso «oggi» del database
+// (20_rinforzi_integrita.sql) e della funzione consultazione-pubblica.
+// Il formato svedese (sv-SE) produce già aaaa-mm-gg.
+export function oggiItalia() {
+  return new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Rome", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+}
+
+// Aggiunge n giorni a una data aaaa-mm-gg e restituisce aaaa-mm-gg.
+// Calcolo sul calendario (in UTC, senza ore), quindi indifferente all'ora
+// legale: aggiungiGiorni("2026-10-18", 30) → "2026-11-17".
+export function aggiungiGiorni(dataIso, n) {
+  const [a, m, g] = dataIso.split("-").map(Number);
+  return new Date(Date.UTC(a, m - 1, g + n)).toISOString().slice(0, 10);
 }

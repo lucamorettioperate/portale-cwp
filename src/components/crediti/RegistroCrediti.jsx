@@ -27,7 +27,7 @@ import { COLORI as C } from "../../lib/cwpProgram.js";
 import Badge from "../Badge.jsx";
 import { supabase } from "../../lib/supabase.js";
 import { scriviCsv, scaricaTesto } from "../../lib/csv.js";
-import { formatoData } from "../../lib/date.js";
+import { formatoData, oggiItalia } from "../../lib/date.js";
 
 // Numero in formato italiano con d decimali (crediti in tCO2eq: 3 decimali).
 const fmt = (v, d = 3) => (v == null ? "—" : Number(v).toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d }));
@@ -70,10 +70,10 @@ export default function RegistroCrediti() {
   const totaleNetti = totali.reduce((s, t) => s + t.netti, 0);
 
   // Scarica l'intero registro in CSV (tutte le righe, anche le sostituite,
-  // a prescindere dal filtro). Nome file con la data di oggi in UTC.
+  // a prescindere dal filtro). Nome file con la data di oggi (ora italiana).
   function esporta() {
     scaricaTesto(
-      `registro_crediti_CWP_${new Date().toISOString().slice(0, 10)}.csv`,
+      `registro_crediti_CWP_${oggiItalia()}.csv`,
       scriviCsv(
         ["Numero di registro", "Pratica", "Ente", "Anno", "Crediti lordi (tCO2eq)", "Buffer (%)", "Crediti netti (tCO2eq)", "Confermato il", "Confermato da", "Stato", "Sostituito da"],
         (righe || []).map((r) => [

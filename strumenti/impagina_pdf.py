@@ -332,12 +332,9 @@ def costruisci(chiave):
     loghi = loghi_trasparenti()
 
     titoli = [(i + 1, c["titolo"]) for i, c in enumerate(capitoli)]
-    # etichetta(): oggi restituisce sempre il titolo così com'è (non usata).
     # numero(): numero a due cifre del capitolo, progressivo se "numera",
     # altrimenti preso dal titolo ("3. Servizi" → "03").
     # titolo_pulito(): titolo senza il numero iniziale.
-    def etichetta(n, t):
-        return t if not cfg["numera"] else t
     def numero(n, t):
         if cfg["numera"]:
             return f"{n:02d}"

@@ -76,17 +76,6 @@ export const btnLink = {
   textDecoration: "underline",
 };
 
-// Riquadro di avviso (sfondo ocra chiaro). Oggi non importato da nessun file.
-export const avviso = {
-  background: C.ocraSoft || "#f3e7d6",
-  color: C.ink,
-  border: `1px solid ${C.line}`,
-  borderRadius: 10,
-  padding: "10px 12px",
-  fontSize: 13,
-  lineHeight: 1.5,
-};
-
 // Data e ora in formato italiano, nel fuso orario del browser:
 // "18/10/2026 · 14:05". Valore vuoto → "—".
 export function dataOra(valore) {
