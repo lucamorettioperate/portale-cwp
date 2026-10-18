@@ -79,6 +79,12 @@
       "data": "18/10/2026",
       "descrizione": "Rapporto di calcolo in PDF, archiviazione nella pratica, numero di registro, registro dei crediti.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.4",
+      "data": "18/10/2026",
+      "descrizione": "Calcolo crediti: il risultato si azzera quando cambiano dati o Banca Dati Utenze, conferma solo dopo un nuovo «Calcola». Gestione utenti: password temporanea di almeno 10 caratteri con lettere e numeri, creazione annullata se non va a buon fine, nessun accesso ai dati prima del cambio password.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -104,6 +110,12 @@
       "rev": "1.3",
       "data": "18/10/2026",
       "descrizione": "Prove del rapporto PDF, del numero di registro e del registro dei crediti con le nuove versioni.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.4",
+      "data": "18/10/2026",
+      "descrizione": "Nuova prova 7.12 (risultato azzerato dopo una modifica dei dati); prove successive del blocco 7 rinumerate; prova 8.4 estesa.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -160,6 +172,12 @@
       "rev": "1.8",
       "data": "18/10/2026",
       "descrizione": "Codice sorgente interamente commentato (punto 31 completato); nuovi rinforzi nel punto 33; intestazione aggiornata alla versione 0.19.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.9",
+      "data": "18/10/2026",
+      "descrizione": "Script 20 (rinforzi di integrità, ora italiana nel database), funzioni crea-utente e consultazione-pubblica ripubblicate, punto 33 quasi completato.",
       "autore": "Fondazione Operate"
     }
   ]

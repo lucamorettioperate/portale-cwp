@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Ultimo aggiornamento** | 18 ottobre 2026 |
-| **Versione del portale** | 0.19 (ultimo script database: `19_correzioni_revisione_codice.sql`) |
+| **Versione del portale** | 0.20 (ultimo script database: `20_rinforzi_integrita.sql`) |
 | **Indirizzo** | https://portale-cwp.vercel.app |
 | **Repository** | https://github.com/lucamorettioperate/portale-cwp (pubblico: solo codice, nessun dato) |
 | **Responsabile** | Luca Moretti — Fondazione Operate |
@@ -134,7 +134,9 @@ cosa**, **Resend spedisce** le email.
 (`AuthContext.jsx`) → riceve la sessione → il portale legge il profilo
 (ruolo, organizzazioni, `password_temporanea`) → se la password è
 temporanea apre `CambiaPassword`, se serve l'MFA `VerificaMfa`, altrimenti
-il menu del ruolo (`Header.jsx`).
+il menu del ruolo (`Header.jsx`). Con la password temporanea anche il
+database non riconosce ruolo e organizzazioni (script 20): finché non la
+cambia, l'utente non vede né scrive dati, qualunque cosa faccia il browser.
 
 **Il Comune carica un documento.** `Documenti.jsx` → `caricaDocumento()`
 (`dati.js`) controlla formato, dimensione e contenuto (`file.js`) → carica
@@ -227,10 +229,11 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `13_durata_fasi.sql` | Durata delle fasi in tabella, modificabile dall'Admin con motivazione | 18/10/2026 |
 | `14_controlli_file.sql` | Limite 50 MB, formati ammessi, controllo tipo/estensione/cartella; ZIP ammesso | 18/10/2026 (riesecuzione per ZIP lo stesso giorno) |
 | `15_password.sql` | Cambio obbligatorio dopo password temporanea (`password_temporanea`), funzione `password_cambiata`, audit dei cambi password | 18/10/2026 |
-| `19_correzioni_revisione_codice.sql` | Il Comune legge solo le osservazioni ammesse della consultazione (policy `commento_select`); un Amministratore non può cambiare il ruolo di un altro Amministratore né il proprio (`admin_aggiorna_utente`) | 18/10/2026 |
-| `18_registro_crediti.sql` | Numero di registro `CWP-REG-AAAA-NNNN` assegnato alla conferma dei calcoli ex post (contatore per anno `contatore_registro`, funzione `cwp_numero_registro`, `calcolo_immutabile` aggiornata, numero vietato su inserimento e bozze); funzione `admin_registro_crediti` (stato valido / sostituito) | 18/10/2026 |
-| `17_pratiche.sql` | Pagamenti leggibili dal Comune; note di fase (`nota_fase`); anagrafica Enti di Validazione (solo Admin) e `staff_imposta_ente_validazione`; modelli di documento (`modello_documento`, archivio `modelli`); messaggi (`messaggio`); consultazione pubblica: dati dell'autore sul commento, `commento_in_attesa`, archivio `allegati-consultazione`, errata corrige (`consultazione_errata`, `staff_errata_corrige`), `staff_autori_commenti`; inserimento diretto dei commenti dal portale tolto; audit e notifiche per le nuove tabelle | 18/10/2026 |
 | `16_recupero_password.sql` | Tabella `recupero_password_richiesta` (ultima richiesta di recupero per indirizzo, nessuna policy: la usa solo la funzione `recupera-password`) | 18/10/2026 |
+| `17_pratiche.sql` | Pagamenti leggibili dal Comune; note di fase (`nota_fase`); anagrafica Enti di Validazione (solo Admin) e `staff_imposta_ente_validazione`; modelli di documento (`modello_documento`, archivio `modelli`); messaggi (`messaggio`); consultazione pubblica: dati dell'autore sul commento, `commento_in_attesa`, archivio `allegati-consultazione`, errata corrige (`consultazione_errata`, `staff_errata_corrige`), `staff_autori_commenti`; inserimento diretto dei commenti dal portale tolto; audit e notifiche per le nuove tabelle | 18/10/2026 |
+| `18_registro_crediti.sql` | Numero di registro `CWP-REG-AAAA-NNNN` assegnato alla conferma dei calcoli ex post (contatore per anno `contatore_registro`, funzione `cwp_numero_registro`, `calcolo_immutabile` aggiornata, numero vietato su inserimento e bozze); funzione `admin_registro_crediti` (stato valido / sostituito) | 18/10/2026 |
+| `19_correzioni_revisione_codice.sql` | Il Comune legge solo le osservazioni ammesse della consultazione (policy `commento_select`); un Amministratore non può cambiare il ruolo di un altro Amministratore né il proprio (`admin_aggiorna_utente`) | 18/10/2026 |
+| `20_rinforzi_integrita.sql` | Data italiana nel database (`timezone = Europe/Rome`); `staff_crea_pratica` (pratica e 7 fasi insieme); `admin_aggiorna_utente_completo` (ruolo e organizzazioni insieme); calcolo crediti: trigger `trg_calcolo_coerenza` (risultato azzerato se cambiano i dati, controllo delle righe della Banca Dati alla conferma) e `trg_*_bdu_*` (risultato azzerato se cambia la Banca Dati), `admin_nuova_versione_calcolo`; password temporanea: `app_ruolo`, `app_organizzazione`, `app_org_mia` non riconoscono chi deve ancora cambiarla | 18/10/2026 |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
 script successivi.
@@ -249,10 +252,11 @@ dalla funzione `consultazione-pubblica`).
 
 **Funzioni del database usate dal portale** (selezione):
 `staff_apri_fase`, `staff_chiudi_fase`, `staff_modifica_scadenza`,
-`staff_cambia_stato_pratica`, `staff_richiedi_integrazione`,
+`staff_cambia_stato_pratica`, `staff_crea_pratica`, `staff_richiedi_integrazione`,
 `staff_chiudi_integrazione`, `cliente_rispondi_integrazione`,
 `rispondi_commento`, `staff_cruscotto`, `admin_elenco_utenti`,
-`admin_aggiorna_utente`, `admin_imposta_organizzazioni`,
+`admin_aggiorna_utente_completo`, `admin_imposta_organizzazioni`,
+`admin_nuova_versione_calcolo`, `admin_registro_crediti`,
 `admin_imposta_attivo`, `admin_imposta_durata_fase`, `mio_stato_mfa`,
 `sono_admin`, `richiedi_email_notifica`.
 
@@ -260,8 +264,14 @@ dalla funzione `consultazione-pubblica`).
 
 | Nome | Quando | Cosa fa |
 |---|---|---|
-| `cwp_notifiche_scadenze` | ogni giorno alle 05:00 UTC | Notifiche per fasi in scadenza e scadute |
+| `cwp_notifiche_scadenze` | ogni giorno alle 05:00 UTC (07:00 in Italia con l'ora legale, 06:00 con l'ora solare) | Notifiche per fasi in scadenza e scadute |
 | `cwp_riprova_email` | ogni 15 minuti | Rispedisce le email delle ultime 6 ore non ancora inviate |
+
+**Fuso orario**: dal 18/10 (script 20) il database lavora in ora italiana
+(`Europe/Rome`, impostazione del database): «oggi» per scadenze di fasi,
+consultazioni e pagamenti è la data italiana. Il portale
+(`oggiItalia` in `src/lib/date.js`) e la funzione `consultazione-pubblica`
+usano la stessa data. Gli orari di pg_cron restano in UTC.
 
 **Impostazioni** (tabella `impostazione`, modificabile solo dal SQL Editor):
 `mfa_obbligatoria` (`false`), `url_email_notifiche` (indirizzo della
@@ -277,9 +287,9 @@ autenticazione, dal SQL Editor:
 
 | Funzione | Cosa fa | Protezione | Pubblicazione |
 |---|---|---|---|
-| `crea-utente` | L'Amministratore crea un utente con password temporanea e lo associa a organizzazioni | Verifica che il chiamante sia Admin (`sono_admin`) | Dashboard Supabase (editor web); ripubblicata 17/10 |
+| `crea-utente` | L'Amministratore crea un utente con password temporanea e lo associa a tutte le sue organizzazioni (`admin_imposta_organizzazioni` con il token dell'Admin); se un passo fallisce l'account appena creato viene eliminato | Verifica che il chiamante sia Admin (`sono_admin`); password temporanea di almeno 10 caratteri con lettere e numeri; niente creazione di Admin | Dashboard Supabase (editor web); ripubblicata 18/10 (script 20); Verify JWT attivo |
 | `reimposta-password` | L'Amministratore assegna una password temporanea a un Cliente o Operatore; il flag obbliga al cambio al primo accesso; audit | Verifica `sono_admin`; esclusi amministratori e sé stessi | Dashboard Supabase (editor web), 18/10; Verify JWT attivo |
-| `consultazione-pubblica` | Pagine pubbliche della consultazione: elenco, dettaglio (documento, errata corrige, osservazioni ammesse), invio di un'osservazione con allegato facoltativo ed email di conferma, conferma dell'email (l'osservazione diventa *Ricevuto*) | Verify JWT **disattivato** di proposito (pubblico senza account): nessun dato personale restituito, 3 invii/ora per indirizzo e 100/ora per consultazione, campo trappola anti-robot, allegati max 10 MB con controllo del contenuto, token monouso 48 ore salvato come SHA-256 | Dashboard Supabase (editor web), 18/10 |
+| `consultazione-pubblica` | Pagine pubbliche della consultazione (data di «oggi» in ora italiana dal 18/10): elenco, dettaglio (documento, errata corrige, osservazioni ammesse), invio di un'osservazione con allegato facoltativo ed email di conferma, conferma dell'email (l'osservazione diventa *Ricevuto*) | Verify JWT **disattivato** di proposito (pubblico senza account): nessun dato personale restituito, 3 invii/ora per indirizzo e 100/ora per consultazione, campo trappola anti-robot, allegati max 10 MB con controllo del contenuto, token monouso 48 ore salvato come SHA-256 | Dashboard Supabase (editor web), 18/10 |
 | `recupera-password` | «Password dimenticata?»: genera il collegamento di recupero (`auth.admin.generateLink`) e spedisce con Resend l'email in italiano «Portale Carbon WastePrint (CWP) — Richiesta di reimpostazione della password», al posto del modello email di Supabase | Verify JWT **disattivato** di proposito (la chiama chi non ha fatto l'accesso): risponde sempre `ok` senza rivelare se l'indirizzo esiste; niente email agli utenti disattivati; massimo una richiesta ogni 2 minuti per indirizzo; il collegamento porta solo al portale | Dashboard Supabase (editor web), 18/10 |
 | `invia-email-notifica` | Spedisce per email una notifica interna (pulsante "Apri nel portale") tramite Resend | Verify JWT **disattivato** di proposito: usa solo l'id ricevuto e rilegge tutto dal database; ogni notifica parte una volta sola | Dashboard Supabase; prima pubblicazione 17/10, aggiornata 17/10 (pulsante per tema scuro) |
 
@@ -403,6 +413,27 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Rinforzi di integrità (punto 33)** — script `20_rinforzi_integrita.sql`
+  (provato sul banco locale, eseguito e verificato in produzione), portale e
+  Edge Functions `crea-utente` e `consultazione-pubblica` ripubblicate.
+  Cosa cambia: (1) il database ragiona in ora italiana, come il portale e
+  la pagina pubblica della consultazione (prima, tra mezzanotte e le 2,
+  «oggi» era ancora il giorno prima); (2) una nuova pratica nasce con le 7
+  fasi in un'unica operazione; (3) ruolo e organizzazioni di un utente si
+  salvano insieme; la creazione di un utente imposta tutte le
+  organizzazioni e, se qualcosa fallisce, l'account non resta a metà; la
+  password temporanea scritta a mano deve avere 10 caratteri con lettere e
+  numeri; (4) calcolo dei crediti: **corretto un difetto** per cui si
+  potevano salvare dati nuovi e confermare il risultato calcolato su quelli
+  vecchi; ora ogni modifica dei dati o della Banca Dati Utenze azzera il
+  risultato salvato, la conferma richiede che le righe salvate siano
+  quelle usate nel calcolo e la nuova versione si crea nel database in
+  un'unica operazione; (5) chi ha una password temporanea non vede né
+  scrive dati finché non la cambia (prima lo imponeva solo l'interfaccia).
+  Rimossi i componenti del prototipo non usati. Il limite di 10 Rapporti
+  era già garantito dal database (segnalazione del 18/10 errata).
+  Effetto pratico: i calcoli in bozza calcolati prima di oggi vanno
+  ricalcolati («Calcola») prima della conferma.
 - **Codice commentato: punto 31 completato** — commentati anche le
   librerie (`src/lib`, compresi i moduli del calcolo crediti), l'avvio del
   portale (`main.jsx`, `App.jsx`), le cinque Edge Functions, le prove
@@ -767,16 +798,16 @@ completato (va barrato qui e annotato in Cronologia).
 - ~~**31.** Codice sorgente commentato per sviluppatori umani~~ — fatto il 18/10: ogni file (portale, script SQL, Edge Functions, prove, strumenti) ha in testa lo scopo e il collegamento al capitolo del registro, e commenti in italiano su funzioni, regole di sicurezza e passaggi non ovvi. **Regola permanente:** vale anche per tutto il codice nuovo o modificato.
 - **32.** Manuale Test (test-user): guida sintetica per i collaudatori, riservata agli Amministratori, da aggiornare a ogni rilascio insieme a registro, Manuale Utente e Manuale Amministratore.
 
-- **33.** Pulizia e rinforzi emersi dalla revisione del codice del 18/10:
-    - creazione del Progetto e delle sue 7 fasi in un'unica funzione del database (oggi due inserimenti: se il secondo fallisce la pratica resta senza fasi);
-    - import della Banca Dati Utenze in un'unica transazione (oggi cancella e reinserisce a blocchi);
-    - password temporanee: la funzione `crea-utente` accetta 8 caratteri, le password personali ne chiedono 10 con lettere e numeri: allineare;
-    - obbligo di cambio della password temporanea: oggi lo impone l'interfaccia (il database impedisce solo di togliersi l'obbligo);
-    - audit leggibile dal database da tutto lo staff (serve all'export del fascicolo degli Operatori), mentre la pagina Audit è solo Admin: decidere se limitarlo;
-    - eliminare i componenti del prototipo non usati (`Timeline`, `AzioniRuolo`, `ProjectCard`, `Stat`, `Pill`), lo stile `avviso`, il file `src/lib/datiEsempio.js` e la funzione `etichetta()` di `strumenti/impagina_pdf.py`;
-    - altre operazioni in più passaggi non atomici: modifica di un utente (`aggiornaUtente`), sostituzione e nuova versione di un documento, creazione di un utente (`crea-utente` non controlla l'esito dell'aggiornamento del profilo);
-    - apertura della consultazione: la scadenza è calcolata come 30 giorni esatti in orario UTC; valutare la chiusura a fine giornata (ora italiana);
-    - limite di 10 Rapporti di monitoraggio: oggi lo applica solo l'interfaccia, portarlo nel database.
+- **33.** Pulizia e rinforzi emersi dalla revisione del codice del 18/10 — in gran parte fatto il 18/10 (script 20):
+    - ~~creazione del Progetto e delle sue 7 fasi in un'unica funzione del database~~ — fatto (`staff_crea_pratica`);
+    - ~~import della Banca Dati Utenze~~ — resta a blocchi (una sola chiamata non regge centinaia di migliaia di righe), ma un salvataggio a metà non si può più confermare: fatto;
+    - ~~password temporanee: allineare `crea-utente` alla regola dei 10 caratteri con lettere e numeri~~ — fatto;
+    - ~~obbligo di cambio della password temporanea imposto anche dal database~~ — fatto;
+    - ~~modifica di un utente, nuova versione di un calcolo, creazione di un utente non atomiche~~ — fatto;
+    - ~~data della consultazione in ora italiana~~ — fatto (tutto il database in ora italiana);
+    - ~~limite di 10 Rapporti di Monitoraggio nel database~~ — era già garantito (vincolo e indice dello script 01);
+    - ~~componenti del prototipo, stile `avviso`, `datiEsempio.js`, `etichetta()` non usati~~ — eliminati;
+    - **da decidere (Luca):** il registro di audit è leggibile dal database da tutto lo staff (serve all'export del fascicolo degli Operatori), mentre la pagina Audit è solo Admin: lasciarlo così o limitarlo agli Amministratori (in quel caso il fascicolo esportato da un Operatore non conterrebbe più la cronologia).
 
 **Da rifinire**
 
@@ -951,7 +982,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 91 file, 19.500 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 86 file, 19.430 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -967,14 +998,14 @@ Inventario generato da `strumenti/inventario_codice.py`: 91 file, 19.500 righe i
 | `src/pages/AreaCliente.jsx` | 138 | il Comune/azienda vede l'elenco dei propri Progetti (schede compatte con stato) e, sotto, il dettaglio della pratica selezionata: fasi, documenti, integrazioni, messaggi. Link al Manuale Utente in PDF. |
 | `src/pages/Audit.jsx` | 143 | tabella degli eventi registrati (data, utente, operazione, pratica, passaggio di stato, motivazione), con ricerca testuale e pulsante per caricare eventi meno recenti (requisiti §10). |
 | `src/pages/BackOffice.jsx` | 221 | a sinistra l'elenco dei Progetti (con ricerca oltre 4 voci), a destra il dettaglio della pratica scelta con le 7 fasi, documenti, integrazioni, consultazione, pagamenti, rapporti. Pulsante «+ Nuovo progetto» per registrare un… |
-| `src/pages/CalcoloCrediti.jsx` | 1344 | editor di un calcolo dei crediti di CO₂eq secondo la Metodologia CWP v1.2, a passi (menu a sinistra): import del tracciato dati, impostazioni, rifiuti del territorio, delibera tariffaria, fattori di emissione, Banca Dati Utenze,… |
+| `src/pages/CalcoloCrediti.jsx` | 1371 | editor di un calcolo dei crediti di CO₂eq secondo la Metodologia CWP v1.2, a passi (menu a sinistra): import del tracciato dati, impostazioni, rifiuti del territorio, delibera tariffaria, fattori di emissione, Banca Dati Utenze,… |
 | `src/pages/CambiaPassword.jsx` | 163 | scegliere una nuova password, con le regole di src/lib/password.js. - "obbligatorio": primo accesso con password temporanea (o reimpostata dall'Amministratore): finché non la cambia l'utente non entra; - "volontario": l'utente… |
 | `src/pages/ConsultazioniPubbliche.jsx` | 325 | permettere a chiunque di leggere il Progetto in consultazione per 30 giorni e inviare osservazioni, che Fondazione Operate modera e a cui il Comune risponde (la moderazione avviene nel back-office, componente Consultazione). |
 | `src/pages/Crediti.jsx` | 230 | sezione del calcolo dei crediti di CO₂eq (Metodologia Carbon WastePrint® v1.2). Due viste: - «Calcoli»: elenco di tutti i calcoli (titolo, pratica, anno e tipo, crediti netti, stato bozza/confermato) e modulo «+ Nuovo calcolo»… |
 | `src/pages/Cruscotto.jsx` | 268 | (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso, in scadenza, scadute, in attesa del Cliente, integrazioni da verificare, consultazioni attive) e tabella di tutte le pratiche, Progetti e Rapporti, con ricerca e… |
 | `src/pages/Documentazione.jsx` | 137 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
 | `src/pages/FormatoDati.jsx` | 136 | spiega lo standard dei dati da inviare per il calcolo dei crediti e permette di scaricare il tracciato Excel. Il link si può mandare a Comuni e gestori anche senza credenziali. Contiene: elenco dei fogli del tracciato,… |
-| `src/pages/GestioneUtenti.jsx` | 625 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
+| `src/pages/GestioneUtenti.jsx` | 603 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
 | `src/pages/Impostazioni.jsx` | 244 | parametri del Programma modificabili dagli Amministratori, in tre sezioni: - Durata delle fasi (script 13): tabella delle 7 fasi con la durata in giorni modificabile (dalla fase 2 alla 7), giorno di inizio e fine calcolati e… |
 | `src/pages/Login.jsx` | 259 | accesso con email e password; «Password dimenticata?» per farsi mandare il collegamento di reimpostazione; link alle pagine pubbliche (formato dei dati, consultazioni pubbliche, Manuale Utente in PDF). Dopo l'accesso riuscito… |
 | `src/pages/Profilo.jsx` | 66 | mostra i dati dell'account (nome, email di accesso, ruolo), il collegamento al cambio password («/password») e i documenti da scaricare per il proprio ruolo: Manuale Utente per tutti; Manuale Amministratore e Registro sviluppo e… |
@@ -985,7 +1016,6 @@ Inventario generato da `strumenti/inventario_codice.py`: 91 file, 19.500 righe i
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `src/components/AzioniRuolo.jsx` | 83 | pulsanti di azione del prototipo, diversi per ruolo (promotore, operate, validatore), con il pulsante «avanza fase» attivo solo quando tocca a quel ruolo. |
 | `src/components/Badge.jsx` | 37 | etichetta colorata compatta per mostrare uno stato (pratica, fase, documento, pagamento, calcolo…). Solo grafica. |
 | `src/components/Consultazione.jsx` | 388 | riquadro «Consultazione pubblica» di un Progetto (fase 3, requisiti §6). Lo staff apre la consultazione pubblicando un documento per 30 giorni, modera le osservazioni, pubblica errata corrige e la chiude. Il Comune legge le… |
 | `src/components/DettaglioPratica.jsx` | 655 | pagina di dettaglio di una pratica (Progetto o Rapporto di Monitoraggio) con le sue 7 fasi. Riunisce in un'unica vista: intestazione e stato, Ente di Validazione, cambio di stato, le fasi (azioni, integrazioni, note, modelli,… |
@@ -997,37 +1027,31 @@ Inventario generato da `strumenti/inventario_codice.py`: 91 file, 19.500 righe i
 | `src/components/Notifiche.jsx` | 177 | campanella delle notifiche interne (requisiti §9) nell'intestazione. Mostra il numero delle non lette, apre un elenco a tendina delle ultime 50 notifiche, segna come lette e porta alla pratica collegata. |
 | `src/components/NuovoProgetto.jsx` | 260 | finestra (sovrapposta alla pagina) per creare un nuovo Progetto. Si sceglie un'organizzazione esistente o se ne crea una nuova, si indicano codice (facoltativo) e titolo; alla creazione vengono generate le 7 fasi, con la fase 1… |
 | `src/components/Pagamenti.jsx` | 221 | riquadro «Pagamenti» di una pratica (requisiti §7). Nessun incasso online: il back-office censisce il piano previsto (più voci con scadenze diverse) e registra a mano gli incassi. Mostra totali, incassato, da incassare e lo… |
-| `src/components/Pill.jsx` | 32 | etichetta colorata compatta, a forma di pillola. |
-| `src/components/ProjectCard.jsx` | 63 | scheda di una pratica nella lista laterale del prototipo (nome, stato, codice, barra di avanzamento in giorni su 150). |
 | `src/components/Rapporti.jsx` | 122 | elenco dei Rapporti di Monitoraggio annuali di un Progetto (requisiti §2): fino a 10, uno per anno, in sequenza. Ognuno è una pratica autonoma (tipo «rapporto») con le sue 7 fasi. Lo staff può creare il Rapporto dell'anno… |
-| `src/components/Stat.jsx` | 47 | riquadro con un dato numerico in evidenza (etichetta, valore, unità di misura facoltativa). |
-| `src/components/Timeline.jsx` | 105 | linea del tempo orizzontale delle fasi di una pratica, con la barra di avanzamento in giorni e il responsabile di ogni fase. |
 | `src/components/crediti/ImportaTracciato.jsx` | 283 | passo «Importa il tracciato» del calcolo dei crediti (backlog 1-5). L'Amministratore sceglie il tracciato dati del Comune: - dai documenti della pratica del calcolo (file .xlsx o .zip caricati dal Comune), oppure dal proprio… |
 | `src/components/crediti/RegistroCrediti.jsx` | 165 | registro dei crediti (backlog 7), vista «Registro» della pagina Crediti CWP. Elenca i calcoli ex post confermati con il numero di registro assegnato dal database alla conferma (CWP-REG-AAAA-NNNN). Un calcolo corretto con una… |
 | `src/components/crediti/TabellaDati.jsx` | 208 | tabella di dati modificabile in pagina per il calcolo dei crediti CWP (conferimenti, utenze, riuso…), con aggiunta ed eliminazione di righe, importazione da CSV (anche salvato da Excel in italiano) e scaricamento di un modello… |
 | `src/components/impostazioni/EntiValidazione.jsx` | 129 | anagrafica degli Enti di Validazione (backlog 11), sezione della pagina Impostazioni. Elenco degli enti, inserimento di un nuovo ente, modifica e disattivazione. L'ente non accede al portale: serve per assegnarlo alle pratiche… |
 | `src/components/impostazioni/ModelliDocumento.jsx` | 147 | modelli di documento (backlog 12), sezione della pagina Impostazioni. L'Amministratore carica i modelli che i Comuni scaricano: un modello può valere per una fase (compare dentro quella fase in ogni pratica) o essere generale… |
-| `src/components/stili.js` | 96 | oggetti di stile in linea condivisi dai componenti delle pratiche e delle impostazioni (stessa grafica del resto del portale: carta, verde Fondazione, bordi sottili) e la funzione dataOra per mostrare data e ora in formato… |
+| `src/components/stili.js` | 85 | oggetti di stile in linea condivisi dai componenti delle pratiche e delle impostazioni (stessa grafica del resto del portale: carta, verde Fondazione, bordi sottili) e la funzione dataOra per mostrare data e ora in formato… |
 
 **Librerie (src/lib)**
 
 | File | Righe | Cosa contiene |
 |---|---|---|
 | `src/lib/AuthContext.jsx` | 189 | tiene in memoria la sessione Supabase Auth, il profilo applicativo (ruolo, organizzazione, flag password temporanea) e lo stato MFA. Espone le funzioni accedi, esci, richiediRecuperoPassword, cambiaPassword e caricaMfa. Ogni… |
-| `src/lib/crediti/archivio.js` | 252 | crea, legge, aggiorna ed elimina i calcoli (testata e dati in calcolo_crediti) e la loro Banca Dati Utenze (righe di conferimento e di riuso), anche quando le righe sono centinaia di migliaia (invio e lettura a blocchi). Crea le… |
+| `src/lib/crediti/archivio.js` | 244 | crea, legge, aggiorna ed elimina i calcoli (testata e dati in calcolo_crediti) e la loro Banca Dati Utenze (righe di conferimento e di riuso), anche quando le righe sono centinaia di migliaia (invio e lettura a blocchi). Crea le… |
 | `src/lib/crediti/calcolo.js` | 457 | funzioni pure (nessun accesso al database): ricevono i dati del calcolo e restituiscono risultati intermedi e finali, con il riferimento alla formula della Metodologia accanto a ogni passaggio. |
 | `src/lib/crediti/parametri.js` | 95 | tabelle numeriche della Metodologia usate come valori iniziali di ogni calcolo: fattori di emissione per tipologia di rifiuto (Tab. 3, 4, 7), pesi specifici (Tab. 8), beni a riuso (Tab. 5), buffer (Tab. 15 e Cap. 7), giorni… |
 | `src/lib/crediti/rapportoPdf.js` | 347 | genera nel browser, con jsPDF e jspdf-autotable, il rapporto di un calcolo: scheda, sintesi dei crediti, buffer, dati di ingresso, risultati per tipologia e per classe, avvisi, controlli di coerenza e scelte interpretative. Il… |
 | `src/lib/crediti/tracciato.js` | 657 | legge il file del tracciato compilato dal Comune o dal gestore, blocca l'import se trova dati personali, converte i fogli nei dati del motore di calcolo (calcolo.js) e segnala le incoerenze. |
 | `src/lib/csv.js` | 157 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
 | `src/lib/cwpProgram.js` | 103 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di documento. |
-| `src/lib/date.js` | 50 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO. |
-| `src/lib/dati.js` | 838 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
-| `src/lib/datiEsempio.js` | 71 | tre progetti fittizi a stadi diversi di avanzamento. Servivano finché il backend Supabase non era attivo; oggi le pratiche reali si leggono dal database (src/lib/dati.js). |
-| `src/lib/fascicolo.js` | 254 | ZIP con: dati della pratica, fasi, tutti i documenti in tutte le versioni, integrazioni, consultazione (documento pubblicato, osservazioni, risposte), pagamenti e audit (questi ultimi due solo nell'export dello staff: l'audit lo… |
+| `src/lib/date.js` | 67 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO (anche la data italiana, indipendente dal fuso del computer). |
+| `src/lib/dati.js` | 817 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
+| `src/lib/fascicolo.js` | 255 | ZIP con: dati della pratica, fasi, tutti i documenti in tutte le versioni, integrazioni, consultazione (documento pubblicato, osservazioni, risposte), pagamenti e audit (questi ultimi due solo nell'export dello staff: l'audit lo… |
 | `src/lib/file.js` | 158 | prima di inviare un file all'archivio controlla formato ammesso, dimensione, contenuto reale (primi byte, "firma" del formato) e prepara un nome sicuro per il percorso nell'archivio. Traduce anche gli errori dello Storage di… |
 | `src/lib/password.js` | 70 | controllo delle regole della password prima dell'invio, generazione della password temporanea assegnata dall'Amministratore, traduzione in italiano degli errori di Supabase Auth. |
-| `src/lib/stato.js` | 30 | restituisce i colori di sfondo e testo per gli stati usati dai dati di esempio ("Validato", "In istruttoria", "Adesione"). Le pratiche reali usano invece STATI_PRATICA e STATI_FASE di cwpProgram.js. |
 | `src/lib/supabase.js` | 37 | crea l'unico client @supabase/supabase-js usato dal portale (database, Auth, Storage, Edge Functions). Legge URL e chiave dalle variabili d'ambiente (file .env in locale, mai pubblicato; in produzione le variabili del progetto… |
 
 **Database: script SQL (supabase)**
@@ -1053,14 +1077,15 @@ Inventario generato da `strumenti/inventario_codice.py`: 91 file, 19.500 righe i
 | `supabase/17_pratiche.sql` | 586 | PRATICHE: RIFINITURE (backlog 10, 11, 12, 13, 26, 27 — 18/10/2026) |
 | `supabase/18_registro_crediti.sql` | 132 | REGISTRO DEI CREDITI (backlog 7 — 18/10/2026) |
 | `supabase/19_correzioni_revisione_codice.sql` | 47 | CORREZIONI EMERSE DALLA REVISIONE DEL CODICE (punto 31, 18/10/2026) |
+| `supabase/20_rinforzi_integrita.sql` | 300 | RINFORZI DI INTEGRITÀ (backlog 33, 18/10/2026) |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `supabase/functions/consultazione-pubblica/index.ts` | 391 | servizio della pagina pubblica delle consultazioni (requisiti §6, decisioni B e D del 18/10/2026). Chiunque, senza account, può: - "elenco": vedere le consultazioni aperte; - "dettaglio": leggere documento, errata corrige e… |
-| `supabase/functions/crea-utente/index.ts` | 129 | crea un nuovo utente con password temporanea e imposta ruolo + organizzazione. L'Admin comunica la password all'utente, che potrà cambiarla al primo accesso. |
+| `supabase/functions/consultazione-pubblica/index.ts` | 396 | servizio della pagina pubblica delle consultazioni (requisiti §6, decisioni B e D del 18/10/2026). Chiunque, senza account, può: - "elenco": vedere le consultazioni aperte; - "dettaglio": leggere documento, errata corrige e… |
+| `supabase/functions/crea-utente/index.ts` | 156 | crea un nuovo utente con password temporanea e imposta ruolo + organizzazione. L'Admin comunica la password all'utente, che potrà cambiarla al primo accesso. |
 | `supabase/functions/invia-email-notifica/index.ts` | 160 | invia per email ogni nuova notifica del portale (requisiti §9: "email + notifica interna"). |
 | `supabase/functions/recupera-password/index.ts` | 155 | «Password dimenticata?» — genera il collegamento di recupero di Supabase Auth e spedisce l'email in italiano con Resend (stessa grafica delle notifiche), invece del modello email di Supabase. |
 | `supabase/functions/reimposta-password/index.ts` | 109 | l'Amministratore assegna una nuova password temporanea a un utente (Cliente od Operatore) che l'ha dimenticata. Al primo accesso il portale obbliga l'utente a sceglierne una personale (script 15). |
@@ -1071,6 +1096,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 91 file, 19.500 righe i
 |---|---|---|
 | `test/crediti.test.mjs` | 144 | verifica del motore di calcolo con un esempio calcolato a mano (un piccolo Comune con 2 classi domestiche e 1 non domestica). Controlla le formule 1-17, 19-22 e 28-32 (non la 18: peso specifico a consuntivo), i buffer delle… |
 | `test/csv.test.mjs` | 53 | verifica che i CSV salvati da Excel in italiano (BOM, separatore ";", virgola decimale, punto delle migliaia, testi tra virgolette con ";" dentro, righe vuote) siano letti correttamente; che intestazioni con maiuscole/accenti… |
+| `test/date.test.mjs` | 31 | verificare le date in ora italiana usate per aprire le consultazioni (30 giorni) e per i nomi dei file: oggiItalia() deve dare sempre aaaa-mm-gg in fuso Europe/Rome, aggiungiGiorni() deve contare i giorni sul calendario (fine… |
 | `test/tracciato.test.mjs` | 110 | cinque prove sui file di esempio: lettura dell'Excel compilato, blocco dei dati personali (con valori oscurati nei messaggi), ZIP di CSV con singole letture (aggregazione ed esclusione delle letture fuori anno), controlli di… |
 
 **Strumenti (strumenti)**
@@ -1080,9 +1106,9 @@ Inventario generato da `strumenti/inventario_codice.py`: 91 file, 19.500 righe i
 | `strumenti/genera_documenti.cjs` | 554 | genera in Word (.docx) e PDF i documenti del portale, con copertina e loghi, registro delle revisioni, sommario con numeri di pagina, intestazione e piè di pagina: |
 | `strumenti/genera_esempi_tracciato.py` | 101 | genera i file di prova del tracciato dati per i test automatici (test/tracciato.test.mjs) e per il collaudo manuale (Manuale Test): - test/dati/tracciato_esempio.xlsx : tracciato compilato, Banca Dati con totali (foglio 5) -… |
 | `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
-| `strumenti/impagina_pdf.py` | 419 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
+| `strumenti/impagina_pdf.py` | 416 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
-| `strumenti/revisioni_documenti.json` | 166 | — |
+| `strumenti/revisioni_documenti.json` | 184 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
@@ -1100,9 +1126,9 @@ Amministratore.
 | Editor del calcolo (7 passi + import) | `src/pages/CalcoloCrediti.jsx`, `src/components/crediti/TabellaDati.jsx`, `ImportaTracciato.jsx` | `calcolo_crediti.dati`, `calcolo_conferimento`, `calcolo_riuso` (11) |
 | Lettura e controlli del tracciato | `src/lib/crediti/tracciato.js` | — (nel browser) |
 | Motore di calcolo (formule 1-32, Tabelle 15-16) | `src/lib/crediti/calcolo.js`, `parametri.js` | riepilogo salvato in `calcolo_crediti.risultato` |
-| Salvataggio e versioni | `src/lib/crediti/archivio.js` | immutabilità e numero di registro: `calcolo_immutabile` (11, 18) |
+| Salvataggio e versioni | `src/lib/crediti/archivio.js` | immutabilità e numero di registro: `calcolo_immutabile` (11, 18); coerenza del risultato: `calcolo_coerenza`, `calcolo_bdu_modificata`; nuova versione: `admin_nuova_versione_calcolo` (20) |
 | Rapporto PDF | `src/lib/crediti/rapportoPdf.js` | archiviazione come `documento` della pratica |
-| Prove | `test/crediti.test.mjs`, `test/tracciato.test.mjs` | — |
+| Prove | `test/crediti.test.mjs`, `test/tracciato.test.mjs`, `test/date.test.mjs` | — |
 
 **Flusso**: creazione (bozza) → import del tracciato o inserimento a mano
 → «Calcola» (motore nel browser, riepilogo salvato senza il dettaglio per
@@ -1111,8 +1137,17 @@ post) → rapporto PDF e archiviazione → registro. Una correzione è sempre
 una **nuova versione** (`versione_di`), che alla conferma sostituisce la
 precedente nel registro.
 
+**Coerenza del risultato (script 20)**: il risultato salvato vale solo per
+i dati con cui è stato calcolato. Se cambiano dati, anno, tipo, data di
+avvio o le righe della Banca Dati Utenze senza un nuovo «Calcola», il
+database azzera il risultato (e i crediti) della bozza. «Calcola» scrive in
+`risultato.righe` quante righe di conferimento e di riuso ha usato; alla
+conferma il database le confronta con quelle salvate e rifiuta la conferma
+se non coincidono. I calcoli in bozza calcolati prima del 18/10 vanno
+ricalcolati prima della conferma.
+
 **Limiti noti**: l'import della Banca Dati Utenze cancella e reinserisce a
-blocchi senza transazione (un errore a metà lascia dati incompleti:
-ripetere l'import); scelte interpretative da confermare (capitolo 11);
+blocchi senza transazione (un errore a metà lascia dati incompleti, che
+però non si possono confermare: ripetere l'import e «Calcola»); scelte interpretative da confermare (capitolo 11);
 regole di emissione e annullamento dei crediti in attesa dello Standard
 CWP (backlog 7).

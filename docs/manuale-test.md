@@ -163,10 +163,11 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 7.9 | [A] Passo 6: «Ricava dai dati importati» | Il buffer si compila dai dati |
 | 7.10 | [A] Passo 7: Calcola | Crediti lordi, buffer, crediti netti (o debito), dettaglio per utenza; controlli di coerenza e riquadro «Da verificare» |
 | 7.11 | [A] Scaricate riepilogo e dettaglio (CSV) e Scarica il rapporto (PDF) | I CSV si aprono con Excel; il PDF ha la scritta BOZZA su ogni pagina |
-| 7.12 | [A] Conferma calcolo → Conferma definitivamente | Calcolo Confermato con numero di registro CWP-REG-…; in sola lettura; il passo «Importa il tracciato» non permette più l'import |
-| 7.13 | [A] Scarica il rapporto (PDF), poi Archivia il rapporto nella pratica | PDF senza BOZZA, con numero di registro e impronta; nella pratica compare il documento «Rapporto di calcolo dei crediti», non visibile al Comune |
-| 7.14 | [A] Crediti CWP → Registro dei crediti | Il calcolo compare come Valido; totali per ente e anno; CSV scaricabile |
-| 7.15 | [A] Nuova versione, poi Calcola e conferma la nuova versione | Nasce una bozza «(rev.)»; alla conferma riceve un nuovo numero e nel registro la riga precedente diventa «Sostituito da …» |
+| 7.12 | [A] Passo 2: cambiate una quantità e premete Salva; poi rimettete il valore giusto, salvate e premete Calcola | Dopo il primo Salva il risultato si azzera e «Conferma calcolo» scompare; ricompare solo dopo Calcola |
+| 7.13 | [A] Conferma calcolo → Conferma definitivamente | Calcolo Confermato con numero di registro CWP-REG-…; in sola lettura; il passo «Importa il tracciato» non permette più l'import |
+| 7.14 | [A] Scarica il rapporto (PDF), poi Archivia il rapporto nella pratica | PDF senza BOZZA, con numero di registro e impronta; nella pratica compare il documento «Rapporto di calcolo dei crediti», non visibile al Comune |
+| 7.15 | [A] Crediti CWP → Registro dei crediti | Il calcolo compare come Valido; totali per ente e anno; CSV scaricabile |
+| 7.16 | [A] Nuova versione, poi Calcola e conferma la nuova versione | Nasce una bozza «(rev.)»; alla conferma riceve un nuovo numero e nel registro la riga precedente diventa «Sostituito da …» |
 
 **File di esempio.** I tre file usati sopra si scaricano da `portale-cwp.vercel.app/documentazione/esempi/` (Tracciato_esempio_compilato.xlsx, Tracciato_esempio_letture.zip, Tracciato_esempio_dati_personali.xlsx) e contengono solo dati inventati, con anno 2025. Per prove proprie usate sempre codici anonimi (U0001, U0002…), mai dati reali di persone.
 
@@ -177,7 +178,7 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 8.1 | Campanella in alto con ciascuna utenza | Le notifiche degli eventi provati, per il ruolo giusto |
 | 8.2 | Email di notifica | Oggi arrivano solo all'indirizzo del titolare del servizio email (limite noto) |
 | 8.3 | [C] Esci, poi «Password dimenticata?» | Email «Richiesta di reimpostazione della password»; il pulsante apre la pagina Nuova password |
-| 8.4 | [A] Utenti → Reimposta password del Cliente | Al successivo accesso il Cliente deve scegliere una nuova password |
+| 8.4 | [A] Utenti → Reimposta password del Cliente | Al successivo accesso il Cliente deve scegliere una nuova password e, finché non lo fa, non vede alcun dato |
 | 8.5 | [A] Disattivate il Cliente e provate ad accedere con lui | Non vede più alcun dato; riattivatelo |
 | 8.6 | [O] Cercate le pagine Utenti, Audit, Crediti CWP; provate anche a scrivere l'indirizzo (es. /utenti) | Non compaiono nel menu dell'Operatore e i loro dati non sono accessibili |
 | 8.7 | [C] Controllate menu e pratiche visibili | Menu: Le mie pratiche, I tuoi documenti, Formato dati, Manuale; solo le pratiche del proprio Comune |

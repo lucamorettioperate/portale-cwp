@@ -264,17 +264,17 @@ La pagina **Utenti** elenca tutti gli utenti con nome, email, ruolo e organizzaz
 
 1. Premete **+ Nuovo utente**.
 2. Inserite **Email** e, facoltativo, **Nome e cognome**.
-3. La **Password temporanea** è già generata; **Genera** ne crea un'altra.
+3. La **Password temporanea** è già generata; **Genera** ne crea un'altra. Se la scrivete a mano deve avere almeno 10 caratteri, con lettere e numeri.
 4. Scegliete il **Ruolo**: *Cliente (comune / azienda)* oppure *Operatore di back-office*.
 5. Per un Cliente spuntate le **Organizzazioni associate** (almeno una; la prima è la principale). Con più di 6 organizzazioni compare la ricerca.
-6. Premete **Crea utente**.
+6. Premete **Crea utente**. Se qualcosa non va a buon fine (ad esempio un'organizzazione non salvata), l'utente non viene creato e compare il motivo: correggete e riprovate.
 7. Comunicate all'utente email e password temporanea con un canale sicuro, separato dall'email di benvenuto.
 
 **Modificare un utente.** **Modifica** permette di cambiare ruolo e organizzazioni. Passando a Operatore le associazioni alle organizzazioni si azzerano.
 
 **Disattivare o riattivare.** Un utente **Disattivato** non vede più alcun dato ma resta nello storico. Non si può disattivare sé stessi.
 
-**Password temporanea e primo accesso.** Ogni nuovo utente entra con la password temporanea: al primo accesso il portale gli chiede di sceglierne una personale e non lo lascia proseguire finché non lo fa.
+**Password temporanea e primo accesso.** Ogni nuovo utente entra con la password temporanea: al primo accesso il portale gli chiede di sceglierne una personale e non lo lascia proseguire finché non lo fa. Finché non l'ha cambiata non vede né modifica alcun dato del portale.
 
 **Reimpostare la password di un utente**
 
@@ -470,6 +470,8 @@ Il riquadro **Da verificare** elenca i dati mancanti o incoerenti (ad esempio un
 1. Salvate e premete **Calcola**.
 2. Premete **Conferma calcolo**: compare il riquadro «Confermare il calcolo?» con i crediti netti.
 3. Premete **Conferma definitivamente**.
+
+**Il risultato vale solo per i dati con cui è stato calcolato.** Se dopo «Calcola» cambiate un dato, salvate o reimportate la Banca Dati Utenze, il risultato salvato si azzera e **Conferma calcolo** scompare: premete di nuovo **Calcola**. Se alla conferma compare il messaggio che la Banca Dati salvata non corrisponde a quella usata nel calcolo, ricaricate la pagina e premete **Calcola**. I calcoli in bozza calcolati prima del 18/10/2026 vanno ricalcolati prima della conferma.
 
 Un calcolo confermato riporta *Confermato il gg/mm/aaaa* ed è in sola lettura: dati, Banca Dati Utenze e risultato non si possono più modificare né cancellare. **Calcola** mostra di nuovo il dettaglio senza cambiare nulla.
 
