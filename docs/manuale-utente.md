@@ -35,16 +35,18 @@ Le credenziali (email e password temporanea) vi vengono fornite da Fondazione Op
 
 **Regole per la password:** almeno 10 caratteri, con almeno una lettera e un numero, senza il vostro indirizzo email. Usate una password che non adoperate per altri servizi.
 
-In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato dati**, **Manuale**), la campanella delle notifiche, l'indicazione *Cliente*, il vostro indirizzo email con il collegamento **Cambia password** e il pulsante **Esci** per uscire.
+In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato dati**, **Manuale**), la campanella delle notifiche, l'indicazione *Cliente*, il vostro indirizzo email con il collegamento **Il mio profilo** e il pulsante **Esci** per uscire.
 
 | Messaggio | Cosa significa | Cosa fare |
 | --- | --- | --- |
 | Email o password non corretti. | Credenziali sbagliate | Ricontrollate maiuscole e spazi, poi riprovate |
 | Accesso non riuscito. Riprova. | Problema temporaneo | Riprovate dopo qualche minuto |
 
-**Il manuale.** La voce **Manuale** del menu apre la pagina da cui scaricare questo manuale in PDF o in Word, sempre nella revisione più recente.
+**Il manuale.** La voce **Manuale** del menu, e anche la pagina **Il mio profilo**, permettono di scaricare questo manuale in PDF o in Word, sempre nella revisione più recente.
 
-**Cambiare la password.** Fate clic sul vostro indirizzo email in alto (sotto c'è scritto **Cambia password**), inserite la password attuale e due volte quella nuova, poi premete **Salva la password**.
+**Il mio profilo.** Fate clic sul vostro indirizzo email in alto (sotto c'è scritto **Il mio profilo**): trovate i dati del vostro account, il pulsante **Cambia password** e il manuale da scaricare.
+
+**Cambiare la password.** In **Il mio profilo** premete **Cambia password**, inserite la password attuale e due volte quella nuova, poi premete **Salva la password**.
 
 **Password dimenticata.**
 

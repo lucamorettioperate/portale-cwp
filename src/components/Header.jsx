@@ -97,12 +97,12 @@ export default function Header() {
             </span>
           )}
           <Link
-            to="/password"
-            title="Cambia password"
+            to="/profilo"
+            title="Il mio profilo: password e manuali"
             style={{ fontSize: 12.5, color: C.grafite, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none" }}
           >
             {utente.email}
-            <span style={{ display: "block", fontSize: 11, color: C.green, fontWeight: 600 }}>Cambia password</span>
+            <span style={{ display: "block", fontSize: 11, color: C.green, fontWeight: 600 }}>Il mio profilo</span>
           </Link>
           <button
             onClick={esci}

@@ -26,10 +26,45 @@ const DOCUMENTI = [
   },
 ];
 
-export default function Documentazione() {
+// Elenco dei documenti scaricabili per il ruolo (usato anche in "Il mio profilo").
+export function ElencoDocumenti({ compatto = false }) {
   const { ruolo } = useAuth();
   const admin = ruolo === "admin";
   const visibili = DOCUMENTI.filter((d) => admin || !d.soloAdmin);
+  return (
+    <div style={{ display: "grid", gap: compatto ? 10 : 14 }}>
+      {visibili.map((d) => {
+        const revisioni = REVISIONI[d.chiave] || [];
+        const rev = revisioni[revisioni.length - 1];
+        return (
+          <section key={d.chiave} style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, padding: compatto ? "14px 16px" : "18px 20px" }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+              <h2 style={{ fontFamily: "'Archivo'", fontSize: compatto ? 15 : 17, margin: 0 }}>{d.titolo}</h2>
+              {rev && (
+                <span style={{ fontSize: 12, color: C.green, background: C.greenSoft, borderRadius: 999, padding: "2px 9px", fontWeight: 600 }}>
+                  Rev. {rev.rev} · {rev.data}
+                </span>
+              )}
+              {d.soloAdmin && (
+                <span style={{ fontSize: 11.5, color: C.grafite, border: `1px solid ${C.line}`, borderRadius: 999, padding: "1px 8px" }}>solo Amministratori</span>
+              )}
+            </div>
+            {!compatto && <p style={{ fontSize: 13.5, color: C.grafite, margin: "8px 0 12px", lineHeight: 1.5 }}>{d.descrizione}</p>}
+            {!compatto && rev && <p style={{ fontSize: 12.5, color: C.grafite, margin: "0 0 12px" }}>Ultima revisione: {rev.descrizione}</p>}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: compatto ? 10 : 0 }}>
+              <a href={`${d.percorso}.pdf`} target="_blank" rel="noreferrer" style={pulsante(true)}>Apri PDF</a>
+              <a href={`${d.percorso}.docx`} download style={pulsante(false)}>Scarica Word</a>
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function Documentazione() {
+  const { ruolo } = useAuth();
+  const admin = ruolo === "admin";
 
   return (
     <div style={{ background: C.paper, minHeight: "100vh" }}>
@@ -42,33 +77,7 @@ export default function Documentazione() {
             : "Il manuale del portale da scaricare in PDF o Word. È aggiornato a ogni nuova funzione: la revisione indica la versione."}
         </p>
 
-        <div style={{ display: "grid", gap: 14 }}>
-          {visibili.map((d) => {
-            const revisioni = REVISIONI[d.chiave] || [];
-            const rev = revisioni[revisioni.length - 1];
-            return (
-              <section key={d.chiave} style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, padding: "18px 20px" }}>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-                  <h2 style={{ fontFamily: "'Archivo'", fontSize: 17, margin: 0 }}>{d.titolo}</h2>
-                  {rev && (
-                    <span style={{ fontSize: 12, color: C.green, background: C.greenSoft, borderRadius: 999, padding: "2px 9px", fontWeight: 600 }}>
-                      Rev. {rev.rev} · {rev.data}
-                    </span>
-                  )}
-                  {d.soloAdmin && (
-                    <span style={{ fontSize: 11.5, color: C.grafite, border: `1px solid ${C.line}`, borderRadius: 999, padding: "1px 8px" }}>solo Amministratori</span>
-                  )}
-                </div>
-                <p style={{ fontSize: 13.5, color: C.grafite, margin: "8px 0 12px", lineHeight: 1.5 }}>{d.descrizione}</p>
-                {rev && <p style={{ fontSize: 12.5, color: C.grafite, margin: "0 0 12px" }}>Ultima revisione: {rev.descrizione}</p>}
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <a href={`${d.percorso}.pdf`} target="_blank" rel="noreferrer" style={pulsante(true)}>Apri PDF</a>
-                  <a href={`${d.percorso}.docx`} download style={pulsante(false)}>Scarica Word</a>
-                </div>
-              </section>
-            );
-          })}
-        </div>
+        <ElencoDocumenti />
       </main>
     </div>
   );

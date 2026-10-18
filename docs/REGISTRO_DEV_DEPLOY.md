@@ -203,6 +203,7 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 |---|---|---|
 | `/login` | Accesso, «Password dimenticata?» | tutti |
 | `/reimposta-password` | Nuova password dal link dell'email di recupero | **pubblica** (sessione di recupero) |
+| `/profilo` | Il mio profilo: account, cambio password, manuali e documentazione per ruolo | tutti |
 | `/password` | Cambio password volontario | tutti |
 | `/formato-dati` | Formato dei dati per il calcolo crediti, download del tracciato Excel | **pubblica**, senza login |
 | `/` | Cruscotto (staff) oppure Le mie pratiche (cliente) | tutti |
@@ -292,6 +293,11 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Pagina «Il mio profilo»** (`/profilo`, collegamento sotto l'email in alto):
+  dati dell'account, «Cambia password» e documenti da scaricare per il ruolo
+  (Manuale Utente per tutti; Registro sviluppo e deploy solo per gli
+  Amministratori); componente `ElencoDocumenti` condiviso con
+  `/documentazione`. Su segnalazione di Luca, che cercava i PDF nel profilo.
 - **Password: primo accesso, cambio, recupero, reimpostazione** — script
   `15_password.sql` (colonna `password_temporanea` sul profilo, funzione
   `password_cambiata`, protezione del flag); Edge Function

@@ -17,6 +17,12 @@
       "data": "18/10/2026",
       "descrizione": "Scelta della password al primo accesso, cambio password, recupero della password dimenticata; ritorno alla pratica dopo l'accesso da un link email.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.3",
+      "data": "18/10/2026",
+      "descrizione": "Pagina «Il mio profilo» (account, cambio password, manuale da scaricare).",
+      "autore": "Fondazione Operate"
     }
   ],
   "registro": [

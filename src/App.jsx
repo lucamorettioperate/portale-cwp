@@ -15,6 +15,7 @@ import Impostazioni from "./pages/Impostazioni.jsx";
 import FormatoDati from "./pages/FormatoDati.jsx";
 import Documentazione from "./pages/Documentazione.jsx";
 import CambiaPassword from "./pages/CambiaPassword.jsx";
+import Profilo from "./pages/Profilo.jsx";
 import { COLORI as C } from "./lib/cwpProgram.js";
 
 // Schermata di caricamento mentre si verifica la sessione.
@@ -68,6 +69,14 @@ export default function App() {
       <Route path="/login" element={caricamento ? <Caricamento /> : <PaginaLogin autenticato={autenticato} />} />
       {/* Arrivo dal link dell'email "password dimenticata" (pagina pubblica) */}
       <Route path="/reimposta-password" element={<CambiaPassword modo="recupero" />} />
+      <Route
+        path="/profilo"
+        element={
+          <Protetta>
+            <Profilo />
+          </Protetta>
+        }
+      />
       <Route
         path="/password"
         element={
