@@ -1,7 +1,7 @@
 /* =========================================================================
    RegistroCrediti
    Scopo: registro dei crediti (backlog 7), vista «Registro» della pagina
-     Crediti CWP. Elenca i calcoli ex post confermati con il numero di
+     Calcolo crediti. Elenca i calcoli ex post confermati con il numero di
      registro assegnato dal database alla conferma (CWP-REG-AAAA-NNNN). Un
      calcolo corretto con una nuova versione confermata resta nel registro
      come «Sostituito»: valgono solo i crediti delle righe «Valido».

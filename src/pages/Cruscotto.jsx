@@ -45,7 +45,7 @@ const RIQUADRI = [
   // Cliente; con documento = tocca alla Fondazione verificarlo.
   { id: "attesa_cliente", label: "In attesa del Cliente", test: (p) => p.integrazioni_in_attesa > 0 },
   { id: "da_verificare", label: "Integrazioni da verificare", test: (p) => p.integrazioni_da_verificare > 0 },
-  { id: "consultazioni", label: "Consultazioni attive", test: (p) => p.consultazione_attiva },
+  { id: "consultazioni", label: "Feedback pubblico aperti", test: (p) => p.consultazione_attiva },
 ];
 
 /* Cruscotto del back-office: riquadri di sintesi e ricerca delle pratiche

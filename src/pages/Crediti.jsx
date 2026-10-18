@@ -1,5 +1,5 @@
 /* =========================================================================
-   Crediti CWP — indirizzo «/crediti»
+   Calcolo crediti — indirizzo «/crediti»
    Scopo: sezione del calcolo dei crediti di CO₂eq (Metodologia Carbon
      WastePrint® v1.2). Due viste:
      - «Calcoli»: elenco di tutti i calcoli (titolo, pratica, anno e tipo,
@@ -34,7 +34,7 @@ import RegistroCrediti from "../components/crediti/RegistroCrediti.jsx";
 // Numero in formato italiano con `d` decimali fissi; "—" se manca il valore.
 const fmt = (v, d = 2) => (v == null ? "—" : Number(v).toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d }));
 
-/* Pagina «Crediti CWP». Nessuna prop.
+/* Pagina «Calcolo crediti». Nessuna prop.
    Stato `nuovo`: null quando il modulo di creazione è chiuso, altrimenti
    { praticaId, titolo, anno, tipo, dataAvvio } in compilazione. */
 export default function Crediti() {
@@ -99,7 +99,7 @@ export default function Crediti() {
       <main style={{ maxWidth: 1100, margin: "0 auto", padding: "22px 24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
           <div>
-            <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 4px" }}>Crediti CWP</h1>
+            <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 4px" }}>Calcolo crediti</h1>
             <p style={{ fontSize: 13.5, color: C.grafite, margin: 0, maxWidth: 640 }}>
               Calcolo dei crediti di CO₂eq secondo la Metodologia Carbon WastePrint® v1.2: dati del territorio, delibera
               tariffaria, Banca Dati Utenze, buffer. Area riservata agli amministratori.

@@ -104,7 +104,7 @@ export default function Header() {
             {vociMenu(ruolo).map(([to, label]) => {
               // "/" è attiva solo sulla pagina iniziale esatta (altrimenti
               // sarebbe sempre evidenziata); le altre anche sulle sottopagine
-              // (es. /crediti/123 evidenzia «Crediti CWP»).
+              // (es. /crediti/123 evidenzia «Calcolo crediti»).
               const attiva = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
               return (
                 <Link

@@ -59,6 +59,12 @@
       "data": "18/10/2026",
       "descrizione": "Rapporti di Monitoraggio con 4 fasi; documenti richiesti per fase; caricamenti solo nelle fasi aperte; osservazioni numerate e notifica di quelle da rispondere; data di conservazione; fascicolo con riepilogo PDF.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.0",
+      "data": "18/10/2026",
+      "descrizione": "Allineamento ai documenti ufficiali del Programma: Rapporto a 7 fasi, feedback pubblico (30 e 20 giorni), stato nel Programma e ID, dati del progetto, un solo account per Organizzazione, ritiro e rientro, conservazione 12 anni, tipologie ufficiali, Schema tariffario, verifica sull'accuratezza; nuovi capitoli Crediti emessi, Reclami, pagina pubblica del Programma.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -103,6 +109,12 @@
       "data": "18/10/2026",
       "descrizione": "Calcolo crediti: descrizione corretta del buffer (somma delle voci delle Tabelle 15 e 16, più il 20% con le sole utenze virtuose, al massimo 80%).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.7",
+      "data": "18/10/2026",
+      "descrizione": "Allineamento ai documenti ufficiali del Programma (script 22-24): Rapporto a 7 fasi, feedback pubblico, stati del Programma, dati del progetto e territorio ISTAT, ritiro e rientro, account unico e delegati, registri, tariffe e sospensione, accuratezza e accertamenti, informazioni del Programma e metodologie, modelli pubblici; nuovi capitoli Crediti emessi, Reclami, Pagina pubblica; qualità dei dati nel calcolo.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -146,6 +158,12 @@
       "rev": "1.6",
       "data": "18/10/2026",
       "descrizione": "Glossario: descrizione corretta del buffer (al massimo 80%).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.7",
+      "data": "18/10/2026",
+      "descrizione": "Percorso di prova esteso alle funzioni dell'allineamento ai documenti CWP: territorio ISTAT, stati del Programma, Rapporto a 7 fasi, tariffe e sospensione, accuratezza, ritiro, account unico, crediti emessi, reclami, pagina pubblica, qualità dei dati.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -220,6 +238,12 @@
       "rev": "2.1",
       "data": "18/10/2026",
       "descrizione": "Rilettura dei documenti ufficiali del Programma: differenze con il portale tra le decisioni aperte; correzione del buffer nei manuali.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.2",
+      "data": "18/10/2026",
+      "descrizione": "Script 22-24, allineamento ai documenti ufficiali del Programma (punto 35), nuove pagine e funzioni, decisioni aggiornate, punto 36 (SPID/CIE/CNS).",
       "autore": "Fondazione Operate"
     }
   ]
