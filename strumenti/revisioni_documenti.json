@@ -23,6 +23,12 @@
       "data": "18/10/2026",
       "descrizione": "Pagina «Il mio profilo» (account, cambio password, manuale da scaricare).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.4",
+      "data": "18/10/2026",
+      "descrizione": "Recupero della password: nuova email in italiano dal portale (oggetto e pulsante), limite di una richiesta ogni 2 minuti.",
+      "autore": "Fondazione Operate"
     }
   ],
   "registro": [
@@ -36,6 +42,12 @@
       "rev": "1.1",
       "data": "18/10/2026",
       "descrizione": "Pagina Documentazione; backlog riordinato; decisione di passare Vercel e Supabase a piani a pagamento (punto 29); riservatezza della documentazione (punto 28).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.2",
+      "data": "18/10/2026",
+      "descrizione": "Pagina «Il mio profilo»; password (script 15 e 16, Edge Functions reimposta-password e recupera-password); SMTP Resend; email di recupero in italiano spedita dal portale.",
       "autore": "Fondazione Operate"
     }
   ]

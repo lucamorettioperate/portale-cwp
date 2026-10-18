@@ -142,6 +142,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `13_durata_fasi.sql` | Durata delle fasi in tabella, modificabile dall'Admin con motivazione | 18/10/2026 |
 | `14_controlli_file.sql` | Limite 50 MB, formati ammessi, controllo tipo/estensione/cartella; ZIP ammesso | 18/10/2026 (riesecuzione per ZIP lo stesso giorno) |
 | `15_password.sql` | Cambio obbligatorio dopo password temporanea (`password_temporanea`), funzione `password_cambiata`, audit dei cambi password | 18/10/2026 |
+| `16_recupero_password.sql` | Tabella `recupero_password_richiesta` (ultima richiesta di recupero per indirizzo, nessuna policy: la usa solo la funzione `recupera-password`) | 18/10/2026 |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
 script successivi.
@@ -150,7 +151,7 @@ script successivi.
 ente_validazione, profilo, pratica, fase, durata_fase, documento,
 richiesta_integrazione, consultazione, commento, pagamento, notifica,
 audit_event, impostazione, calcolo_crediti, calcolo_conferimento,
-calcolo_riuso.
+calcolo_riuso, recupero_password_richiesta.
 
 **Funzioni del database usate dal portale** (selezione):
 `staff_apri_fase`, `staff_chiudi_fase`, `staff_modifica_scadenza`,
@@ -184,6 +185,7 @@ autenticazione, dal SQL Editor:
 |---|---|---|---|
 | `crea-utente` | L'Amministratore crea un utente con password temporanea e lo associa a organizzazioni | Verifica che il chiamante sia Admin (`sono_admin`) | Dashboard Supabase (editor web); ripubblicata 17/10 |
 | `reimposta-password` | L'Amministratore assegna una password temporanea a un Cliente o Operatore; il flag obbliga al cambio al primo accesso; audit | Verifica `sono_admin`; esclusi amministratori e sé stessi | Dashboard Supabase (editor web), 18/10; Verify JWT attivo |
+| `recupera-password` | «Password dimenticata?»: genera il collegamento di recupero (`auth.admin.generateLink`) e spedisce con Resend l'email in italiano «Portale Carbon WastePrint (CWP) — Richiesta di reimpostazione della password», al posto del modello email di Supabase | Verify JWT **disattivato** di proposito (la chiama chi non ha fatto l'accesso): risponde sempre `ok` senza rivelare se l'indirizzo esiste; niente email agli utenti disattivati; massimo una richiesta ogni 2 minuti per indirizzo; il collegamento porta solo al portale | Dashboard Supabase (editor web), 18/10 |
 | `invia-email-notifica` | Spedisce per email una notifica interna (pulsante "Apri nel portale") tramite Resend | Verify JWT **disattivato** di proposito: usa solo l'id ricevuto e rilegge tutto dal database; ogni notifica parte una volta sola | Dashboard Supabase; prima pubblicazione 17/10, aggiornata 17/10 (pulsante per tema scuro) |
 
 Sorgenti in `supabase/functions/<nome>/index.ts`. Si pubblicano dalla
@@ -293,6 +295,20 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Email di recupero password spedita dal portale** — le email di recupero
+  arrivavano con il testo inglese predefinito di Supabase anche dopo aver
+  salvato il modello italiano (tre prove, anche dopo il riavvio del servizio
+  Auth). Soluzione: nuova Edge Function `recupera-password` (Verify JWT
+  disattivato) che genera il collegamento di recupero e spedisce con Resend
+  l'email in italiano con la grafica delle notifiche (oggetto «Portale
+  Carbon WastePrint (CWP) — Richiesta di reimpostazione della password»,
+  pulsante «Scegli una nuova password →»); script
+  `16_recupero_password.sql` (limite di una richiesta ogni 2 minuti per
+  indirizzo); `AuthContext.richiediRecuperoPassword` chiama la funzione
+  invece di `resetPasswordForEmail` (commit 21306fb). Il modello italiano
+  resta salvato in Supabase ma non è più usato dal portale. Prova in
+  produzione: richiesta per luca.moretti@operate.it accettata, collegamento
+  generato (`recovery_sent_at` aggiornato), email inviata con Resend.
 - **Pagina «Il mio profilo»** (`/profilo`, collegamento sotto l'email in alto):
   dati dell'account, «Cambia password» e documenti da scaricare per il ruolo
   (Manuale Utente per tutti; Registro sviluppo e deploy solo per gli

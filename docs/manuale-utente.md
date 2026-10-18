@@ -52,10 +52,10 @@ In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato da
 
 1. Nella pagina di accesso premete **Password dimenticata?**.
 2. Inserite la vostra email e premete **Invia il collegamento**.
-3. Aprite l'email ricevuta e fate clic sul collegamento: si apre la pagina **Nuova password**.
+3. Aprite l'email «Portale Carbon WastePrint (CWP) — Richiesta di reimpostazione della password» e premete **Scegli una nuova password →**: si apre la pagina **Nuova password** del portale.
 4. Scrivete due volte la nuova password e premete **Salva la password**.
 
-Il collegamento vale una sola volta e per un tempo limitato; se è scaduto compare «Collegamento non valido» e basta richiederne un altro. Se l'email non arriva, controllate la posta indesiderata oppure chiedete a Fondazione Operate una password temporanea.
+Il collegamento vale una sola volta e per un tempo limitato; se è scaduto compare «Collegamento non valido» e basta richiederne un altro (al massimo una richiesta ogni 2 minuti). Se non avete chiesto voi il recupero, ignorate l'email: la password resta quella di prima. Se l'email non arriva, controllate la posta indesiderata oppure chiedete a Fondazione Operate una password temporanea.
 
 ## La pagina Le mie pratiche
 
