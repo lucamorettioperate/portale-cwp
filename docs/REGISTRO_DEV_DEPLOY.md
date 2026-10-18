@@ -309,8 +309,13 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   `resend`, chiave inserita da Luca; mittente provvisorio
   `onboarding@resend.dev`, nome «Portale CWP»). Email di recupero in italiano
   (Authentication → Emails → Templates → Reset password; copia in
-  `supabase/email/reset-password.html`). Prova: richiesta di recupero per
-  luca.moretti@operate.it accettata da Supabase (risposta 200). Dopo la
+  `supabase/email/reset-password.html`; oggetto «Portale Carbon WastePrint
+  (CWP) — Richiesta di reimpostazione della password», testo che dichiara
+  la provenienza dal portale). Prova: richieste di recupero per
+  luca.moretti@operate.it accettate da Supabase (risposta 200) e
+  consegnate; le prime due sono arrivate ancora con il testo inglese
+  predefinito: Supabase applica un modello modificato solo dopo alcuni
+  minuti. Dopo la
   verifica del dominio: cambiare il mittente SMTP con l'indirizzo del dominio.
 - **PDF impaginati tipograficamente** (Manuale Utente e Registro): copertina
   a tutta pagina con loghi, scheda del documento e revisioni, sommario con
