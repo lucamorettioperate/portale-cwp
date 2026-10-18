@@ -1,14 +1,17 @@
 /* =========================================================================
    Consultazione
-   Scopo: riquadro «Consultazione pubblica» di un Progetto (fase 3,
-     requisiti §6). Lo staff apre la consultazione pubblicando un documento
-     per 30 giorni, modera le osservazioni, pubblica errata corrige e la
-     chiude. Il Comune legge le osservazioni ammesse e risponde.
+   Scopo: riquadro «Feedback pubblico» (il termine della Guida al
+     Programma, cap. 3.9) di un Progetto o di un Rapporto di Monitoraggio
+     (fase 3, requisiti §6; per i Rapporti Guida 6.3.1, script 23). Lo staff
+     apre il feedback pubblicando un documento per la durata della fase 3
+     (30 giorni per il Progetto, 20 per il Rapporto, modificabili
+     dall'Admin), modera le osservazioni, pubblica errata corrige e lo
+     chiude. Nel codice e nel database il nome resta «consultazione». Il Comune legge le osservazioni ammesse e risponde.
      Le osservazioni NON si scrivono qui: arrivano dalla pagina pubblica
      /consultazioni/<id> (pagina ConsultazioniPubbliche e Edge Function
      «consultazione-pubblica»), solo dopo la conferma dell'email
      dell'autore (decisione D).
-   Usato da: DettaglioPratica.jsx (solo pratiche di tipo progetto).
+   Usato da: DettaglioPratica.jsx (Progetti e Rapporti).
    Chi lo vede: operatore e admin (tutto, con nome ed email degli autori);
      cliente/Comune (osservazioni ammesse, firmate «Partecipante» o con il
      nome scelto dall'autore; può rispondere).
@@ -29,7 +32,7 @@
        ottiene solo con staff_autori_commenti; il Comune risponde solo alle
        osservazioni ammesse (rispondi_commento); gli allegati delle
        osservazioni non ammesse non sono scaricabili dal Comune; l'errata
-       corrige con ripartenza dei 30 giorni richiede la motivazione e rende
+       corrige con ripartenza del periodo richiede la motivazione e rende
        pubblico il documento allegato;
      - il Comune legge solo le osservazioni ammesse (Pubblicato /
        Risposto): lo garantisce la policy commento_select dello script 19;
@@ -56,12 +59,13 @@ import {
   autoriCommenti,
   urlAllegatoCommento,
   urlDocumento,
+  elencaDurateFasi,
 } from "../lib/dati.js";
 import { formatoData, giorniA } from "../lib/date.js";
 import { campo, etichetta, btnPrimario, btnMini, btnLink, dataOra } from "./stili.js";
 
 /* Consultazione pubblica (fase 3, requisiti §6).
-   - Lo staff apre la consultazione pubblicando un documento per 30 giorni,
+   - Lo staff apre la consultazione pubblicando un documento per la durata della fase 3,
      modera le osservazioni, pubblica errata corrige e la chiude.
    - Le osservazioni arrivano dalla pagina pubblica /consultazioni/<id>,
      solo dopo che l'autore ha confermato la propria email (decisione D):
@@ -69,12 +73,21 @@ import { campo, etichetta, btnPrimario, btnMini, btnLink, dataOra } from "./stil
    - Lo staff vede nome ed email degli autori; il Comune vede solo le
      osservazioni ammesse, firmate «Partecipante» (o con il nome, se
      l'autore ha acconsentito), e risponde.
-   - Errata corrige: lo staff decide caso per caso se far ripartire i 30
-     giorni, con motivazione (decisione B).
-   Props: praticaId (id del Progetto). */
-export default function Consultazione({ praticaId }) {
+   - Errata corrige: lo staff decide caso per caso se far ripartire il
+     periodo, con motivazione (decisione B).
+   Props: praticaId (id della pratica), tipo ("progetto" | "rapporto"). */
+export default function Consultazione({ praticaId, tipo = "progetto" }) {
   const { ruolo } = useAuth();
   const staff = ruolo === "operatore" || ruolo === "admin";
+  // Giorni del feedback pubblico: durata della fase 3 del tipo di pratica
+  // (tabella durata_fase); 30 o 20 finché non è letta.
+  const [giorni, setGiorni] = useState(tipo === "rapporto" ? 20 : 30);
+  useEffect(() => {
+    elencaDurateFasi(tipo).then(({ data }) => {
+      const f3 = (data || []).find((d) => d.numero === 3);
+      if (f3 && f3.giorni > 0) setGiorni(f3.giorni);
+    });
+  }, [tipo]);
 
   // cons: ultima consultazione della pratica con i suoi commenti (null = nessuna).
   const [cons, setCons] = useState(null);
@@ -159,7 +172,7 @@ export default function Consultazione({ praticaId }) {
   return (
     <Riquadro>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <h3 style={{ fontFamily: "'Archivo'", fontSize: 15, margin: 0 }}>Consultazione pubblica</h3>
+        <h3 style={{ fontFamily: "'Archivo'", fontSize: 15, margin: 0 }}>Feedback pubblico</h3>
         {cons && (
           <Badge bg={cons.attiva ? C.greenSoft : C.paperWarm} fg={cons.attiva ? C.green : C.grafite}>
             {cons.attiva ? "Attiva" : "Chiusa"}
@@ -169,13 +182,13 @@ export default function Consultazione({ praticaId }) {
 
       {/* Nessuna consultazione: lo staff può aprirla scegliendo uno dei
           documenti della pratica (anche versioni precedenti o di altre fasi).
-          Apertura = oggi, chiusura = oggi + 30 giorni (apriConsultazione). */}
+          Apertura = oggi, chiusura = oggi + giorni della fase 3 (apriConsultazione). */}
       {!cons && (
         staff ? (
           documenti.length ? (
             <div>
               <p style={{ fontSize: 13, color: C.grafite, margin: "0 0 10px" }}>
-                Pubblica un documento per avviare la consultazione di 30 giorni sulla pagina pubblica del portale.
+                Pubblica un documento per avviare il feedback pubblico di {giorni} giorni sulla pagina pubblica del portale (Guida 3.9).
                 Il documento diventa pubblico e resta bloccato fino alla chiusura: per sostituirlo si usa l'errata corrige.
               </p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -185,15 +198,15 @@ export default function Consultazione({ praticaId }) {
                   ))}
                 </select>
                 <button onClick={() => docSel && esegui(() => apriConsultazione({ praticaId, documentoId: docSel }))} disabled={azione} style={btnPrimario}>
-                  Apri consultazione
+                  Apri il feedback pubblico
                 </button>
               </div>
             </div>
           ) : (
-            <p style={{ fontSize: 13, color: C.grafite, margin: 0 }}>Carica prima un documento per poterlo pubblicare in consultazione.</p>
+            <p style={{ fontSize: 13, color: C.grafite, margin: 0 }}>Carica prima un documento per poterlo pubblicare nel feedback pubblico.</p>
           )
         ) : (
-          <p style={{ fontSize: 13, color: C.grafite, margin: 0 }}>Nessuna consultazione pubblica in corso.</p>
+          <p style={{ fontSize: 13, color: C.grafite, margin: 0 }}>Nessun feedback pubblico in corso.</p>
         )
       )}
 
@@ -222,7 +235,7 @@ export default function Consultazione({ praticaId }) {
                 <div key={e.id} style={{ fontSize: 13, border: `1px solid ${C.line}`, borderRadius: 8, padding: "8px 10px", marginBottom: 6 }}>
                   <div style={{ fontSize: 11.5, color: C.grafite }}>
                     {dataOra(e.creato_il)}
-                    {e.riparte && <> · <b style={{ color: C.ocra }}>i 30 giorni sono ripartiti: chiusura il {formatoData(e.nuova_chiusura)}</b></>}
+                    {e.riparte && <> · <b style={{ color: C.ocra }}>il periodo è ripartito: chiusura il {formatoData(e.nuova_chiusura)}</b></>}
                   </div>
                   <div style={{ marginTop: 3, whiteSpace: "pre-wrap" }}>{e.testo}</div>
                   {e.documento && (
@@ -233,7 +246,7 @@ export default function Consultazione({ praticaId }) {
                   {staff && e.motivazione && <div style={{ fontSize: 11.5, color: C.grafite, marginTop: 3 }}>Motivazione: {e.motivazione}</div>}
                 </div>
               ))}
-              {staff && cons.attiva && <ModuloErrata cons={cons} documenti={documenti} inCorso={azione} onPubblica={(d) => esegui(() => pubblicaErrataCorrige({ consultazioneId: cons.id, ...d }))} />}
+              {staff && cons.attiva && <ModuloErrata giorni={giorni} cons={cons} documenti={documenti} inCorso={azione} onPubblica={(d) => esegui(() => pubblicaErrataCorrige({ consultazioneId: cons.id, ...d }))} />}
             </div>
           )}
 
@@ -317,7 +330,7 @@ export default function Consultazione({ praticaId }) {
           </div>
 
           {staff && cons.attiva && (
-            <button onClick={() => esegui(() => chiudiConsultazione(cons.id))} disabled={azione} style={{ ...btnMini, marginTop: 14 }}>Chiudi consultazione</button>
+            <button onClick={() => esegui(() => chiudiConsultazione(cons.id))} disabled={azione} style={{ ...btnMini, marginTop: 14 }}>Chiudi il feedback pubblico</button>
           )}
         </div>
       )}
@@ -329,9 +342,9 @@ export default function Consultazione({ praticaId }) {
    Props: cons (consultazione attiva), documenti (della pratica), inCorso,
    onPubblica({ testo, documentoId, riparte, motivazione }) → true se riuscita.
    Effetto (staff_errata_corrige, script 17): se «riparte», la chiusura
-   diventa oggi + 30 giorni e la motivazione è obbligatoria; l'eventuale
+   diventa oggi + i giorni del feedback (prop giorni) e la motivazione è obbligatoria; l'eventuale
    documento collegato diventa pubblico. */
-function ModuloErrata({ cons, documenti, inCorso, onPubblica }) {
+function ModuloErrata({ giorni, cons, documenti, inCorso, onPubblica }) {
   const [aperto, setAperto] = useState(false);
   const [testo, setTesto] = useState("");
   const [documentoId, setDocumentoId] = useState("");
@@ -355,7 +368,7 @@ function ModuloErrata({ cons, documenti, inCorso, onPubblica }) {
       </label>
       <label style={{ display: "flex", gap: 6, alignItems: "flex-start", fontSize: 12.5, margin: "4px 0 10px" }}>
         <input type="checkbox" checked={riparte} onChange={(e) => setRiparte(e.target.checked)} style={{ marginTop: 2 }} />
-        <span>Fai ripartire i 30 giorni da oggi (chiusura attuale: {formatoData(cons.data_chiusura)})</span>
+        <span>Fai ripartire i {giorni} giorni da oggi (chiusura attuale: {formatoData(cons.data_chiusura)})</span>
       </label>
       <label style={etichetta}>
         Motivazione {riparte ? "(obbligatoria)" : "(facoltativa)"}

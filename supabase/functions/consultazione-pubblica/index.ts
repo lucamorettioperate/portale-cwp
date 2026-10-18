@@ -33,7 +33,7 @@
 //
 //  Sicurezza (importante per chi modifica):
 //   - il client usa la chiave service_role, che SCAVALCA le regole RLS:
-//     tutti i controlli (consultazione aperta, solo Progetti, formati,
+//     tutti i controlli (consultazione aperta, Progetti e Rapporti, formati,
 //     limiti) devono quindi stare qui dentro;
 //   - le risposte non devono mai contenere email, id utenti o nomi non
 //     autorizzati: si restituiscono solo i campi scelti in pubblica() e
@@ -115,7 +115,7 @@ function aperta(c: { attiva: boolean; data_apertura: string | null; data_chiusur
 // Colonne lette per una consultazione, con pratica, ente e documento.
 const SELECT_CONS =
   "id, attiva, data_apertura, data_chiusura, " +
-  "pratica:pratica_id (codice, titolo, tipo, organizzazione:organizzazione_id (denominazione)), " +
+  "pratica:pratica_id (codice, titolo, tipo, anno_monitoraggio, organizzazione:organizzazione_id (denominazione)), " +
   "documento:documento_id (nome, versione, storage_path)";
 
 // Riduce una consultazione ai soli campi pubblicabili (niente id interni
@@ -128,18 +128,22 @@ function pubblica(c: any) {
     data_chiusura: c.data_chiusura,
     codice: c.pratica?.codice,
     titolo: c.pratica?.titolo,
+    // Progetto o Rapporto di Monitoraggio (dal 18/10/2026 anche i Rapporti
+    // hanno il feedback pubblico, Guida 6.3.1, script 23).
+    tipo: c.pratica?.tipo,
+    anno: c.pratica?.anno_monitoraggio ?? null,
     ente: c.pratica?.organizzazione?.denominazione,
     documento: c.documento ? `${c.documento.nome} (v${c.documento.versione})` : null,
   };
 }
 
-// Azione "elenco": consultazioni attive e aperte oggi, solo dei Progetti
-// (i Rapporti di Monitoraggio non vanno in consultazione), per chiusura più vicina.
+// Azione "elenco": consultazioni (periodi di feedback pubblico) attive e
+// aperte oggi, di Progetti e Rapporti di Monitoraggio, per chiusura più vicina.
 async function elenco(admin: any) {
   const { data, error } = await admin.from("consultazione").select(SELECT_CONS)
     .eq("attiva", true).order("data_chiusura", { ascending: true });
   if (error) throw error;
-  return { consultazioni: (data || []).filter((c: any) => c.pratica?.tipo === "progetto" && aperta(c)).map(pubblica) };
+  return { consultazioni: (data || []).filter((c: any) => c.pratica && aperta(c)).map(pubblica) };
 }
 
 // URL firmato (valido 1 ora) per scaricare un documento pubblicato
@@ -158,7 +162,7 @@ async function firma(admin: any, path: string | null | undefined) {
 async function dettaglio(admin: any, id: string) {
   if (!UUID.test(id)) return { errore: "Consultazione non trovata" };
   const { data: c } = await admin.from("consultazione").select(SELECT_CONS).eq("id", id).maybeSingle();
-  if (!c || c.pratica?.tipo !== "progetto") return { errore: "Consultazione non trovata" };
+  if (!c || !c.pratica) return { errore: "Consultazione non trovata" };
 
   const { data: errata } = await admin.from("consultazione_errata")
     .select("testo, riparte, nuova_chiusura, creato_il, documento:documento_id (nome, versione, storage_path)")
@@ -236,7 +240,7 @@ async function invia(admin: any, b: any) {
   const { data: c } = await admin.from("consultazione")
     .select("id, pratica_id, attiva, data_apertura, data_chiusura, pratica:pratica_id (codice, titolo, tipo)")
     .eq("id", id).maybeSingle();
-  if (!c || c.pratica?.tipo !== "progetto") return { errore: "Consultazione non trovata" };
+  if (!c || !c.pratica) return { errore: "Consultazione non trovata" };
   if (!aperta(c)) return { errore: "La consultazione è chiusa: non si possono più inviare osservazioni." };
 
   // Pulizia delle richieste scadute (e dei loro allegati).
@@ -346,7 +350,7 @@ async function emailConferma(email: string, nome: string, token: string, codice?
   const testo = [
     `Gentile ${nome},`,
     "",
-    `hai inviato un'osservazione alla consultazione pubblica del Programma Carbon WastePrint® sul progetto ${progetto}.`,
+    `hai inviato un'osservazione al periodo di feedback pubblico del Programma Carbon WastePrint® su ${progetto}.`,
     "",
     `Per confermare il tuo indirizzo email e inviarla apri questo collegamento: ${url}`,
     "",
@@ -361,7 +365,7 @@ async function emailConferma(email: string, nome: string, token: string, codice?
 <tr><td style="padding:22px 24px 6px;font-size:13px;color:#5a5e54">Programma Carbon WastePrint&reg; &middot; Fondazione Operate</td></tr>
 <tr><td style="padding:6px 24px 0;font-size:14px">Gentile ${esc(nome)},</td></tr>
 <tr><td style="padding:12px 24px 0;font-size:18px;font-weight:bold">Conferma la tua osservazione</td></tr>
-<tr><td style="padding:8px 24px 0;font-size:14px;line-height:1.5;color:#3a4036">Hai inviato un'osservazione alla <b>consultazione pubblica</b> del Programma Carbon WastePrint&reg; sul progetto <b>${esc(progetto)}</b>. Per confermare il tuo indirizzo email e inviarla premi il pulsante qui sotto.</td></tr>
+<tr><td style="padding:8px 24px 0;font-size:14px;line-height:1.5;color:#3a4036">Hai inviato un'osservazione al <b>periodo di feedback pubblico</b> del Programma Carbon WastePrint&reg; su <b>${esc(progetto)}</b>. Per confermare il tuo indirizzo email e inviarla premi il pulsante qui sotto.</td></tr>
 <tr><td style="padding:20px 24px">
 <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
 <td bgcolor="#2f5d3a" style="background-color:#2f5d3a;border:2px solid #2f5d3a;border-radius:8px">

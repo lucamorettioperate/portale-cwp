@@ -1,12 +1,16 @@
 /* =========================================================================
    DettaglioPratica
    Scopo: pagina di dettaglio di una pratica (Progetto o Rapporto di
-     Monitoraggio) con le sue fasi (7 per il Progetto, 4 per il Rapporto).
+     Monitoraggio) con le sue 7 fasi (Guida al Programma 6.2 e 6.3.1).
      Riunisce in un'unica vista:
-     intestazione e stato, Ente di Validazione, cambio di stato, le fasi
-     (azioni, integrazioni, note, modelli, documenti), messaggi,
-     consultazione pubblica, Rapporti annuali, pagamenti, documenti generali
-     ed export del fascicolo.
+     intestazione, stato della pratica e stato nel Programma (Guida,
+     Tabelle 3 e 4), dati del Progetto (territorio con codici ISTAT,
+     co-promotori, periodo di riferimento, popolazione, crediti previsti,
+     data di registrazione), Ente di validazione e verifica, cambio di
+     stato (anche ritiro e rientro del Progetto), le fasi (azioni,
+     verifica sull'accuratezza e accertamenti, integrazioni, note, modelli,
+     documenti), messaggi, feedback pubblico, Rapporti annuali, pagamenti,
+     documenti generali ed export del fascicolo.
      Lo staff apre e chiude le fasi, modifica le scadenze, richiede
      integrazioni, scrive note di fase, assegna l'Ente di Validazione e
      cambia lo stato della pratica. Le azioni critiche richiedono una
@@ -23,7 +27,9 @@
      (staff_chiudi_fase), modificaScadenzaFase (staff_modifica_scadenza),
      cambiaStatoPratica (staff_cambia_stato_pratica), richiediIntegrazione
      (staff_richiedi_integrazione) — script 08; impostaEntePratica
-     (staff_imposta_ente_validazione) — script 17. Export: esportaFascicolo
+     (staff_imposta_ente_validazione) — script 17; aggiornaDatiPratica
+     (staff_aggiorna_dati_pratica) ed estendiVerifica
+     (staff_estendi_verifica) — script 23. Export: esportaFascicolo
      (src/lib/fascicolo.js). Tabelle: pratica, fase, richiesta_integrazione,
      nota_fase, modello_documento, ente_validazione.
    Sicurezza: tutte le azioni dello staff passano da funzioni del database
@@ -36,7 +42,7 @@
    Registro sviluppo e deploy: capitolo «Portale (frontend)»
    ========================================================================= */
 import React, { useEffect, useState } from "react";
-import { COLORI as C, STATI_PRATICA, STATI_FASE } from "../lib/cwpProgram.js";
+import { COLORI as C, STATI_PRATICA, STATI_FASE, PERIODI_RIFERIMENTO, FASI_VERIFICA_DOCUMENTALE, statoProgramma } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Badge from "./Badge.jsx";
 import Documenti from "./Documenti.jsx";
@@ -61,6 +67,8 @@ import {
   urlModello,
   elencaEnti,
   impostaEntePratica,
+  aggiornaDatiPratica,
+  estendiVerifica,
 } from "../lib/dati.js";
 import { formatoData, giorniA } from "../lib/date.js";
 import { esportaFascicolo } from "../lib/fascicolo.js";
@@ -145,8 +153,9 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
       <div style={riquadro}>
         <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
+            {/* ID univoco assegnato dalla Fondazione (Guida 6.2.1) */}
             <div style={{ fontSize: 12, color: C.grafite, fontWeight: 600 }}>
-              {pratica.codice || "senza codice"}
+              ID {pratica.tipo === "rapporto" ? "rapporto" : "progetto"}: {pratica.codice || "senza codice"}
             </div>
             <h1 style={{ fontFamily: "'Archivo'", fontSize: 23, margin: "3px 0 4px", letterSpacing: -0.5 }}>
               {pratica.organizzazione?.denominazione || "—"}
@@ -163,6 +172,10 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
           </div>
           <div style={{ textAlign: "right", display: "grid", gap: 8, justifyItems: "end", alignContent: "start" }}>
             <Badge bg={st.bg} fg={st.fg}>{st.label}</Badge>
+            {/* Stato nel Programma con i nomi della Guida (Tabelle 3 e 4) */}
+            <span style={{ fontSize: 12, color: C.grafite }}>
+              Nel Programma: <b style={{ color: C.ink }}>{statoProgramma(pratica, fasi)}</b>
+            </span>
             <BottoneFascicolo praticaId={pratica.id} staff={staff} />
           </div>
         </div>
@@ -171,8 +184,9 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
             Motivazione: {pratica.motivazione_stato}
           </div>
         )}
-        {/* Conservazione per 10 anni (requisiti §12, script 21): la data la
-            imposta il database alla chiusura o all'annullamento. */}
+        {/* Conservazione per 12 anni (Guida 6.2.1 e 6.5.1, script 23): la
+            data la imposta il database alla chiusura, all'annullamento o al
+            ritiro. */}
         {pratica.conservare_fino_al && (
           <div style={{ fontSize: 12.5, color: C.grafite, marginTop: 6 }}>
             Da conservare fino al {formatoData(pratica.conservare_fino_al)}
@@ -185,11 +199,12 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
             richieste di integrazione. Potete consultare tutto e scrivere alla Fondazione nella sezione Messaggi.
           </div>
         )}
+        <DatiPratica pratica={pratica} staff={staff} onFatto={dopoAzione} />
         <EnteValidazione pratica={pratica} staff={staff} onFatto={dopoAzione} />
         {staff && <CambioStato pratica={pratica} onFatto={dopoAzione} />}
       </div>
 
-      {/* Le fasi (7 per il Progetto, 4 per il Rapporto) */}
+      {/* Le 7 fasi del percorso */}
       <div style={{ display: "grid", gap: 10 }}>
         {fasi.map((f) => (
           <Fase
@@ -212,8 +227,8 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
       {/* Messaggi tra Comune e Fondazione */}
       <Messaggi pratica={pratica} />
 
-      {/* Consultazione pubblica (fase 3, solo per i Progetti) */}
-      {pratica.tipo === "progetto" && <Consultazione praticaId={pratica.id} />}
+      {/* Feedback pubblico (fase 3): Progetti e Rapporti (Guida 3.9 e 6.3.1) */}
+      <Consultazione praticaId={pratica.id} tipo={pratica.tipo} />
 
       {/* Rapporti di Monitoraggio annuali del Progetto */}
       {pratica.tipo === "progetto" && (
@@ -221,7 +236,7 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
       )}
 
       {/* Pagamenti: lo staff li gestisce, il Comune li consulta */}
-      <Pagamenti praticaId={pratica.id} solaLettura={!staff} />
+      <Pagamenti praticaId={pratica.id} pratica={pratica} solaLettura={!staff} />
 
       {/* Documenti generali della pratica (contratto, amministrativi).
           Il Comune non può caricare sulle pratiche non attive. */}
@@ -239,7 +254,7 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
    Le azioni (apri, chiudi, richiedi integrazione, modifica scadenza)
    compaiono solo allo staff e solo su pratica attiva. */
 function Fase({ fase: f, pratica, staff, richieste, note, modelli, richiesti, documentiFase, versione, onCambio, onCaricato }) {
-  const [form, setForm] = useState(null); // null | "integrazione" | "scadenza" | "chiusura"
+  const [form, setForm] = useState(null); // null | "integrazione" | "scadenza" | "chiusura" | "accuratezza" | "accertamento"
   // Testo del modulo aperto: descrizione dell'integrazione o motivazione.
   const [testo, setTesto] = useState("");
   const [data, setData] = useState(f.data_prevista_chiusura || "");
@@ -252,6 +267,9 @@ function Fase({ fase: f, pratica, staff, richieste, note, modelli, richiesti, do
   const integrAperte = richieste.filter((r) => !r.risolta).length;
   // Giorni alla scadenza (negativi se scaduta), solo per le fasi aperte.
   const residui = aperta ? giorniA(f.data_prevista_chiusura) : null;
+  // Fase di verifica documentale (2 o 6): ammette verifica sull'accuratezza
+  // e accertamenti (Guida 6.5.2).
+  const verificaDoc = FASI_VERIFICA_DOCUMENTALE.includes(f.numero);
 
   // Apre uno dei moduli inline azzerando testo ed errori.
   function apriForm(tipo) {
@@ -327,6 +345,11 @@ function Fase({ fase: f, pratica, staff, richieste, note, modelli, richiesti, do
             <span>Scadenza {formatoData(f.data_prevista_chiusura)}</span>
           )}
           {f.data_effettiva_chiusura && <span>Chiusa il {formatoData(f.data_effettiva_chiusura)}</span>}
+          {f.verifica_accuratezza && (
+            <span style={{ color: C.ocra }}>
+              Verifica sull'accuratezza avviata{f.accertamenti > 0 ? ` · accertamenti: ${f.accertamenti} di 3` : ""}
+            </span>
+          )}
         </div>
 
         {/* Azioni staff */}
@@ -349,6 +372,18 @@ function Fase({ fase: f, pratica, staff, richieste, note, modelli, richiesti, do
                 <button onClick={() => apriForm("scadenza")} disabled={inCorso} style={btnMini}>
                   Modifica scadenza
                 </button>
+                {/* Guida 6.5.2: verifica sull'accuratezza (+15 gg, una volta),
+                    poi fino a 3 accertamenti (+10 gg ciascuno). */}
+                {verificaDoc && !f.verifica_accuratezza && (
+                  <button onClick={() => apriForm("accuratezza")} disabled={inCorso} style={btnMini}>
+                    Verifica sull'accuratezza (+15 gg)
+                  </button>
+                )}
+                {verificaDoc && f.verifica_accuratezza && f.accertamenti < 3 && (
+                  <button onClick={() => apriForm("accertamento")} disabled={inCorso} style={btnMini}>
+                    Ulteriore accertamento (+10 gg)
+                  </button>
+                )}
               </>
             )}
           </div>
@@ -394,6 +429,25 @@ function Fase({ fase: f, pratica, staff, richieste, note, modelli, richiesti, do
                   inCorso={inCorso}
                   conferma="Salva scadenza"
                   onConferma={() => esegui(() => modificaScadenzaFase(f.id, data || null, testo.trim()))}
+                  onAnnulla={() => setForm(null)}
+                />
+              </>
+            )}
+            {(form === "accuratezza" || form === "accertamento") && (
+              <>
+                <div style={{ fontSize: 12.5, color: C.grafite, marginBottom: 8, lineHeight: 1.5 }}>
+                  {form === "accuratezza"
+                    ? "La verifica sull'accuratezza aggiunge 15 giorni alla scadenza; il Comune e l'ente ne sono informati con una notifica (Guida 6.5.2)."
+                    : `Accertamento n. ${(f.accertamenti || 0) + 1} di 3: aggiunge 10 giorni alla scadenza. Dopo il terzo, se le revisioni non sono soddisfacenti, la richiesta non è accettata e si può ripresentare dopo 6 mesi.`}
+                </div>
+                <label style={lbl}>
+                  Motivazione / rilievi (obbligatoria)
+                  <input value={testo} onChange={(e) => setTesto(e.target.value)} style={campo} placeholder="Es. dubbi sulla veridicità dei dati della Banca Dati Utenze" />
+                </label>
+                <Bottoni
+                  inCorso={inCorso}
+                  conferma={form === "accuratezza" ? "Avvia la verifica" : "Registra l'accertamento"}
+                  onConferma={() => esegui(() => estendiVerifica(f.id, form, testo.trim()))}
                   onAnnulla={() => setForm(null)}
                 />
               </>
@@ -488,6 +542,115 @@ function DocumentiRichiesti({ richiesti, documenti }) {
   );
 }
 
+/* Dati del Progetto o del Rapporto (script 23): territorio con i codici
+   ISTAT dei Comuni (un solo progetto per territorio, Standard 4.6),
+   co-promotori (Guida 3.3.1), periodo di riferimento (Standard 4.3.8),
+   popolazione e crediti previsti (per le tariffe dello Schema tariffario),
+   data di registrazione (Standard 4.5: data di inizio del progetto).
+   Il Comune li vede; lo staff li modifica con staff_aggiorna_dati_pratica.
+   Props: pratica, staff, onFatto() dopo il salvataggio. */
+function DatiPratica({ pratica, staff, onFatto }) {
+  const progetto = pratica.tipo === "progetto";
+  // null = modulo chiuso; altrimenti i valori in modifica (testi).
+  const [modulo, setModulo] = useState(null);
+  const [errore, setErrore] = useState("");
+  const [inCorso, setInCorso] = useState(false);
+
+  function apri() {
+    setErrore("");
+    setModulo({
+      codici: (pratica.codici_istat || []).join(", "),
+      copromotori: (pratica.copromotori || []).join("\n"),
+      periodo: pratica.periodo_riferimento || "10 anni",
+      popolazione: pratica.popolazione ?? "",
+      crediti: pratica.crediti_previsti ?? "",
+      motivazione: "",
+    });
+  }
+
+  // Salva: i codici ISTAT si separano con virgole o spazi, i co-promotori
+  // uno per riga. Il database controlla formato e unicità del territorio.
+  async function salva() {
+    setErrore("");
+    setInCorso(true);
+    const dati = { popolazione: String(modulo.popolazione).trim(), crediti_previsti: String(modulo.crediti).trim() };
+    if (progetto) {
+      dati.codici_istat = modulo.codici.split(/[\s,;]+/).map((c) => c.trim()).filter(Boolean);
+      dati.copromotori = modulo.copromotori.split("\n").map((c) => c.trim()).filter(Boolean);
+      dati.periodo_riferimento = modulo.periodo;
+    }
+    const { error } = await aggiornaDatiPratica(pratica.id, dati, modulo.motivazione.trim() || null);
+    setInCorso(false);
+    if (error) return setErrore(error.message);
+    setModulo(null);
+    onFatto();
+  }
+
+  const riga = (etichetta, valore) => (
+    <div style={{ fontSize: 12.5 }}>
+      <span style={{ color: C.grafite }}>{etichetta}: </span>
+      <b style={{ color: C.ink, fontWeight: 600 }}>{valore}</b>
+    </div>
+  );
+  const numero = (n) => (n == null ? "—" : Number(n).toLocaleString("it-IT"));
+
+  return (
+    <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.line}` }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))", gap: "4px 16px" }}>
+        {progetto && riga("Territorio (codici ISTAT)", (pratica.codici_istat || []).join(", ") || "da indicare")}
+        {progetto && (pratica.copromotori || []).length > 0 && riga("Co-promotori", pratica.copromotori.join(", "))}
+        {riga("Periodo di riferimento", PERIODI_RIFERIMENTO[pratica.periodo_riferimento]?.label || pratica.periodo_riferimento || "10 anni")}
+        {riga("Popolazione residente", numero(pratica.popolazione))}
+        {riga(progetto ? "Crediti previsti nel periodo" : "Crediti previsti nell'anno", numero(pratica.crediti_previsti))}
+        {pratica.data_registrazione && riga(progetto ? "Registrato il" : "Crediti registrati il", formatoData(pratica.data_registrazione))}
+      </div>
+      {staff && !modulo && (
+        <button onClick={apri} style={{ ...linkBtn, marginTop: 8 }}>Modifica i dati</button>
+      )}
+      {staff && modulo && (
+        <div style={formBox}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10 }}>
+            {progetto && (
+              <label style={lbl}>
+                Codici ISTAT dei Comuni (6 cifre)
+                <input value={modulo.codici} onChange={(e) => setModulo({ ...modulo, codici: e.target.value })} style={campo} placeholder="Es. 041044, 041001" />
+              </label>
+            )}
+            {progetto && (
+              <label style={lbl}>
+                Periodo di riferimento
+                <select value={modulo.periodo} onChange={(e) => setModulo({ ...modulo, periodo: e.target.value })} style={campo}>
+                  {Object.entries(PERIODI_RIFERIMENTO).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                </select>
+              </label>
+            )}
+            <label style={lbl}>
+              Popolazione residente
+              <input type="number" min="0" value={modulo.popolazione} onChange={(e) => setModulo({ ...modulo, popolazione: e.target.value })} style={campo} />
+            </label>
+            <label style={lbl}>
+              {progetto ? "Crediti previsti nel periodo" : "Crediti previsti nell'anno"}
+              <input type="number" min="0" value={modulo.crediti} onChange={(e) => setModulo({ ...modulo, crediti: e.target.value })} style={campo} />
+            </label>
+          </div>
+          {progetto && (
+            <label style={lbl}>
+              Altri soggetti promotori del progetto (uno per riga, Guida 3.3.1)
+              <textarea rows={2} value={modulo.copromotori} onChange={(e) => setModulo({ ...modulo, copromotori: e.target.value })} style={{ ...campo, resize: "vertical" }} />
+            </label>
+          )}
+          <label style={lbl}>
+            Motivazione (facoltativa, nell'audit)
+            <input value={modulo.motivazione} onChange={(e) => setModulo({ ...modulo, motivazione: e.target.value })} style={campo} placeholder="Es. dati del Modulo di descrizione del progetto" />
+          </label>
+          {errore && <div style={{ color: C.red, fontSize: 12.5, marginBottom: 8 }}>{errore}</div>}
+          <Bottoni inCorso={inCorso} conferma="Salva i dati" onConferma={salva} onAnnulla={() => setModulo(null)} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* Ente di Validazione della pratica: il Comune lo vede, lo staff lo assegna.
    Props: pratica (con l'ente collegato), staff, onFatto() dopo il salvataggio.
    L'assegnazione passa da staff_imposta_ente_validazione (script 17), che
@@ -517,7 +680,7 @@ function EnteValidazione({ pratica, staff, onFatto }) {
   if (!staff && !pratica.ente) return null;
   return (
     <div style={{ marginTop: 12, fontSize: 12.5, color: C.grafite, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-      <span>Ente di Validazione: <b style={{ color: C.ink }}>{pratica.ente?.denominazione || "non assegnato"}</b></span>
+      <span>Ente di validazione e verifica: <b style={{ color: C.ink }}>{pratica.ente?.denominazione || "non assegnato"}</b></span>
       {staff && !enti && <button onClick={modifica} style={{ ...linkBtn, marginTop: 0 }}>{pratica.ente ? "Cambia" : "Assegna"}</button>}
       {staff && enti && (
         <>
@@ -537,9 +700,12 @@ function EnteValidazione({ pratica, staff, onFatto }) {
 
 /* Cambio di stato della pratica con motivazione obbligatoria (solo staff).
    Props: pratica, onFatto() dopo il cambio.
-   Stati: attiva, sospesa, annullata, chiusa. «Annullata» è definitiva:
-   il database rifiuta ogni cambio successivo (staff_cambia_stato_pratica,
-   script 08), per questo qui non si mostrano pulsanti. La motivazione
+   Stati: attiva, sospesa, annullata, chiusa e, solo per i Progetti,
+   ritirata (Guida 6.4.1: ritiro su lettera del promotore; da «ritirata»
+   si torna solo ad «attiva», cioè il rientro nel Programma). «Annullata» è
+   definitiva: il database rifiuta ogni cambio successivo
+   (staff_cambia_stato_pratica, script 23), per questo qui non si mostrano
+   pulsanti. La motivazione
    viene salvata sulla pratica (motivazione_stato) e nell'audit. */
 function CambioStato({ pratica, onFatto }) {
   const [aperto, setAperto] = useState(false);
@@ -553,12 +719,20 @@ function CambioStato({ pratica, onFatto }) {
   // Passaggi proposti per ogni stato attuale. Il database accetta qualunque
   // passaggio tranne da «annullata»: questa tabella è una scelta di interfaccia
   // (es. una pratica chiusa si può solo riattivare).
-  const opzioni = {
-    attiva: ["sospesa", "annullata", "chiusa"],
-    sospesa: ["attiva", "annullata", "chiusa"],
-    chiusa: ["attiva"],
-  }[pratica.stato] || [];
-  const etichette = { attiva: "Riattiva", sospesa: "Sospendi", annullata: "Annulla", chiusa: "Chiudi pratica" };
+  const progetto = pratica.tipo === "progetto";
+  const opzioni = ({
+    attiva: ["sospesa", "annullata", "chiusa", ...(progetto ? ["ritirata"] : [])],
+    sospesa: ["attiva", "annullata", "chiusa", ...(progetto ? ["ritirata"] : [])],
+    chiusa: ["attiva", ...(progetto ? ["ritirata"] : [])],
+    ritirata: ["attiva"],
+  }[pratica.stato] || []);
+  const etichette = {
+    attiva: pratica.stato === "ritirata" ? "Rientro nel Programma" : "Riattiva",
+    sospesa: "Sospendi (anche per controllo di qualità)",
+    annullata: "Annulla",
+    chiusa: "Chiudi pratica",
+    ritirata: "Ritira il progetto",
+  };
 
   // Invia il cambio di stato. Effetto: il database notifica il Comune e
   // registra l'operazione nell'audit con la motivazione.
@@ -602,6 +776,17 @@ function CambioStato({ pratica, onFatto }) {
         {etichette[stato]}: la pratica passerà a «{STATI_PRATICA[stato]?.label}»
         {stato === "annullata" && <span style={{ color: C.red }}> — operazione definitiva</span>}
       </div>
+      {stato === "ritirata" && (
+        <div style={{ fontSize: 12.5, color: C.grafite, marginBottom: 8, lineHeight: 1.5 }}>
+          Su lettera di tutti i promotori del progetto (nome, ID, motivo). Il progetto resta pubblico ma non emette più
+          crediti; può rientrare con una nuova lettera (Guida 6.4.1). Indica nella motivazione gli estremi della lettera.
+        </div>
+      )}
+      {stato === "sospesa" && (
+        <div style={{ fontSize: 12.5, color: C.grafite, marginBottom: 8, lineHeight: 1.5 }}>
+          La sospensione ferma anche l'emissione dei crediti: si usa per il controllo di qualità della Guida 6.4.2.
+        </div>
+      )}
       <label style={lbl}>
         Motivazione (obbligatoria)
         <input value={motivazione} onChange={(e) => setMotivazione(e.target.value)} style={campo} />

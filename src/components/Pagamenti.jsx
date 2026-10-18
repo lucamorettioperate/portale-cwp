@@ -4,7 +4,13 @@
      online: il back-office censisce il piano previsto (più voci con
      scadenze diverse) e registra a mano gli incassi. Mostra totali,
      incassato, da incassare e lo stato di ogni voce (Pagato, Scaduto,
-     Da pagare).
+     Da pagare). Ogni voce ha la sua voce dello Schema tariffario
+     (iscrizione, registrazione, emissione, vendita, altro; script 23) e lo
+     staff può farsi proporre gli importi dallo Schema tariffario
+     (src/lib/tariffe.js) in base al tipo di pratica, alla popolazione e ai
+     crediti previsti. Con una voce scaduta e non pagata le attività sono
+     sospese: il database non apre nuove fasi; la tariffa di iscrizione va
+     saldata prima della fase 5 (Guida 6.2.1 e 6.3.1).
    Usato da: DettaglioPratica.jsx.
    Chi lo vede: operatore e admin (inserimento e modifica); cliente/Comune
      in sola lettura (decisione del 18/10/2026, backlog 27).
@@ -18,15 +24,20 @@
    Registro sviluppo e deploy: capitolo «Portale (frontend)»
    ========================================================================= */
 import React, { useEffect, useState } from "react";
-import { COLORI as C } from "../lib/cwpProgram.js";
+import { COLORI as C, VOCI_PAGAMENTO } from "../lib/cwpProgram.js";
+import { proposteTariffe } from "../lib/tariffe.js";
 import Badge from "./Badge.jsx";
 import { elencaPagamenti, salvaPagamento, nomiUtenti } from "../lib/dati.js";
-import { formatoData, giorniA, oggiIso } from "../lib/date.js";
+import { formatoData, giorniA, oggiIso, oggiItalia, aggiungiGiorni } from "../lib/date.js";
 
 /* Riquadro dei pagamenti di una pratica.
-   Props: praticaId (id della pratica), solaLettura (true per il Comune:
+   Props: praticaId (id della pratica), pratica (riga della pratica, per le
+   proposte dello Schema tariffario), solaLettura (true per il Comune:
    niente pulsanti e diciture «pagato / da pagare» invece di «incassato»). */
-export default function Pagamenti({ praticaId, solaLettura = false }) {
+export default function Pagamenti({ praticaId, pratica = null, solaLettura = false }) {
+  // Proposte dello Schema tariffario: null = chiuse; altrimenti le voci con
+  // la casella «scelta».
+  const [proposte, setProposte] = useState(null);
   const [voci, setVoci] = useState([]);
   const [modulo, setModulo] = useState(null); // voce in modifica o nuova
   const [errore, setErrore] = useState("");
@@ -62,6 +73,7 @@ export default function Pagamenti({ praticaId, solaLettura = false }) {
       id: modulo.id,
       pratica_id: praticaId,
       descrizione: modulo.descrizione.trim(),
+      voce: modulo.voce || "altro",
       importo,
       scadenza: modulo.scadenza || null,
       pagato: !!modulo.pagato,
@@ -78,6 +90,27 @@ export default function Pagamenti({ praticaId, solaLettura = false }) {
     }
   }
 
+  // Apre le proposte dello Schema tariffario: si propongono già scelte le
+  // voci che la pratica non ha ancora e che hanno un importo calcolabile.
+  function apriProposte() {
+    const presenti = new Set(voci.map((v) => v.voce));
+    setProposte(proposteTariffe(pratica || {}).map((p) => ({ ...p, scelta: p.importo != null && !presenti.has(p.voce) })));
+  }
+
+  // Salva le voci scelte, con scadenza a 30 giorni (Schema tariffario).
+  async function aggiungiProposte() {
+    setErrore("");
+    setInCorso(true);
+    const scadenza = aggiungiGiorni(oggiItalia(), 30);
+    for (const p of proposte.filter((x) => x.scelta && x.importo != null)) {
+      const { error } = await salvaPagamento({ pratica_id: praticaId, descrizione: p.descrizione, voce: p.voce, importo: p.importo, scadenza, pagato: false, data_pagamento: null, riferimento: null });
+      if (error) { setErrore(error.message); break; }
+    }
+    setInCorso(false);
+    setProposte(null);
+    carica();
+  }
+
   // Totali: le voci senza importo contano zero.
   const totale = voci.reduce((s, v) => s + (Number(v.importo) || 0), 0);
   const incassato = voci.filter((v) => v.pagato).reduce((s, v) => s + (Number(v.importo) || 0), 0);
@@ -87,12 +120,44 @@ export default function Pagamenti({ praticaId, solaLettura = false }) {
     <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, padding: "18px 20px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
         <h3 style={{ fontFamily: "'Archivo'", fontSize: 15, margin: 0 }}>Pagamenti</h3>
-        {!modulo && !solaLettura && (
-          <button onClick={() => setModulo({ descrizione: "", importo: "", scadenza: "", pagato: false, riferimento: "" })} style={btnPrimario}>
-            + Voce di pagamento
-          </button>
+        {!modulo && !proposte && !solaLettura && (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {pratica && <button onClick={apriProposte} style={btnMini}>Proponi dallo Schema tariffario</button>}
+            <button onClick={() => setModulo({ descrizione: "", voce: "altro", importo: "", scadenza: "", pagato: false, riferimento: "" })} style={btnPrimario}>
+              + Voce di pagamento
+            </button>
+          </div>
         )}
       </div>
+
+      {/* Fatture scadute: le attività sono sospese fino al saldo (lo impone
+          il database all'apertura delle fasi, script 23). */}
+      {voci.some((v) => !v.pagato && giorniA(v.scadenza) < 0) && (
+        <div style={{ fontSize: 12.5, color: C.red, marginBottom: 10 }}>
+          C'è una voce scaduta non pagata: fino al saldo le attività successive sono sospese (Schema tariffario).
+        </div>
+      )}
+
+      {proposte && (
+        <div style={{ marginBottom: 12, padding: 12, background: C.paper, border: `1px solid ${C.line}`, borderRadius: 10 }}>
+          <div style={{ fontSize: 12.5, color: C.grafite, marginBottom: 8, lineHeight: 1.5 }}>
+            Tariffe massime dello Schema tariffario v1.2 (IVA esclusa), scadenza a 30 giorni. Gli importi si possono correggere dopo con «Registra incasso».
+          </div>
+          {proposte.map((p, i) => (
+            <label key={p.voce} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13, marginBottom: 6 }}>
+              <input type="checkbox" checked={p.scelta} disabled={p.importo == null} onChange={(e) => setProposte(proposte.map((x, j) => (j === i ? { ...x, scelta: e.target.checked } : x)))} style={{ marginTop: 3 }} />
+              <span>
+                <b>{p.descrizione}</b> · {p.importo == null ? "—" : euro(p.importo)}
+                <span style={{ display: "block", fontSize: 11.5, color: C.grafite }}>{p.nota}</span>
+              </span>
+            </label>
+          ))}
+          <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+            <button onClick={aggiungiProposte} disabled={inCorso || !proposte.some((p) => p.scelta)} style={btnPrimario}>{inCorso ? "…" : "Aggiungi le voci scelte"}</button>
+            <button onClick={() => setProposte(null)} style={btnMini}>Annulla</button>
+          </div>
+        </div>
+      )}
 
       {voci.length > 0 && (
         <div style={{ fontSize: 12.5, color: C.grafite, marginBottom: 10 }}>
@@ -112,6 +177,7 @@ export default function Pagamenti({ praticaId, solaLettura = false }) {
             <div key={v.id} style={{ border: `1px solid ${C.line}`, borderRadius: 9, padding: "9px 12px", display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
               <div style={{ fontSize: 13 }}>
                 <b>{v.descrizione}</b> · {euro(v.importo)}
+                {v.voce && v.voce !== "altro" && <span style={{ color: C.grafite }}> · {VOCI_PAGAMENTO[v.voce]}</span>}
                 <div style={{ fontSize: 11.5, color: C.grafite }}>
                   {v.scadenza && <>Scadenza {formatoData(v.scadenza)}</>}
                   {v.pagato && <> · {solaLettura ? "pagamento registrato il" : "incassato il"} {formatoData(v.data_pagamento)}</>}
@@ -144,6 +210,12 @@ export default function Pagamenti({ praticaId, solaLettura = false }) {
             <label style={lbl}>
               Voce
               <input value={modulo.descrizione} onChange={(e) => setModulo({ ...modulo, descrizione: e.target.value })} style={campo} placeholder="Es. quota di adesione" />
+            </label>
+            <label style={lbl}>
+              Voce dello Schema tariffario
+              <select value={modulo.voce || "altro"} onChange={(e) => setModulo({ ...modulo, voce: e.target.value })} style={campo}>
+                {Object.entries(VOCI_PAGAMENTO).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              </select>
             </label>
             <label style={lbl}>
               Importo (€)

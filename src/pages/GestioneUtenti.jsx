@@ -6,6 +6,10 @@
      Pulsante «+ Nuovo utente» per creare un cliente o un operatore con
      password temporanea. Un utente cliente può essere associato a più
      organizzazioni (es. più comuni); la prima scelta è la principale.
+     Ogni Organizzazione ha al massimo un account cliente attivo, quello
+     del rappresentante autorizzato (Guida 7.2): lo impone il database
+     (trigger trg_account_unico, script 23), che rifiuta creazione,
+     modifica o riattivazione di un secondo account.
    Chi la usa: solo Amministratori (gli altri vedono un messaggio).
    Dati (src/lib/dati.js): elencaUtenti (RPC admin_elenco_utenti),
      elencaOrganizzazioni (tabella "organizzazione"), creaUtente (Edge
@@ -103,7 +107,8 @@ export default function GestioneUtenti() {
           <div>
             <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 4px" }}>Gestione utenti</h1>
             <p style={{ fontSize: 13.5, color: C.grafite, margin: 0 }}>
-              Invita operatori e clienti, assegna ruolo e organizzazioni.
+              Invita operatori e clienti, assegna ruolo e organizzazioni. Ogni Organizzazione ha un solo account cliente
+              attivo, quello del rappresentante autorizzato (Guida al Programma, cap. 7.2).
             </p>
           </div>
           <button onClick={() => setInvito(true)} style={btnPrimario}>

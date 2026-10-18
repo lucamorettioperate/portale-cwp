@@ -2,24 +2,26 @@
    NuovoProgetto
    Scopo: finestra (sovrapposta alla pagina) per creare un nuovo Progetto.
      Si sceglie un'organizzazione esistente o se ne crea una nuova, si
-     indicano codice (facoltativo) e titolo; alla creazione vengono generate
-     le 7 fasi, con la fase 1 «in corso».
+     indicano codice (facoltativo, è l'ID univoco del progetto), titolo,
+     territorio (codici ISTAT dei Comuni: un solo progetto per territorio,
+     Standard 4.6), periodo di riferimento (10 anni oppure 7 rinnovabili,
+     Standard 4.3.8), popolazione e crediti previsti (servono alle tariffe);
+     alla creazione vengono generate le 7 fasi, con la fase 1 «in corso».
    Usato da: pagina BackOffice (/pratiche), pulsante di nuovo progetto.
    Chi lo vede: operatore e admin.
    Dati: elencaOrganizzazioni, creaOrganizzazione, creaPratica
      (src/lib/dati.js); tabelle organizzazione, pratica, fase.
-   Sicurezza (garantita dal database, script 02): solo lo staff può creare
-     organizzazioni e pratiche (RLS org_write, pratica_write). Codice vuoto:
-     lo assegna un trigger (CWP-AAAA-NNNN, script 09); un codice scritto a
-     mano viene invece mantenuto così com'è.
-     Attenzione: creaPratica fa due inserimenti separati (pratica, poi
-     fasi). Se il secondo fallisce la pratica resta senza fasi e qui si vede
-     l'errore; anche un'organizzazione nuova resta creata se poi fallisce la
-     pratica.
+   Sicurezza (garantita dal database): solo lo staff può creare
+     organizzazioni e pratiche (RLS org_insert e funzione
+     staff_crea_pratica, script 20-23, che crea pratica e fasi insieme).
+     Codice vuoto: lo assegna un trigger (CWP-AAAA-NNNN, script 09); un
+     codice scritto a mano viene mantenuto così com'è. Il database rifiuta
+     codici ISTAT non validi o già in un altro progetto attivo (script 23).
+     Un'organizzazione nuova resta creata anche se poi fallisce la pratica.
    Registro sviluppo e deploy: capitolo «Portale (frontend)»
    ========================================================================= */
 import React, { useEffect, useState } from "react";
-import { COLORI as C } from "../lib/cwpProgram.js";
+import { COLORI as C, PERIODI_RIFERIMENTO } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import {
   elencaOrganizzazioni,
@@ -40,6 +42,11 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
   const [nuovaOrg, setNuovaOrg] = useState({ denominazione: "", tipo: "" });
   const [codice, setCodice] = useState("");
   const [titolo, setTitolo] = useState("");
+  // Dati del progetto (script 23): codici ISTAT separati da virgole.
+  const [codiciIstat, setCodiciIstat] = useState("");
+  const [periodo, setPeriodo] = useState("10 anni");
+  const [popolazione, setPopolazione] = useState("");
+  const [crediti, setCrediti] = useState("");
   const [errore, setErrore] = useState("");
   const [inCorso, setInCorso] = useState(false);
 
@@ -92,6 +99,10 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
       codice: codice.trim() || null,
       titolo: titolo.trim() || null,
       stato: "attiva",
+      codici_istat: codiciIstat.split(/[\s,;]+/).map((c) => c.trim()).filter(Boolean),
+      periodo_riferimento: periodo,
+      popolazione: popolazione === "" ? null : Number(popolazione),
+      crediti_previsti: crediti === "" ? null : Number(crediti),
     });
     if (error) {
       setErrore("Errore creando il progetto: " + error.message);
@@ -180,6 +191,26 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
             Titolo
             <input placeholder="Descrizione breve del progetto" value={titolo} onChange={(e) => setTitolo(e.target.value)} style={campo} />
           </label>
+          <label style={lbl}>
+            Territorio: codici ISTAT dei Comuni (6 cifre)
+            <input placeholder="es. 041044, 041001" value={codiciIstat} onChange={(e) => setCodiciIstat(e.target.value)} style={campo} />
+          </label>
+          <label style={lbl}>
+            Periodo di riferimento
+            <select value={periodo} onChange={(e) => setPeriodo(e.target.value)} style={campo}>
+              {Object.entries(PERIODI_RIFERIMENTO).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+            </select>
+          </label>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <label style={lbl}>
+              Popolazione residente
+              <input type="number" min="0" value={popolazione} onChange={(e) => setPopolazione(e.target.value)} style={campo} />
+            </label>
+            <label style={lbl}>
+              Crediti previsti nel periodo
+              <input type="number" min="0" value={crediti} onChange={(e) => setCrediti(e.target.value)} style={campo} />
+            </label>
+          </div>
 
           {errore && <div style={{ color: C.red, fontSize: 13, margin: "6px 0 12px" }}>{errore}</div>}
 

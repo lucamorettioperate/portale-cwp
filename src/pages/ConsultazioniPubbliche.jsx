@@ -7,8 +7,9 @@
                                  inviare un'osservazione;
    - «/consultazioni/conferma»   ConfermaOsservazione: conferma dell'email
                                  (collegamento ricevuto, parametro ?t=).
-   Scopo: permettere a chiunque di leggere il Progetto in consultazione per
-     30 giorni e inviare osservazioni, che Fondazione Operate modera e a cui
+   Scopo: permettere a chiunque di leggere il Progetto (30 giorni) o il
+     Rapporto di Monitoraggio (20 giorni) nel periodo di feedback pubblico
+     (Guida al Programma 3.9 e 6.3.1) e inviare osservazioni, che Fondazione Operate modera e a cui
      il Comune risponde (la moderazione avviene nel back-office, componente
      Consultazione).
    Chi la usa: pubblico senza accesso.
@@ -17,7 +18,7 @@
      "elenco", "dettaglio", "invia", "conferma".
    Sicurezza: il browser non legge mai direttamente il database. È la Edge
      Function (con chiave di servizio, Verify JWT disattivato) a decidere
-     cosa mostrare: solo consultazioni di Progetti, solo osservazioni
+     cosa mostrare: solo periodi di feedback aperti, solo osservazioni
      ammesse, mai l'email, il nome solo se l'autore lo ha scelto. Sempre lì
      si ripetono i controlli di questo modulo (lunghezze, consenso, formato
      e contenuto dell'allegato, 10 MB) e ci sono i limiti di invio
@@ -47,7 +48,7 @@ function Cornice({ children }) {
           <span style={{ fontSize: 12, color: C.grafite }}>Programma di</span>
           <img src="/loghi/fondazione-operate.png" alt="Fondazione Operate" style={{ height: 34, width: "auto" }} />
           <span style={{ flex: 1 }} />
-          <Link to="/consultazioni" style={{ fontSize: 13, color: C.green, fontWeight: 600 }}>Consultazioni pubbliche</Link>
+          <Link to="/consultazioni" style={{ fontSize: 13, color: C.green, fontWeight: 600 }}>Feedback pubblico</Link>
           <Link to="/" style={{ fontSize: 13, color: C.green, fontWeight: 600 }}>Accedi al portale</Link>
         </div>
       </header>
@@ -75,20 +76,23 @@ export function ElencoConsultazioni() {
 
   return (
     <Cornice>
-      <h1 style={{ fontFamily: "'Archivo'", fontSize: 26, margin: "0 0 6px", letterSpacing: -0.4 }}>Consultazioni pubbliche</h1>
+      <h1 style={{ fontFamily: "'Archivo'", fontSize: 26, margin: "0 0 6px", letterSpacing: -0.4 }}>Feedback pubblico</h1>
       <p style={{ fontSize: 14.5, color: C.grafite, margin: "0 0 20px", lineHeight: 1.55, maxWidth: 720 }}>
-        Prima della validazione, ogni Progetto del Programma Carbon WastePrint® è pubblicato per 30 giorni. Chiunque
-        può leggere la documentazione e inviare osservazioni, che Fondazione Operate esamina e a cui il Comune risponde.
+        Prima della validazione ogni Progetto del Programma Carbon WastePrint® è pubblicato per 30 giorni, e ogni Rapporto
+        di Monitoraggio per 20 giorni prima della verifica. Chiunque può leggere la documentazione e inviare osservazioni,
+        che Fondazione Operate esamina e a cui il promotore del progetto risponde.
       </p>
       {stato.caricamento && <div style={{ color: C.grafite }}>Caricamento…</div>}
       {stato.errore && <div style={{ color: C.red }}>{stato.errore}</div>}
       {!stato.caricamento && !stato.errore && stato.elenco.length === 0 && (
-        <div style={{ ...scheda, color: C.grafite, textAlign: "center" }}>In questo momento non ci sono consultazioni aperte.</div>
+        <div style={{ ...scheda, color: C.grafite, textAlign: "center" }}>In questo momento non ci sono periodi di feedback pubblico aperti.</div>
       )}
       <div style={{ display: "grid", gap: 12 }}>
         {(stato.elenco || []).map((c) => (
           <Link key={c.id} to={`/consultazioni/${c.id}`} style={{ ...scheda, textDecoration: "none", color: C.ink, display: "block" }}>
-            <div style={{ fontSize: 12, color: C.grafite, fontWeight: 600 }}>{c.codice}</div>
+            <div style={{ fontSize: 12, color: C.grafite, fontWeight: 600 }}>
+              {c.codice} · {c.tipo === "rapporto" ? `Rapporto di Monitoraggio anno ${c.anno}` : "Progetto"}
+            </div>
             <div style={{ fontFamily: "'Archivo'", fontSize: 18, margin: "2px 0 4px" }}>{c.ente}</div>
             <div style={{ fontSize: 13.5, color: C.grafite }}>{c.titolo}</div>
             <div style={{ fontSize: 12.5, marginTop: 8, color: C.green, fontWeight: 600 }}>
@@ -129,7 +133,7 @@ export function PaginaConsultazione() {
       {c && (
         <div style={{ display: "grid", gap: 16 }}>
           <div style={scheda}>
-            <div style={{ fontSize: 12, color: C.grafite, fontWeight: 600 }}>Consultazione pubblica · {c.codice}</div>
+            <div style={{ fontSize: 12, color: C.grafite, fontWeight: 600 }}>Feedback pubblico · {c.tipo === "rapporto" ? `Rapporto di Monitoraggio anno ${c.anno} · ` : ""}{c.codice}</div>
             <h1 style={{ fontFamily: "'Archivo'", fontSize: 24, margin: "4px 0 4px", letterSpacing: -0.4 }}>{c.ente}</h1>
             <div style={{ fontSize: 14, color: C.grafite }}>{c.titolo}</div>
             <div style={{ fontSize: 13, marginTop: 10 }}>
@@ -151,7 +155,7 @@ export function PaginaConsultazione() {
                   <div style={{ fontSize: 12, color: C.grafite }}>
                     {/* riparte = con questa errata i 30 giorni sono ripartiti. */}
                     {dataOra(e.creato_il)}
-                    {e.riparte && <> · la consultazione è stata prolungata fino al {formatoData(e.nuova_chiusura)}</>}
+                    {e.riparte && <> · il periodo è stato prolungato fino al {formatoData(e.nuova_chiusura)}</>}
                   </div>
                   <div style={{ fontSize: 14, marginTop: 4, whiteSpace: "pre-wrap" }}>{e.testo}</div>
                   {e.documento_url && <a href={e.documento_url} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: C.green, fontWeight: 600 }}>{e.documento}</a>}
@@ -179,7 +183,7 @@ export function PaginaConsultazione() {
           {/* «aperta» lo calcola la Edge Function (consultazione attiva e
               oggi dentro il periodo); lo ricontrolla anche all'invio. */}
           {c.aperta ? <ModuloOsservazione id={c.id} /> : (
-            <div style={{ ...scheda, color: C.grafite }}>La consultazione è chiusa: non si possono più inviare osservazioni.</div>
+            <div style={{ ...scheda, color: C.grafite }}>Il periodo di feedback pubblico è chiuso: non si possono più inviare osservazioni.</div>
           )}
         </div>
       )}
@@ -317,7 +321,7 @@ export function ConfermaOsservazione() {
               Il tuo indirizzo email è confermato e l'osservazione è arrivata a Fondazione Operate. Sarà esaminata e,
               se ammessa, pubblicata nella pagina della consultazione insieme alla risposta del Comune.
             </p>
-            <Link to={`/consultazioni/${stato.id}`} style={{ color: C.green, fontWeight: 600 }}>Torna alla consultazione →</Link>
+            <Link to={`/consultazioni/${stato.id}`} style={{ color: C.green, fontWeight: 600 }}>Torna al feedback pubblico →</Link>
           </>
         )}
       </div>

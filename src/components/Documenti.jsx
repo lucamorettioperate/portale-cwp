@@ -30,7 +30,7 @@
    Registro sviluppo e deploy: capitolo «Portale (frontend)»
    ========================================================================= */
 import React, { useEffect, useRef, useState } from "react";
-import { COLORI as C, TIPOLOGIE_DOCUMENTO } from "../lib/cwpProgram.js";
+import { COLORI as C, TIPOLOGIE_DOCUMENTO, tipologiaRiservata } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Badge from "./Badge.jsx";
 import {
@@ -74,7 +74,7 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
   const [opzioni, setOpzioni] = useState(false);
   // Voci del menu della tipologia: prima i documenti richiesti dalla fase.
   const opzioniTipologia = [...new Set([...richiesti, ...TIPOLOGIE_DOCUMENTO])];
-  const [tipologia, setTipologia] = useState(richiesti[0] || (fase ? "Documento di progetto" : "Contratto"));
+  const [tipologia, setTipologia] = useState(richiesti[0] || (fase ? "Altro" : "Documentazione amministrativa"));
   // Il Comune sceglie la tipologia solo se la fase ha documenti richiesti.
   const clienteSceglie = !staff && richiesti.length > 0;
   const [visCliente, setVisCliente] = useState(true);
@@ -108,7 +108,7 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
       tipologia: staff || clienteSceglie ? tipologia : null,
       visibileCliente: staff ? visCliente : true,
       visibileFondazione: true,
-      pubblico: staff ? pubblico : false,
+      pubblico: staff ? pubblico && !tipologiaRiservata(tipologia) : false,
       utenteId: utente?.id,
     });
     setOpzioni(false);
@@ -219,7 +219,9 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
             <input type="checkbox" checked={visCliente} onChange={(e) => setVisCliente(e.target.checked)} /> Visibile al Cliente
           </label>
           <label style={{ display: "flex", gap: 5, alignItems: "center" }}>
-            <input type="checkbox" checked={pubblico} onChange={(e) => setPubblico(e.target.checked)} /> Pubblico
+            {/* Contratto con l'ente e versione privata del Modulo: mai
+                pubblici (Guida 7.1 e 7.3; lo impone anche il database). */}
+            <input type="checkbox" checked={pubblico && !tipologiaRiservata(tipologia)} disabled={tipologiaRiservata(tipologia)} onChange={(e) => setPubblico(e.target.checked)} /> Pubblico
           </label>
           <span style={{ flex: 1 }} />
           <button onClick={() => setOpzioni(false)} style={{ background: "none", border: "none", color: C.grafite, fontSize: 12.5, cursor: "pointer" }}>Annulla</button>
@@ -277,8 +279,8 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
                       Cliente
                     </label>
                     <label style={{ display: "flex", gap: 4, alignItems: "center", cursor: "pointer" }}>
-                      <input type="checkbox" checked={d.pubblico} onChange={(e) => cambiaVisibilita(d, { pubblico: e.target.checked })} />
-                      Pubblico
+                      <input type="checkbox" checked={d.pubblico} disabled={tipologiaRiservata(d.tipologia) && !d.pubblico} onChange={(e) => cambiaVisibilita(d, { pubblico: e.target.checked })} />
+                      {tipologiaRiservata(d.tipologia) ? "Pubblico (non ammesso)" : "Pubblico"}
                     </label>
                   </div>
                 )}

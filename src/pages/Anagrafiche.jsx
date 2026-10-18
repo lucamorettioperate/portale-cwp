@@ -3,8 +3,10 @@
    Scopo: censimento di Organizzazioni ed Enti di Validazione (requisiti
      §3: l'Operatore «censisce Organizzazioni ed Enti di Validazione»).
      - Organizzazioni: elenco con ricerca, dati essenziali (tipo, codice
-       fiscale, partita IVA, PEC, note), pratiche collegate; inserimento e
-       modifica. Un'organizzazione non si cancella.
+       fiscale, partita IVA, PEC, note), fino a 2 persone con delega di
+       rappresentanza (Guida 7.2, script 23: una sola di loro ha l'account
+       sul portale), pratiche collegate; inserimento e modifica.
+       Un'organizzazione non si cancella.
      - Enti di Validazione: componente EntiValidazione, con i Progetti a
        cui ogni ente è assegnato.
    Chi la usa: Operatori e Amministratori (gli altri vedono un messaggio).
@@ -12,7 +14,7 @@
      (src/lib/dati.js) sulle tabelle organizzazione e pratica.
    Sicurezza (garantita dal database, script 21): scrivono solo Operatori e
      Amministratori (RLS org_insert, org_update, ente_insert, ente_update);
-     nessuna cancellazione (conservazione per 10 anni); ogni modifica è
+     nessuna cancellazione (conservazione per 12 anni); ogni modifica è
      registrata nell'audit.
    Registro sviluppo e deploy: capitolo «Portale (frontend)», tabella Pagine.
    ========================================================================= */
@@ -25,7 +27,16 @@ import { elencaOrganizzazioni, salvaOrganizzazione, elencaPraticheAnagrafiche } 
 import { riquadro, campo, etichetta, btnPrimario, btnMini } from "../components/stili.js";
 
 // Tipi di organizzazione proposti (campo testo libero nel database).
-const TIPI_ORGANIZZAZIONE = ["Ente locale (T.U.E.L.)", "Soggetto gestore", "Azienda", "Altro"];
+// Soggetti promotori ammessi dallo Standard CWP (cap. 4.4).
+const TIPI_ORGANIZZAZIONE = [
+  "Ente locale (T.U.E.L.)",
+  "EGATO (Ente di governo dell'ambito)",
+  "Soggetto gestore a partecipazione pubblica",
+  "Soggetto gestore delle tariffe",
+  "Soggetto gestore",
+  "Azienda",
+  "Altro",
+];
 
 /* Pagina delle anagrafiche. Nessuna prop. */
 export default function Anagrafiche() {
@@ -106,6 +117,8 @@ function Organizzazioni({ pratiche }) {
       partita_iva: pulito(modulo.partita_iva),
       pec: pulito(modulo.pec),
       note: pulito(modulo.note),
+      // Al massimo 2 delegati (vincolo chk_delegati, script 23).
+      delegati: [modulo.delegato1, modulo.delegato2].map((d) => (d || "").trim()).filter(Boolean),
     });
     setInCorso(false);
     if (error) return setErrore(error.message);
@@ -113,7 +126,7 @@ function Organizzazioni({ pratiche }) {
     carica();
   }
 
-  const nuova = { denominazione: "", tipo: TIPI_ORGANIZZAZIONE[0], codice_fiscale: "", partita_iva: "", pec: "", note: "" };
+  const nuova = { denominazione: "", tipo: TIPI_ORGANIZZAZIONE[0], codice_fiscale: "", partita_iva: "", pec: "", note: "", delegato1: "", delegato2: "" };
 
   return (
     <section style={riquadro}>
@@ -136,11 +149,14 @@ function Organizzazioni({ pratiche }) {
                 <div style={{ fontSize: 11.5, color: C.grafite }}>
                   {[o.codice_fiscale && `C.F. ${o.codice_fiscale}`, o.partita_iva && `P.IVA ${o.partita_iva}`, o.pec].filter(Boolean).join(" · ") || "Dati fiscali non indicati"}
                 </div>
+                {(o.delegati || []).length > 0 && (
+                  <div style={{ fontSize: 11.5, color: C.grafite }}>Delegati: {o.delegati.join(", ")}</div>
+                )}
                 <div style={{ fontSize: 11.5, color: C.grafite }}>
                   {lista.length ? `Pratiche: ${lista.map((p) => p.codice || p.titolo).join(", ")}` : "Nessuna pratica"}
                 </div>
               </div>
-              {!modulo && <button onClick={() => setModulo({ ...nuova, ...o })} style={btnMini}>Modifica</button>}
+              {!modulo && <button onClick={() => setModulo({ ...nuova, ...o, delegato1: (o.delegati || [])[0] || "", delegato2: (o.delegati || [])[1] || "" })} style={btnMini}>Modifica</button>}
             </div>
           );
         })}
@@ -167,6 +183,13 @@ function ModuloOrganizzazione({ modulo, setModulo, onSalva, inCorso, errore }) {
         <label style={etichetta}>Codice fiscale<input value={modulo.codice_fiscale || ""} onChange={set("codice_fiscale")} style={campo} /></label>
         <label style={etichetta}>Partita IVA<input value={modulo.partita_iva || ""} onChange={set("partita_iva")} style={campo} /></label>
         <label style={etichetta}>PEC<input type="email" value={modulo.pec || ""} onChange={set("pec")} style={campo} /></label>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
+        <label style={etichetta}>Delegato 1 (rappresentante con account)<input value={modulo.delegato1 || ""} onChange={set("delegato1")} style={campo} placeholder="Nome e cognome" /></label>
+        <label style={etichetta}>Delegato 2 (sostituto, senza account)<input value={modulo.delegato2 || ""} onChange={set("delegato2")} style={campo} placeholder="Nome e cognome" /></label>
+      </div>
+      <div style={{ fontSize: 11.5, color: C.grafite, margin: "-4px 0 10px" }}>
+        Dal Modulo di delega di rappresentanza (Guida 7.2): fino a 2 persone, una sola con l'account sul portale.
       </div>
       <label style={etichetta}>Note<textarea value={modulo.note || ""} onChange={set("note")} rows={2} style={{ ...campo, resize: "vertical" }} /></label>
       {errore && <div style={{ color: C.red, fontSize: 12.5, marginBottom: 8 }}>{errore}</div>}

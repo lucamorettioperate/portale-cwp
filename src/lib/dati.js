@@ -37,7 +37,7 @@
    capitolo 6 «Portale (frontend)»; capitolo 8 «Procedure di rilascio».
    ========================================================================= */
 import { supabase } from "./supabase.js";
-import { fasiDi } from "./cwpProgram.js";
+import { fasiDi, PERIODI_RIFERIMENTO } from "./cwpProgram.js";
 import { verificaFile, traduciErroreArchivio } from "./file.js";
 
 // ---- Organizzazioni ----
@@ -113,10 +113,10 @@ export async function leggiPratica(id) {
     .single();
 }
 
-// Crea una pratica e le sue fasi (7 per un Progetto, 4 per un Rapporto) in
-// un'unica operazione (o tutto o niente).
+// Crea una pratica e le sue 7 fasi in un'unica operazione (o tutto o niente).
 // Parametro: colonne della pratica (tipo, organizzazione_id, codice, titolo,
-// stato, progetto_padre_id, anno_monitoraggio). Restituisce { data: pratica
+// stato, progetto_padre_id, anno_monitoraggio, periodo_riferimento,
+// codici_istat, copromotori, popolazione, crediti_previsti — script 23). Restituisce { data: pratica
 // creata, error }. RPC `staff_crea_pratica` (20_rinforzi_integrita.sql):
 // solo staff; il numero di fasi per tipo lo controlla il database (script 21). Il codice CWP-AAAA-NNNN (o -RMn per i rapporti) lo
 // assegna il trigger trg_pratica_codice (09_cruscotto_pagamenti_notifiche.sql).
@@ -161,8 +161,9 @@ export async function modificaScadenzaFase(faseId, data, motivazione) {
   });
 }
 
-// Cambia lo stato di una pratica (attiva / sospesa / annullata / chiusa),
-// con motivazione obbligatoria. RPC `staff_cambia_stato_pratica`
+// Cambia lo stato di una pratica (attiva / sospesa / annullata / chiusa /
+// ritirata), con motivazione obbligatoria. «ritirata» solo per i Progetti e
+// da lì solo il rientro ad «attiva» (Guida 6.4.1, script 23). RPC `staff_cambia_stato_pratica`
 // (08_integrazioni_azioni.sql). Una pratica non attiva blocca i caricamenti
 // del cliente (policy doc_insert, 08).
 export async function cambiaStatoPratica(praticaId, stato, motivazione) {
@@ -171,6 +172,23 @@ export async function cambiaStatoPratica(praticaId, stato, motivazione) {
     p_stato: stato,
     p_motivazione: motivazione,
   });
+}
+
+// Aggiorna i dati del Progetto o del Rapporto: titolo, codici_istat,
+// copromotori, periodo_riferimento, popolazione, crediti_previsti (solo i
+// campi presenti in `dati`). RPC `staff_aggiorna_dati_pratica` (script 23):
+// solo staff; rifiuta un territorio già in un altro Progetto (Standard 4.6)
+// e un periodo con meno Rapporti di quelli esistenti.
+export async function aggiornaDatiPratica(praticaId, dati, motivazione = null) {
+  return await supabase.rpc("staff_aggiorna_dati_pratica", { p_pratica: praticaId, p_dati: dati, p_motivazione: motivazione });
+}
+
+// Verifica documentale sull'accuratezza (tipo "accuratezza", +15 giorni) o
+// ulteriore accertamento ("accertamento", +10 giorni, al massimo 3) nelle
+// fasi 2 e 6 (Guida 6.5.2). RPC `staff_estendi_verifica` (script 23),
+// motivazione obbligatoria; il Comune riceve la notifica con la scadenza.
+export async function estendiVerifica(faseId, tipo, motivazione) {
+  return await supabase.rpc("staff_estendi_verifica", { p_fase: faseId, p_tipo: tipo, p_motivazione: motivazione });
 }
 
 // ---- Richieste di integrazione ----
@@ -503,20 +521,21 @@ export async function leggiCruscotto() {
 }
 
 // ---- Rapporti di Monitoraggio annuali ----
-// Crea il Rapporto dell'anno successivo per un Progetto (max 10),
+// Crea il Rapporto dell'anno successivo per un Progetto (al massimo 10 o 21
+// secondo il periodo di riferimento, PERIODI_RIFERIMENTO),
 // con le sue fasi. Codice e organizzazione li assegna il database.
 // Parametro: riga del progetto (serve id e organizzazione_id).
 // Tabelle `pratica` e `fase` tramite creaPratica. Il trigger
 // trg_rapporto_coerente (09_cruscotto_pagamenti_notifiche.sql) impone
-// l'organizzazione del Progetto e la sequenza degli anni; il limite di 10
-// lo garantisce anche il database (vincolo chk_anno_range e indice
-// uq_rapporto_anno, 01_schema.sql). Il controllo qui serve solo a dare un
-// messaggio chiaro.
+// l'organizzazione del Progetto e la sequenza degli anni; il limite lo
+// garantisce anche il database (rapporto_coerente, script 23, e indice
+// uq_rapporto_anno). Il controllo qui serve solo a dare un messaggio chiaro.
 export async function creaRapporto(progetto) {
   const { data: esistenti } = await elencaRapporti(progetto.id);
   const anno = (esistenti || []).reduce((m, r) => Math.max(m, r.anno_monitoraggio || 0), 0) + 1;
-  if (anno > 10) {
-    return { data: null, error: { message: "Il Progetto ha già 10 Rapporti di Monitoraggio" } };
+  const massimo = (PERIODI_RIFERIMENTO[progetto.periodo_riferimento] || PERIODI_RIFERIMENTO["10 anni"]).rapporti;
+  if (anno > massimo) {
+    return { data: null, error: { message: `Il Progetto ha già ${massimo} Rapporti di Monitoraggio` } };
   }
   return await creaPratica({
     tipo: "rapporto",
@@ -525,6 +544,8 @@ export async function creaRapporto(progetto) {
     anno_monitoraggio: anno,
     titolo: `Rapporto di Monitoraggio anno ${anno}`,
     stato: "attiva",
+    // Le tariffe del Rapporto dipendono dalla popolazione del Progetto.
+    popolazione: progetto.popolazione ?? null,
   });
 }
 

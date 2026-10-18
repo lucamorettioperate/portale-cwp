@@ -42,8 +42,10 @@ import {
 } from "./dati.js";
 
 // Tipologie che finiscono in cartelle dedicate del fascicolo.
-const TIPO_RAPPORTO_ENTE = "Rapporto dell'Ente di Validazione";
-const TIPI_CONTRATTO = ["Contratto", "Allegato al contratto"];
+// Rapporti dell'ente: nomi ufficiali della Guida (script 23) e quello
+// usato prima del 18/10/2026.
+const TIPI_RAPPORTO_ENTE = ["Rapporto di validazione", "Rapporto di verifica", "Rapporto dell'Ente di Validazione"];
+const TIPI_CONTRATTO = ["Contratto con l'ente di validazione e verifica", "Contratto", "Allegato al contratto"];
 
 // CSV con separatore ";" (si apre direttamente in Excel in italiano).
 // Parametri: righe (oggetti) e colonne = [[chiave o funzione(riga), titolo], …].
@@ -121,7 +123,7 @@ export async function esportaFascicolo(praticaId, { staff, onAvanzamento = () =>
   // "mancanti", riportato nel LEGGIMI.txt e restituito alla pagina.
   const mancanti = [];
   const cartellaDi = (d) =>
-    d.tipologia === TIPO_RAPPORTO_ENTE ? "Validazione"
+    TIPI_RAPPORTO_ENTE.includes(d.tipologia) ? "Validazione"
       : d.fase_id ? `Documenti/Fase ${pulisci(nomeFase[d.fase_id] || "?")}` : "Documenti/Generali";
   const daScaricare = [
     ...documenti.map((d) => ({ d, cartella: cartellaDi(d) })),
@@ -322,7 +324,7 @@ export async function esportaFascicolo(praticaId, { staff, onAvanzamento = () =>
       "Contenuto:",
       "- Riepilogo.pdf: sintesi leggibile del fascicolo",
       `- Documenti/: ${documenti.length} file (tutte le versioni, per fase)`,
-      documenti.some((d) => d.tipologia === TIPO_RAPPORTO_ENTE) ? "- Validazione/: rapporto dell'Ente di Validazione" : null,
+      documenti.some((d) => TIPI_RAPPORTO_ENTE.includes(d.tipologia)) ? "- Validazione/: rapporti di validazione e di verifica dell'ente" : null,
       contrattiProgetto.length ? "- Contratto del Progetto/: contratto e allegati del Progetto a cui appartiene il Rapporto" : null,
       "- pratica.csv, fasi.csv, documenti.csv (con hash SHA-256 di ogni file)",
       integrazioni.length ? "- integrazioni.csv" : null,
