@@ -96,9 +96,14 @@ export default function Header() {
               {r.short}
             </span>
           )}
-          <span style={{ fontSize: 12.5, color: C.grafite, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <Link
+            to="/password"
+            title="Cambia password"
+            style={{ fontSize: 12.5, color: C.grafite, maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none" }}
+          >
             {utente.email}
-          </span>
+            <span style={{ display: "block", fontSize: 11, color: C.green, fontWeight: 600 }}>Cambia password</span>
+          </Link>
           <button
             onClick={esci}
             style={{

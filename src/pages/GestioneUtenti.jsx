@@ -10,7 +10,9 @@ import {
   aggiornaUtente,
   impostaOrganizzazioniUtente,
   impostaUtenteAttivo,
+  reimpostaPassword,
 } from "../lib/dati.js";
+import { generaPasswordTemporanea } from "../lib/password.js";
 
 /* Gestione utenti — solo Admin.
    Elenco utenti, invito di nuovi (cliente/operatore), modifica
@@ -124,6 +126,17 @@ function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
   const r = RUOLI[utente.ruolo];
   const nomiOrg = orgNomiUtente(utente);
   const modificabile = utente.ruolo !== "admin";
+  // Reimpostazione password: null = chiuso; { password } = conferma; { fatta } = esito.
+  const [reimposta, setReimposta] = useState(null);
+
+  async function confermaReimposta() {
+    setErrore("");
+    setSalvataggio(true);
+    const { error } = await reimpostaPassword(utente.id, reimposta.password);
+    setSalvataggio(false);
+    if (error) setErrore("Reimpostazione non riuscita: " + error.message);
+    else setReimposta({ ...reimposta, fatta: true });
+  }
 
   function apri() {
     setRuolo(utente.ruolo);
@@ -191,6 +204,11 @@ function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
             {!utente.attivo && <Badge bg="#f6dcd6" fg={C.red}>Disattivato</Badge>}
             {r && <Badge bg={r.soft} fg={r.color}>{r.short}</Badge>}
             {modificabile && <button onClick={apri} style={btnMini}>Modifica</button>}
+            {modificabile && utente.attivo && (
+              <button onClick={() => { setErrore(""); setReimposta({ password: generaPasswordTemporanea() }); }} style={btnMini}>
+                Reimposta password
+              </button>
+            )}
             {modificabile && (
               <button onClick={commutaAttivo} disabled={salvataggio} style={{ ...btnMini, color: utente.attivo ? C.red : C.green }}>
                 {utente.attivo ? "Disattiva" : "Riattiva"}
@@ -200,7 +218,38 @@ function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
         )}
       </div>
 
-      {!modifica && errore && <div style={{ color: C.red, fontSize: 12.5, marginTop: 8 }}>{errore}</div>}
+      {reimposta && !modifica && (
+        <div style={{ marginTop: 12, padding: 14, background: C.paper, border: `1px solid ${C.line}`, borderRadius: 10, fontSize: 13 }}>
+          {reimposta.fatta ? (
+            <>
+              <div style={{ color: C.green, fontWeight: 600, marginBottom: 6 }}>✓ Password reimpostata.</div>
+              <div style={{ marginBottom: 10 }}>
+                Comunica a {utente.email} la password temporanea <code style={{ fontSize: 14, fontWeight: 700 }}>{reimposta.password}</code> con un
+                canale sicuro (ad esempio per telefono). Al primo accesso il portale gli chiederà di sceglierne una personale.
+              </div>
+              <button onClick={() => setReimposta(null)} style={btnMini}>Chiudi</button>
+            </>
+          ) : (
+            <>
+              <div style={{ marginBottom: 10 }}>
+                Assegnare a <b>{utente.email}</b> la nuova password temporanea{" "}
+                <code style={{ fontSize: 14, fontWeight: 700 }}>{reimposta.password}</code>? La password attuale smetterà di funzionare e al
+                primo accesso l'utente dovrà sceglierne una personale.
+              </div>
+              {errore && <div style={{ color: C.red, marginBottom: 8 }}>{errore}</div>}
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button onClick={confermaReimposta} disabled={salvataggio} style={btnMiniPrimario}>
+                  {salvataggio ? "Reimpostazione…" : "Conferma"}
+                </button>
+                <button onClick={() => setReimposta({ password: generaPasswordTemporanea() })} disabled={salvataggio} style={btnMini}>Genera un'altra</button>
+                <button onClick={() => { setReimposta(null); setErrore(""); }} disabled={salvataggio} style={btnMini}>Annulla</button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {!modifica && !reimposta && errore && <div style={{ color: C.red, fontSize: 12.5, marginTop: 8 }}>{errore}</div>}
       {modifica && (
         <div
           style={{
@@ -378,7 +427,7 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
             <br />
             Comunica all'utente la password temporanea: <b style={{ fontFamily: "monospace" }}>{password}</b>
             <br />
-            Potrà cambiarla dopo il primo accesso.
+            Al primo accesso il portale gli chiederà di sceglierne una personale.
             {avviso && <div style={{ color: C.red, marginTop: 10, fontSize: 13 }}>{avviso}</div>}
             <div style={{ marginTop: 14 }}>
               <button type="button" onClick={onInvitato} style={btnPrimario}>Chiudi</button>
@@ -435,10 +484,7 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
 
 // Genera una password temporanea leggibile.
 function generaPassword() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-  let p = "";
-  for (let i = 0; i < 10; i++) p += chars[Math.floor(Math.random() * chars.length)];
-  return p + "!";
+  return generaPasswordTemporanea();
 }
 
 const overlay = {

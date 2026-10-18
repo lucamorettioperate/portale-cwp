@@ -360,6 +360,27 @@ export async function creaUtente({ email, password, ruolo, organizzazioneId, nom
   });
 }
 
+// L'Amministratore assegna una nuova password temporanea (Edge Function
+// "reimposta-password"); l'utente dovrà cambiarla al primo accesso.
+export async function reimpostaPassword(utenteId, password) {
+  const { data, error } = await supabase.functions.invoke("reimposta-password", {
+    body: { utente_id: utenteId, password },
+  });
+  if (error) {
+    // Le risposte di errore della funzione portano il motivo nel corpo.
+    let motivo = error.message;
+    try {
+      const corpo = await error.context?.json();
+      if (corpo?.error) motivo = corpo.error;
+    } catch {
+      /* corpo non leggibile: resta il messaggio generico */
+    }
+    return { data: null, error: { message: motivo } };
+  }
+  if (data?.error) return { data: null, error: { message: data.error } };
+  return { data, error: null };
+}
+
 // ---- Audit ----
 // L'audit trail è scritto automaticamente dal database (trigger, script 07)
 // per ogni operazione rilevante: il browser non lo scrive più.

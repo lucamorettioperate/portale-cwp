@@ -11,6 +11,12 @@
       "data": "18/10/2026",
       "descrizione": "Voce di menu «Manuale» e pagina di download del manuale (capitolo 2).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.2",
+      "data": "18/10/2026",
+      "descrizione": "Scelta della password al primo accesso, cambio password, recupero della password dimenticata; ritorno alla pratica dopo l'accesso da un link email.",
+      "autore": "Fondazione Operate"
     }
   ],
   "registro": [

@@ -25,14 +25,17 @@ Nel portale potete:
 
 ## Primo accesso
 
-Le credenziali (email e password provvisoria) vi vengono fornite da Fondazione Operate.
+Le credenziali (email e password temporanea) vi vengono fornite da Fondazione Operate.
 
 1. Aprite [portale-cwp.vercel.app](https://portale-cwp.vercel.app).
 2. Inserite **Email** e **Password**.
 3. Premete **Accedi**. Durante la verifica il pulsante mostra «Accesso in corso…».
-4. Si apre la pagina **Le mie pratiche**.
+4. Al primo accesso compare la pagina **Scegli la tua password**: scrivete due volte una password personale e premete **Salva la password**. Finché non lo fate il portale non vi lascia proseguire.
+5. Si apre la pagina **Le mie pratiche**.
 
-In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato dati**, **Manuale**), la campanella delle notifiche, l'indicazione *Cliente*, il vostro indirizzo email e il pulsante **Esci** per uscire.
+**Regole per la password:** almeno 10 caratteri, con almeno una lettera e un numero, senza il vostro indirizzo email. Usate una password che non adoperate per altri servizi.
+
+In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato dati**, **Manuale**), la campanella delle notifiche, l'indicazione *Cliente*, il vostro indirizzo email con il collegamento **Cambia password** e il pulsante **Esci** per uscire.
 
 | Messaggio | Cosa significa | Cosa fare |
 | --- | --- | --- |
@@ -41,7 +44,16 @@ In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato da
 
 **Il manuale.** La voce **Manuale** del menu apre la pagina da cui scaricare questo manuale in PDF o in Word, sempre nella revisione più recente.
 
-**Password dimenticata o da cambiare.** Al momento il portale non ha la funzione «password dimenticata» né il cambio password: scrivete a Fondazione Operate, che vi assegnerà una nuova password provvisoria.
+**Cambiare la password.** Fate clic sul vostro indirizzo email in alto (sotto c'è scritto **Cambia password**), inserite la password attuale e due volte quella nuova, poi premete **Salva la password**.
+
+**Password dimenticata.**
+
+1. Nella pagina di accesso premete **Password dimenticata?**.
+2. Inserite la vostra email e premete **Invia il collegamento**.
+3. Aprite l'email ricevuta e fate clic sul collegamento: si apre la pagina **Nuova password**.
+4. Scrivete due volte la nuova password e premete **Salva la password**.
+
+Il collegamento vale una sola volta e per un tempo limitato; se è scaduto compare «Collegamento non valido» e basta richiederne un altro. Se l'email non arriva, controllate la posta indesiderata oppure chiedete a Fondazione Operate una password temporanea.
 
 ## La pagina Le mie pratiche
 
@@ -213,7 +225,7 @@ I dati per il calcolo dei crediti si inviano con un unico modello Excel, il **Tr
 
 ## Domande frequenti
 
-**Ho dimenticato la password.** Scrivete a Fondazione Operate, che vi assegnerà una nuova password provvisoria. Il recupero autonomo della password non è ancora disponibile.
+**Ho dimenticato la password.** Usate **Password dimenticata?** nella pagina di accesso (capitolo 2). In alternativa Fondazione Operate può assegnarvi una password temporanea, che al primo accesso vi verrà chiesto di sostituire.
 
 **Non vedo la mia pratica.** La pratica compare quando la Fondazione registra il Progetto e lo collega alla vostra organizzazione. Se seguite più enti, controllate di essere stati associati a tutti.
 
@@ -223,6 +235,6 @@ I dati per il calcolo dei crediti si inviano con un unico modello Excel, il **Tr
 
 **Non ricevo le email.** Controllate la cartella della posta indesiderata. Le notifiche restano comunque disponibili nella campanella del portale.
 
-**Il link dell'email apre la pagina di accesso.** Accedete con le vostre credenziali: si aprirà la pagina iniziale e potrete scegliere la pratica dall'elenco.
+**Il link dell'email apre la pagina di accesso.** Accedete con le vostre credenziali: subito dopo si apre la pratica indicata nell'email.
 
 **Come scrivo alla Fondazione?** Il portale non ha ancora una messaggistica libera. Si comunica con la nota delle integrazioni o con i canali abituali della Fondazione (email e telefono).

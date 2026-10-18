@@ -115,8 +115,13 @@ function blocchi(righe) {
       continue;
     }
     if (/^- /.test(r)) {
+      // voci di primo livello ("- ") e di secondo livello (rientrate, "    - ")
       const v = [];
-      while (i < righe.length && /^- /.test(righe[i])) { const t = righe[i++].slice(2); v.push(continua(t)); }
+      while (i < righe.length && /^(\s{2,})?- /.test(righe[i])) {
+        const livello = /^\s{2,}- /.test(righe[i]) ? 1 : 0;
+        const t = righe[i++].replace(/^\s*- /, "");
+        v.push({ testo: continua(t), livello });
+      }
       out.push({ tipo: "puntato", voci: v });
       continue;
     }
@@ -224,7 +229,7 @@ function rendi(bl, opz = {}) {
     else if (b.tipo === "sottotitolo")
       out.push(new Paragraph({ heading: HeadingLevel.HEADING_2, keepNext: true, spacing: { before: 240, after: 120 }, children: [new TextRun({ text: b.testo, font: FONT, bold: true, size: 25, color: VERDE })] }));
     else if (b.tipo === "puntato")
-      b.voci.forEach((v) => out.push(new Paragraph({ ...riquadro, numbering: { reference: "punti", level: 0 }, spacing: { after: 70, line: 290 }, children: runs(v, { size: 21 }) })));
+      b.voci.forEach((v) => out.push(new Paragraph({ ...riquadro, numbering: { reference: "punti", level: v.livello || 0 }, spacing: { after: 70, line: 290 }, children: runs(v.testo ?? v, { size: v.livello ? 20 : 21 }) })));
     else if (b.tipo === "numerato") {
       istanza++;
       b.voci.forEach((v) => out.push(new Paragraph({ ...riquadro, numbering: { reference: "numeri", level: 0, instance: istanza }, spacing: { after: 70, line: 290 }, children: runs(v, { size: 21 }) })));
@@ -369,7 +374,13 @@ function documento(cfg, revisioni, sorgente, pagine) {
     },
     numbering: {
       config: [
-        { reference: "punti", levels: [{ level: 0, format: LevelFormat.BULLET, text: "•", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 270 } }, run: { color: VERDE } } }] },
+        {
+          reference: "punti",
+          levels: [
+            { level: 0, format: LevelFormat.BULLET, text: "•", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 270 } }, run: { color: VERDE } } },
+            { level: 1, format: LevelFormat.BULLET, text: "–", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 1000, hanging: 270 } }, run: { color: VERDE } } },
+          ],
+        },
         { reference: "numeri", levels: [{ level: 0, format: LevelFormat.DECIMAL, text: "%1.", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 360 } }, run: { bold: true, color: VERDE } } }] },
       ],
     },

@@ -141,6 +141,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `12_email_notifiche.sql` | Trigger che chiama la funzione email per ogni nuova notifica (pg_net), nuovi tentativi ogni 15 minuti | 17/10/2026 |
 | `13_durata_fasi.sql` | Durata delle fasi in tabella, modificabile dall'Admin con motivazione | 18/10/2026 |
 | `14_controlli_file.sql` | Limite 50 MB, formati ammessi, controllo tipo/estensione/cartella; ZIP ammesso | 18/10/2026 (riesecuzione per ZIP lo stesso giorno) |
+| `15_password.sql` | Cambio obbligatorio dopo password temporanea (`password_temporanea`), funzione `password_cambiata`, audit dei cambi password | 18/10/2026 |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
 script successivi.
@@ -182,6 +183,7 @@ autenticazione, dal SQL Editor:
 | Funzione | Cosa fa | Protezione | Pubblicazione |
 |---|---|---|---|
 | `crea-utente` | L'Amministratore crea un utente con password temporanea e lo associa a organizzazioni | Verifica che il chiamante sia Admin (`sono_admin`) | Dashboard Supabase (editor web); ripubblicata 17/10 |
+| `reimposta-password` | L'Amministratore assegna una password temporanea a un Cliente o Operatore; il flag obbliga al cambio al primo accesso; audit | Verifica `sono_admin`; esclusi amministratori e sé stessi | Dashboard Supabase (editor web), 18/10; Verify JWT attivo |
 | `invia-email-notifica` | Spedisce per email una notifica interna (pulsante "Apri nel portale") tramite Resend | Verify JWT **disattivato** di proposito: usa solo l'id ricevuto e rilegge tutto dal database; ogni notifica parte una volta sola | Dashboard Supabase; prima pubblicazione 17/10, aggiornata 17/10 (pulsante per tema scuro) |
 
 Sorgenti in `supabase/functions/<nome>/index.ts`. Si pubblicano dalla
@@ -199,7 +201,9 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 
 | Indirizzo | Pagina | Chi |
 |---|---|---|
-| `/login` | Accesso | tutti |
+| `/login` | Accesso, «Password dimenticata?» | tutti |
+| `/reimposta-password` | Nuova password dal link dell'email di recupero | **pubblica** (sessione di recupero) |
+| `/password` | Cambio password volontario | tutti |
 | `/formato-dati` | Formato dei dati per il calcolo crediti, download del tracciato Excel | **pubblica**, senza login |
 | `/` | Cruscotto (staff) oppure Le mie pratiche (cliente) | tutti |
 | `/pratiche` | Back-office: elenco e dettaglio pratiche (`?id=` apre una pratica) | Operatore, Admin |
@@ -231,7 +235,7 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 
 | Area (requisiti) | Stato | Dettaglio |
 |---|---|---|
-| Accesso e ruoli (§3, §13) | Fatto | Email+password, tre ruoli, utenti multi-organizzazione, disattivazione; MFA pronta ma spenta |
+| Accesso e ruoli (§3, §13) | Fatto | Email+password, tre ruoli, utenti multi-organizzazione, disattivazione; password temporanea da cambiare al primo accesso, cambio e recupero password, reimpostazione dall'Admin; MFA pronta ma spenta |
 | Pratiche (§2) | Fatto | Progetti e Rapporti di Monitoraggio annuali, codice automatico, stati attiva/sospesa/annullata/chiusa con motivazione |
 | Fasi (§4) | Fatto (manca note di fase) | 7 fasi, apertura con scadenza automatica, chiusura, modifica scadenza; durata modificabile dall'Admin |
 | Documenti (§5) | Fatto (manca antivirus) | Versioni mai sovrascritte, hash SHA-256, visibilità Cliente/Fondazione/Pubblico, per fase o generali; limite 50 MB, formati ammessi, controllo contenuto |
@@ -287,6 +291,19 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Password: primo accesso, cambio, recupero, reimpostazione** — script
+  `15_password.sql` (colonna `password_temporanea` sul profilo, funzione
+  `password_cambiata`, protezione del flag); Edge Function
+  `reimposta-password` (pubblicata dalla dashboard, Verify JWT attivo);
+  pagina `CambiaPassword` (cambio obbligatorio dopo password temporanea,
+  cambio volontario su `/password`, recupero su `/reimposta-password`),
+  «Password dimenticata?» nella pagina di accesso, «Cambia password» sotto
+  l'email in alto, «Reimposta password» in Gestione utenti; dopo l'accesso
+  da un link email si torna alla pagina richiesta. Verificato: banco di
+  prova locale (flag, protezione, audit) e controllo in produzione (2
+  utenti esistenti non obbligati). **Da completare in Supabase** per il
+  recupero via email: Site URL e Redirect URLs (oggi `localhost:3000`) e
+  SMTP personalizzato con Resend.
 - **Pagina Documentazione** (`/documentazione`): l'Amministratore scarica il
   Registro sviluppo e deploy e il Manuale Utente (Word e PDF, con revisione
   e data); Operatori e Clienti scaricano il Manuale Utente (voce di menu
@@ -475,8 +492,8 @@ completato (va barrato qui e annotato in Cronologia).
 
 **Rifiniture emerse dalla stesura del Manuale Utente (18/10)**
 
-- **22.** Recupero e cambio password per gli utenti (oggi assenti: la password la riassegna la Fondazione) — priorità alta.
-- **23.** Dopo l'accesso da un link email, riportare l'utente alla pratica del link (oggi va alla pagina iniziale).
+- ~~**22.** Recupero e cambio password per gli utenti~~ — fatto il 18/10 (resta la configurazione di Site URL, Redirect URLs e SMTP in Supabase per l'email di recupero).
+- ~~**23.** Dopo l'accesso da un link email, riportare l'utente alla pratica del link~~ — fatto il 18/10.
 - **24.** Pratica non attiva: spiegare perché i pulsanti di risposta alle integrazioni non compaiono e nascondere "+ Carica".
 - **25.** Date della consultazione in formato gg/mm/aaaa (oggi aaaa-mm-gg).
 - **26.** Canale di messaggi tra Comune e Fondazione nella pratica (oggi solo la nota delle integrazioni).
@@ -486,6 +503,17 @@ completato (va barrato qui e annotato in Cronologia).
 **Infrastruttura**
 
 - **29.** Passaggio a piani a pagamento di **Vercel** e **Supabase** (decisione del 18/10). Dopo l'attivazione: rendere privato il repository GitHub e ricollegarlo a Vercel (risolve in buona parte il punto 28); verificare i backup automatici di Supabase e scrivere la procedura di ripristino (punto 18); valutare l'ambiente di prova separato (punto 18); decidere se alzare il limite di 50 MB per file; aggiornare i §2-3 di questo registro con piani, costi e intestatario dei contratti.
+
+**Sicurezza informatica (cyber security) — richiesta di Luca del 18/10**
+
+- **30.** Protezione dagli attacchi informatici, in un piano unico che riprende anche i punti 14-18. Da fare:
+    - **Verifica di sicurezza** del portale secondo le linee OWASP (accessi, permessi, caricamento file, iniezioni) e controllo automatico delle regole del database con il *Security Advisor* di Supabase; a fine sviluppo, test di intrusione (penetration test) affidato a terzi.
+    - **Intestazioni di sicurezza** del sito (Content-Security-Policy, HSTS, protezione dal clickjacking, nessun riferimento esterno non necessario) configurate su Vercel.
+    - **Protezione degli accessi**: limiti ai tentativi di login e di recupero password, CAPTCHA sulle pagine pubbliche, verifica in due passaggi per lo staff (punto 15), regole sulle password, scadenza delle sessioni inattive.
+    - **Dipendenze e segreti**: controllo periodico delle librerie vulnerabili (npm audit, avvisi automatici di GitHub), scansione dei segreti nel repository, rotazione delle chiavi.
+    - **Monitoraggio e allarmi**: registro di sicurezza (punto 14), avvisi su accessi anomali, errori e indisponibilità del portale.
+    - **Continuità**: backup verificati e prova di ripristino (punti 18 e 29), antivirus sui file (punto 16).
+    - **Organizzazione e privacy**: procedura di risposta agli incidenti, valutazione d'impatto sulla protezione dei dati (DPIA) e registro dei trattamenti per i dati delle utenze, nomina dei fornitori (Vercel, Supabase, Resend) come responsabili del trattamento.
 
 **Da rifinire**
 
@@ -503,3 +531,5 @@ completato (va barrato qui e annotato in Cronologia).
 | La procedura guidata dei Database Webhook di Supabase selezionava la tabella sbagliata | Annullata senza creare nulla; webhook realizzato via SQL (script 12) |
 | Email con pulsante invisibile nel tema scuro dei client di posta | Pulsante "a prova di tema scuro" e link testuale di riserva |
 | Mittente di prova Resend consegna solo al titolare | Verifica del dominio da completare |
+| Site URL di Supabase Auth ancora `http://localhost:3000` e nessun Redirect URL: i link delle email di Supabase (recupero password) non funzionerebbero | Da impostare `https://portale-cwp.vercel.app` e `https://portale-cwp.vercel.app/**` (in attesa di conferma di Luca) |
+| Il servizio email predefinito di Supabase Auth consegna solo ai membri del progetto | Configurare SMTP personalizzato (Resend) in Authentication → Emails |
