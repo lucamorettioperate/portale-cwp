@@ -1,21 +1,38 @@
+/* =========================================================================
+   Pagamenti
+   Scopo: riquadro «Pagamenti» di una pratica (requisiti §7). Nessun incasso
+     online: il back-office censisce il piano previsto (più voci con
+     scadenze diverse) e registra a mano gli incassi. Mostra totali,
+     incassato, da incassare e lo stato di ogni voce (Pagato, Scaduto,
+     Da pagare).
+   Usato da: DettaglioPratica.jsx.
+   Chi lo vede: operatore e admin (inserimento e modifica); cliente/Comune
+     in sola lettura (decisione del 18/10/2026, backlog 27).
+   Dati: elencaPagamenti, salvaPagamento (src/lib/dati.js) sulla tabella
+     pagamento (script 09 e 17).
+   Sicurezza (garantita dal database): solo lo staff scrive (RLS
+     pagamento_write, script 17); il Comune legge solo i pagamenti delle
+     sue pratiche. Un trigger (pagamento_operatore, script 09) registra chi
+     ha salvato e sistema la data di pagamento; ogni modifica va nell'audit.
+     Il parametro solaLettura qui nasconde solo i pulsanti.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import React, { useEffect, useState } from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import Badge from "./Badge.jsx";
 import { elencaPagamenti, salvaPagamento } from "../lib/dati.js";
 import { formatoData, giorniA, oggiIso } from "../lib/date.js";
 
-/* Pagamenti (requisiti §7): nessun incasso online. Il back-office censisce
-   il piano previsto (più voci con scadenze diverse) e registra gli incassi.
-   L'operatore e ogni modifica sono registrati dal database.
-   solaLettura: il Comune vede le voci e lo stato dei pagamenti ma non le
-   modifica (decisione del 18/10/2026, backlog 27; regola nel database,
-   script 17). */
+/* Riquadro dei pagamenti di una pratica.
+   Props: praticaId (id della pratica), solaLettura (true per il Comune:
+   niente pulsanti e diciture «pagato / da pagare» invece di «incassato»). */
 export default function Pagamenti({ praticaId, solaLettura = false }) {
   const [voci, setVoci] = useState([]);
   const [modulo, setModulo] = useState(null); // voce in modifica o nuova
   const [errore, setErrore] = useState("");
   const [inCorso, setInCorso] = useState(false);
 
+  // Rilegge le voci, ordinate per scadenza (prima le più vicine).
   async function carica() {
     const { data } = await elencaPagamenti(praticaId);
     setVoci(data || []);
@@ -26,9 +43,13 @@ export default function Pagamenti({ praticaId, solaLettura = false }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [praticaId]);
 
+  // Salva la voce in modifica (con id) o ne crea una nuova (senza id).
   async function salva() {
     setErrore("");
     if (!modulo.descrizione?.trim()) return setErrore("Indica la voce di pagamento.");
+    // Importo facoltativo; la virgola decimale diventa punto. Il punto delle
+    // migliaia non è gestito: "1.234,50" risulta non valido e "1.234" vale
+    // 1,234 €. Va scritto senza separatore delle migliaia.
     const importo = modulo.importo === "" || modulo.importo == null ? null : Number(String(modulo.importo).replace(",", "."));
     if (importo != null && (isNaN(importo) || importo < 0)) return setErrore("Importo non valido.");
     setInCorso(true);
@@ -39,6 +60,8 @@ export default function Pagamenti({ praticaId, solaLettura = false }) {
       importo,
       scadenza: modulo.scadenza || null,
       pagato: !!modulo.pagato,
+      // Senza data indicata vale oggi; se la voce non è pagata la data si
+      // azzera (lo fa anche il trigger del database).
       data_pagamento: modulo.pagato ? modulo.data_pagamento || oggiIso() : null,
       riferimento: modulo.riferimento?.trim() || null,
     });
@@ -50,6 +73,7 @@ export default function Pagamenti({ praticaId, solaLettura = false }) {
     }
   }
 
+  // Totali: le voci senza importo contano zero.
   const totale = voci.reduce((s, v) => s + (Number(v.importo) || 0), 0);
   const incassato = voci.filter((v) => v.pagato).reduce((s, v) => s + (Number(v.importo) || 0), 0);
   const euro = (n) => (n == null ? "—" : Number(n).toLocaleString("it-IT", { style: "currency", currency: "EUR" }));
@@ -76,6 +100,7 @@ export default function Pagamenti({ praticaId, solaLettura = false }) {
 
       <div style={{ display: "grid", gap: 6 }}>
         {voci.map((v) => {
+          // «Scaduto» solo se non pagato e con scadenza già passata.
           const g = !v.pagato ? giorniA(v.scadenza) : null;
           const scaduto = g != null && g < 0;
           return (
@@ -151,6 +176,7 @@ export default function Pagamenti({ praticaId, solaLettura = false }) {
   );
 }
 
+// Stili locali (simili a quelli di stili.js, ma con misure proprie).
 const lbl = { display: "grid", gap: 4, fontSize: 12, color: C.grafite, fontWeight: 600 };
 const campo = {
   width: "100%",

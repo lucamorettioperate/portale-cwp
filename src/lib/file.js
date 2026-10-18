@@ -57,16 +57,22 @@ export const ACCEPT = Object.keys(FORMATI).map((e) => "." + e).join(",");
 // Testo da mostrare vicino ai pulsanti di caricamento.
 export const FORMATI_LEGGIBILI = "PDF (anche firmati .p7m), Word, Excel, OpenDocument, RTF, CSV, TXT, JPG, PNG, ZIP · max 50 MB";
 
+// Estensione del nome file, in minuscolo e senza punto ("" se manca).
 function estensione(nome) {
   const m = /\.([A-Za-z0-9]+)$/.exec(nome || "");
   return m ? m[1].toLowerCase() : "";
 }
 
+// true se i byte b, a partire dalla posizione "da", sono uguali a "sequenza".
 function inizia(b, sequenza, da = 0) {
   return sequenza.every((v, i) => b[da + i] === v);
 }
 
-// Riconosce il contenuto dai primi byte del file.
+// Riconosce il contenuto dai primi byte del file ("numeri magici").
+// Parametri: b = primi byte (Uint8Array), firma = famiglia attesa (FORMATI).
+// Restituisce true se il contenuto è compatibile con la famiglia.
+// Nota: docx, xlsx, odt, ods sono archivi ZIP, quindi condividono la firma "zip";
+// doc e xls condividono la firma OLE dei vecchi file Office.
 function contenutoCompatibile(b, firma) {
   switch (firma) {
     case "pdf": {
@@ -96,7 +102,12 @@ function contenutoCompatibile(b, firma) {
 }
 
 /* Verifica un file prima del caricamento.
-   Restituisce { ok: true, mime, nomeSicuro } oppure { ok: false, errore }. */
+   Parametro: oggetto File del browser.
+   Restituisce { ok: true, mime, nomeSicuro } oppure { ok: false, errore }.
+   Il mime restituito è quello canonico dell'estensione (non quello dichiarato
+   dal browser, che può variare): va usato come contentType nel caricamento,
+   così il controllo del database estensione/tipo trova la coppia attesa.
+   Legge solo i primi 4 KB del file. */
 export async function verificaFile(file) {
   if (!file) return { ok: false, errore: "Nessun file selezionato." };
   const ext = estensione(file.name);
@@ -120,6 +131,9 @@ export async function verificaFile(file) {
 }
 
 // Nome adatto all'archivio: senza accenti, spazi e caratteri speciali.
+// Parametro: nome originale. Restituisce base (max 80 caratteri, solo
+// A-Z a-z 0-9 . _ -) + estensione in minuscolo. Impedisce anche nomi che
+// iniziano con "." o contengono "/" (niente percorsi fuori cartella).
 export function nomeSicuro(nome) {
   const ext = estensione(nome);
   const base = (nome || "file")
@@ -134,6 +148,8 @@ export function nomeSicuro(nome) {
 }
 
 // Messaggio comprensibile per gli errori dell'archivio.
+// Parametro: errore restituito da Supabase Storage. Restituisce un testo in
+// italiano per i casi noti (dimensione, formato), altrimenti il messaggio originale.
 export function traduciErroreArchivio(error) {
   const m = (error && (error.message || error.error)) || "";
   if (/exceeded the maximum allowed size|too large|413/i.test(m)) return "File troppo grande: il limite è 50 MB.";

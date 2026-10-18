@@ -31,6 +31,8 @@ export default function Login() {
   const [errore, setErrore] = useState("");
   const [inCorso, setInCorso] = useState(false);
 
+  // Invio del modulo di accesso. In caso di successo non fa nulla: la nuova
+  // sessione arriva ad AuthContext e App.jsx cambia pagina.
   async function onSubmit(e) {
     e.preventDefault();
     setErrore("");
@@ -38,6 +40,8 @@ export default function Login() {
     const { error } = await accedi(email.trim(), password);
     setInCorso(false);
     if (error) {
+      // "Invalid login credentials" è il messaggio di Supabase per email o
+      // password errate; ogni altro errore resta generico.
       setErrore(
         error.message?.includes("Invalid login")
           ? "Email o password non corretti."
@@ -83,6 +87,8 @@ export default function Login() {
           Accedi alla piattaforma di gestione del Programma.
         </p>
 
+        {/* Mancano VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY in questo
+            ambiente (vedi src/lib/supabase.js). */}
         {!backendPronto && (
           <div
             style={{
@@ -173,6 +179,7 @@ export default function Login() {
   );
 }
 
+// Stile dei campi di testo (usato anche da RecuperoPassword).
 const campoStyle = {
   width: "100%",
   marginTop: 5,
@@ -186,12 +193,19 @@ const campoStyle = {
 
 /* Richiesta del collegamento per reimpostare la password. Il messaggio di
    conferma è lo stesso che l'indirizzo esista o no (non si rivela chi è
-   registrato). */
+   registrato).
+   Props:
+   - emailIniziale: email già scritta nel modulo di accesso (precompila)
+   - stato: "modulo" (richiesta) oppure "inviata" (conferma)
+   - onInviata / onAnnulla: passano a "inviata" / tornano all'accesso
+   - richiedi: funzione che chiede l'invio (richiediRecuperoPassword). */
 function RecuperoPassword({ emailIniziale, stato, onInviata, onAnnulla, richiedi }) {
   const [email, setEmail] = useState(emailIniziale || "");
   const [inCorso, setInCorso] = useState(false);
   const [errore, setErrore] = useState("");
 
+  // Invio della richiesta: controllo minimo del formato dell'email, poi
+  // chiamata alla Edge Function.
   async function invia(e) {
     e.preventDefault();
     setErrore("");
@@ -199,6 +213,8 @@ function RecuperoPassword({ emailIniziale, stato, onInviata, onAnnulla, richiedi
     setInCorso(true);
     const { error } = await richiedi(email.trim());
     setInCorso(false);
+    // Si mostra un errore solo per il limite di frequenza; ogni altro esito
+    // porta alla stessa conferma, per non rivelare se l'email è registrata.
     if (error && /rate limit|too many|seconds/i.test(error.message || "")) {
       return setErrore("Troppe richieste ravvicinate: riprova tra qualche minuto.");
     }
