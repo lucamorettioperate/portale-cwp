@@ -14,7 +14,8 @@
    Uso:  node strumenti/genera_documenti.cjs            (tutti)
          node strumenti/genera_documenti.cjs registro   (uno solo: manuale | registro)
    Richiede la libreria "docx" (npm install --no-save docx), LibreOffice
-   (PDF e numeri di pagina del sommario) e pdftotext.
+   (numeri di pagina del sommario del Word) e pdftotext; il PDF finale è
+   impaginato da strumenti/impagina_pdf.py (pip install weasyprint markdown).
    ========================================================================= */
 const fs = require("fs");
 const path = require("path");
@@ -141,14 +142,15 @@ function blocchi(righe) {
 // Testo con **grassetto**, *corsivo*, `codice`, [link](url), indirizzi web.
 function runs(testo, base = {}) {
   const out = [];
-  const re = /(\*\*[^*]+\*\*|\*[^*\s][^*]*\*|`[^`]+`|\[[^\]]+\]\([^)]+\)|https?:\/\/[^\s)|]+)/g;
+  const re = /(~~[^~]+~~|\*\*[^*]+\*\*|\*[^*\s][^*]*\*|`[^`]+`|\[[^\]]+\]\([^)]+\)|https?:\/\/[^\s)|]+)/g;
   let ultimo = 0, m;
   const semplice = (t, extra = {}) => new TextRun({ text: t, font: FONT, color: INK, ...base, ...extra });
   const link = (t, url) => new ExternalHyperlink({ link: url, children: [new TextRun({ text: t, font: FONT, color: VERDE, underline: {}, ...base })] });
   while ((m = re.exec(testo))) {
     if (m.index > ultimo) out.push(semplice(testo.slice(ultimo, m.index)));
     const s = m[0];
-    if (s.startsWith("**")) out.push(semplice(s.slice(2, -2), { bold: true }));
+    if (s.startsWith("~~")) out.push(...runs(s.slice(2, -2), { ...base, strike: true, color: GRAFITE }));
+    else if (s.startsWith("**")) out.push(semplice(s.slice(2, -2), { bold: true }));
     else if (s.startsWith("`")) out.push(semplice(s.slice(1, -1), { font: "Consolas", color: VERDE }));
     else if (s.startsWith("[")) { const [, t, url] = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(s); out.push(link(t, url)); }
     else if (s.startsWith("http")) out.push(link(s, s));
@@ -426,6 +428,14 @@ async function genera(chiave) {
     pagine = paginePdf(cfg, pdf, sorgente.capitoli);
     fs.writeFileSync(file, await Packer.toBuffer(documento(cfg, revisioni, sorgente, pagine)));
     aPdf(file, dir);
+  }
+  // PDF tipografico (copertina a tutta pagina, aperture di capitolo, riquadri):
+  // sostituisce quello convertito da LibreOffice, se WeasyPrint è disponibile.
+  try {
+    execFileSync("python3", [path.join(__dirname, "impagina_pdf.py"), chiave], { stdio: "ignore" });
+    console.log(`  PDF impaginato con strumenti/impagina_pdf.py`);
+  } catch {
+    console.log("  (WeasyPrint non disponibile: resta il PDF di LibreOffice)");
   }
   const rev = revisioni[revisioni.length - 1];
   console.log(`${cfg.breve}: Rev. ${rev.rev} del ${rev.data} → ${cfg.uscita}/${cfg.nome}.docx${pdf ? " + .pdf" : " (nessun PDF: LibreOffice assente)"}`);

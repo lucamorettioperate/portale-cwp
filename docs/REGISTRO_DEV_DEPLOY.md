@@ -276,8 +276,9 @@ dashboard → *Deploy updates* → controlla *Verify JWT* → prova.
 testo (`docs/manuale-utente.md`, e lo stesso nel manuale online;
 `docs/REGISTRO_DEV_DEPLOY.md`), si aggiunge una riga in
 `strumenti/revisioni_documenti.json` (nuovo numero di revisione e data), si
-esegue `node strumenti/genera_documenti.cjs` (richiede la libreria `docx` e
-LibreOffice) e si pubblica con commit e push. I file vanno in
+esegue `node strumenti/genera_documenti.cjs` (richiede la libreria `docx`,
+LibreOffice e, per il PDF impaginato, WeasyPrint) e si pubblica con commit e
+push. I file vanno in
 `public/manuali/` e `public/documentazione/` e si scaricano dalla pagina
 Documentazione del portale.
 
@@ -304,6 +305,12 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   utenti esistenti non obbligati). **Da completare in Supabase** per il
   recupero via email: Site URL e Redirect URLs (oggi `localhost:3000`) e
   SMTP personalizzato con Resend.
+- **PDF impaginati tipograficamente** (Manuale Utente e Registro): copertina
+  a tutta pagina con loghi, scheda del documento e revisioni, sommario con
+  pagine reali, aperture di capitolo numerate, passi numerati, riquadri
+  «Da sapere / Attenzione / Suggerimento», schema delle 7 fasi, intestazioni
+  correnti. Script `strumenti/impagina_pdf.py` (WeasyPrint), chiamato da
+  `strumenti/genera_documenti.cjs`; il Word resta la versione modificabile.
 - **Pagina Documentazione** (`/documentazione`): l'Amministratore scarica il
   Registro sviluppo e deploy e il Manuale Utente (Word e PDF, con revisione
   e data); Operatori e Clienti scaricano il Manuale Utente (voce di menu
