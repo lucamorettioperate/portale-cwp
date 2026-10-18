@@ -1,3 +1,25 @@
+/* =========================================================================
+   I tuoi documenti — indirizzo «/documenti»
+   Scopo: (requisiti §5) raccoglie i documenti GENERALI (non legati a una
+     fase) di tutte le pratiche dell'organizzazione: contratto, allegati,
+     documentazione amministrativa e altri documenti della Fondazione,
+     raggruppati per tipologia, con download. Di base mostra solo la
+     versione corrente; una casella mostra anche le versioni precedenti.
+     Sotto: modelli generali da scaricare e Manuale del portale.
+     La firma avviene fuori dalla piattaforma: qui si conserva il documento
+     firmato.
+   Chi la usa: cliente (Comune/azienda). La pagina non blocca altri ruoli:
+     allo staff mostrerebbe i documenti generali di tutte le pratiche.
+   Dati: elencaDocumentiOrganizzazione() e urlDocumento() (tabella
+     "documento", archivio "documenti"), elencaModelli() e urlModello()
+     (tabella "modello_documento", archivio "modelli") di src/lib/dati.js.
+   Sicurezza: quali documenti si vedono lo decide il database (policy
+     doc_select: pratica della propria organizzazione e documento visibile
+     al cliente o pubblico). Lo scaricamento passa da un indirizzo firmato
+     valido 60 secondi. I modelli disattivati sono nascosti da RLS
+     (modello_select, script 17).
+   Registro sviluppo e deploy: capitolo «Portale (frontend)».
+   ========================================================================= */
 import React, { useEffect, useMemo, useState } from "react";
 import { COLORI as C, TIPOLOGIE_DOCUMENTO } from "../lib/cwpProgram.js";
 import Header from "../components/Header.jsx";
@@ -6,16 +28,16 @@ import { elencaDocumentiOrganizzazione, urlDocumento, elencaModelli, urlModello 
 import { formatoData } from "../lib/date.js";
 import { ElencoDocumenti } from "./Documentazione.jsx";
 
-/* "I tuoi documenti" (requisiti §5): contratto, allegati, documentazione
-   amministrativa e altri documenti della Fondazione, raccolti da tutte le
-   pratiche dell'organizzazione. La firma avviene fuori dalla piattaforma:
-   qui si conserva il documento firmato. */
+/* Pagina «I tuoi documenti». Nessuna prop, nessun caricamento di file:
+   solo consultazione e download. */
 export default function TuoiDocumenti() {
   const [documenti, setDocumenti] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState("");
+  // Vero = mostra anche le versioni non più correnti.
   const [storico, setStorico] = useState(false);
 
+  // Lettura una tantum all'apertura.
   useEffect(() => {
     elencaDocumentiOrganizzazione().then(({ data, error }) => {
       if (error) setErrore(error.message);
@@ -24,8 +46,13 @@ export default function TuoiDocumenti() {
     });
   }, []);
 
-  // Raggruppa per tipologia, nell'ordine standard.
+  // Raggruppa per tipologia, nell'ordine standard (TIPOLOGIE_DOCUMENTO di
+  // cwpProgram.js); le tipologie fuori elenco vanno in fondo.
+  // Restituisce un array di coppie [tipologia, documenti].
   const gruppi = useMemo(() => {
+    // Il flag "corrente" lo gestisce il database (script 07): un nuovo
+    // caricamento con lo stesso nome nella stessa pratica diventa la
+    // versione corrente e le precedenti restano nello storico.
     const visibili = documenti.filter((d) => storico || d.corrente);
     const ordine = [...TIPOLOGIE_DOCUMENTO, "Senza tipologia"];
     const mappa = {};
@@ -38,6 +65,8 @@ export default function TuoiDocumenti() {
       .map((t) => [t, mappa[t]]);
   }, [documenti, storico]);
 
+  // Apre il documento in una nuova scheda con un indirizzo firmato
+  // temporaneo. Se l'indirizzo non arriva non succede nulla.
   async function scarica(d) {
     const { data } = await urlDocumento(d.storage_path);
     if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener");
@@ -109,13 +138,18 @@ export default function TuoiDocumenti() {
 }
 
 /* Modelli di documento generali (non legati a una fase): moduli e
-   fac-simile pubblicati dalla Fondazione in Impostazioni. */
+   fac-simile pubblicati dalla Fondazione in Impostazioni.
+   Nessuna prop. Se non ci sono modelli la sezione non compare. I modelli
+   legati a una fase (fase_numero valorizzato) sono mostrati nella fase
+   della pratica, non qui. */
 function ModelliGenerali() {
   const [modelli, setModelli] = useState([]);
   useEffect(() => {
     elencaModelli().then(({ data }) => setModelli((data || []).filter((m) => !m.fase_numero)));
   }, []);
   if (!modelli.length) return null;
+  // Scarica il modello: l'indirizzo firmato è creato con download: true,
+  // quindi basta navigarci (il browser salva il file).
   async function scarica(m) {
     const { data } = await urlModello(m.storage_path);
     if (data?.signedUrl) window.location.href = data.signedUrl;

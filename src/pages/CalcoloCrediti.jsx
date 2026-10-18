@@ -1,3 +1,41 @@
+/* =========================================================================
+   Calcolo dei crediti (editor) — indirizzo «/crediti/:id» (id del calcolo)
+   Scopo: editor di un calcolo dei crediti di CO₂eq secondo la Metodologia
+     CWP v1.2, a passi (menu a sinistra): import del tracciato dati,
+     impostazioni, rifiuti del territorio, delibera tariffaria, fattori di
+     emissione, Banca Dati Utenze, buffer, risultati. In alto i comandi:
+     Salva, Calcola, Conferma calcolo, Nuova versione, Elimina. Dai
+     risultati: rapporto PDF (scarica o archivia nella pratica) e CSV.
+   Chi la usa: solo Amministratori (gli altri vedono un messaggio).
+   Dati: src/lib/crediti/archivio.js (leggiCalcolo, salvaCalcolo,
+     eliminaCalcolo, leggi/salvaConferimenti, leggi/salvaRiuso,
+     nuovaVersione) sulle tabelle calcolo_crediti, calcolo_conferimento e
+     calcolo_riuso (script 11 e 18); motore di calcolo puro in
+     src/lib/crediti/calcolo.js; parametri della Metodologia in
+     src/lib/crediti/parametri.js; controlli di coerenza in
+     src/lib/crediti/tracciato.js; rapporto PDF in
+     src/lib/crediti/rapportoPdf.js (caricato solo quando serve);
+     caricaDocumento e nomeUtente di src/lib/dati.js per archiviare il
+     rapporto e scrivere chi ha confermato.
+   Formato dei dati: il campo JSON calcolo_crediti.dati contiene rifiuti,
+     pefUd, pefUnd, classiUd, classiUnd, fattori, scenarioRiuso, beni,
+     psConsuntivo, volumiCentralizzati, opzioni (buffer) e, dopo un import,
+     importazione (file d'origine, hash, parti, conteggi). Valori iniziali
+     in datiIniziali() di archivio.js. La Banca Dati Utenze (conferimenti e
+     riuso) sta invece nelle due tabelle di dettaglio, una riga per utenza.
+   Stati: «bozza» (modificabile, eliminabile) → «confermato» (definitivo).
+     Per correggere un calcolo confermato si crea una «nuova versione» in
+     bozza che ne copia dati e Banca Dati Utenze.
+   Sicurezza: tutte le tabelle dei calcoli sono riservate agli
+     Amministratori con verifica a due fattori (policy app_is_admin,
+     script 11). L'immutabilità del calcolo confermato e dei suoi dati è
+     garantita dal trigger calcolo_immutabile (script 11 e 18), che alla
+     conferma assegna anche confermato_da/il e, per gli ex post, il numero
+     di registro CWP-REG-AAAA-NNNN. La disattivazione dei campi in sola
+     lettura qui è solo interfaccia.
+   Registro sviluppo e deploy: capitolo «Calcolo crediti» (scelte
+     interpretative in docs/crediti-cwp.md).
+   ========================================================================= */
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { COLORI as C } from "../lib/cwpProgram.js";
@@ -23,9 +61,12 @@ import { BENI_RIUSO, TIPOLOGIE_RIFIUTO } from "../lib/crediti/parametri.js";
 import { csvInOggetti, scriviCsv, scaricaTesto } from "../lib/csv.js";
 import { formatoData } from "../lib/date.js";
 
+// Numero in formato italiano con `d` decimali fissi; "—" se manca o non è un numero.
 const fmt = (v, d = 2) =>
   v == null || !Number.isFinite(Number(v)) ? "—" : Number(v).toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d });
 
+// Passi dell'editor: [chiave usata nello stato `passo`, etichetta del menu].
+// I numeri seguono l'ordine della Metodologia; «Importa» è un passo extra.
 const PASSI = [
   ["importa", "Importa il tracciato"],
   ["impostazioni", "1. Impostazioni"],
@@ -37,7 +78,15 @@ const PASSI = [
   ["risultati", "7. Risultati"],
 ];
 
-/* Editor di un calcolo dei crediti (Metodologia CWP v1.2). */
+/* Editor di un calcolo dei crediti (Metodologia CWP v1.2).
+   Nessuna prop: l'id del calcolo arriva dall'indirizzo.
+   Stato principale:
+   - calcolo: riga di calcolo_crediti come salvata (stato, risultato salvato…)
+   - dati / testa: copie in modifica del JSON `dati` e dei campi di testata
+   - conferimenti / riuso: Banca Dati Utenze (già salvata nel database)
+   - modificato: ci sono modifiche a dati/testa non ancora salvate
+   - risultato: ultimo risultato COMPLETO calcolato nel browser (con il
+     dettaglio per utenza); nel database va solo un riepilogo. */
 export default function CalcoloCrediti() {
   const { id } = useParams();
   const { ruolo, utente } = useAuth();
@@ -50,10 +99,16 @@ export default function CalcoloCrediti() {
   const [passo, setPasso] = useState("impostazioni");
   const [modificato, setModificato] = useState(false);
   const [risultato, setRisultato] = useState(null);
+  // Messaggio sotto l'intestazione: { testo, errore? } oppure null.
   const [messaggio, setMessaggio] = useState(null);
+  // Testo dell'operazione in corso (es. "Salvataggio…"); "" = nessuna.
+  // Finché non è vuoto i pulsanti principali sono disattivati.
   const [inCorso, setInCorso] = useState("");
+  // Vero quando è aperto il riquadro «Confermare il calcolo?».
   const [conferma, setConferma] = useState(false);
 
+  // Legge il calcolo e la sua Banca Dati Utenze e riallinea lo stato locale
+  // (le modifiche non salvate vanno perse).
   async function carica() {
     const { data, error } = await leggiCalcolo(id);
     if (error || !data) {
@@ -71,12 +126,15 @@ export default function CalcoloCrediti() {
     if (!data.dati?.rifiuti?.length && !(c.data || []).length && data.stato !== "confermato") setPasso("importa");
   }
 
+  // Ricarica quando cambia il calcolo nell'indirizzo (es. dopo «Nuova versione»).
   useEffect(() => {
     if (ruolo === "admin") carica();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, ruolo]);
 
   // Avviso se si chiude la pagina con modifiche non salvate.
+  // Vale solo per chiusura/ricarica della scheda del browser, non per la
+  // navigazione interna del portale (es. il link «← Tutti i calcoli»).
   useEffect(() => {
     const avvisa = (e) => {
       if (modificato) {
@@ -107,7 +165,11 @@ export default function CalcoloCrediti() {
     );
   }
 
+  // Calcolo confermato: tutto in sola lettura (prop `sola` ai passi).
   const confermato = calcolo.stato === "confermato";
+  // Funzioni di modifica passate ai passi: uniscono il pezzo cambiato allo
+  // stato e segnano «modificato». Nulla va nel database finché non si preme
+  // Salva o Calcola.
   const aggiornaDati = (parziale) => {
     setDati((d) => ({ ...d, ...parziale }));
     setModificato(true);
@@ -118,6 +180,8 @@ export default function CalcoloCrediti() {
     setModificato(true);
   };
 
+  // «Salva»: scrive testata e JSON `dati` (non la Banca Dati Utenze, che si
+  // salva già al momento dell'import). Non ricalcola il risultato.
   async function salva() {
     setMessaggio(null);
     setInCorso("Salvataggio…");
@@ -139,6 +203,10 @@ export default function CalcoloCrediti() {
     }
   }
 
+  // «Calcola»: esegue il motore nel browser sui dati correnti (anche non
+  // salvati), mostra i risultati e, se il calcolo è in bozza, salva insieme
+  // dati e riepilogo del risultato. Su un calcolo confermato mostra solo il
+  // dettaglio, senza salvare nulla.
   async function esegui() {
     setMessaggio(null);
     const r = calcolaCrediti({
@@ -152,6 +220,10 @@ export default function CalcoloCrediti() {
     setRisultato(r);
     setPasso("risultati");
     // Riepilogo salvato nel database (senza il dettaglio di ogni utenza).
+    // Il dettaglio può avere centinaia di migliaia di righe: si salvano solo
+    // i totali per classe (chiave "macro|classe"). Un'utenza è «virtuosa»
+    // se ΔI < 0, cioè se riduce le emissioni rispetto all'atteso; qui si
+    // contano le utenze rappresentate (nUtenze), non le righe.
     const perClasse = {};
     r.utenze.dettaglio.forEach((u) => {
       const k = `${u.macro}|${u.classe}`;
@@ -162,6 +234,7 @@ export default function CalcoloCrediti() {
     });
     const { dettaglio, ...utenzeSenzaDettaglio } = r.utenze;
     const riepilogo = { ...r, utenze: { ...utenzeSenzaDettaglio, perClasse: Object.values(perClasse) } };
+    // Un calcolo confermato non si scrive (lo rifiuterebbe anche il database).
     if (confermato) return;
     setInCorso("Salvataggio del risultato…");
     const { error } = await salvaCalcolo(id, {
@@ -171,6 +244,8 @@ export default function CalcoloCrediti() {
       data_avvio: testa.data_avvio || null,
       note: testa.note || null,
       dati,
+      // Colonne di sintesi usate da elenco, registro e rapporto.
+      // Unità: ΔI in kgCO₂eq, crediti in tCO₂eq, buffer in %.
       risultato: riepilogo,
       delta_i_kg: r.deltaI,
       buffer_pct: r.buffer.totale,
@@ -187,6 +262,9 @@ export default function CalcoloCrediti() {
     }
   }
 
+  // Conferma definitiva: basta impostare stato = "confermato". Il trigger
+  // del database verifica che esista un risultato, registra chi e quando e,
+  // per gli ex post, assegna il numero di registro. Poi si ricarica tutto.
   async function confermaCalcolo() {
     setInCorso("Conferma…");
     const { error } = await salvaCalcolo(id, { stato: "confermato" });
@@ -196,6 +274,10 @@ export default function CalcoloCrediti() {
     else carica();
   }
 
+  // «Nuova versione» di un calcolo confermato: crea una bozza «(rev.)» che
+  // copia dati e Banca Dati Utenze (versione_di = id attuale) e la apre.
+  // Se la copia della Banca Dati fallisce, la bozza esiste comunque: si
+  // mostra l'errore e si apre lo stesso.
   async function revisione() {
     setInCorso("Creazione della nuova versione…");
     const { data, error } = await nuovaVersione(calcolo);
@@ -204,6 +286,8 @@ export default function CalcoloCrediti() {
     if (data) navigate(`/crediti/${data.id}`);
   }
 
+  // Elimina la bozza (solo bozze: il database rifiuta la cancellazione di un
+  // calcolo confermato) e torna all'elenco.
   async function elimina() {
     if (!window.confirm("Eliminare definitivamente questa bozza di calcolo?")) return;
     const { error } = await eliminaCalcolo(id);
@@ -212,7 +296,16 @@ export default function CalcoloCrediti() {
   }
 
   /* Import del tracciato dati (passo «Importa il tracciato»): sostituisce le
-     parti scelte e salva subito, annotando nel calcolo il file di origine. */
+     parti scelte e salva subito, annotando nel calcolo il file di origine.
+     Riceve dal componente ImportaTracciato:
+     - tracciato: dati già letti e validati (rifiuti, classi, anagrafica,
+       conferimenti, riuso, conteggi)
+     - parti: { rifiuti, delibera, anagrafica, utenze, riuso } = cosa sostituire
+     - origine: { nome, documentoId?, hash? } del file importato.
+     Ordine dei salvataggi: prima il JSON `dati`, poi conferimenti, poi riuso.
+     Non è una transazione unica: se un passo fallisce, quelli precedenti
+     restano salvati e si mostra l'errore. Alla fine azzera il risultato
+     (va ricalcolato) e porta al passo «Banca Dati Utenze». */
   async function importaTracciato({ tracciato: t, parti, origine }) {
     setMessaggio(null);
     const nuovi = { ...dati };
@@ -221,11 +314,14 @@ export default function CalcoloCrediti() {
       nuovi.classiUd = t.classiUd;
       nuovi.classiUnd = t.classiUnd;
     }
+    // Dall'anagrafica si prendono solo i valori presenti nel file: quelli
+    // assenti non cancellano i valori già inseriti a mano.
     if (parti.anagrafica) {
       if (t.anagrafica.pefUd != null) nuovi.pefUd = String(t.anagrafica.pefUd);
       if (t.anagrafica.pefUnd != null) nuovi.pefUnd = String(t.anagrafica.pefUnd);
       if (t.anagrafica.tariffaPuntuale != null) nuovi.opzioni = { ...nuovi.opzioni, tariffaPuntuale: t.anagrafica.tariffaPuntuale };
     }
+    // Traccia dell'ultimo import (mostrata nel passo «Importa» e nel rapporto).
     nuovi.importazione = {
       file: origine.nome,
       documentoId: origine.documentoId || null,
@@ -262,9 +358,13 @@ export default function CalcoloCrediti() {
   }
 
   /* Rapporto di calcolo in PDF (backlog 6): dal risultato salvato.
+     archivia = false: il PDF si scarica nel browser.
      archivia = true: il PDF è caricato tra i documenti della pratica
      (tipologia «Rapporto di calcolo dei crediti», non visibile al Comune:
-     la visibilità si cambia poi nella pratica). */
+     la visibilità si cambia poi nella pratica). Il pulsante compare solo per
+     i calcoli confermati.
+     Il rapporto usa calcolo.risultato (quello salvato), mai un risultato
+     non salvato: per questo si blocca se ci sono modifiche pendenti. */
   async function rapporto(archivia = false) {
     setMessaggio(null);
     if (!calcolo.risultato) return setMessaggio({ errore: true, testo: "Premi prima «Calcola»: il rapporto si basa sul risultato salvato." });
@@ -282,6 +382,8 @@ export default function CalcoloCrediti() {
         confermatoDa: await nomeUtente(calcolo.confermato_da),
       });
       if (!archivia) {
+        // Download senza server: link temporaneo al file in memoria, cliccato
+        // e rimosso; l'indirizzo si libera dopo 5 secondi.
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -292,6 +394,8 @@ export default function CalcoloCrediti() {
         setTimeout(() => URL.revokeObjectURL(url), 5000);
         setMessaggio({ testo: `Rapporto scaricato: ${nomeFile}` });
       } else {
+        // Documento generale della pratica (nessuna fase), con le stesse
+        // regole di ogni caricamento: nuova versione, hash, controlli sul file.
         const { error } = await caricaDocumento({
           praticaId: calcolo.pratica_id,
           file: new File([blob], nomeFile, { type: "application/pdf" }),
@@ -309,12 +413,16 @@ export default function CalcoloCrediti() {
   }
 
   // Controlli di coerenza sui dati attuali (solo dove servono: costano su grandi Banche Dati).
-  const psTipologie = Object.fromEntries(dati.fattori.map((f) => [f.id, Number(String(f.ps ?? "").replace(",", ".")) || 0]));
+  // psTipologie: peso specifico (kg/m³) per tipologia, dai fattori del
+  // passo 4; accetta la virgola decimale, valore assente = 0.
+  const psTipologie =Object.fromEntries(dati.fattori.map((f) => [f.id, Number(String(f.ps ?? "").replace(",", ".")) || 0]));
   const coerenza = ["utenze", "risultati"].includes(passo)
     ? controllaCoerenza({ anno: testa.anno, rifiuti: dati.rifiuti, pefUd: dati.pefUd, pefUnd: dati.pefUnd, classiUd: dati.classiUd, classiUnd: dati.classiUnd, conferimenti, riuso, ps: psTipologie })
     : null;
 
+  // Tipologie di rifiuto ammesse (dai fattori), per le tendine e gli import CSV.
   const tipologieOpzioni = dati.fattori.map((f) => ({ valore: f.id, etichetta: f.nome }));
+  // Riepilogo del risultato salvato nel database (null se mai calcolato).
   const salvato = calcolo.risultato;
 
   return (
@@ -344,6 +452,8 @@ export default function CalcoloCrediti() {
               </button>
             )}
             <button onClick={esegui} disabled={!!inCorso} style={btnPrimario}>Calcola</button>
+            {/* Si conferma solo una bozza con risultato salvato e senza
+                modifiche pendenti: si conferma ciò che è nel database. */}
             {!confermato && salvato && !modificato && (
               <button onClick={() => setConferma(true)} style={btnMini}>Conferma calcolo</button>
             )}
@@ -404,6 +514,8 @@ export default function CalcoloCrediti() {
             {passo === "importa" && (
               <ImportaTracciato calcolo={calcolo} anno={testa.anno} ps={psTipologie} sola={confermato} ultima={dati.importazione} onImporta={importaTracciato} />
             )}
+            {/* Un solo passo visibile alla volta; ogni passo riceve i dati e
+                la funzione per modificarli, e `sola` se il calcolo è confermato. */}
             {(passo === "utenze" || passo === "risultati") && <ControlliCoerenza esiti={coerenza} />}
             {passo === "impostazioni" && (
               <Impostazioni testa={testa} aggiorna={aggiornaTesta} sola={confermato} />
@@ -422,6 +534,7 @@ export default function CalcoloCrediti() {
                     { chiave: "considerato", titolo: "Considerato", tipo: "si_no" },
                   ]}
                   righe={dati.rifiuti}
+                  // Una riga senza «Considerato» indicato vale come considerata.
                   onChange={(r) => aggiornaDati({ rifiuti: r.map((x) => ({ ...x, considerato: x.considerato ?? true })) })}
                   esempio={[
                     { codice: "200301", descrizione: "Rifiuti urbani non differenziati", tipologia: "indifferenziato", qtot: "1250,4", soloDomestiche: false, considerato: true },
@@ -430,6 +543,7 @@ export default function CalcoloCrediti() {
                   ]}
                   vuota="Nessun rifiuto. Aggiungi le righe o importa il file del Catasto ISPRA."
                 />
+                {/* Somma delle tonnellate delle sole righe considerate. */}
                 <Totale etichetta="Totale considerato" valore={dati.rifiuti.filter((r) => r.considerato !== false).reduce((s, r) => s + (Number(String(r.qtot).replace(",", ".")) || 0), 0)} unita="t/anno" />
               </Passo>
             )}
@@ -467,7 +581,12 @@ export default function CalcoloCrediti() {
 }
 
 /* ---------------- Passo 1: impostazioni ---------------- */
+/* Testata del calcolo: titolo, anno, tipo di stima, data di avvio, note.
+   Props: testa (valori), aggiorna(parziale) (modifica la testata),
+   sola (sola lettura). Mostra il coefficiente del primo anno parziale. */
 function Impostazioni({ testa, aggiorna, sola }) {
+  // Formula 1: se l'avvio cade nell'anno di riferimento, coefficiente =
+  // giorni dall'avvio al 31/12 diviso 365; altrimenti 1.
   const pa = coefficientePrimoAnno(testa.data_avvio, testa.anno);
   return (
     <Passo titolo="Impostazioni" nota="Anno solare di riferimento e tipo di stima. Se il progetto è partito durante l'anno, i valori attesi si riducono in proporzione ai giorni effettivi (Capitolo 2, formula 1).">
@@ -497,8 +616,13 @@ function Impostazioni({ testa, aggiorna, sola }) {
 }
 
 /* ---------------- Passo 3: delibera tariffaria ---------------- */
+/* Ripartizione del PEF (in %) e classi delle utenze domestiche (con Kb) e
+   non domestiche (con superficie e Kd).
+   Props: dati (JSON del calcolo), aggiorna(parziale), sola.
+   Le percentuali PEF si salvano come testo con il punto decimale. */
 function Delibera({ dati, aggiorna, sola }) {
-  const somma = (Number(String(dati.pefUd).replace(",", ".")) || 0) + (Number(String(dati.pefUnd).replace(",", ".")) || 0);
+  // Somma delle due quote PEF: solo un avviso se diversa da 100%, non blocca.
+  const somma =(Number(String(dati.pefUd).replace(",", ".")) || 0) + (Number(String(dati.pefUnd).replace(",", ".")) || 0);
   return (
     <Passo titolo="Delibera tariffaria dell'Ente" nota="Capitolo 3 (formule 2-12): ripartizione PEF tra utenze domestiche e non domestiche, classi con numero di utenze e coefficienti della quota variabile (Kb per le domestiche, Kd per le non domestiche).">
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 6 }}>
@@ -542,7 +666,12 @@ function Delibera({ dati, aggiorna, sola }) {
 }
 
 /* ---------------- Passo 4: fattori di emissione ---------------- */
+/* Fattori di emissione e pesi specifici per tipologia di rifiuto, scenario
+   e fattori dei beni a riuso, opzione «riuso come credito».
+   Props: dati, aggiorna(parziale), sola. */
 function Fattori({ dati, aggiorna, sola }) {
+  // Cambiando scenario si riportano i FErid dei beni ai valori della
+  // Tabella 5 per quello scenario (eventuali valori manuali si perdono).
   function cambiaScenario(scenario) {
     const beni = dati.beni.map((b) => {
       const def = BENI_RIUSO.find((x) => x.id === b.id);
@@ -550,6 +679,8 @@ function Fattori({ dati, aggiorna, sola }) {
     });
     aggiorna({ scenarioRiuso: scenario, beni });
   }
+  // Rimette i fattori di tutte le tipologie ai valori della Metodologia
+  // (src/lib/crediti/parametri.js). Non tocca i beni a riuso.
   function ripristina() {
     aggiorna({
       fattori: TIPOLOGIE_RIFIUTO.map((t) => ({ id: t.id, nome: t.nome, fe: t.fe, ps: t.ps, recupero: t.recupero, calcolato: !!t.calcolato, fonte: t.fonte })),
@@ -582,6 +713,8 @@ function Fattori({ dati, aggiorna, sola }) {
           <option value="preparazione">Centro di preparazione per il riutilizzo</option>
         </select>
       </label>
+      {/* Scelta interpretativa aperta (vedi docs/crediti-cwp.md): resta
+          disattivata finché la Fondazione non la conferma. */}
       <label style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 12.5, margin: "0 0 10px", maxWidth: 820 }}>
         <input
           type="checkbox"
@@ -613,6 +746,14 @@ function Fattori({ dati, aggiorna, sola }) {
 }
 
 /* ---------------- Passo 5: Banca Dati Utenze ---------------- */
+// Schemi per l'import CSV della Banca Dati (csvInOggetti di src/lib/csv.js):
+// - chiave: nome del campo nell'oggetto riga
+// - titoli: intestazioni accettate nel file (il primo è quello del modello)
+// - obbligatorio: colonna che deve esserci
+// - tipo "numero": valore convertito in numero.
+// Conferimenti: S = svuotamenti, VC = volume contenitore, StIn = strutture
+// informatizzate, CdR = centri di raccolta; «N. utenze» > 1 quando una riga
+// rappresenta più utenze con valori medi (stima ex ante).
 const SCHEMA_CONFERIMENTI = [
   { chiave: "utenza", titoli: ["Utenza", "codice utenza", "id utenza"], obbligatorio: true },
   { chiave: "macro", titoli: ["Macrocategoria", "tipo utenza", "macro"], obbligatorio: true },
@@ -636,6 +777,8 @@ const SCHEMA_RIUSO = [
   { chiave: "nUtenze", titoli: ["N. utenze (valori medi)", "n utenze"], tipo: "numero" },
 ];
 
+// Riporta la macrocategoria scritta nel file a "UD" (domestica) o "UnD"
+// (non domestica); null se non riconosciuta (la riga viene scartata).
 function normalizzaMacro(v) {
   const s = String(v || "").toLowerCase().replace(/[^a-z]/g, "");
   if (["ud", "domestica", "domestiche", "d"].includes(s)) return "UD";
@@ -643,18 +786,36 @@ function normalizzaMacro(v) {
   return null;
 }
 
+/* Passo «Banca Dati Utenze»: import CSV di conferimenti e beni a riuso
+   (alternativo al tracciato Excel), riepilogo per tipologia, scelta del
+   peso specifico a consuntivo.
+   Props:
+   - calcoloId, tipo ("ex_post" | "ex_ante"), dati, aggiorna, sola
+   - conferimenti, riuso: righe attuali; onConferimenti / onRiuso: aggiornano
+     lo stato della pagina dopo un import
+   - tipologie: [{ valore, etichetta }] ammesse.
+   ATTENZIONE: l'import CSV salva SUBITO nel database e sostituisce tutte
+   le righe esistenti (cancella e reinserisce a blocchi di 1000, senza
+   transazione: un errore a metà lascia la tabella incompleta). */
 function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso, onConferimenti, onRiuso, tipologie }) {
+  // Esito dell'ultima operazione: { testo, errore? } oppure null.
   const [stato, setStato] = useState(null);
   const refC = useRef(null);
   const refR = useRef(null);
   const idTipologie = tipologie.map((t) => t.valore);
+  // Accetta sia il codice della tipologia sia il nome (senza maiuscole);
+  // restituisce il codice oppure null.
   const trovaTipologia = (v) => {
     const s = String(v || "").toLowerCase();
     return tipologie.find((t) => t.valore === s || t.etichetta.toLowerCase() === s)?.valore || null;
   };
 
+  // Import di un file CSV. quale: "conferimenti" oppure "riuso".
+  // Righe con macrocategoria o tipologia non riconosciute sono scartate e
+  // segnalate (al massimo le prime 3 nel messaggio); le altre si salvano.
   async function importa(e, quale) {
     const file = e.target.files?.[0];
+    // Svuota il campo: così si può reimportare lo stesso file.
     e.target.value = "";
     if (!file) return;
     setStato({ testo: "Lettura del file…" });
@@ -669,6 +830,7 @@ function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso,
       .map((r, n) => {
         const macro = normalizzaMacro(r.macro);
         if (!macro) {
+          // n + 2: la riga 1 del file è l'intestazione e n parte da 0.
           scarti.push(`riga ${n + 2}: macrocategoria «${r.macro}» (usa UD o UnD)`);
           return null;
         }
@@ -699,6 +861,7 @@ function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso,
     });
   }
 
+  // Scarica un CSV di esempio con le intestazioni giuste e qualche riga tipo.
   function modello(quale) {
     if (quale === "conferimenti") {
       scaricaTesto(
@@ -721,6 +884,9 @@ function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso,
   }
 
   // Riepilogo dei conferimenti per tipologia.
+  // Litri = (svuotamenti × volume contenitore + volume strutture + volume
+  // centri di raccolta) × N. utenze; kg = pesi misurati × N. utenze.
+  // Restituisce { perTipologia: { tipologia: { righe, litri, kg } }, utenze }.
   const riepilogo = useMemo(() => {
     const m = {};
     const utenze = new Set();
@@ -794,6 +960,8 @@ function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso,
         <span style={{ fontSize: 12.5, color: C.grafite }}>{riuso.length.toLocaleString("it-IT")} righe</span>
       </div>
 
+      {/* Il peso specifico a consuntivo (formula 18) è possibile solo ex post.
+          Servono anche i volumi dei contenitori centralizzati, per tipologia. */}
       <h3 style={h3}>Peso specifico</h3>
       <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 13 }}>
         <input type="checkbox" disabled={sola || tipo !== "ex_post"} checked={!!dati.psConsuntivo} onChange={(e) => aggiorna({ psConsuntivo: e.target.checked })} />
@@ -825,8 +993,21 @@ function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso,
 }
 
 /* ---------------- Passo 6: buffer ---------------- */
+/* Opzioni dell'analisi del rischio (Tabelle 15 e 16) che determinano il
+   buffer, cioè la quota di crediti trattenuta. Il calcolo vero del buffer
+   è in calcolaBuffer di src/lib/crediti/calcolo.js (somma delle voci,
+   dimezzata con tariffa puntuale, massimo 80%; un buffer manuale del
+   Progetto sostituisce quello calcolato).
+   Props: opzioni (dati.opzioni), aggiorna(parziale) che scrive in
+   dati.opzioni, sola, conferimenti, riuso. (`dati` arriva ma non è usato.) */
 function Buffer({ opzioni, aggiorna, sola, conferimenti, riuso }) {
+  // Tipologie presenti nella Banca Dati = tipologie misurate.
   const misurate = new Set(conferimenti.map((c) => c.tipologia));
+  // «Ricava dai dati importati»: propone le caselle in base alla Banca Dati
+  // (rifiuti misurati, misure presso i centri, macrocategorie monitorate).
+  // Le domestiche non residenti non si distinguono nei dati: resta il
+  // valore già scelto (sì, se mai impostato). Senza conferimenti tutte le
+  // utenze risultano monitorate.
   function ricava() {
     aggiorna({
       rifiutiMisurati: {
@@ -846,6 +1027,9 @@ function Buffer({ opzioni, aggiorna, sola, conferimenti, riuso }) {
   }
   const um = opzioni.utenzeMonitorate || {};
   const rm = opzioni.rifiutiMisurati || {};
+  // Casella di spunta generica. Se `oggetto` è indicato la chiave sta in un
+  // sotto-oggetto delle opzioni (es. opzioni.rifiutiMisurati.carta),
+  // altrimenti direttamente in opzioni.
   const cb = (chiave, oggetto, valore, etichetta) => (
     <label key={chiave} style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 13, padding: "3px 0" }}>
       <input type="checkbox" disabled={sola} checked={!!valore} onChange={(e) => aggiorna(oggetto ? { [oggetto]: { ...opzioni[oggetto], [chiave]: e.target.checked } } : { [chiave]: e.target.checked })} />
@@ -889,6 +1073,7 @@ function Buffer({ opzioni, aggiorna, sola, conferimenti, riuso }) {
             Buffer indicato dal Progetto (%, facoltativo)
             <input disabled={sola} inputMode="decimal" value={opzioni.bufferManuale} onChange={(e) => aggiorna({ bufferManuale: e.target.value.replace(",", ".") })} style={campo} placeholder="lascia vuoto per il calcolo" />
           </label>
+          {/* Con un buffer manuale serve la motivazione (finisce nel rapporto). */}
           {opzioni.bufferManuale !== "" && opzioni.bufferManuale != null && (
             <label style={{ ...lbl, marginTop: 6 }}>
               Motivazione
@@ -902,6 +1087,15 @@ function Buffer({ opzioni, aggiorna, sola, conferimenti, riuso }) {
 }
 
 /* ---------------- Passo 7: risultati ---------------- */
+/* Riquadri principali (crediti netti e lordi, buffer, ΔI, utenze), tabelle
+   di dettaglio e pulsanti di esportazione.
+   Props:
+   - risultato: risultato completo appena calcolato (con dettaglio per
+     utenza) oppure null
+   - salvato: riepilogo salvato nel database (senza dettaglio)
+   - onCalcola, onRapporto(archivia), testa, confermato.
+   Si mostra il risultato appena calcolato se c'è, altrimenti quello
+   salvato. Il CSV per utenza richiede un «Calcola» nella sessione. */
 function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermato }) {
   const r = risultato || salvato;
   if (!r) {
@@ -912,10 +1106,14 @@ function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermat
     );
   }
   const dettaglio = risultato?.utenze?.dettaglio;
+  // Nome leggibile di una tipologia dal suo codice.
   const tipNome = (t) => TIPOLOGIE_RIFIUTO.find((x) => x.id === t)?.nome || t;
 
+  // CSV con una riga per utenza: produzione per tipologia (Ptot, kg),
+  // emissioni attese EA, emissioni di progetto EP e ΔI (kgCO₂eq).
+  // Le colonne delle tipologie sono quelle presenti in almeno un'utenza.
   function esportaUtenze() {
-    const tipologie = [...new Set(dettaglio.flatMap((u) => Object.keys(u.ptot)))];
+    const tipologie =[...new Set(dettaglio.flatMap((u) => Object.keys(u.ptot)))];
     scaricaTesto(
       `crediti_dettaglio_utenze_${testa.anno}.csv`,
       scriviCsv(
@@ -925,6 +1123,8 @@ function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermat
     );
   }
 
+  // CSV «Voce;Valore» con i numeri principali e le voci del buffer.
+  // Funziona anche con il solo risultato salvato.
   function esportaRiepilogo() {
     const righe = [
       ["Anno", r.periodo.anno],
@@ -956,7 +1156,10 @@ function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermat
         </div>
       )}
 
-      {/* Riquadri principali */}
+      {/* Riquadri principali. Convenzione dei segni: ΔI < 0 = il territorio
+          riduce le emissioni; crediti lordi = −ΔI (in tCO₂eq); crediti netti
+          = lordi meno la quota di buffer. Con ΔI > 0 non ci sono crediti ma
+          un «debito» del territorio. */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10, marginBottom: 18 }}>
         <Riquadro valore={fmt(r.crediti.netti, 3)} unita="tCO₂eq" etichetta="Crediti netti" forte />
         <Riquadro valore={fmt(r.crediti.lordi, 3)} unita="tCO₂eq" etichetta="Crediti lordi (−ΔI)" />
@@ -1092,6 +1295,8 @@ function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermat
 }
 
 /* ---------------- Elementi comuni ---------------- */
+// Contenitore di un passo: titolo, nota esplicativa (riferimenti alla
+// Metodologia) e contenuto.
 function Passo({ titolo, nota, children }) {
   return (
     <div>
@@ -1102,6 +1307,7 @@ function Passo({ titolo, nota, children }) {
   );
 }
 
+// Riga di totale sotto una tabella (valore con 2 decimali e unità).
 function Totale({ etichetta, valore, unita }) {
   return (
     <div style={{ fontSize: 12.5, color: C.grafite, marginTop: 8 }}>
@@ -1110,6 +1316,8 @@ function Totale({ etichetta, valore, unita }) {
   );
 }
 
+// Riquadro numerico dei risultati: valore già formattato, unità, etichetta;
+// `forte` lo evidenzia in verde (crediti netti).
 function Riquadro({ valore, unita, etichetta, forte }) {
   return (
     <div style={{ border: `1px solid ${forte ? C.green : C.line}`, borderRadius: 11, padding: "12px 14px", background: forte ? C.greenSoft : C.white }}>
@@ -1121,6 +1329,8 @@ function Riquadro({ valore, unita, etichetta, forte }) {
   );
 }
 
+// Stili condivisi dalla pagina e dai passi (thS/tdS/tdN: celle delle
+// tabelle piccole; tdN allinea i numeri a destra).
 const riquadro = { background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, padding: "18px 20px", minWidth: 0 };
 const lbl = { display: "grid", gap: 4, fontSize: 12, color: C.grafite, fontWeight: 600 };
 const campo = { width: "100%", boxSizing: "border-box", padding: "8px 10px", border: `1px solid ${C.line}`, borderRadius: 8, fontSize: 13, fontFamily: "'Inter', sans-serif", background: C.white };

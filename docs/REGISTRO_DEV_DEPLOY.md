@@ -227,6 +227,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `13_durata_fasi.sql` | Durata delle fasi in tabella, modificabile dall'Admin con motivazione | 18/10/2026 |
 | `14_controlli_file.sql` | Limite 50 MB, formati ammessi, controllo tipo/estensione/cartella; ZIP ammesso | 18/10/2026 (riesecuzione per ZIP lo stesso giorno) |
 | `15_password.sql` | Cambio obbligatorio dopo password temporanea (`password_temporanea`), funzione `password_cambiata`, audit dei cambi password | 18/10/2026 |
+| `19_correzioni_revisione_codice.sql` | Il Comune legge solo le osservazioni ammesse della consultazione (policy `commento_select`) | 18/10/2026 |
 | `18_registro_crediti.sql` | Numero di registro `CWP-REG-AAAA-NNNN` assegnato alla conferma dei calcoli ex post (contatore per anno `contatore_registro`, funzione `cwp_numero_registro`, `calcolo_immutabile` aggiornata, numero vietato su inserimento e bozze); funzione `admin_registro_crediti` (stato valido / sostituito) | 18/10/2026 |
 | `17_pratiche.sql` | Pagamenti leggibili dal Comune; note di fase (`nota_fase`); anagrafica Enti di Validazione (solo Admin) e `staff_imposta_ente_validazione`; modelli di documento (`modello_documento`, archivio `modelli`); messaggi (`messaggio`); consultazione pubblica: dati dell'autore sul commento, `commento_in_attesa`, archivio `allegati-consultazione`, errata corrige (`consultazione_errata`, `staff_errata_corrige`), `staff_autori_commenti`; inserimento diretto dei commenti dal portale tolto; audit e notifiche per le nuove tabelle | 18/10/2026 |
 | `16_recupero_password.sql` | Tabella `recupero_password_richiesta` (ultima richiesta di recupero per indirizzo, nessuna policy: la usa solo la funzione `recupera-password`) | 18/10/2026 |
@@ -402,6 +403,19 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Codice commentato e correzioni dalla revisione (punto 31)** — tutti i
+  file del portale, delle Edge Functions, dei test e degli strumenti hanno
+  ora intestazione e commenti in italiano; verifica: il portale compilato è
+  identico byte per byte a quello senza commenti. La revisione ha fatto
+  emergere e correggere: osservazioni non ancora ammesse leggibili dal
+  Comune (solo il testo, senza autore) → script
+  `19_correzioni_revisione_codice.sql` (provato in locale, eseguito e
+  verificato in produzione); importi dei pagamenti con il punto delle
+  migliaia («1.234,50») rifiutati o letti male → corretto; avviso «fase
+  chiusa» mostrato due volte al Comune → corretto. Segnalati per dopo
+  (punto 33): creazione di Progetto e fasi non atomica; componenti del
+  prototipo non usati (`Timeline`, `AzioniRuolo`, `ProjectCard`, `Stat`,
+  `Pill`) da eliminare; stile `avviso` non usato.
 - **Crediti: rapporto di calcolo in PDF e registro dei crediti (backlog 6,
   7)** — `src/lib/crediti/rapportoPdf.js` (jsPDF 4.2.1 + jspdf-autotable
   5.0.9, caricati solo quando servono): scheda con numero di registro e
@@ -739,6 +753,8 @@ completato (va barrato qui e annotato in Cronologia).
 
 - **31.** Codice sorgente commentato per sviluppatori umani: ogni file (portale, script SQL, Edge Functions, strumenti) deve avere in testa lo scopo e il collegamento al capitolo del registro, e commenti in italiano su funzioni, regole di sicurezza e passaggi non ovvi. Vale anche per tutto il codice nuovo. Da completare con una revisione file per file.
 - **32.** Manuale Test (test-user): guida sintetica per i collaudatori, riservata agli Amministratori, da aggiornare a ogni rilascio insieme a registro, Manuale Utente e Manuale Amministratore.
+
+- **33.** Pulizia del codice emersa dalla revisione del 18/10: creazione del Progetto e delle sue 7 fasi in un'unica funzione del database (oggi due inserimenti: se il secondo fallisce la pratica resta senza fasi); eliminare i componenti del prototipo non usati (`Timeline`, `AzioniRuolo`, `ProjectCard`, `Stat`, `Pill`) e lo stile `avviso`.
 
 **Da rifinire**
 

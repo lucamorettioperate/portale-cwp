@@ -1,3 +1,25 @@
+/* =========================================================================
+   Crediti CWP — indirizzo «/crediti»
+   Scopo: sezione del calcolo dei crediti di CO₂eq (Metodologia Carbon
+     WastePrint® v1.2). Due viste:
+     - «Calcoli»: elenco di tutti i calcoli (titolo, pratica, anno e tipo,
+       crediti netti, stato bozza/confermato) e modulo «+ Nuovo calcolo»
+       per pratica e anno; un clic apre l'editor «/crediti/:id»
+       (CalcoloCrediti.jsx);
+     - «Registro dei crediti»: calcoli ex post confermati con numero di
+       registro (componente RegistroCrediti, script 18).
+   Chi la usa: solo Amministratori (gli altri vedono un messaggio).
+   Dati: elencaCalcoli() e creaCalcolo() di src/lib/crediti/archivio.js
+     (tabella "calcolo_crediti", script 11); leggiCruscotto() di
+     src/lib/dati.js (RPC staff_cruscotto) solo per l'elenco delle pratiche
+     da scegliere.
+   Sicurezza: le tabelle dei calcoli sono leggibili e scrivibili solo da
+     un Amministratore (policy app_is_admin, script 11). Un calcolo
+     confermato è immutabile (trigger calcolo_immutabile, script 11 e 18);
+     il numero di registro lo assegna il database alla conferma.
+   Registro sviluppo e deploy: capitolo «Calcolo crediti» (vedi anche
+     docs/crediti-cwp.md).
+   ========================================================================= */
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { COLORI as C } from "../lib/cwpProgram.js";
@@ -9,12 +31,12 @@ import { elencaCalcoli, creaCalcolo } from "../lib/crediti/archivio.js";
 import { formatoData } from "../lib/date.js";
 import RegistroCrediti from "../components/crediti/RegistroCrediti.jsx";
 
+// Numero in formato italiano con `d` decimali fissi; "—" se manca il valore.
 const fmt = (v, d = 2) => (v == null ? "—" : Number(v).toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d }));
 
-/* Crediti CWP — sezione riservata agli Amministratori.
-   Due viste: «Calcoli» (elenco e creazione di un nuovo calcolo per pratica
-   e anno) e «Registro dei crediti» (calcoli ex post confermati con numero
-   di registro, componente RegistroCrediti, script 18). */
+/* Pagina «Crediti CWP». Nessuna prop.
+   Stato `nuovo`: null quando il modulo di creazione è chiuso, altrimenti
+   { praticaId, titolo, anno, tipo, dataAvvio } in compilazione. */
 export default function Crediti() {
   const { ruolo } = useAuth();
   const navigate = useNavigate();
@@ -25,6 +47,8 @@ export default function Crediti() {
   const [nuovo, setNuovo] = useState(null);
   const [vista, setVista] = useState("calcoli"); // "calcoli" | "registro"
 
+  // Lettura di calcoli e pratiche (solo per Amministratori).
+  // Le pratiche annullate non si offrono per un nuovo calcolo.
   useEffect(() => {
     if (ruolo !== "admin") return;
     (async () => {
@@ -36,6 +60,11 @@ export default function Crediti() {
     })();
   }, [ruolo]);
 
+  // Crea il calcolo in bozza (con i dati iniziali della Metodologia, vedi
+  // archivio.js) e apre subito il suo editor.
+  // tipo: "ex_post" (letture della Banca Dati Utenze) o "ex_ante" (stime).
+  // dataAvvio serve solo se il progetto è partito durante l'anno di
+  // riferimento (primo anno incompleto).
   async function crea() {
     setErrore("");
     if (!nuovo.praticaId) return setErrore("Scegli la pratica.");
@@ -78,6 +107,8 @@ export default function Crediti() {
           </div>
           {!nuovo && vista === "calcoli" && (
             <button
+              // Valori proposti: prima pratica, anno precedente a quello in
+              // corso (ultimo anno con dati completi), stima ex post.
               onClick={() => setNuovo({ praticaId: pratiche[0]?.id || "", titolo: "", anno: annoCorrente - 1, tipo: "ex_post", dataAvvio: "" })}
               style={btnPrimario}
             >
@@ -174,6 +205,8 @@ export default function Crediti() {
                   <td style={td}>{c.anno} · {c.tipo === "ex_post" ? "ex post" : "ex ante"}</td>
                   <td style={{ ...td, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700 }}>{fmt(c.crediti_netti, 3)}</td>
                   <td style={td}>
+                    {/* Bozza = modificabile; Confermato = immutabile. Il numero
+                        di registro c'è solo per gli ex post confermati. */}
                     {c.stato === "confermato" ? <Badge bg="#dfe9db" fg={C.green}>Confermato</Badge> : <Badge bg={C.paperWarm} fg={C.grafite}>Bozza</Badge>}
                     {c.numero_registro && <div style={{ fontSize: 11.5, color: C.grafite, marginTop: 3 }}>{c.numero_registro}</div>}
                   </td>
@@ -187,6 +220,7 @@ export default function Crediti() {
   );
 }
 
+// Stili della pagina.
 const riquadro = { background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, padding: "18px 20px" };
 const lbl = { display: "grid", gap: 4, fontSize: 12, color: C.grafite, fontWeight: 600 };
 const campo = { width: "100%", boxSizing: "border-box", padding: "8px 10px", border: `1px solid ${C.line}`, borderRadius: 8, fontSize: 13, fontFamily: "'Inter', sans-serif", background: C.white };

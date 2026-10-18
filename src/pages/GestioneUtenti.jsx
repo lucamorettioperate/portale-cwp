@@ -1,3 +1,29 @@
+/* =========================================================================
+   Gestione utenti — indirizzo «/utenti»
+   Scopo: elenco di tutti gli utenti (nome, email, organizzazioni, ruolo,
+     stato) con, per ciascuno: modifica di ruolo e organizzazioni,
+     reimpostazione della password temporanea, disattivazione/riattivazione.
+     Pulsante «+ Nuovo utente» per creare un cliente o un operatore con
+     password temporanea. Un utente cliente può essere associato a più
+     organizzazioni (es. più comuni); la prima scelta è la principale.
+   Chi la usa: solo Amministratori (gli altri vedono un messaggio).
+   Dati (src/lib/dati.js): elencaUtenti (RPC admin_elenco_utenti),
+     elencaOrganizzazioni (tabella "organizzazione"), creaUtente (Edge
+     Function "crea-utente"), aggiornaUtente (RPC admin_aggiorna_utente +
+     admin_imposta_organizzazioni), impostaUtenteAttivo (RPC
+     admin_imposta_attivo), reimpostaPassword (Edge Function
+     "reimposta-password"). Password generate con generaPasswordTemporanea
+     di src/lib/password.js.
+   Sicurezza: ogni funzione del database e ogni Edge Function verifica da
+     sé che il chiamante sia Amministratore con verifica a due fattori
+     (app_is_admin / sono_admin). Garantito lato server: non si nominano
+     amministratori (né in creazione né in modifica), non si reimposta la
+     password di un amministratore, non si disattiva se stessi. Solo
+     interfaccia: il fatto che le righe degli Amministratori non abbiano
+     pulsanti «Modifica» e «Disattiva» (il database non impedisce a un
+     admin di modificare il ruolo di un altro admin).
+   Registro sviluppo e deploy: capitolo «Portale (frontend)».
+   ========================================================================= */
 import React, { useEffect, useState } from "react";
 import { COLORI as C, RUOLI } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
@@ -14,29 +40,36 @@ import {
 } from "../lib/dati.js";
 import { generaPasswordTemporanea } from "../lib/password.js";
 
-/* Gestione utenti — solo Admin.
-   Elenco utenti, invito di nuovi (cliente/operatore), modifica
-   ruolo e organizzazioni. Un utente cliente può essere associato
-   a più organizzazioni (es. più comuni). */
-
 // Organizzazioni associate a un utente (elenco completo, con fallback
 // sul vecchio campo singolo).
+// u: riga di admin_elenco_utenti. Restituisce un array di id.
+// organizzazioni_ids viene dalla tabella molti-a-molti utente_organizzazione
+// (script 06); organizzazione_id è il vecchio campo del profilo.
 function orgIdsUtente(u) {
   if (u.organizzazioni_ids && u.organizzazioni_ids.length) return u.organizzazioni_ids;
   return u.organizzazione_id ? [u.organizzazione_id] : [];
 }
+// Come orgIdsUtente, ma restituisce le denominazioni (per le etichette).
 function orgNomiUtente(u) {
   if (u.organizzazioni_nomi && u.organizzazioni_nomi.length) return u.organizzazioni_nomi;
   return u.organizzazione ? [u.organizzazione] : [];
 }
+
+/* Pagina «Gestione utenti». Nessuna prop.
+   Contiene l'elenco (una RigaUtente per utente) e apre FormInvito per la
+   creazione. Dopo ogni salvataggio rilegge tutto dal database. */
 export default function GestioneUtenti() {
   const { ruolo } = useAuth();
   const [utenti, setUtenti] = useState([]);
   const [organizzazioni, setOrganizzazioni] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState("");
+  // Vero quando la finestra «Nuovo utente» è aperta.
   const [invito, setInvito] = useState(false);
 
+  // Legge utenti e organizzazioni insieme. Per un non Amministratore
+  // admin_elenco_utenti risponde con un errore (la pagina comunque non
+  // mostra l'elenco).
   async function carica() {
     setCaricamento(true);
     const [u, o] = await Promise.all([elencaUtenti(), elencaOrganizzazioni()]);
@@ -117,18 +150,32 @@ export default function GestioneUtenti() {
   );
 }
 
+/* Una riga dell'elenco utenti, con le azioni sull'utente.
+   Props:
+   - utente: riga di admin_elenco_utenti (id, email, nome_completo, ruolo,
+     attivo, organizzazioni…)
+   - organizzazioni: tutte le organizzazioni, per la scelta
+   - ultimo: vero per l'ultima riga (niente bordo inferiore)
+   - onSalvato: richiamata dopo un salvataggio riuscito (rilettura elenco).
+   Tre pannelli alternativi: nessuno, «modifica» (ruolo e organizzazioni),
+   «reimposta» (nuova password temporanea). */
 function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
   const [modifica, setModifica] = useState(false);
+  // Valori in modifica (ruolo e organizzazioni scelte), copiati dall'utente.
   const [ruolo, setRuolo] = useState(utente.ruolo);
   const [orgIds, setOrgIds] = useState(orgIdsUtente(utente));
   const [salvataggio, setSalvataggio] = useState(false);
   const [errore, setErrore] = useState("");
   const r = RUOLI[utente.ruolo];
   const nomiOrg = orgNomiUtente(utente);
+  // Gli Amministratori non si gestiscono da qui (vedi «Sicurezza» in testa).
   const modificabile = utente.ruolo !== "admin";
   // Reimpostazione password: null = chiuso; { password } = conferma; { fatta } = esito.
   const [reimposta, setReimposta] = useState(null);
 
+  // Assegna la password temporanea proposta (Edge Function). In caso di
+  // successo la password resta a schermo per comunicarla all'utente; al
+  // prossimo accesso dovrà cambiarla (password_temporanea = true).
   async function confermaReimposta() {
     setErrore("");
     setSalvataggio(true);
@@ -138,6 +185,7 @@ function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
     else setReimposta({ ...reimposta, fatta: true });
   }
 
+  // Apre il pannello di modifica ripartendo dai valori salvati.
   function apri() {
     setRuolo(utente.ruolo);
     setOrgIds(orgIdsUtente(utente));
@@ -145,6 +193,8 @@ function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
     setModifica(true);
   }
 
+  // Disattiva o riattiva l'utente. Un profilo disattivato non ha più alcun
+  // ruolo per il database (app_ruolo restituisce null): nessun accesso ai dati.
   async function commutaAttivo() {
     setErrore("");
     setSalvataggio(true);
@@ -154,6 +204,10 @@ function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
     else onSalvato();
   }
 
+  // Salva ruolo e organizzazioni. Un cliente deve avere almeno
+  // un'organizzazione; per un operatore aggiornaUtente azzera le associazioni.
+  // Sono due chiamate in sequenza (ruolo, poi organizzazioni): se la seconda
+  // fallisce il ruolo resta comunque cambiato.
   async function salva() {
     setErrore("");
     if (ruolo === "cliente" && orgIds.length === 0) {
@@ -204,6 +258,7 @@ function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
             {!utente.attivo && <Badge bg="#f6dcd6" fg={C.red}>Disattivato</Badge>}
             {r && <Badge bg={r.soft} fg={r.color}>{r.short}</Badge>}
             {modificabile && <button onClick={apri} style={btnMini}>Modifica</button>}
+            {/* La password si propone subito ma si applica solo con «Conferma». */}
             {modificabile && utente.attivo && (
               <button onClick={() => { setErrore(""); setReimposta({ password: generaPasswordTemporanea() }); }} style={btnMini}>
                 Reimposta password
@@ -260,6 +315,8 @@ function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
             borderRadius: 10,
           }}
         >
+          {/* Niente opzione «admin»: la nomina di amministratori non si fa
+              dal portale (la rifiuta anche il database). */}
           <label style={lbl}>
             Ruolo
             <select value={ruolo} onChange={(e) => setRuolo(e.target.value)} style={{ ...campo, maxWidth: 260 }}>
@@ -289,7 +346,10 @@ function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
 
 /* Selezione multipla delle organizzazioni (con ricerca).
    L'ordine di selezione conta: la prima scelta è l'organizzazione
-   principale dell'utente. */
+   principale dell'utente.
+   Props: organizzazioni (tutte), selezionate (array di id, in ordine di
+   scelta), onChange(nuovoArray). La casella di ricerca compare solo con
+   più di 6 organizzazioni. */
 function SceltaOrganizzazioni({ organizzazioni, selezionate, onChange }) {
   const [filtro, setFiltro] = useState("");
   const f = filtro.trim().toLowerCase();
@@ -297,6 +357,7 @@ function SceltaOrganizzazioni({ organizzazioni, selezionate, onChange }) {
     ? organizzazioni.filter((o) => (o.denominazione || "").toLowerCase().includes(f))
     : organizzazioni;
 
+  // Aggiunge in fondo o toglie un'organizzazione, mantenendo l'ordine.
   function commuta(id) {
     if (selezionate.includes(id)) onChange(selezionate.filter((x) => x !== id));
     else onChange([...selezionate, id]);
@@ -358,6 +419,12 @@ function SceltaOrganizzazioni({ organizzazioni, selezionate, onChange }) {
   );
 }
 
+/* Finestra «Nuovo utente»: crea un cliente o un operatore con password
+   temporanea (Edge Function "crea-utente"). Al termine mostra la password
+   da comunicare all'utente, che al primo accesso dovrà cambiarla.
+   Props: organizzazioni (per la scelta), onChiudi (annulla, o clic fuori
+   prima della creazione), onInvitato (chiusura dopo la creazione: la
+   pagina rilegge l'elenco). */
 function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
   const [email, setEmail] = useState("");
   const [nome, setNome] = useState("");
@@ -365,10 +432,14 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
   const [ruolo, setRuolo] = useState("cliente");
   const [orgIds, setOrgIds] = useState([]);
   const [errore, setErrore] = useState("");
+  // Avviso non bloccante: utente creato ma organizzazioni non tutte salvate.
   const [avviso, setAvviso] = useState("");
+  // Vero dopo la creazione riuscita: la finestra mostra l'esito.
   const [ok, setOk] = useState(false);
   const [inCorso, setInCorso] = useState(false);
 
+  // Creazione in due passi: 1) utente + profilo con l'organizzazione
+  // principale (Edge Function); 2) elenco completo delle organizzazioni.
   async function invia(e) {
     e.preventDefault();
     setErrore("");
@@ -376,6 +447,9 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
       setErrore("Seleziona almeno un'organizzazione per l'utente cliente.");
       return;
     }
+    // Minimo 8 caratteri, come richiesto dalla Edge Function crea-utente.
+    // Nota: è meno della regola per le password scelte dagli utenti
+    // (10 caratteri, src/lib/password.js); la password generata ne ha 12.
     if (password.length < 8) {
       setErrore("La password deve avere almeno 8 caratteri.");
       return;
@@ -388,6 +462,7 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
       organizzazioneId: ruolo === "cliente" ? orgIds[0] : null,
       nomeCompleto: nome.trim() || null,
     });
+    // La Edge Function può riportare l'errore anche nel corpo (data.error).
     if (error || data?.error) {
       setInCorso(false);
       setErrore("Creazione non riuscita: " + (data?.error || error.message));
@@ -396,6 +471,7 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
 
     // Registra tutte le organizzazioni selezionate (anche quando è una sola,
     // così l'associazione è sempre nella tabella molti-a-molti).
+    // L'id del nuovo utente si ricava cercandolo per email nell'elenco.
     if (ruolo === "cliente") {
       const { data: elenco } = await elencaUtenti();
       const nuovo = (elenco || []).find(
@@ -417,6 +493,8 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
   }
 
   return (
+    // Clic sullo sfondo scuro = chiudi; i clic dentro la finestra non arrivano
+    // allo sfondo (stopPropagation).
     <div style={overlay} onClick={ok ? onInvitato : onChiudi}>
       <div style={modale} onClick={(e) => e.stopPropagation()}>
         <h2 style={{ fontFamily: "'Archivo'", fontSize: 19, margin: "0 0 16px" }}>Nuovo utente</h2>
@@ -482,11 +560,14 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
   );
 }
 
-// Genera una password temporanea leggibile.
+// Genera una password temporanea leggibile (12 caratteri casuali con
+// almeno una lettera e una cifra, src/lib/password.js).
 function generaPassword() {
   return generaPasswordTemporanea();
 }
 
+// Stili: sfondo e finestra modale, campi, etichette, pulsanti.
+// (campoMini non è usato.)
 const overlay = {
   position: "fixed",
   inset: 0,

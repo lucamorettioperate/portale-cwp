@@ -1,34 +1,74 @@
+/* =========================================================================
+   TabellaDati
+   Scopo: tabella di dati modificabile in pagina per il calcolo dei crediti
+     CWP (conferimenti, utenze, riuso…), con aggiunta ed eliminazione di
+     righe, importazione da CSV (anche salvato da Excel in italiano) e
+     scaricamento di un modello CSV con le intestazioni attese.
+     Componente «controllato»: non salva nulla, passa le righe modificate
+     alla pagina con onChange; il salvataggio lo fa la pagina.
+   Usato da: pagina CalcoloCrediti (/crediti/:id), più tabelle.
+   Chi lo vede: admin (il calcolo crediti è riservato agli Amministratori).
+   Dati: nessuna chiamata al database; lettura e scrittura CSV con
+     csvInOggetti, scriviCsv, scaricaTesto (src/lib/csv.js). I dati vengono
+     salvati dalla pagina con src/lib/crediti/archivio.js (tabelle
+     calcolo_conferimento, calcolo_riuso, script 11).
+   Sicurezza: solaLettura qui nasconde solo i comandi. Che un calcolo
+     confermato non si possa più modificare lo garantisce il database
+     (calcolo immutabile, script 11 e 18); l'accesso solo Admin pure.
+   Registro sviluppo e deploy: capitolo «Calcolo crediti» (vedi anche
+     docs/crediti-cwp.md)
+   ========================================================================= */
 import React, { useRef, useState } from "react";
 import { COLORI as C } from "../../lib/cwpProgram.js";
 import { csvInOggetti, scriviCsv, scaricaTesto } from "../../lib/csv.js";
 
 /* Tabella di dati modificabile in pagina, con importazione da CSV (anche
    salvato da Excel) e scaricamento del modello.
-   colonne: [{ chiave, titolo, tipo: "testo"|"numero"|"si_no"|"scelta",
-               opzioni: [{valore, etichetta}], alias: [...], obbligatorio, larghezza }] */
+   Props:
+   - colonne: [{ chiave, titolo, tipo: "testo"|"numero"|"si_no"|"scelta",
+               opzioni: [{valore, etichetta}], alias: [...], obbligatorio, larghezza }]
+     (alias = altri titoli di colonna accettati nel CSV; larghezza in px);
+   - righe: array di oggetti { [chiave]: valore };
+   - onChange(nuoveRighe): chiamata a ogni modifica, importazione inclusa;
+   - solaLettura: mostra i valori come testo, senza comandi;
+   - nomeModello: nome del file CSV di modello (senza estensione);
+   - esempio: righe di esempio scritte nel modello;
+   - vuota: testo mostrato quando non ci sono righe. */
 export default function TabellaDati({ colonne, righe, onChange, solaLettura, nomeModello, esempio = [], vuota = "Nessuna riga." }) {
   const inputRef = useRef(null);
+  // Esito dell'ultima importazione: { errore: bool, testo }.
   const [messaggio, setMessaggio] = useState(null);
 
+  // Cambia un valore della riga i (crea un nuovo array: non modifica righe).
   function aggiorna(i, chiave, valore) {
     const nuove = righe.map((r, j) => (j === i ? { ...r, [chiave]: valore } : r));
     onChange(nuove);
   }
 
+  // Aggiunge una riga vuota in fondo: sì/no = false, scelta = prima
+  // opzione, altri campi = "". (La variabile locale «vuota» nasconde la prop
+  // con lo stesso nome solo dentro questa funzione.)
   function aggiungi() {
     const vuota = {};
     colonne.forEach((c) => (vuota[c.chiave] = c.tipo === "si_no" ? false : c.tipo === "scelta" ? c.opzioni?.[0]?.valore ?? "" : ""));
     onChange([...righe, vuota]);
   }
 
+  // Toglie la riga i.
   function rimuovi(i) {
     onChange(righe.filter((_, j) => j !== i));
   }
 
+  // Importa un CSV. Attenzione: le righe importate SOSTITUISCONO tutte quelle
+  // presenti (non si aggiungono). Le colonne si riconoscono dal titolo,
+  // dalla chiave o da un alias; le righe con errori vengono scartate e
+  // segnalate (primi 3 messaggi).
   async function importa(e) {
     const file = e.target.files?.[0];
     if (!file) return;
     const testo = await file.text();
+    // Schema per csvInOggetti: le colonne «scelta» si leggono come testo e
+    // si convertono sotto.
     const schema = colonne.map((c) => ({
       chiave: c.chiave,
       titoli: [c.titolo, c.chiave, ...(c.alias || [])],
@@ -57,9 +97,12 @@ export default function TabellaDati({ colonne, righe, onChange, solaLettura, nom
           (esito.erroriTotali ? ` ${esito.erroriTotali} righe scartate: ${esito.errori.slice(0, 3).join(" ")}` : ""),
       });
     }
+    // Svuota il selettore: così si può reimportare anche lo stesso file.
     if (inputRef.current) inputRef.current.value = "";
   }
 
+  // Scarica il modello CSV: intestazioni = titoli delle colonne, più le
+  // eventuali righe di esempio (sì/no scritti come «sì» / «no»).
   function modello() {
     scaricaTesto(
       `${nomeModello || "modello"}.csv`,
@@ -114,6 +157,9 @@ export default function TabellaDati({ colonne, righe, onChange, solaLettura, nom
                         {c.opzioni.map((o) => <option key={o.valore} value={o.valore}>{o.etichetta}</option>)}
                       </select>
                     ) : (
+                      // Campo numero: la prima virgola diventa punto; il valore
+                      // resta testo, la conversione in numero avviene dopo
+                      // (salvataggio in archivio.js e motore calcolo.js).
                       <input
                         value={r[c.chiave] ?? ""}
                         inputMode={c.tipo === "numero" ? "decimal" : undefined}
@@ -138,6 +184,7 @@ export default function TabellaDati({ colonne, righe, onChange, solaLettura, nom
   );
 }
 
+// Stili locali, più compatti di quelli di stili.js (celle di tabella).
 const campo = {
   width: "100%",
   boxSizing: "border-box",

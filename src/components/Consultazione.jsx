@@ -1,3 +1,40 @@
+/* =========================================================================
+   Consultazione
+   Scopo: riquadro «Consultazione pubblica» di un Progetto (fase 3,
+     requisiti §6). Lo staff apre la consultazione pubblicando un documento
+     per 30 giorni, modera le osservazioni, pubblica errata corrige e la
+     chiude. Il Comune legge le osservazioni ammesse e risponde.
+     Le osservazioni NON si scrivono qui: arrivano dalla pagina pubblica
+     /consultazioni/<id> (pagina ConsultazioniPubbliche e Edge Function
+     «consultazione-pubblica»), solo dopo la conferma dell'email
+     dell'autore (decisione D).
+   Usato da: DettaglioPratica.jsx (solo pratiche di tipo progetto).
+   Chi lo vede: operatore e admin (tutto, con nome ed email degli autori);
+     cliente/Comune (osservazioni ammesse, firmate «Partecipante» o con il
+     nome scelto dall'autore; può rispondere).
+   Dati: da src/lib/dati.js leggiConsultazione, apriConsultazione,
+     chiudiConsultazione, moderaCommento, rispondiCommento, elencaDocumenti,
+     elencaErrata, pubblicaErrataCorrige, autoriCommenti,
+     urlAllegatoCommento, urlDocumento. Tabelle consultazione, commento,
+     consultazione_errata, documento; archivi «documenti» e
+     «allegati-consultazione»; funzioni rispondi_commento (script 07),
+     staff_errata_corrige e staff_autori_commenti (script 17).
+   Sicurezza:
+     - garantito dal database: solo lo staff apre, chiude e modera
+       (RLS consult_write, commento_update); nome ed email degli autori non
+       sono leggibili dal portale (colonne escluse, script 17) e lo staff li
+       ottiene solo con staff_autori_commenti; il Comune risponde solo alle
+       osservazioni ammesse (rispondi_commento); gli allegati delle
+       osservazioni non ammesse non sono scaricabili dal Comune; l'errata
+       corrige con ripartenza dei 30 giorni richiede la motivazione e rende
+       pubblico il documento allegato;
+     - il Comune legge solo le osservazioni ammesse (Pubblicato /
+       Risposto): lo garantisce la policy commento_select dello script 19;
+       il filtro commentiVisibili qui sotto resta come seconda difesa.
+     Notifiche: apertura della consultazione (al Comune) e nuove
+     osservazioni (allo staff) le genera il database.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import React, { useEffect, useState } from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
@@ -28,20 +65,27 @@ import { campo, etichetta, btnPrimario, btnMini, btnLink, dataOra } from "./stil
      osservazioni ammesse, firmate «Partecipante» (o con il nome, se
      l'autore ha acconsentito), e risponde.
    - Errata corrige: lo staff decide caso per caso se far ripartire i 30
-     giorni, con motivazione (decisione B). */
+     giorni, con motivazione (decisione B).
+   Props: praticaId (id del Progetto). */
 export default function Consultazione({ praticaId }) {
   const { ruolo } = useAuth();
   const staff = ruolo === "operatore" || ruolo === "admin";
 
+  // cons: ultima consultazione della pratica con i suoi commenti (null = nessuna).
   const [cons, setCons] = useState(null);
+  // Documenti della pratica: per scegliere quello da pubblicare o l'errata corrige.
   const [documenti, setDocumenti] = useState([]);
   const [docSel, setDocSel] = useState("");
   const [errata, setErrata] = useState([]);
+  // Autori per id del commento: { [commento_id]: { autore_nome, autore_email, … } } (solo staff).
   const [autori, setAutori] = useState({});
   const [caricamento, setCaricamento] = useState(true);
+  // true mentre un'azione è in corso: disabilita i pulsanti.
   const [azione, setAzione] = useState(false);
   const [errore, setErrore] = useState("");
 
+  // Legge consultazione, documenti, errata corrige e (solo staff) gli autori.
+  // Se non c'è consultazione, preseleziona il documento più recente.
   async function carica() {
     setCaricamento(true);
     const { data } = await leggiConsultazione(praticaId);
@@ -52,6 +96,8 @@ export default function Consultazione({ praticaId }) {
     if (data) {
       const { data: er } = await elencaErrata(data.id);
       setErrata(er || []);
+      // La funzione del database rifiuta chi non è staff: per il Comune
+      // non si chiama nemmeno.
       if (staff) {
         const { data: au } = await autoriCommenti(data.id);
         setAutori(Object.fromEntries((au || []).map((a) => [a.commento_id, a])));
@@ -68,8 +114,11 @@ export default function Consultazione({ praticaId }) {
   if (caricamento) return <Riquadro>Caricamento…</Riquadro>;
 
   const residui = cons?.data_chiusura ? giorniA(cons.data_chiusura) : null;
+  // Indirizzo della pagina pubblica (stesso dominio del portale).
   const linkPubblico = cons ? `${window.location.origin}/consultazioni/${cons.id}` : "";
 
+  // Esegue un'azione, mostra l'eventuale errore e ricarica tutto.
+  // Restituisce true se è riuscita (serve ai moduli per chiudersi).
   async function esegui(fn) {
     setAzione(true);
     setErrore("");
@@ -80,16 +129,19 @@ export default function Consultazione({ praticaId }) {
     return !error;
   }
 
+  // Apre un documento della pratica (collegamento temporaneo, 60 secondi).
   async function apri(path) {
     const { data } = await urlDocumento(path);
     if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener");
   }
+  // Apre l'allegato di un'osservazione (archivio «allegati-consultazione»).
   async function apriAllegato(path) {
     const { data } = await urlAllegatoCommento(path);
     if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener");
   }
 
   // Il Comune vede solo le osservazioni ammesse; lo staff tutte.
+  // Attenzione: è un filtro di interfaccia (vedi «Sicurezza» in testa al file).
   const commentiVisibili = (cons?.commenti || []).filter(
     (c) => staff || c.stato === "pubblicato" || c.stato === "risposto"
   );
@@ -106,7 +158,9 @@ export default function Consultazione({ praticaId }) {
         )}
       </div>
 
-      {/* Nessuna consultazione: lo staff può aprirla */}
+      {/* Nessuna consultazione: lo staff può aprirla scegliendo uno dei
+          documenti della pratica (anche versioni precedenti o di altre fasi).
+          Apertura = oggi, chiusura = oggi + 30 giorni (apriConsultazione). */}
       {!cons && (
         staff ? (
           documenti.length ? (
@@ -184,6 +238,7 @@ export default function Consultazione({ praticaId }) {
                 <div key={c.id} style={{ border: `1px solid ${C.line}`, borderRadius: 9, padding: "11px 13px", background: c.stato === "non_pubblicato" ? "#faf8f3" : C.white }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 12, fontWeight: 600, color: C.grafite }}>
+                      {/* Staff: identità reale dell'autore; Comune: solo la firma pubblica. */}
                       {staff && a ? (
                         <>
                           {a.autore_nome || "—"} · {a.autore_email || "—"}
@@ -211,6 +266,9 @@ export default function Consultazione({ praticaId }) {
                     <RispostaCliente commento={c} inCorso={azione} onRispondi={(id, t) => esegui(() => rispondiCommento(id, t))} />
                   )}
 
+                  {/* Moderazione (staff, consultazione attiva): «ricevuto» →
+                      Pubblica o Non pubblicare; «pubblicato» → Non pubblicare.
+                      Un'osservazione già risposta non si modera più. */}
                   {staff && cons.attiva && (c.stato === "ricevuto" || c.stato === "pubblicato") && (
                     <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                       {c.stato === "ricevuto" && (
@@ -233,7 +291,12 @@ export default function Consultazione({ praticaId }) {
   );
 }
 
-/* Pubblicazione di un'errata corrige (staff). */
+/* Pubblicazione di un'errata corrige (staff).
+   Props: cons (consultazione attiva), documenti (della pratica), inCorso,
+   onPubblica({ testo, documentoId, riparte, motivazione }) → true se riuscita.
+   Effetto (staff_errata_corrige, script 17): se «riparte», la chiusura
+   diventa oggi + 30 giorni e la motivazione è obbligatoria; l'eventuale
+   documento collegato diventa pubblico. */
 function ModuloErrata({ cons, documenti, inCorso, onPubblica }) {
   const [aperto, setAperto] = useState(false);
   const [testo, setTesto] = useState("");
@@ -282,6 +345,11 @@ function ModuloErrata({ cons, documenti, inCorso, onPubblica }) {
   );
 }
 
+/* Risposta del Comune a un'osservazione ammessa (anche modifica di una
+   risposta già data). Props: commento, inCorso, onRispondi(id, testo) →
+   true se riuscita. La funzione rispondi_commento (script 07) controlla che
+   l'osservazione sia della pratica del Comune e ammessa, e la porta allo
+   stato «risposto». */
 function RispostaCliente({ commento, inCorso, onRispondi }) {
   const [aperta, setAperta] = useState(false);
   const [testo, setTesto] = useState(commento.risposta_testo || "");
@@ -303,6 +371,8 @@ function RispostaCliente({ commento, inCorso, onRispondi }) {
   );
 }
 
+// Etichetta e colori del badge per lo stato di un'osservazione.
+// Stati: ricevuto (da moderare), pubblicato, non_pubblicato, risposto.
 function statoCommento(stato) {
   switch (stato) {
     case "pubblicato": return { label: "Pubblicato", bg: "#dfe9db", fg: C.green };
@@ -312,6 +382,7 @@ function statoCommento(stato) {
   }
 }
 
+// Contenitore bianco del riquadro «Consultazione pubblica».
 function Riquadro({ children }) {
   return <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, padding: "18px 20px" }}>{children}</div>;
 }

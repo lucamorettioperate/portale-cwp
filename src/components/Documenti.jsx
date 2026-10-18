@@ -1,3 +1,34 @@
+/* =========================================================================
+   Documenti
+   Scopo: gestione documentale di una pratica: elenco con versioni,
+     caricamento di nuovi file e download. Lo staff sceglie anche tipologia
+     e visibilità (Cliente, Pubblico) e può cambiarle dopo il caricamento.
+     Due usi: documenti di una fase (prop fase) o documenti generali della
+     pratica (contratto, amministrativi: senza fase).
+   Usato da: DettaglioPratica.jsx (sotto ogni fase, in forma compatta, e
+     nel riquadro «Documenti generali»).
+   Chi lo vede: cliente/Comune (carica e scarica i documenti visibili a
+     lui), operatore e admin (tutti i documenti, visibilità, hash).
+   Dati: elencaDocumenti, caricaDocumento, urlDocumento,
+     aggiornaVisibilitaDocumento (src/lib/dati.js); tabella documento,
+     archivio privato «documenti»; controlli sui file in src/lib/file.js.
+   Sicurezza (garantita dal database):
+     - versione e «corrente» li calcola un trigger (script 07): un nuovo
+       file con lo stesso nome nella stessa pratica è la versione successiva,
+       la precedente diventa non corrente. Nulla viene sovrascritto;
+     - il Cliente non sceglie la visibilità: il trigger forza
+       visibile_cliente = true e pubblico = false (script 07);
+     - il Cliente vede solo i documenti visibili a lui o pubblici, e i file
+       nell'archivio con le stesse regole (script 02, 04, 07);
+     - il Cliente non può caricare su pratiche non attive (script 08);
+     - formati, dimensione (50 MB) e contenuto sono controllati anche
+       dall'archivio (script 14), non solo da src/lib/file.js;
+     - solo lo staff modifica la visibilità (RLS doc_update).
+     Notifiche (create dal database, script 09/17): un caricamento del
+     Comune avvisa lo staff; uno dello staff avvisa il Comune solo se il
+     documento è visibile al Cliente o pubblico.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import React, { useEffect, useRef, useState } from "react";
 import { COLORI as C, TIPOLOGIE_DOCUMENTO } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
@@ -11,12 +42,15 @@ import {
 import { ACCEPT, FORMATI_LEGGIBILI } from "../lib/file.js";
 
 /* Gestione documentale: elenco versionato e upload.
-   - fase: se passata, i documenti sono filtrati e legati a quella fase
-   - altrimenti mostra i documenti generali della pratica (senza fase)
-   Il cliente carica le proprie; lo staff carica e imposta la visibilità. */
-/* consentiCaricamento: false per il Comune sulle pratiche non attive
-   (sospese, annullate, chiuse): il pulsante «+ Carica» non compare
-   (backlog 24; il database rifiuta comunque il caricamento, script 08). */
+   Props:
+   - praticaId: id della pratica;
+   - fase: se passata, i documenti sono filtrati e legati a quella fase;
+     altrimenti mostra i documenti generali della pratica (senza fase);
+   - compatto: true sotto una fase (niente riquadro, titolo più piccolo);
+   - consentiCaricamento: false per il Comune sulle pratiche non attive
+     (sospese, annullate, chiuse): il pulsante «+ Carica» non compare
+     (backlog 24; il database rifiuta comunque il caricamento, script 08).
+   Il cliente carica i propri; lo staff carica e imposta la visibilità. */
 export default function Documenti({ praticaId, fase = null, compatto = false, consentiCaricamento = true }) {
   const { ruolo, utente } = useAuth();
   const staff = ruolo === "operatore" || ruolo === "admin";
@@ -28,11 +62,15 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
   const [errore, setErrore] = useState("");
   const inputRef = useRef(null);
   // Opzioni di caricamento dello staff (il Cliente non sceglie la visibilità).
+  // opzioni = true: lo staff ha premuto «+ Carica» e vede la barra delle
+  // opzioni con il pulsante «Scegli il file».
   const [opzioni, setOpzioni] = useState(false);
   const [tipologia, setTipologia] = useState(fase ? "Documento di progetto" : "Contratto");
   const [visCliente, setVisCliente] = useState(true);
   const [pubblico, setPubblico] = useState(false);
 
+  // Rilegge l'elenco (tutte le versioni, dalla più recente). Con faseId
+  // null si leggono solo i documenti generali.
   async function carica() {
     setCaricamento(true);
     const { data } = await elencaDocumenti(praticaId, faseId);
@@ -45,6 +83,8 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [praticaId, faseId]);
 
+  // File scelto: lo carica come nuova versione. Per il Cliente si inviano i
+  // valori fissi (visibile, non pubblico), che il database impone comunque.
   async function onFile(e) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -67,9 +107,13 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
       await carica();
     }
     setInUpload(false);
+    // Svuota il selettore: così si può ricaricare anche lo stesso file.
     if (inputRef.current) inputRef.current.value = "";
   }
 
+  // Staff: cambia una visibilità del documento. flag è un oggetto con il
+  // campo da aggiornare, es. { visibile_cliente: false } o { pubblico: true }.
+  // La modifica è registrata nell'audit dal database.
   async function cambiaVisibilita(doc, flag) {
     setErrore("");
     const { error } = await aggiornaVisibilitaDocumento(doc.id, flag);
@@ -77,6 +121,7 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
     else carica();
   }
 
+  // Apre il file con un collegamento temporaneo (valido 60 secondi).
   async function scarica(doc) {
     const { data } = await urlDocumento(doc.storage_path);
     if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener");
@@ -96,6 +141,9 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
         <h3 style={{ fontFamily: "'Archivo'", fontSize: compatto ? 13 : 15, margin: 0, color: compatto ? C.grafite : C.ink }}>
           {titolo}
         </h3>
+        {/* Tre casi: caricamento non consentito → niente; staff → prima
+            «+ Carica» (apre le opzioni) e poi «Scegli il file»; Cliente →
+            «+ Carica» apre subito la scelta del file. */}
         {!consentiCaricamento ? null : staff && !opzioni ? (
           <button
             onClick={() => setOpzioni(true)}
@@ -168,6 +216,7 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
 
       {documenti.length > 0 && (
         <div style={{ display: "grid", gap: 8 }}>
+          {/* Le versioni non correnti restano in elenco, attenuate. */}
           {documenti.map((d) => (
             <div
               key={d.id}
@@ -196,6 +245,7 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
                 </div>
                 <div style={{ fontSize: 11, color: C.grafite, marginTop: 2 }}>
                   {new Date(d.creato_il).toLocaleString("it-IT")}
+                  {/* Primi caratteri dell'impronta SHA-256 calcolata al caricamento. */}
                   {staff && d.hash_file && <> · hash {d.hash_file.slice(0, 10)}…</>}
                 </div>
                 {staff && (

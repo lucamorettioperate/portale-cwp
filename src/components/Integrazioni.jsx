@@ -1,3 +1,26 @@
+/* =========================================================================
+   Integrazioni
+   Scopo: richieste di integrazione di una fase (requisiti §4). Ciclo:
+     l'Operatore richiede → il Cliente carica un documento e risponde →
+     l'Operatore chiude la richiesta. Con la chiusura della fase la
+     possibilità di integrare termina. La richiesta si crea da
+     DettaglioPratica (pulsante «Richiedi integrazione»), non da qui.
+   Usato da: DettaglioPratica.jsx (sotto ogni fase che ha richieste).
+   Chi lo vede: cliente/Comune (risponde caricando un file), operatore e
+     admin (scaricano la risposta e chiudono la richiesta).
+   Dati: caricaDocumento, rispondiIntegrazione, chiudiIntegrazione,
+     urlDocumento (src/lib/dati.js); tabelle richiesta_integrazione e
+     documento, archivio «documenti»; funzioni del database
+     cliente_rispondi_integrazione e staff_chiudi_integrazione (script 08).
+   Sicurezza (garantita dal database, script 08): il Cliente può rispondere
+     solo a richieste aperte delle sue pratiche, su fase non chiusa e
+     pratica attiva, con un documento della stessa pratica. Solo lo staff
+     chiude; chiudere senza risposta richiede la motivazione (audit). Quando
+     non restano richieste aperte la fase torna «in corso». Le notifiche
+     (richiesta, risposta) le genera il database. I controlli qui sotto
+     servono solo a mostrare o nascondere i pulsanti.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import React, { useRef, useState } from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
@@ -14,12 +37,16 @@ import { formatoData } from "../lib/date.js";
 /* Richieste di integrazione di una fase (requisiti §4).
    Ciclo: l'Operatore richiede → il Cliente carica un documento e risponde
    → l'Operatore chiude la richiesta. Con la chiusura della fase la
-   possibilità di integrare termina. */
+   possibilità di integrare termina.
+   Props: pratica, fase (righe del database), richieste (quelle di questa
+   fase, lette da DettaglioPratica), onCambio() (fa ricaricare la pratica
+   al genitore dopo ogni azione). Senza richieste non mostra nulla. */
 export default function Integrazioni({ pratica, fase, richieste, onCambio }) {
   const { ruolo } = useAuth();
   const staff = ruolo === "operatore" || ruolo === "admin";
   if (!richieste.length) return null;
 
+  // Fase aperta = «in corso» o «in attesa di integrazione».
   const faseAperta = fase.stato !== "completata" && fase.stato !== "non_iniziata";
   const praticaAttiva = pratica.stato === "attiva";
 
@@ -41,20 +68,32 @@ export default function Integrazioni({ pratica, fase, richieste, onCambio }) {
   );
 }
 
+/* Una singola richiesta di integrazione, con stato, date, documento di
+   risposta e le azioni consentite.
+   Props: richiesta (riga di richiesta_integrazione con il documento di
+   risposta collegato), pratica, fase, staff, puoRispondere (calcolato dal
+   genitore), onCambio. */
 function Richiesta({ richiesta: r, pratica, fase, staff, puoRispondere, onCambio }) {
   const [errore, setErrore] = useState("");
   const [inCorso, setInCorso] = useState(false);
   const [nota, setNota] = useState("");
+  // true = lo staff ha chiesto di chiudere senza risposta: compare il campo motivazione.
   const [chiusura, setChiusura] = useState(false);
   const [motivazione, setMotivazione] = useState("");
   const inputRef = useRef(null);
 
+  // Stato mostrato: chiusa → risposta ricevuta (documento presente) → in attesa.
   const stato = r.risolta
     ? { label: "Chiusa", bg: "#dfe9db", fg: C.green }
     : r.documento_risposta_id
       ? { label: "Risposta ricevuta", bg: C.ocraSoft, fg: C.ocra }
       : { label: "In attesa del Cliente", bg: "#f6dcd6", fg: C.red };
 
+  // Il Cliente sceglie un file: in due passi lo carica come documento della
+  // fase (nuova versione, controlli su formato e dimensione in caricaDocumento)
+  // e poi lo collega alla richiesta. Se il secondo passo fallisce il
+  // documento resta comunque caricato nella fase.
+  // Effetto: il database notifica lo staff della risposta.
   async function onFile(e) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -72,9 +111,13 @@ function Richiesta({ richiesta: r, pratica, fase, staff, puoRispondere, onCambio
       }
     }
     setInCorso(false);
+    // Svuota il selettore: così si può ricaricare anche lo stesso file.
     if (inputRef.current) inputRef.current.value = "";
   }
 
+  // Staff: chiude la richiesta. Con risposta si chiude subito; senza
+  // risposta il primo clic mostra il campo motivazione, il secondo conferma
+  // (la motivazione obbligatoria la verifica il database).
   async function chiudi() {
     setErrore("");
     // Senza risposta del Cliente la chiusura è un'eccezione: serve la motivazione.
@@ -92,6 +135,7 @@ function Richiesta({ richiesta: r, pratica, fase, staff, puoRispondere, onCambio
     }
   }
 
+  // Apre il documento di risposta con un collegamento temporaneo (60 secondi).
   async function scarica() {
     const { data } = await urlDocumento(r.documento.storage_path);
     if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener");
@@ -152,9 +196,6 @@ function Richiesta({ richiesta: r, pratica, fase, staff, puoRispondere, onCambio
           <div style={{ fontSize: 11.5, color: C.grafite, width: "100%" }}>Formati accettati: {FORMATI_LEGGIBILI}</div>
         </div>
       )}
-      {!staff && !r.risolta && fase.stato === "completata" && (
-        <div style={{ fontSize: 12, color: C.grafite, marginTop: 8 }}>La fase è chiusa: non è più possibile integrare.</div>
-      )}
 
       {/* Staff: chiusura della richiesta */}
       {staff && !r.risolta && (
@@ -184,6 +225,7 @@ function Richiesta({ richiesta: r, pratica, fase, staff, puoRispondere, onCambio
   );
 }
 
+// Stili locali (simili a quelli di stili.js, ma con misure proprie).
 const campo = {
   padding: "7px 10px",
   border: `1px solid ${C.line}`,

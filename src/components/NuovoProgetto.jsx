@@ -1,3 +1,23 @@
+/* =========================================================================
+   NuovoProgetto
+   Scopo: finestra (sovrapposta alla pagina) per creare un nuovo Progetto.
+     Si sceglie un'organizzazione esistente o se ne crea una nuova, si
+     indicano codice (facoltativo) e titolo; alla creazione vengono generate
+     le 7 fasi, con la fase 1 «in corso».
+   Usato da: pagina BackOffice (/pratiche), pulsante di nuovo progetto.
+   Chi lo vede: operatore e admin.
+   Dati: elencaOrganizzazioni, creaOrganizzazione, creaPratica
+     (src/lib/dati.js); tabelle organizzazione, pratica, fase.
+   Sicurezza (garantita dal database, script 02): solo lo staff può creare
+     organizzazioni e pratiche (RLS org_write, pratica_write). Codice vuoto:
+     lo assegna un trigger (CWP-AAAA-NNNN, script 09); un codice scritto a
+     mano viene invece mantenuto così com'è.
+     Attenzione: creaPratica fa due inserimenti separati (pratica, poi
+     fasi). Se il secondo fallisce la pratica resta senza fasi e qui si vede
+     l'errore; anche un'organizzazione nuova resta creata se poi fallisce la
+     pratica.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import React, { useEffect, useState } from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
@@ -8,8 +28,11 @@ import {
 } from "../lib/dati.js";
 
 /* Finestra per creare un nuovo progetto.
-   Si può scegliere un'organizzazione esistente o crearne una nuova. */
+   Si può scegliere un'organizzazione esistente o crearne una nuova.
+   Props: onChiudi() (clic su Annulla o fuori dalla finestra),
+   onCreato(id) (progetto creato: la pagina lo apre). */
 export default function NuovoProgetto({ onChiudi, onCreato }) {
+  // ruolo e utente oggi non sono usati in questo componente.
   const { ruolo, utente } = useAuth();
   const [organizzazioni, setOrganizzazioni] = useState([]);
   const [modoOrg, setModoOrg] = useState("esistente"); // 'esistente' | 'nuova'
@@ -20,6 +43,8 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
   const [errore, setErrore] = useState("");
   const [inCorso, setInCorso] = useState(false);
 
+  // Carica le organizzazioni (in ordine alfabetico) e preseleziona la
+  // prima; se non ce n'è nessuna si passa direttamente a «Nuova».
   useEffect(() => {
     elencaOrganizzazioni().then(({ data }) => {
       setOrganizzazioni(data || []);
@@ -28,6 +53,8 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
     });
   }, []);
 
+  // Invio del modulo: crea l'organizzazione (se «Nuova»), poi la pratica
+  // con le sue 7 fasi, infine passa l'id alla pagina con onCreato.
   async function onSubmit(e) {
     e.preventDefault();
     setErrore("");
@@ -61,6 +88,7 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
     const { data: pratica, error } = await creaPratica({
       tipo: "progetto",
       organizzazione_id: organizzazioneId,
+      // null = codice automatico assegnato dal database.
       codice: codice.trim() || null,
       titolo: titolo.trim() || null,
       stato: "attiva",
@@ -77,6 +105,8 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
   }
 
   return (
+    // Sfondo scuro a tutto schermo: un clic fuori dalla finestra la chiude
+    // (il clic dentro è fermato da stopPropagation).
     <div
       style={{
         position: "fixed",
@@ -170,6 +200,9 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
   );
 }
 
+// Pulsante a linguetta («Organizzazione esistente» / «Nuova»).
+// Props: attivo (evidenziato), children, e le altre props del <button>
+// (onClick, disabled…).
 function TabBtn({ attivo, children, ...props }) {
   return (
     <button
@@ -193,6 +226,7 @@ function TabBtn({ attivo, children, ...props }) {
   );
 }
 
+// Stili locali della finestra (misure più grandi di stili.js).
 const campo = {
   width: "100%",
   padding: "10px 12px",

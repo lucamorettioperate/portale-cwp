@@ -1,3 +1,26 @@
+/* =========================================================================
+   RegistroCrediti
+   Scopo: registro dei crediti (backlog 7), vista «Registro» della pagina
+     Crediti CWP. Elenca i calcoli ex post confermati con il numero di
+     registro assegnato dal database alla conferma (CWP-REG-AAAA-NNNN). Un
+     calcolo corretto con una nuova versione confermata resta nel registro
+     come «Sostituito»: valgono solo i crediti delle righe «Valido».
+     Mostra i totali per ente e anno di riferimento, filtra le sole righe
+     valide, esporta il registro in CSV e apre il calcolo con un clic.
+     Le stime ex ante non entrano nel registro.
+   Usato da: pagina Crediti (/crediti), vista «registro».
+   Chi lo vede: admin.
+   Dati: funzione del database admin_registro_crediti (script 18), chiamata
+     direttamente con il client supabase (non passa da src/lib/dati.js);
+     legge calcolo_crediti, pratica, organizzazione, profilo. Export CSV
+     con scriviCsv / scaricaTesto (src/lib/csv.js).
+   Sicurezza (garantita dal database, script 18): la funzione rifiuta chi
+     non è Amministratore; il numero di registro lo assegna solo il database
+     alla conferma (vietato in inserimento e sulle bozze) e non si riusa;
+     i calcoli confermati sono immutabili. Questo componente legge soltanto.
+   Registro sviluppo e deploy: capitolo «Calcolo crediti» (vedi anche
+     docs/crediti-cwp.md)
+   ========================================================================= */
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { COLORI as C } from "../../lib/cwpProgram.js";
@@ -6,22 +29,22 @@ import { supabase } from "../../lib/supabase.js";
 import { scriviCsv, scaricaTesto } from "../../lib/csv.js";
 import { formatoData } from "../../lib/date.js";
 
-/* =========================================================================
-   Registro dei crediti (backlog 7) — Crediti CWP, solo Amministratori.
-   Elenca i calcoli ex post confermati con il numero di registro assegnato
-   dal database alla conferma (CWP-REG-AAAA-NNNN, script 18). Un calcolo
-   corretto con una nuova versione confermata resta nel registro come
-   «Sostituito»: valgono solo i crediti delle righe «Valido».
-   I totali sono per ente e per anno di riferimento.
-   ========================================================================= */
+// Numero in formato italiano con d decimali (crediti in tCO2eq: 3 decimali).
 const fmt = (v, d = 3) => (v == null ? "—" : Number(v).toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d }));
 
+/* Registro dei crediti. Nessuna prop.
+   Ogni riga: numero_registro, calcolo_id, pratica_codice, ente, anno,
+   crediti_lordi, buffer_pct, crediti_netti, confermato_il, confermato_da
+   (nome o email), sostituito_da (numero della versione che lo sostituisce),
+   valido (true se non sostituito). */
 export default function RegistroCrediti() {
   const navigate = useNavigate();
+  // null = in caricamento; [] = registro vuoto.
   const [righe, setRighe] = useState(null);
   const [errore, setErrore] = useState("");
   const [soloValidi, setSoloValidi] = useState(false);
 
+  // Legge il registro una volta, all'apertura della vista.
   useEffect(() => {
     supabase.rpc("admin_registro_crediti").then(({ data, error }) => {
       if (error) setErrore(error.message);
@@ -30,6 +53,8 @@ export default function RegistroCrediti() {
   }, []);
 
   const visibili = (righe || []).filter((r) => !soloValidi || r.valido);
+  // Totali per coppia ente + anno, calcolati solo sulle righe valide
+  // (indipendenti dal filtro «Solo le righe valide»).
   const totali = useMemo(() => {
     const m = new Map();
     (righe || []).filter((r) => r.valido).forEach((r) => {
@@ -44,6 +69,8 @@ export default function RegistroCrediti() {
   }, [righe]);
   const totaleNetti = totali.reduce((s, t) => s + t.netti, 0);
 
+  // Scarica l'intero registro in CSV (tutte le righe, anche le sostituite,
+  // a prescindere dal filtro). Nome file con la data di oggi in UTC.
   function esporta() {
     scaricaTesto(
       `registro_crediti_CWP_${new Date().toISOString().slice(0, 10)}.csv`,
@@ -107,6 +134,7 @@ export default function RegistroCrediti() {
           <tbody>
             {righe === null && <tr><td colSpan={8} style={{ ...td, color: C.grafite }}>Caricamento…</td></tr>}
             {righe && visibili.length === 0 && <tr><td colSpan={8} style={{ ...td, color: C.grafite }}>Nessun calcolo registrato: il registro si popola alla conferma dei calcoli ex post.</td></tr>}
+            {/* Clic sulla riga: apre il calcolo (/crediti/:id). */}
             {visibili.map((r) => (
               <tr key={r.numero_registro} onClick={() => navigate(`/crediti/${r.calcolo_id}`)} style={{ borderTop: `1px solid ${C.line}`, cursor: "pointer", opacity: r.valido ? 1 : 0.6 }}>
                 <td style={{ ...td, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{r.numero_registro}</td>
@@ -130,6 +158,7 @@ export default function RegistroCrediti() {
   );
 }
 
+// Stili locali.
 const card = { background: C.white, border: `1px solid ${C.line}`, borderRadius: 12, padding: "10px 14px" };
 const btnMini = { background: C.white, color: C.green, border: `1px solid ${C.green}`, borderRadius: 8, padding: "7px 12px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" };
 const th = { padding: "10px 14px", fontWeight: 700 };

@@ -1,3 +1,21 @@
+/* =========================================================================
+   Cruscotto — indirizzo «/» per Operatore e Admin (src/App.jsx, HomePerRuolo)
+   Scopo: (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso,
+     in scadenza, scadute, in attesa del Cliente, integrazioni da
+     verificare, consultazioni attive) e tabella di tutte le pratiche,
+     Progetti e Rapporti, con ricerca e filtri per stato, tipo, anno e fase.
+     Un clic su una riga apre la pratica in «/pratiche?id=…».
+   Chi la usa: Operatore e Amministratore.
+   Dati: leggiCruscotto() di src/lib/dati.js = RPC staff_cruscotto
+     (script 09): una riga per pratica con fase corrente, scadenza, giorni
+     alla scadenza, conteggio integrazioni e stato della consultazione.
+     Tutti i filtri lavorano nel browser su queste righe.
+   Sicurezza: staff_cruscotto rifiuta chi non è staff (app_is_staff, che
+     richiede anche la verifica a due fattori se attiva). La pagina non ha
+     un proprio controllo di ruolo: un cliente non ci arriva perché
+     HomePerRuolo gli mostra l'Area Cliente.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)».
+   ========================================================================= */
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { COLORI as C, STATI_PRATICA, STATI_FASE } from "../lib/cwpProgram.js";
@@ -10,6 +28,10 @@ import { formatoData } from "../lib/date.js";
 const SOGLIA_SCADENZA = 7;
 
 // Riquadri del cruscotto (requisiti §8): ciascuno è anche un filtro.
+// - test(p): vero se la riga p del cruscotto rientra nel riquadro
+// - tono: colore del numero quando è > 0 ("amber" o "red"); assente = neutro.
+// giorni_scadenza è calcolato dal database solo per fasi aperte (in corso o
+// in attesa di integrazione): negativo = scaduta, null = nessuna scadenza.
 const RIQUADRI = [
   { id: "in_corso", label: "Pratiche in corso", test: (p) => p.stato === "attiva" },
   {
@@ -19,18 +41,22 @@ const RIQUADRI = [
     tono: "amber",
   },
   { id: "scadute", label: "Scadute", test: (p) => p.stato === "attiva" && p.giorni_scadenza != null && p.giorni_scadenza < 0, tono: "red" },
+  // Integrazioni non risolte: senza documento di risposta = attende il
+  // Cliente; con documento = tocca alla Fondazione verificarlo.
   { id: "attesa_cliente", label: "In attesa del Cliente", test: (p) => p.integrazioni_in_attesa > 0 },
   { id: "da_verificare", label: "Integrazioni da verificare", test: (p) => p.integrazioni_da_verificare > 0 },
   { id: "consultazioni", label: "Consultazioni attive", test: (p) => p.consultazione_attiva },
 ];
 
 /* Cruscotto del back-office: riquadri di sintesi e ricerca delle pratiche
-   per organizzazione, progetto, stato, anno e fase. */
+   per organizzazione, progetto, stato, anno e fase. Nessuna prop.
+   I filtri non sono salvati: si azzerano ricaricando la pagina. */
 export default function Cruscotto() {
   const navigate = useNavigate();
   const [righe, setRighe] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState("");
+  // Riquadro selezionato come filtro (id di RIQUADRI) oppure null.
   const [riquadro, setRiquadro] = useState(null);
   const [testo, setTesto] = useState("");
   const [stato, setStato] = useState("");
@@ -38,6 +64,7 @@ export default function Cruscotto() {
   const [anno, setAnno] = useState("");
   const [fase, setFase] = useState("");
 
+  // Lettura una tantum all'apertura della pagina.
   useEffect(() => {
     (async () => {
       const { data, error } = await leggiCruscotto();
@@ -47,11 +74,15 @@ export default function Cruscotto() {
     })();
   }, []);
 
+  // Anni di monitoraggio presenti (solo i Rapporti ne hanno uno), per il filtro.
   const anni = useMemo(
     () => [...new Set(righe.map((r) => r.anno_monitoraggio).filter(Boolean))].sort((a, b) => a - b),
     [righe]
   );
 
+  // Righe che rispettano TUTTI i filtri attivi (riquadro, testo, stato,
+  // tipo, anno, fase). I valori delle tendine sono stringhe: per anno e fase
+  // si confronta con String(...).
   const filtrate = useMemo(() => {
     const q = testo.trim().toLowerCase();
     const r = RIQUADRI.find((x) => x.id === riquadro);
@@ -67,6 +98,7 @@ export default function Cruscotto() {
   }, [righe, riquadro, testo, stato, tipo, anno, fase]);
 
   const filtriAttivi = riquadro || testo || stato || tipo || anno || fase;
+  // Toglie tutti i filtri (pulsante «Azzera filtri»).
   function azzera() {
     setRiquadro(null);
     setTesto("");
@@ -87,6 +119,8 @@ export default function Cruscotto() {
         {/* Riquadri di sintesi */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 12, marginBottom: 20 }}>
           {RIQUADRI.map((r) => {
+            // Il conteggio è su tutte le pratiche, non su quelle filtrate.
+            // Un secondo clic sul riquadro selezionato toglie il filtro.
             const n = righe.filter(r.test).length;
             const sel = riquadro === r.id;
             const colore = n > 0 && r.tono === "red" ? C.red : n > 0 && r.tono === "amber" ? C.amber : C.ink;
@@ -175,6 +209,8 @@ export default function Cruscotto() {
                     style={{ borderTop: `1px solid ${C.line}`, cursor: "pointer" }}
                   >
                     <td style={td}>
+                      {/* Link vero (apribile in nuova scheda) ma, al clic
+                          normale, navigazione interna senza ricaricare. */}
                       <a href={`/pratiche?id=${p.id}`} onClick={(e) => { e.preventDefault(); navigate(`/pratiche?id=${p.id}`); }} style={{ color: C.ink, fontWeight: 700, textDecoration: "none" }}>
                         {p.codice || "senza codice"}
                       </a>
@@ -219,6 +255,7 @@ export default function Cruscotto() {
   );
 }
 
+// Stili di campi di ricerca/tendine e celle della tabella.
 const campo = {
   padding: "8px 10px",
   border: `1px solid ${C.line}`,

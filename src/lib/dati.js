@@ -1,12 +1,50 @@
 /* =========================================================================
-   Strato di accesso ai dati — legge e scrive su Supabase.
-   Tutte le funzioni restituiscono { data, error } come il client Supabase.
+   dati.js — strato di accesso ai dati: legge e scrive su Supabase.
+
+   Scopo: raccoglie in un solo posto tutte le letture e scritture del
+   portale su tabelle, funzioni del database (RPC), archivi (Storage) ed
+   Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js)
+   e l'autenticazione (src/lib/AuthContext.jsx).
+   Tutte le funzioni restituiscono { data, error } come il client Supabase
+   (salvo nomeUtente, che restituisce direttamente il nome).
+
+   Usato da: pagine AreaCliente, Audit, BackOffice, CalcoloCrediti, Crediti,
+   Cruscotto, ConsultazioniPubbliche, GestioneUtenti, Impostazioni,
+   TuoiDocumenti; componenti Consultazione, DettaglioPratica, Documenti,
+   Integrazioni, Messaggi, NoteFase, Notifiche, NuovoProgetto, Pagamenti,
+   Rapporti, crediti/ImportaTracciato, impostazioni/EntiValidazione,
+   impostazioni/ModelliDocumento; src/lib/fascicolo.js.
+
+   Dati/servizi coinvolti (dettaglio sopra ogni funzione):
+   - tabelle create in 01_schema.sql, 09, 13 e 17; regole RLS in
+     02_sicurezza.sql e negli script successivi;
+   - RPC definite in 05, 06, 07, 08, 09, 10, 13, 17;
+   - archivi Storage `documenti` (04_storage.sql, limiti in 14),
+     `modelli` e `allegati-consultazione` (17_pratiche.sql);
+   - Edge Functions crea-utente, reimposta-password, consultazione-pubblica.
+
+   Sicurezza: il browser usa solo la chiave anon con la sessione
+   dell'utente. Chi può fare cosa lo decide il database (RLS, trigger,
+   funzioni "security definer" che controllano ruolo e stato della
+   pratica). Un errore "row-level security" significa che la regola ha
+   respinto l'operazione, non che il codice qui sia sbagliato.
+   L'audit lo scrivono i trigger del database: qui non si scrive mai.
+
+   Regola di rilascio: una funzione nuova qui che chiama una RPC nuova va
+   pubblicata DOPO lo script SQL che la crea (prima il database, poi il portale).
+
+   Registro sviluppo e deploy: capitolo 4 «Database» (script e funzioni);
+   capitolo 6 «Portale (frontend)»; capitolo 8 «Procedure di rilascio».
    ========================================================================= */
 import { supabase } from "./supabase.js";
 import { FASI } from "./cwpProgram.js";
 import { verificaFile, traduciErroreArchivio } from "./file.js";
 
 // ---- Organizzazioni ----
+
+// Elenco delle organizzazioni (Comuni, enti, gestori) in ordine alfabetico.
+// Tabella `organizzazione` (01_schema.sql); RLS org_select (06_utente_multi_org.sql):
+// lo staff vede tutte, il cliente solo quelle a cui è associato.
 export async function elencaOrganizzazioni() {
   return await supabase
     .from("organizzazione")
@@ -14,6 +52,9 @@ export async function elencaOrganizzazioni() {
     .order("denominazione", { ascending: true });
 }
 
+// Crea una nuova organizzazione e restituisce la riga inserita.
+// Parametro: oggetto con le colonne di `organizzazione` (denominazione, tipo, …).
+// Tabella `organizzazione` (01_schema.sql); RLS org_write (02_sicurezza.sql): solo staff.
 export async function creaOrganizzazione(dati) {
   return await supabase.from("organizzazione").insert(dati).select().single();
 }
@@ -21,6 +62,8 @@ export async function creaOrganizzazione(dati) {
 // ---- Pratiche (Progetti e Rapporti) ----
 
 // Elenca i progetti (pratiche di tipo 'progetto') con la loro organizzazione.
+// Dal più recente. Tabella `pratica` (01_schema.sql); RLS pratica_select
+// (06_utente_multi_org.sql): il cliente vede solo le pratiche delle sue organizzazioni.
 export async function elencaProgetti() {
   return await supabase
     .from("pratica")
@@ -29,7 +72,8 @@ export async function elencaProgetti() {
     .order("creato_il", { ascending: false });
 }
 
-// Elenca i rapporti di un progetto.
+// Elenca i Rapporti di Monitoraggio di un progetto, per anno crescente.
+// Parametro: id del progetto padre. Tabella `pratica` (01_schema.sql), stessa RLS.
 export async function elencaRapporti(progettoId) {
   return await supabase
     .from("pratica")
@@ -39,7 +83,9 @@ export async function elencaRapporti(progettoId) {
     .order("anno_monitoraggio", { ascending: true });
 }
 
-// Legge una singola pratica con organizzazione e fasi.
+// Legge una singola pratica con organizzazione, Ente di Validazione e fasi.
+// Tabelle `pratica`, `organizzazione`, `ente_validazione`, `fase` (01_schema.sql;
+// colonna pratica.ente_validazione_id). Errore se la RLS non la mostra.
 export async function leggiPratica(id) {
   return await supabase
     .from("pratica")
@@ -49,6 +95,13 @@ export async function leggiPratica(id) {
 }
 
 // Crea una pratica e genera automaticamente le sue 7 fasi.
+// Parametro: colonne della pratica (tipo, organizzazione_id, titolo, …).
+// Restituisce la pratica creata. Scritture: una riga in `pratica` e sette
+// in `fase` (01_schema.sql; RLS pratica_write e fase_write in
+// 02_sicurezza.sql: solo staff). Il codice CWP-AAAA-NNNN (o -RMn per i
+// rapporti) lo assegna il trigger trg_pratica_codice (09_cruscotto_pagamenti_notifiche.sql).
+// Attenzione: le due insert non sono una transazione. Se fallisce la
+// seconda, la pratica resta senza fasi e l'errore viene restituito.
 export async function creaPratica(dati) {
   const { data: pratica, error } = await supabase
     .from("pratica")
@@ -57,7 +110,8 @@ export async function creaPratica(dati) {
     .single();
   if (error) return { data: null, error };
 
-  // Genera le 7 fasi standard.
+  // Genera le 7 fasi standard (cwpProgram.js): la fase 1 "Adesione" parte
+  // già in corso, le altre si aprono dal back-office con staff_apri_fase.
   const fasi = FASI.map((f) => ({
     pratica_id: pratica.id,
     numero: f.numero,
@@ -75,15 +129,23 @@ export async function creaPratica(dati) {
 // Ogni azione critica richiede una motivazione, registrata nell'audit.
 
 // Apre una fase: data di apertura oggi, scadenza calcolata dai giorni del Programma.
+// RPC `staff_apri_fase` (08_integrazioni_azioni.sql; durata letta da
+// cwp_durata_fase, tabella durata_fase di 13_durata_fasi.sql). Rifiuta se la
+// pratica non è attiva o la fase è già aperta. Effetti: aggiorna `fase`,
+// audit e notifiche dai trigger.
 export async function apriFase(faseId) {
   return await supabase.rpc("staff_apri_fase", { p_fase: faseId });
 }
 
 // Chiude una fase. La motivazione è obbligatoria solo se restano integrazioni aperte.
+// RPC `staff_chiudi_fase` (08_integrazioni_azioni.sql). Effetti: fase completata,
+// audit e notifiche dai trigger.
 export async function chiudiFase(faseId, motivazione = null) {
   return await supabase.rpc("staff_chiudi_fase", { p_fase: faseId, p_motivazione: motivazione });
 }
 
+// Cambia la scadenza di una fase. Parametri: id fase, nuova data (aaaa-mm-gg),
+// motivazione obbligatoria. RPC `staff_modifica_scadenza` (08_integrazioni_azioni.sql).
 export async function modificaScadenzaFase(faseId, data, motivazione) {
   return await supabase.rpc("staff_modifica_scadenza", {
     p_fase: faseId,
@@ -92,6 +154,10 @@ export async function modificaScadenzaFase(faseId, data, motivazione) {
   });
 }
 
+// Cambia lo stato di una pratica (attiva / sospesa / annullata / chiusa),
+// con motivazione obbligatoria. RPC `staff_cambia_stato_pratica`
+// (08_integrazioni_azioni.sql). Una pratica non attiva blocca i caricamenti
+// del cliente (policy doc_insert, 08).
 export async function cambiaStatoPratica(praticaId, stato, motivazione) {
   return await supabase.rpc("staff_cambia_stato_pratica", {
     p_pratica: praticaId,
@@ -102,6 +168,9 @@ export async function cambiaStatoPratica(praticaId, stato, motivazione) {
 
 // ---- Richieste di integrazione ----
 
+// Richieste di integrazione di una pratica, con il documento di risposta.
+// Tabella `richiesta_integrazione` (01_schema.sql; RLS integr_select in
+// 02_sicurezza.sql: staff e cliente della pratica).
 export async function elencaIntegrazioni(praticaId) {
   return await supabase
     .from("richiesta_integrazione")
@@ -110,6 +179,9 @@ export async function elencaIntegrazioni(praticaId) {
     .order("creato_il", { ascending: true });
 }
 
+// Lo staff chiede un'integrazione su una fase (la fase passa "in attesa di
+// integrazione"). RPC `staff_richiedi_integrazione` (08_integrazioni_azioni.sql).
+// Effetti: nuova richiesta, notifica ed email al cliente dai trigger (09, 12).
 export async function richiediIntegrazione(faseId, descrizione) {
   return await supabase.rpc("staff_richiedi_integrazione", {
     p_fase: faseId,
@@ -117,6 +189,9 @@ export async function richiediIntegrazione(faseId, descrizione) {
   });
 }
 
+// Il cliente risponde a una richiesta collegando un documento già caricato
+// (caricaDocumento) e una nota facoltativa.
+// RPC `cliente_rispondi_integrazione` (08_integrazioni_azioni.sql).
 export async function rispondiIntegrazione(richiestaId, documentoId, nota = null) {
   return await supabase.rpc("cliente_rispondi_integrazione", {
     p_richiesta: richiestaId,
@@ -125,6 +200,8 @@ export async function rispondiIntegrazione(richiestaId, documentoId, nota = null
   });
 }
 
+// Lo staff chiude una richiesta di integrazione (motivazione facoltativa).
+// RPC `staff_chiudi_integrazione` (08_integrazioni_azioni.sql).
 export async function chiudiIntegrazione(richiestaId, motivazione = null) {
   return await supabase.rpc("staff_chiudi_integrazione", {
     p_richiesta: richiestaId,
@@ -133,11 +210,16 @@ export async function chiudiIntegrazione(richiestaId, motivazione = null) {
 }
 
 // Aggiorna lo stato di una fase (es. apertura/chiusura).
+// Scrittura diretta sulla tabella `fase` (RLS fase_write, 02_sicurezza.sql:
+// solo staff), senza i controlli delle RPC: per aprire, chiudere o spostare
+// la scadenza preferire apriFase / chiudiFase / modificaScadenzaFase.
 export async function aggiornaFase(faseId, modifiche) {
   return await supabase.from("fase").update(modifiche).eq("id", faseId).select().single();
 }
 
 // Aggiorna lo stato di una pratica.
+// Scrittura diretta sulla tabella `pratica` (RLS pratica_write, 02_sicurezza.sql:
+// solo staff). Per cambiare lo stato con motivazione usare cambiaStatoPratica.
 export async function aggiornaPratica(id, modifiche) {
   return await supabase.from("pratica").update(modifiche).eq("id", id).select().single();
 }
@@ -148,6 +230,9 @@ export async function aggiornaPratica(id, modifiche) {
 // - faseId undefined: tutti i documenti della pratica
 // - faseId = "<id>": solo i documenti di quella fase
 // - faseId = null: solo i documenti generali (non legati a una fase)
+// Tabella `documento` (01_schema.sql). RLS doc_select (02_sicurezza.sql):
+// il cliente vede solo i documenti visibili_cliente o pubblici.
+// Restituisce tutte le versioni, dalla più recente.
 export async function elencaDocumenti(praticaId, faseId = undefined) {
   let q = supabase.from("documento").select("*").eq("pratica_id", praticaId);
   if (faseId === null) q = q.is("fase_id", null);
@@ -156,6 +241,9 @@ export async function elencaDocumenti(praticaId, faseId = undefined) {
 }
 
 // Calcola l'hash SHA-256 di un file (integrità).
+// Restituisce 64 caratteri esadecimali, oppure null se il browser non
+// supporta crypto.subtle (es. pagina non in HTTPS): il caricamento prosegue.
+// Nota: legge tutto il file in memoria (fino a 50 MB).
 async function hashFile(file) {
   try {
     const buffer = await file.arrayBuffer();
@@ -172,7 +260,15 @@ async function hashFile(file) {
    - mai sovrascrive: ogni caricamento è una nuova versione
    - file salvato in storage: documenti/<pratica_id>/<timestamp>-<nome>
    - numero di versione, "versione corrente" e audit sono gestiti dal
-     database (script 07): qui si inserisce solo il nuovo record. */
+     database (script 07): qui si inserisce solo il nuovo record.
+   Servizi: archivio Storage `documenti` (04_storage.sql; limiti di
+   dimensione e tipo in 14_controlli_file.sql) e tabella `documento`
+   (01_schema.sql; RLS doc_insert in 08_integrazioni_azioni.sql: il cliente
+   carica solo su pratiche proprie e attive; trigger trg_documento_prima e
+   trg_documento_dopo in 07, trg_documento_verifica_file in 14).
+   Per il cliente il database forza la visibilità (mai "pubblico").
+   Effetti: file nell'archivio, riga in `documento`, audit e notifiche dai trigger.
+   Restituisce { data: riga documento, error }. */
 export async function caricaDocumento({
   praticaId,
   faseId = null,
@@ -191,6 +287,10 @@ export async function caricaDocumento({
   if (!verifica.ok) return { data: null, error: { message: verifica.errore } };
 
   // Carica il file nello storage (percorso che inizia con l'id pratica).
+  // La prima cartella DEVE essere l'id della pratica: le regole dell'archivio
+  // (04_storage.sql) la usano per decidere chi può leggere e scrivere.
+  // upsert: false = un file esistente non viene mai sovrascritto.
+  // contentType = tipo canonico dell'estensione, atteso dal controllo del database (14).
   const storagePath = `${praticaId}/${Date.now()}-${verifica.nomeSicuro}`;
   const { error: errUpload } = await supabase.storage
     .from("documenti")
@@ -225,6 +325,8 @@ export async function caricaDocumento({
 }
 
 // Messaggio comprensibile per i rifiuti delle regole di sicurezza.
+// Parametro: errore di Supabase (o null). Restituisce lo stesso errore, con
+// il messaggio in italiano quando si tratta di un rifiuto RLS.
 function traduciErrore(error) {
   if (error && /row-level security/i.test(error.message || "")) {
     return { ...error, message: "operazione non consentita (la pratica potrebbe essere sospesa, annullata o chiusa)" };
@@ -233,6 +335,8 @@ function traduciErrore(error) {
 }
 
 // Ottiene un URL temporaneo per scaricare un documento.
+// Archivio `documenti` (04_storage.sql, regola documenti_select rivista in 07).
+// L'indirizzo firmato vale 60 secondi: non va salvato né condiviso.
 export async function urlDocumento(storagePath) {
   return await supabase.storage.from("documenti").createSignedUrl(storagePath, 60);
 }
@@ -241,10 +345,16 @@ export async function urlDocumento(storagePath) {
 
 // Colonne del commento leggibili dal portale: l'identità dell'autore
 // resta nota solo alla piattaforma (requisiti, sezione 6).
+// Non aggiungere qui colonne come nome o email dell'autore: per lo staff si
+// leggono con autoriCommenti (RPC staff_autori_commenti).
 const COLONNE_COMMENTO =
   "id, consultazione_id, pratica_id, testo, allegato_documento_id, stato, motivazione_moderazione, risposta_testo, creato_il, firma_pubblica, allegato_path, allegato_nome, email_verificata_il";
 
 // Legge la consultazione (eventuale) di una pratica, con i suoi commenti.
+// Prende la più recente. Tabelle `consultazione` e `commento` (01_schema.sql;
+// colonne aggiuntive del commento in 17_pratiche.sql; RLS consult_select e
+// commento_select in 02_sicurezza.sql). Restituisce { data: null } se non esiste.
+// Gli errori di lettura non vengono propagati (si mostra "nessuna consultazione").
 export async function leggiConsultazione(praticaId) {
   const { data: cons } = await supabase
     .from("consultazione")
@@ -265,6 +375,11 @@ export async function leggiConsultazione(praticaId) {
 }
 
 // Apre la consultazione: pubblica una versione del documento per 30 giorni.
+// Scrive una riga in `consultazione` (01_schema.sql; RLS consult_write in
+// 02_sicurezza.sql: solo staff). La consultazione diventa visibile sulla
+// pagina pubblica /consultazioni (Edge Function consultazione-pubblica).
+// Nota: le date sono calcolate in UTC (toISOString); i 30 giorni sono fissi
+// nel codice, non letti da durata_fase.
 export async function apriConsultazione({ praticaId, documentoId }) {
   const oggi = new Date();
   const chiusura = new Date(oggi.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -281,12 +396,15 @@ export async function apriConsultazione({ praticaId, documentoId }) {
     .single();
 }
 
-// Chiude la consultazione.
+// Chiude la consultazione (attiva = false): non accetta più osservazioni.
+// Tabella `consultazione` (01_schema.sql), RLS consult_write: solo staff.
 export async function chiudiConsultazione(id) {
   return await supabase.from("consultazione").update({ attiva: false }).eq("id", id);
 }
 
 // Modera un commento: pubblica / non pubblica (con motivazione).
+// Parametri: id, stato ('pubblicato' | 'non_pubblicato'), motivazione.
+// Tabella `commento` (01_schema.sql), RLS commento_update (02_sicurezza.sql): solo staff.
 export async function moderaCommento(id, stato, motivazione = null) {
   return await supabase
     .from("commento")
@@ -295,6 +413,9 @@ export async function moderaCommento(id, stato, motivazione = null) {
 }
 
 // Il cliente risponde a un commento ammesso.
+// RPC `rispondi_commento` (07_correzioni_sicurezza.sql): controlla che il
+// commento sia della propria pratica e ammesso (pubblicato o già risposto:
+// la risposta si può correggere); lo stato diventa 'risposto'.
 export async function rispondiCommento(id, risposta) {
   return await supabase.rpc("rispondi_commento", {
     p_commento: id,
@@ -305,6 +426,8 @@ export async function rispondiCommento(id, risposta) {
 // ---- Gestione utenti (Admin) ----
 
 // Elenco utenti con email, ruolo, organizzazione (funzione lato database).
+// RPC `admin_elenco_utenti` (05_gestione_utenti.sql, rivista in
+// 06_utente_multi_org.sql): legge auth.users, che il browser non vede; solo Admin.
 export async function elencaUtenti() {
   return await supabase.rpc("admin_elenco_utenti");
 }
@@ -313,6 +436,10 @@ export async function elencaUtenti() {
 // - organizzazioniIds: elenco delle organizzazioni (comuni/aziende) associate;
 //   la prima resta anche come "organizzazione principale" sul profilo.
 // - per gli operatori le associazioni vengono azzerate.
+// RPC `admin_aggiorna_utente` (05_gestione_utenti.sql, rivista in
+// 10_mfa_profilo.sql: solo Admin, vietato nominare altri Admin) e poi
+// `admin_imposta_organizzazioni`. Due chiamate separate: se la seconda
+// fallisce il ruolo resta già aggiornato.
 export async function aggiornaUtente(utenteId, ruolo, organizzazioniIds = []) {
   const ids = ruolo === "cliente" ? organizzazioniIds : [];
   const r1 = await supabase.rpc("admin_aggiorna_utente", {
@@ -325,6 +452,9 @@ export async function aggiornaUtente(utenteId, ruolo, organizzazioniIds = []) {
 }
 
 // Imposta l'elenco completo delle organizzazioni associate a un utente.
+// Sostituisce le associazioni esistenti nella tabella `utente_organizzazione`.
+// RPC `admin_imposta_organizzazioni` (06_utente_multi_org.sql, riviste in 07
+// e 10_mfa_profilo.sql): solo Admin.
 export async function impostaOrganizzazioniUtente(utenteId, organizzazioniIds) {
   return await supabase.rpc("admin_imposta_organizzazioni", {
     p_utente: utenteId,
@@ -333,6 +463,10 @@ export async function impostaOrganizzazioniUtente(utenteId, organizzazioniIds) {
 }
 
 // Crea un nuovo utente con password temporanea (via Edge Function).
+// Edge Function `crea-utente` (supabase/functions/crea-utente): verifica che
+// il chiamante sia Admin e crea l'account con la chiave service_role, che il
+// browser non ha. Le altre organizzazioni si associano dopo con
+// impostaOrganizzazioniUtente.
 export async function creaUtente({ email, password, ruolo, organizzazioneId, nomeCompleto }) {
   return await supabase.functions.invoke("crea-utente", {
     body: {
@@ -347,6 +481,8 @@ export async function creaUtente({ email, password, ruolo, organizzazioneId, nom
 
 // L'Amministratore assegna una nuova password temporanea (Edge Function
 // "reimposta-password"); l'utente dovrà cambiarla al primo accesso.
+// La funzione imposta profilo.password_temporanea (15_password.sql) e
+// scrive l'audit. Esclusi gli amministratori e sé stessi.
 export async function reimpostaPassword(utenteId, password) {
   const { data, error } = await supabase.functions.invoke("reimposta-password", {
     body: { utente_id: utenteId, password },
@@ -372,6 +508,7 @@ export async function reimpostaPassword(utenteId, password) {
 
 // ---- Cruscotto del back-office (script 09) ----
 // Una riga per pratica: fase corrente, scadenza, integrazioni, consultazione.
+// RPC `staff_cruscotto` (09_cruscotto_pagamenti_notifiche.sql).
 export async function leggiCruscotto() {
   return await supabase.rpc("staff_cruscotto");
 }
@@ -379,6 +516,11 @@ export async function leggiCruscotto() {
 // ---- Rapporti di Monitoraggio annuali ----
 // Crea il Rapporto dell'anno successivo per un Progetto (max 10),
 // con le sue fasi. Codice e organizzazione li assegna il database.
+// Parametro: riga del progetto (serve id e organizzazione_id).
+// Tabelle `pratica` e `fase` tramite creaPratica. Il trigger
+// trg_rapporto_coerente (09_cruscotto_pagamenti_notifiche.sql) impone
+// l'organizzazione del Progetto e la sequenza degli anni.
+// Il limite di 10 rapporti è controllato solo qui nel portale.
 export async function creaRapporto(progetto) {
   const { data: esistenti } = await elencaRapporti(progetto.id);
   const anno = (esistenti || []).reduce((m, r) => Math.max(m, r.anno_monitoraggio || 0), 0) + 1;
@@ -396,6 +538,10 @@ export async function creaRapporto(progetto) {
 }
 
 // ---- Pagamenti (registrazione manuale, requisiti §7) ----
+
+// Voci di pagamento di una pratica, per scadenza (quelle senza scadenza in fondo).
+// Tabella `pagamento` (01_schema.sql); RLS pagamento_select (17_pratiche.sql):
+// staff e Comune della pratica in sola lettura.
 export async function elencaPagamenti(praticaId) {
   return await supabase
     .from("pagamento")
@@ -404,6 +550,10 @@ export async function elencaPagamenti(praticaId) {
     .order("scadenza", { ascending: true, nullsFirst: false });
 }
 
+// Crea (senza id) o aggiorna (con id) una voce di pagamento.
+// Tabella `pagamento`; RLS pagamento_write (17_pratiche.sql): solo staff.
+// Il trigger trg_pagamento_operatore (09) registra l'operatore, mette la data
+// di oggi se la voce è pagata senza data e la azzera se non è pagata.
 export async function salvaPagamento(pagamento) {
   const { id, ...campi } = pagamento;
   if (id) return await supabase.from("pagamento").update(campi).eq("id", id).select().single();
@@ -411,11 +561,19 @@ export async function salvaPagamento(pagamento) {
 }
 
 // ---- Visibilità dei documenti (staff) ----
+
+// Cambia i flag di visibilità (visibile_cliente, visibile_fondazione, pubblico)
+// o la tipologia di un documento. Tabella `documento`; RLS doc_update
+// (02_sicurezza.sql): solo staff. Il trigger trg_documento_solo_flag (09)
+// impedisce di cambiare nome, file, hash o versione.
 export async function aggiornaVisibilitaDocumento(id, flag) {
   return await supabase.from("documento").update(flag).eq("id", id);
 }
 
 // ---- "I tuoi documenti": documenti generali delle pratiche del Cliente ----
+
+// Documenti non legati a una fase, con codice e titolo della pratica.
+// Nessun filtro per organizzazione: lo applica la RLS (doc_select, 02_sicurezza.sql).
 export async function elencaDocumentiOrganizzazione() {
   return await supabase
     .from("documento")
@@ -425,6 +583,10 @@ export async function elencaDocumentiOrganizzazione() {
 }
 
 // ---- Notifiche interne ----
+
+// Le ultime 50 notifiche dell'utente collegato.
+// Tabella `notifica` (09_cruscotto_pagamenti_notifiche.sql); RLS notifica_select:
+// ciascuno vede solo le proprie. Le notifiche le crea il database (trigger).
 export async function elencaNotifiche() {
   return await supabase
     .from("notifica")
@@ -433,12 +595,20 @@ export async function elencaNotifiche() {
     .limit(50);
 }
 
+// Segna come lette le notifiche indicate (array di id; vuoto = nessuna chiamata).
+// Tabella `notifica`; il trigger trg_notifica_solo_letta (09) consente di
+// modificare solo il campo "letta".
 export async function segnaNotificheLette(ids) {
   if (!ids.length) return { data: null, error: null };
   return await supabase.from("notifica").update({ letta: true }).in("id", ids);
 }
 
 // ---- Audit (solo staff) ----
+
+// Eventi di audit, dal più recente; facoltativo il filtro per pratica.
+// Tabella `audit_event` (01_schema.sql); RLS audit_select in
+// 07_correzioni_sicurezza.sql: solo staff; nessuno può scriverla o
+// modificarla dal portale. Sola lettura.
 export async function elencaAudit({ praticaId = null, limite = 200 } = {}) {
   let q = supabase
     .from("audit_event")
@@ -450,16 +620,23 @@ export async function elencaAudit({ praticaId = null, limite = 200 } = {}) {
 }
 
 // Attiva / disattiva un utente (solo admin, script 10).
+// RPC `admin_imposta_attivo` (10_mfa_profilo.sql): aggiorna profilo.attivo;
+// non si può disattivare sé stessi.
 export async function impostaUtenteAttivo(utenteId, attivo) {
   return await supabase.rpc("admin_imposta_attivo", { p_utente: utenteId, p_attivo: attivo });
 }
 
 // ---- Durata delle fasi (script 13) ----
+
+// Durata in giorni di ciascuna delle 7 fasi.
+// Tabella `durata_fase` (13_durata_fasi.sql), lettura per chi ha l'accesso.
 export async function elencaDurateFasi() {
   return await supabase.from("durata_fase").select("*").order("numero", { ascending: true });
 }
 
 // Solo Amministratori; motivazione obbligatoria (registrata nell'audit).
+// RPC `admin_imposta_durata_fase` (13_durata_fasi.sql). Vale per le fasi
+// aperte da quel momento; le scadenze già fissate non cambiano.
 export async function impostaDurataFase(numero, giorni, motivazione) {
   return await supabase.rpc("admin_imposta_durata_fase", {
     p_numero: numero,
@@ -471,6 +648,9 @@ export async function impostaDurataFase(numero, giorni, motivazione) {
 // ---- Consultazione: errata corrige, autori, allegati (script 17) ----
 
 // Errata corrige: se "riparte" i 30 giorni ripartono da oggi (motivazione obbligatoria).
+// RPC `staff_errata_corrige` (17_pratiche.sql): solo staff, consultazione
+// aperta, documento facoltativo della stessa pratica. Scrive in
+// `consultazione_errata`, visibile sulla pagina pubblica.
 export async function pubblicaErrataCorrige({ consultazioneId, documentoId = null, testo, riparte, motivazione = null }) {
   return await supabase.rpc("staff_errata_corrige", {
     p_consultazione: consultazioneId,
@@ -481,6 +661,8 @@ export async function pubblicaErrataCorrige({ consultazioneId, documentoId = nul
   });
 }
 
+// Errata corrige di una consultazione, in ordine di pubblicazione, con il
+// documento collegato. Tabella `consultazione_errata` (17_pratiche.sql).
 export async function elencaErrata(consultazioneId) {
   return await supabase
     .from("consultazione_errata")
@@ -490,15 +672,25 @@ export async function elencaErrata(consultazioneId) {
 }
 
 // Nome ed email degli autori delle osservazioni (solo staff).
+// RPC `staff_autori_commenti` (17_pratiche.sql). Dati personali: non vanno
+// mai mostrati al Comune né sulla pagina pubblica.
 export async function autoriCommenti(consultazioneId) {
   return await supabase.rpc("staff_autori_commenti", { p_consultazione: consultazioneId });
 }
 
+// URL temporaneo (60 secondi) per l'allegato di un'osservazione.
+// Archivio `allegati-consultazione` (17_pratiche.sql; regola
+// allegati_consultazione_select). Gli allegati li scrive solo la funzione
+// consultazione-pubblica.
 export async function urlAllegatoCommento(path) {
   return await supabase.storage.from("allegati-consultazione").createSignedUrl(path, 60);
 }
 
 // Pagina pubblica delle consultazioni (Edge Function, senza accesso).
+// Parametri: azione ("elenco", "dettaglio", "invia", "conferma") e i dati
+// richiesti dall'azione. Edge Function `consultazione-pubblica`
+// (supabase/functions/consultazione-pubblica; Verify JWT disattivato).
+// I messaggi d'errore arrivano nel campo "errore" del corpo della risposta.
 export async function consultazionePubblica(azione, dati = {}) {
   const { data, error } = await supabase.functions.invoke("consultazione-pubblica", { body: { azione, ...dati } });
   if (error) {
@@ -516,6 +708,10 @@ export async function consultazionePubblica(azione, dati = {}) {
 }
 
 // ---- Note di fase (script 17) ----
+
+// Note di tutte le fasi di una pratica, in ordine cronologico.
+// Tabella `nota_fase` (17_pratiche.sql); RLS nota_fase_select: il cliente
+// vede solo le note con visibile_cliente.
 export async function elencaNoteFase(praticaId) {
   return await supabase
     .from("nota_fase")
@@ -524,6 +720,9 @@ export async function elencaNoteFase(praticaId) {
     .order("creato_il", { ascending: true });
 }
 
+// Aggiunge una nota a una fase (interna o condivisa con il Comune).
+// Tabella `nota_fase`; RLS nota_fase_insert: solo staff. Autore compilato dal
+// trigger trg_autore (17). Le note non si modificano né si cancellano.
 export async function aggiungiNotaFase({ faseId, praticaId, testo, visibileCliente }) {
   return await supabase
     .from("nota_fase")
@@ -533,6 +732,9 @@ export async function aggiungiNotaFase({ faseId, praticaId, testo, visibileClien
 }
 
 // ---- Messaggi tra Comune e Fondazione (script 17) ----
+
+// Messaggi di una pratica, in ordine cronologico.
+// Tabella `messaggio` (17_pratiche.sql); RLS messaggio_select.
 export async function elencaMessaggi(praticaId) {
   return await supabase
     .from("messaggio")
@@ -541,15 +743,24 @@ export async function elencaMessaggi(praticaId) {
     .order("creato_il", { ascending: true });
 }
 
+// Invia un messaggio nella pratica. Tabella `messaggio`; RLS messaggio_insert
+// (17_pratiche.sql): staff, o cliente su pratica propria non annullata.
+// Autore e ruolo li compila il trigger trg_autore; notifica dai trigger.
 export async function inviaMessaggio(praticaId, testo) {
   return await supabase.from("messaggio").insert({ pratica_id: praticaId, testo }).select().single();
 }
 
 // ---- Enti di Validazione (script 17) ----
+
+// Anagrafica degli Enti di Validazione in ordine alfabetico.
+// Tabella `ente_validazione` (01_schema.sql, colonne aggiunte in 17_pratiche.sql);
+// RLS ente_select (17): lettura per chi ha l'accesso.
 export async function elencaEnti() {
   return await supabase.from("ente_validazione").select("*").order("denominazione", { ascending: true });
 }
 
+// Crea (senza id) o aggiorna (con id) un Ente di Validazione.
+// Tabella `ente_validazione`; RLS ente_write (17_pratiche.sql): solo Admin.
 export async function salvaEnte(ente) {
   const { id, ...campi } = ente;
   campi.aggiornato_il = new Date().toISOString();
@@ -557,20 +768,32 @@ export async function salvaEnte(ente) {
   return await supabase.from("ente_validazione").insert(campi).select().single();
 }
 
+// Assegna (o toglie, con enteId vuoto) l'Ente di Validazione a una pratica.
+// RPC `staff_imposta_ente_validazione` (17_pratiche.sql): Operatore o Admin.
 export async function impostaEntePratica(praticaId, enteId) {
   return await supabase.rpc("staff_imposta_ente_validazione", { p_pratica: praticaId, p_ente: enteId || null });
 }
 
 // ---- Modelli di documento (script 17) ----
+
+// Modelli di documento, ordinati per fase (prima quelli generali) e titolo.
+// tutti = true include i modelli disattivati (pagina Impostazioni, solo Admin).
+// Tabella `modello_documento` (17_pratiche.sql); RLS modello_select: gli
+// altri utenti vedono comunque solo i modelli attivi.
 export async function elencaModelli({ tutti = false } = {}) {
   let q = supabase.from("modello_documento").select("*");
   if (!tutti) q = q.eq("attivo", true);
   return await q.order("fase_numero", { ascending: true, nullsFirst: true }).order("titolo", { ascending: true });
 }
 
+// Carica un nuovo modello di documento (solo Admin).
+// Archivio `modelli` e tabella `modello_documento` (17_pratiche.sql; regole
+// modelli_insert e modello_write: solo Admin). Stessi controlli sui file dei
+// documenti (file.js). Se la registrazione fallisce il file viene rimosso.
 export async function caricaModello({ file, titolo, descrizione = null, faseNumero = null }) {
   const verifica = await verificaFile(file);
   if (!verifica.ok) return { data: null, error: { message: verifica.errore } };
+  // Cartella casuale: due modelli con lo stesso nome file non si scontrano.
   const storagePath = `${crypto.randomUUID()}/${verifica.nomeSicuro}`;
   const { error: errUpload } = await supabase.storage
     .from("modelli")
@@ -593,15 +816,21 @@ export async function caricaModello({ file, titolo, descrizione = null, faseNume
   return { data, error };
 }
 
+// Aggiorna i campi di un modello (titolo, descrizione, fase, attivo).
+// Tabella `modello_documento`; RLS modello_write (17_pratiche.sql): solo Admin.
 export async function aggiornaModello(id, campi) {
   return await supabase.from("modello_documento").update(campi).eq("id", id);
 }
 
+// URL temporaneo (60 secondi) per scaricare un modello; download: true fa
+// salvare il file invece di aprirlo. Archivio `modelli` (17_pratiche.sql).
 export async function urlModello(path) {
   return await supabase.storage.from("modelli").createSignedUrl(path, 60, { download: true });
 }
 
 // Nome di un utente (per i rapporti: chi ha confermato un calcolo). Solo Admin.
+// Tabella `profilo` (01_schema.sql). Restituisce il nome oppure null
+// (anche quando la RLS non consente di leggere quel profilo).
 export async function nomeUtente(id) {
   if (!id) return null;
   const { data } = await supabase.from("profilo").select("nome_completo").eq("id", id).maybeSingle();

@@ -1,9 +1,28 @@
 /* =========================================================================
-   Parametri di default della Metodologia Carbon WastePrint® v1.2
+   parametri.js — parametri di default della Metodologia Carbon WastePrint® v1.2
    (Studio Associato Wastelab e Altraleonia S.r.l.).
+
+   Scopo: tabelle numeriche della Metodologia usate come valori iniziali di
+   ogni calcolo: fattori di emissione per tipologia di rifiuto (Tab. 3, 4, 7),
+   pesi specifici (Tab. 8), beni a riuso (Tab. 5), buffer (Tab. 15 e Cap. 7),
+   giorni dell'anno (formula 1).
    Tutti i valori sono modificabili nel singolo calcolo, come la Metodologia
    consente ("laddove differenti … in ogni progetto dovranno essere indicati
    i fattori di emissione e relative fonti").
+
+   Usato da: src/lib/crediti/calcolo.js, tracciato.js, archivio.js,
+   rapportoPdf.js; src/pages/CalcoloCrediti.jsx; test/crediti.test.mjs,
+   test/tracciato.test.mjs.
+   Dati/servizi coinvolti: nessuno. I valori scelti per un calcolo vengono
+   salvati con il calcolo stesso (tabella calcolo_crediti, 11_crediti.sql):
+   cambiare un default qui NON modifica i calcoli già salvati.
+
+   Attenzione: gli "id" delle tipologie e dei beni (organico, carta, …) sono
+   chiavi usate nei file importati, nel database e nei test. Non rinominarli.
+   Dopo ogni modifica eseguire npm test.
+
+   Registro sviluppo e deploy: capitolo 7 «Funzionalità per area», riga
+   Calcolo crediti; note metodologiche in docs/crediti-cwp.md.
    ========================================================================= */
 
 // Tipologie di rifiuto "r" con il fattore di emissione per lo scenario
@@ -12,6 +31,13 @@
 // FErid_netto: Tabella 7, al netto della componente trasporto (da usare
 // solo se il progetto calcola a parte i trasporti, Capitolo 9).
 // ps: peso specifico di default [kg/m³], Tabella 8 (CREWSOD).
+// Altri campi: recupero = frazione a recupero (entra nella media delle
+// formule 16-17); soloDomestiche = prodotta solo da utenze domestiche
+// (formule 7-8); calcolato = FE ricavato dal motore, non da tabella.
+// fe: null = valore da indicare nel Progetto (il calcolo lo segnala negli avvisi).
+// Segno: FErid è negativo = emissione evitata per ogni kg di rifiuto NON
+// prodotto (scenario "Riduzione"). Con il "−" delle formule, ogni kg
+// prodotto pesa come emissione positiva (vedi calcolo.js).
 export const TIPOLOGIE_RIFIUTO = [
   { id: "organico", nome: "Frazione organica", fe: -3.66, feNetto: -3.66, ps: 250, recupero: true, fonte: "Tab. 3 – USEPA WARM 2019" },
   { id: "verde", nome: "Scarto verde", fe: -0.76, feNetto: -0.76, ps: null, recupero: true, soloDomestiche: true, fonte: "Tab. 3 – USEPA WARM 2019" },
@@ -32,6 +58,8 @@ export const TIPOLOGIE_RIFIUTO = [
 // Beni "b" destinati a riutilizzo: peso medio [kg] e FErid(b) [kgCO₂eq/kg].
 // Fonte: Tabella 5 (WRAP 2011). Due scenari: centro riutilizzo / operatore
 // dell'usato, oppure centro di preparazione per il riutilizzo.
+// feRiutilizzo / fePreparazione: FErid(b) nei due scenari; la pagina di
+// calcolo sceglie quale usare come "fe" del bene.
 export const BENI_RIUSO = [
   { id: "maglietta", nome: "Maglietta", peso: 0.25, feRiutilizzo: -12.8, fePreparazione: -11.1 },
   { id: "maglione", nome: "Maglione", peso: 0.5, feRiutilizzo: -9.22, fePreparazione: -8.02 },
@@ -42,6 +70,8 @@ export const BENI_RIUSO = [
 
 // Buffer minimo per utenze monitorate (Tabella 15). Chiave: macrocategorie
 // monitorate in ordine fisso res / nonres / und.
+// res = domestiche residenti, nonres = domestiche non residenti,
+// und = non domestiche. Valori in punti percentuali.
 export const BUFFER_UTENZE = {
   "res+nonres+und": 0,
   "res+nonres": 10,
@@ -51,6 +81,8 @@ export const BUFFER_UTENZE = {
   nonres: 30,
   und: 25,
 };
+// Tabella 15: +0,5 punti per ogni categoria non domestica non monitorata,
+// fino a un massimo di 10 punti.
 export const BUFFER_CATEGORIA_UND_NON_MONITORATA = 0.5; // % per categoria
 export const BUFFER_CATEGORIE_UND_MAX = 10; // %
 

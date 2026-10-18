@@ -1,25 +1,58 @@
+/* =========================================================================
+   ImportaTracciato
+   Scopo: passo «Importa il tracciato» del calcolo dei crediti (backlog 1-5).
+     L'Amministratore sceglie il tracciato dati del Comune:
+     - dai documenti della pratica del calcolo (file .xlsx o .zip caricati
+       dal Comune), oppure dal proprio computer;
+     il portale lo legge nel browser (src/lib/crediti/tracciato.js), blocca
+     il file se contiene dati personali, mostra un'anteprima con conteggi,
+     righe scartate e controlli di coerenza, e solo alla conferma
+     sostituisce nel calcolo le parti scelte. Nulla viene salvato prima
+     della conferma. Esporta anche ControlliCoerenza, il riquadro dei
+     controlli sui dati attuali del calcolo.
+   Usato da: pagina CalcoloCrediti (/crediti/:id): ImportaTracciato nel
+     passo «Importa», ControlliCoerenza nei passi «utenze» e «risultati».
+   Chi lo vede: admin.
+   Dati: elencaDocumenti, urlDocumento (src/lib/dati.js) per leggere i
+     file della pratica (tabella documento, archivio «documenti»);
+     leggiFileTracciato, controllaPrivacy, interpretaTracciato,
+     controllaCoerenza (src/lib/crediti/tracciato.js). Il salvataggio lo fa
+     la pagina con onImporta (salvaCalcolo di src/lib/crediti/archivio.js,
+     tabella calcolo_crediti, script 11).
+   Sicurezza: il blocco dei dati personali (nomi, indirizzi, codici
+     fiscali, email, telefoni) è un controllo del browser: impedisce l'import
+     ma il file resta comunque tra i documenti della pratica. L'accesso al
+     calcolo solo per gli Admin e l'immutabilità dei calcoli confermati li
+     garantisce il database (script 11 e 18); «sola» qui nasconde i comandi.
+   Registro sviluppo e deploy: capitolo «Calcolo crediti» (vedi anche
+     docs/crediti-cwp.md e la pagina pubblica /formato-dati)
+   ========================================================================= */
 import React, { useEffect, useState } from "react";
 import { COLORI as C } from "../../lib/cwpProgram.js";
 import { elencaDocumenti, urlDocumento } from "../../lib/dati.js";
 import { formatoData } from "../../lib/date.js";
 import { leggiFileTracciato, controllaPrivacy, interpretaTracciato, controllaCoerenza } from "../../lib/crediti/tracciato.js";
 
-/* =========================================================================
-   Passo «Importa il tracciato» del calcolo dei crediti (backlog 1-5).
-   L'Amministratore sceglie il tracciato dati del Comune:
-   - dai documenti della pratica del calcolo (file .xlsx o .zip caricati dal
-     Comune), oppure dal proprio computer;
-   il portale lo legge nel browser (src/lib/crediti/tracciato.js), blocca il
-   file se contiene dati personali, mostra un'anteprima con conteggi, righe
-   scartate e controlli di coerenza, e solo alla conferma sostituisce nel
-   calcolo le parti scelte. Nulla viene salvato prima della conferma.
-   ========================================================================= */
+/* Passo «Importa il tracciato».
+   Props:
+   - calcolo: riga di calcolo_crediti (serve pratica_id per i documenti);
+   - anno: anno dei dati del calcolo (per interpretare e controllare il file);
+   - ps: pesi specifici per tipologia di rifiuto { [id]: kg/m³ }, usati nei
+     controlli di coerenza;
+   - sola: true se il calcolo è confermato (import non più possibile);
+   - ultima: dati dell'ultimo import ({ file, importatoIl, conteggi }) o null;
+   - onImporta({ tracciato, parti, origine }): la pagina applica e salva. */
 export default function ImportaTracciato({ calcolo, anno, ps, sola, ultima, onImporta }) {
   const [documenti, setDocumenti] = useState([]);
+  // Stato del passo: null (scelta del file) | { lettura } | { errore } |
+  // { privacy, origine } (import bloccato) | { anteprima, coerenza, origine }.
   const [stato, setStato] = useState(null); // { lettura } | { errore } | { anteprima }
+  // Parti del tracciato da importare (caselle dell'anteprima), tutte spuntate.
   const [parti, setParti] = useState({ anagrafica: true, rifiuti: true, delibera: true, utenze: true, riuso: true });
   const [inCorso, setInCorso] = useState(false);
 
+  // Elenca i file .xlsx e .zip della pratica collegata al calcolo (tutte le
+  // versioni, anche quelle non correnti).
   useEffect(() => {
     if (!calcolo?.pratica_id) return;
     elencaDocumenti(calcolo.pratica_id).then(({ data }) =>
@@ -27,6 +60,11 @@ export default function ImportaTracciato({ calcolo, anno, ps, sola, ultima, onIm
     );
   }, [calcolo?.pratica_id]);
 
+  // Legge il file (contenuto binario) e prepara l'anteprima, senza salvare.
+  // Ordine: lettura dei fogli → controllo dati personali (se ne trova, si
+  // ferma) → interpretazione → controlli di coerenza.
+  // origine: { nome, tipo: "computer"|"pratica", documentoId?, hash? },
+  // registrata poi nel calcolo come provenienza dell'import.
   async function analizza(buffer, origine) {
     setStato({ lettura: `Lettura di «${origine.nome}»…` });
     try {
@@ -55,6 +93,8 @@ export default function ImportaTracciato({ calcolo, anno, ps, sola, ultima, onIm
     }
   }
 
+  // File scelto dal computer. Il selettore si svuota subito, così si può
+  // riscegliere lo stesso file.
   async function daComputer(e) {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -62,6 +102,8 @@ export default function ImportaTracciato({ calcolo, anno, ps, sola, ultima, onIm
     analizza(await file.arrayBuffer(), { nome: file.name, tipo: "computer" });
   }
 
+  // File scelto tra i documenti della pratica: lo scarica con un
+  // collegamento temporaneo e ne conserva id e hash come provenienza.
   async function daPratica(d) {
     setStato({ lettura: `Scaricamento di «${d.nome}»…` });
     const { data } = await urlDocumento(d.storage_path);
@@ -71,6 +113,8 @@ export default function ImportaTracciato({ calcolo, anno, ps, sola, ultima, onIm
     analizza(await r.arrayBuffer(), { nome: `${d.nome} (v${d.versione})`, tipo: "pratica", documentoId: d.id, hash: d.hash_file });
   }
 
+  // «Importa nel calcolo»: passa anteprima e parti scelte alla pagina, che
+  // sostituisce quelle parti nel calcolo e salva subito.
   async function applica() {
     setInCorso(true);
     await onImporta({ tracciato: stato.anteprima, parti, origine: stato.origine });
@@ -79,6 +123,8 @@ export default function ImportaTracciato({ calcolo, anno, ps, sola, ultima, onIm
   }
 
   const a = stato?.anteprima;
+  // Esiti dei controlli di coerenza: «errore» = incoerenza, «avviso» = da
+  // verificare. Nessuno dei due blocca l'import.
   const errori = stato?.coerenza?.filter((x) => x.livello === "errore") || [];
   const avvisi = stato?.coerenza?.filter((x) => x.livello === "avviso") || [];
 
@@ -158,6 +204,7 @@ export default function ImportaTracciato({ calcolo, anno, ps, sola, ultima, onIm
 
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, marginBottom: 12 }}>
             <tbody>
+              {/* Una riga per parte del tracciato: [chiave in «parti», descrizione, conteggio]. */}
               {[
                 ["anagrafica", "Ripartizione PEF e tariffa puntuale (1_Anagrafica)", a.anagrafica.pefUd != null ? `PEF ${a.anagrafica.pefUd}% / ${a.anagrafica.pefUnd ?? "—"}% · tariffa puntuale ${a.anagrafica.tariffaPuntuale ? "sì" : "no"}` : "non compilata"],
                 ["rifiuti", "Rifiuti del territorio (2_Rifiuti) → passo 2", `${a.conteggi.rifiuti} codici EER`],
@@ -200,7 +247,8 @@ export default function ImportaTracciato({ calcolo, anno, ps, sola, ultima, onIm
 }
 
 /* Riquadro dei controlli di coerenza sui dati attuali del calcolo
-   (mostrato nel passo 5 e nei risultati). */
+   (mostrato nel passo 5 e nei risultati).
+   Props: esiti (risultato di controllaCoerenza: [{ livello, testo }]) o null. */
 export function ControlliCoerenza({ esiti }) {
   if (!esiti) return null;
   const errori = esiti.filter((x) => x.livello === "errore");
@@ -216,6 +264,8 @@ export function ControlliCoerenza({ esiti }) {
   );
 }
 
+// Elenco puntato con titolo e bordo colorato (errori, scarti, avvisi).
+// Props: titolo, colore, voci (testi), altre (quante voci non mostrate).
 function Elenco({ titolo, colore, voci, altre = 0 }) {
   return (
     <div style={{ borderLeft: `3px solid ${colore}`, background: C.paper, borderRadius: 6, padding: "8px 12px", marginBottom: 10 }}>
@@ -228,5 +278,6 @@ function Elenco({ titolo, colore, voci, altre = 0 }) {
   );
 }
 
+// Stili locali dei pulsanti.
 const btnPrimario = { background: C.green, color: C.white, border: "none", borderRadius: 8, padding: "9px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer" };
 const btnMini = { background: C.white, color: C.green, border: `1px solid ${C.green}`, borderRadius: 8, padding: "7px 12px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" };

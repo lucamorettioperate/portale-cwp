@@ -1,9 +1,26 @@
 /* =========================================================================
-   Export del fascicolo di una pratica (requisiti §11).
-   ZIP con: dati della pratica, fasi, tutti i documenti in tutte le versioni,
+   fascicolo.js — export del fascicolo di una pratica (requisiti §11).
+
+   Scopo: ZIP con: dati della pratica, fasi, tutti i documenti in tutte le versioni,
    integrazioni, consultazione (documento pubblicato, osservazioni, risposte),
-   pagamenti e audit (questi ultimi due solo per lo staff, che è l'unico a
-   poterli leggere), più un riepilogo leggibile.
+   pagamenti e audit (questi ultimi due solo nell'export dello staff: l'audit
+   lo legge solo lo staff; i pagamenti dallo script 17 li vede anche il Comune,
+   ma restano fuori dal suo export), più un riepilogo leggibile (LEGGIMI.txt).
+   Tutto avviene nel browser: nessun file passa da un server proprio.
+
+   Usato da: src/components/DettaglioPratica.jsx (pulsante di export).
+
+   Dati/servizi coinvolti: le letture di src/lib/dati.js (tabelle pratica,
+   fase, documento, richiesta_integrazione, consultazione, commento,
+   pagamento, audit_event) e l'archivio Storage `documenti` (download dei
+   file). Nessuna scrittura nel database.
+
+   Sicurezza: il fascicolo contiene solo ciò che le regole RLS mostrano
+   all'utente. Le osservazioni sono anonime (COLONNE_COMMENTO di dati.js
+   non contiene nome né email dell'autore).
+
+   Registro sviluppo e deploy: capitolo 6 «Portale (frontend)»; capitolo 7
+   «Funzionalità per area» (Export fascicolo).
    ========================================================================= */
 import { supabase } from "./supabase.js";
 import {
@@ -16,6 +33,9 @@ import {
 } from "./dati.js";
 
 // CSV con separatore ";" (si apre direttamente in Excel in italiano).
+// Parametri: righe (oggetti) e colonne = [[chiave o funzione(riga), titolo], …].
+// Gli oggetti annidati diventano JSON. Restituisce il testo con BOM.
+// (Simile a scriviCsv di csv.js, ma qui i numeri restano col punto.)
 function csv(righe, colonne) {
   const cella = (v) => {
     if (v == null) return "";
@@ -28,22 +48,30 @@ function csv(righe, colonne) {
   return "﻿" + [testa, ...corpo].join("\r\n");
 }
 
-// Nome di file sicuro.
+// Nome di file sicuro: toglie i caratteri vietati da Windows (\ / : * ? " < > |)
+// e taglia a 120 caratteri. Accenti e spazi singoli restano.
 function pulisci(nome) {
   return (nome || "documento").replace(/[\\/:*?"<>|]+/g, "_").replace(/\s+/g, " ").trim().slice(0, 120);
 }
 
+// Aggiunge la versione prima dell'estensione: "Relazione.pdf", 2 → "Relazione_v2.pdf".
 function conVersione(nomeFile, versione) {
   const i = nomeFile.lastIndexOf(".");
   return i > 0 ? `${nomeFile.slice(0, i)}_v${versione}${nomeFile.slice(i)}` : `${nomeFile}_v${versione}`;
 }
 
-/* Prepara e scarica il fascicolo. onAvanzamento(testo) riceve i passi. */
+/* Prepara e scarica il fascicolo. onAvanzamento(testo) riceve i passi.
+   Parametri: id della pratica; staff = true per includere pagamenti e audit.
+   Restituisce { documenti: numero, mancanti: [nomi non scaricati] }.
+   Lancia un errore se la pratica non si legge.
+   Nota: i file si scaricano uno alla volta e restano in memoria fino alla
+   compressione; con molti documenti grandi può essere lento. */
 export async function esportaFascicolo(praticaId, { staff, onAvanzamento = () => {} } = {}) {
   onAvanzamento("Raccolta dei dati…");
   const { data: pratica, error } = await leggiPratica(praticaId);
   if (error || !pratica) throw new Error(error?.message || "Pratica non trovata");
 
+  // Letture in parallelo; per il cliente pagamenti e audit non si chiedono.
   const [docRes, intRes, consRes, pagRes, audRes] = await Promise.all([
     elencaDocumenti(praticaId),
     elencaIntegrazioni(praticaId),
@@ -65,6 +93,8 @@ export async function esportaFascicolo(praticaId, { staff, onAvanzamento = () =>
   const radice = zip.folder(pulisci(`Fascicolo ${pratica.codice || pratica.id}`));
 
   // Documenti: tutte le versioni, in cartelle per fase.
+  // Un file non scaricabile non blocca l'export: finisce nell'elenco
+  // "mancanti", riportato nel LEGGIMI.txt e restituito alla pagina.
   const mancanti = [];
   for (let i = 0; i < documenti.length; i++) {
     const d = documenti[i];
@@ -172,6 +202,7 @@ export async function esportaFascicolo(praticaId, { staff, onAvanzamento = () =>
     );
     radice.file(
       "audit.csv",
+      // elencaAudit restituisce dal più recente: qui in ordine cronologico.
       csv([...audit].reverse(), [
         ["avvenuto_il", "Data e ora"],
         ["ruolo", "Ruolo"],
@@ -208,6 +239,7 @@ export async function esportaFascicolo(praticaId, { staff, onAvanzamento = () =>
       .join("\r\n")
   );
 
+  // Compressione e download con un collegamento temporaneo (come scaricaTesto di csv.js).
   onAvanzamento("Compressione…");
   const blob = await zip.generateAsync({ type: "blob" });
   const url = URL.createObjectURL(blob);

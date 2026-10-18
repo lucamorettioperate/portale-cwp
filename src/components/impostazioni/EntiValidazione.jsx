@@ -1,20 +1,37 @@
+/* =========================================================================
+   EntiValidazione
+   Scopo: anagrafica degli Enti di Validazione (backlog 11), sezione della
+     pagina Impostazioni. Elenco degli enti, inserimento di un nuovo ente,
+     modifica e disattivazione. L'ente non accede al portale: serve per
+     assegnarlo alle pratiche (intestazione della pratica, componente
+     EnteValidazione in DettaglioPratica.jsx). Un ente non si cancella, si
+     disattiva: resta sulle pratiche a cui era assegnato.
+   Usato da: pagina Impostazioni (/impostazioni).
+   Chi lo vede: admin.
+   Dati: elencaEnti, salvaEnte (src/lib/dati.js) sulla tabella
+     ente_validazione (script 17).
+   Sicurezza (garantita dal database, script 17): leggono gli enti tutti
+     gli utenti autenticati; solo gli Amministratori inseriscono e
+     modificano (RLS ente_write con app_is_admin); un ente disattivato non
+     si può assegnare a nuove pratiche (staff_imposta_ente_validazione). Le
+     modifiche sono registrate nell'audit.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import React, { useEffect, useState } from "react";
 import { COLORI as C } from "../../lib/cwpProgram.js";
 import Badge from "../Badge.jsx";
 import { elencaEnti, salvaEnte } from "../../lib/dati.js";
 import { riquadro, campo, etichetta, btnPrimario, btnMini } from "../stili.js";
 
-/* Anagrafica degli Enti di Validazione (backlog 11) — Impostazioni, solo
-   Amministratori. L'ente non accede al portale: serve per assegnarlo alle
-   pratiche (intestazione della pratica). Un ente non si cancella, si
-   disattiva: resta sulle pratiche a cui era assegnato. Le modifiche sono
-   registrate nell'audit (script 17). */
+/* Sezione «Enti di Validazione» delle Impostazioni. Nessuna prop. */
 export default function EntiValidazione() {
   const [enti, setEnti] = useState([]);
+  // null = modulo chiuso; un oggetto = ente in modifica (con id) o nuovo (senza id).
   const [modulo, setModulo] = useState(null);
   const [errore, setErrore] = useState("");
   const [inCorso, setInCorso] = useState(false);
 
+  // Rilegge tutti gli enti (attivi e disattivati) in ordine alfabetico.
   async function carica() {
     const { data, error } = await elencaEnti();
     if (error) setErrore(error.message);
@@ -22,11 +39,14 @@ export default function EntiValidazione() {
   }
   useEffect(() => { carica(); }, []);
 
+  // Salva l'ente: aggiorna se ha id, altrimenti lo crea.
   async function salva() {
     setErrore("");
     if (!modulo.denominazione?.trim()) return setErrore("Indica la denominazione dell'ente.");
     setInCorso(true);
+    // Si inviano solo i campi del modulo (non creato_il e simili letti dal database).
     const { id, denominazione, identificativo, accreditamento, referente, email, telefono, note, attivo } = modulo;
+    // Campo vuoto o solo spazi → null nel database.
     const pulito = (v) => (v || "").trim() || null;
     const { error } = await salvaEnte({
       id,
@@ -45,6 +65,7 @@ export default function EntiValidazione() {
     carica();
   }
 
+  // Valori iniziali del modulo; in modifica vengono sovrascritti da quelli dell'ente.
   const nuovo = { denominazione: "", identificativo: "", accreditamento: "", referente: "", email: "", telefono: "", note: "", attivo: true };
 
   return (
@@ -88,6 +109,7 @@ export default function EntiValidazione() {
             <label style={etichetta}>Telefono<input value={modulo.telefono || ""} onChange={(e) => setModulo({ ...modulo, telefono: e.target.value })} style={campo} /></label>
           </div>
           <label style={etichetta}>Note<textarea value={modulo.note || ""} onChange={(e) => setModulo({ ...modulo, note: e.target.value })} rows={2} style={{ ...campo, resize: "vertical" }} /></label>
+          {/* «Attivo» solo in modifica: un ente nuovo nasce sempre attivo. */}
           {modulo.id && (
             <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 13, marginBottom: 10 }}>
               <input type="checkbox" checked={modulo.attivo !== false} onChange={(e) => setModulo({ ...modulo, attivo: e.target.checked })} />

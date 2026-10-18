@@ -6,6 +6,24 @@
 
    Unità: quantità territoriali in tonnellate/anno; per utenza in kg/anno;
    emissioni in kgCO₂eq (per utenza) e tCO₂eq (territorio e crediti).
+   Convenzione dei segni: i fattori FErid sono negativi (emissione evitata
+   per kg di rifiuto non prodotto); le formule mettono il "−" davanti,
+   quindi EA (emissioni attese) ed EP (di progetto) sono positivi e crescono
+   con i kg prodotti. ΔI = EP − EA: negativo = le utenze producono meno
+   dell'atteso = crediti; positivo = debito.
+
+   Usato da: src/pages/CalcoloCrediti.jsx (calcolaCrediti, al ricalcolo);
+   test/crediti.test.mjs e test/tracciato.test.mjs.
+   Dati/servizi coinvolti: nessuno. Salvataggio e conferma dei risultati
+   stanno in archivio.js (tabelle di 11_crediti.sql).
+
+   Regola per chi modifica: ogni cambio di formula deve avere un test in
+   test/crediti.test.mjs (npm test) e una voce nel Registro; un calcolo già
+   confermato resta com'era (immutabile nel database) e non viene ricalcolato.
+   Le scelte interpretative ancora da confermare sono in docs/crediti-cwp.md.
+
+   Registro sviluppo e deploy: capitolo 7 «Funzionalità per area», riga
+   Calcolo crediti; capitolo 6 «Portale (frontend)» (struttura del codice).
    ========================================================================= */
 import {
   BUFFER_UTENZE,
@@ -15,22 +33,32 @@ import {
   GIORNI_ANNO,
 } from "./parametri.js";
 
+// Converte un valore in numero: accetta numeri, testi con virgola decimale
+// e spazi ("1 234,5"). Vuoto o non valido → 0 (mai NaN nei calcoli).
+// Attenzione: "1.234,5" non è gestito qui (diventa 0); i CSV sono già
+// convertiti da csv.js.
 const num = (v) => {
   if (v === null || v === undefined || v === "") return 0;
   const n = typeof v === "number" ? v : Number(String(v).replace(/\s/g, "").replace(",", "."));
   return Number.isFinite(n) ? n : 0;
 };
+// Somma f(x) su tutti gli elementi di arr.
 const somma = (arr, f) => arr.reduce((s, x) => s + f(x), 0);
 
 /* ---------------------------------------------------------------------
    Capitolo 2 — Periodo di riferimento (formula 1)
    Coefficiente GGe/GG per un primo anno parziale (dall'avvio al 31/12).
+   Parametri: dataAvvio (aaaa-mm-gg o vuota), anno di riferimento.
+   Restituisce { coefficiente (0-1), giorni effettivi GGe }. Se l'avvio
+   manca o cade in un altro anno vale 1 (anno intero). GG è fisso a 365
+   anche negli anni bisestili; il tetto a 1 evita 366/365.
    --------------------------------------------------------------------- */
 export function coefficientePrimoAnno(dataAvvio, anno) {
   if (!dataAvvio) return { coefficiente: 1, giorni: GIORNI_ANNO };
   const avvio = new Date(dataAvvio + "T00:00:00");
   if (isNaN(avvio) || avvio.getFullYear() !== Number(anno)) return { coefficiente: 1, giorni: GIORNI_ANNO };
   const fine = new Date(avvio.getFullYear(), 11, 31);
+  // +1: il giorno di avvio e il 31/12 sono entrambi compresi.
   const giorni = Math.round((fine - avvio) / 86400000) + 1;
   return { coefficiente: Math.min(1, giorni / GIORNI_ANNO), giorni };
 }
@@ -38,6 +66,10 @@ export function coefficientePrimoAnno(dataAvvio, anno) {
 /* ---------------------------------------------------------------------
    Capitolo 5 — Fattore di emissione dell'indifferenziato (formule 16-17)
    FErid(rur) = Σ FErid(r=rec) × M(r=rec),  M = Qtot(r) / Σ Qtot(r=rec)
+   Cioè: media dei FE delle frazioni a recupero, pesata sulle loro quantità.
+   Parametri: { tipologia: Qtot in t/anno }, { tipologia: fattore }.
+   Restituisce { fe, composizione: [{ tipologia, quota, fe }] };
+   fe = null se nessuna frazione a recupero ha quantità e FE validi.
    --------------------------------------------------------------------- */
 export function fattoreIndifferenziato(quantitaPerTipologia, fattori) {
   const voci = Object.entries(quantitaPerTipologia).filter(
@@ -51,6 +83,15 @@ export function fattoreIndifferenziato(quantitaPerTipologia, fattori) {
 
 /* ---------------------------------------------------------------------
    Capitolo 3 — Produzione attesa per classe di utenza (formule 2-12)
+   Ripartisce i rifiuti del territorio tra utenze domestiche (UD) e non
+   domestiche (UnD) secondo le percentuali del PEF, poi tra le classi della
+   delibera tariffaria (UD: N × Kb; UnD: superficie × Kd), e ricava la
+   produzione attesa per singola utenza in kg/anno.
+   Parametri: rifiuti [{ tipologia, qtot (t/anno), soloDomestiche,
+   considerato }], pefUd e pefUnd (%), classiUd [{ classe, n, kb }],
+   classiUnd [{ classe, n, superficie, kd }], coefficiente (formula 1).
+   Restituisce i totali (Qtot, QUD, QUnD, QUDes, pUd, pUnD), le quantità per
+   tipologia e, per ogni classe, la quota e l'atteso per utenza.
    --------------------------------------------------------------------- */
 export function produzioneAttesa({ rifiuti, pefUd, pefUnd, classiUd, classiUnd, coefficiente = 1 }) {
   const considerati = rifiuti.filter((r) => r.considerato !== false && r.tipologia);
@@ -65,6 +106,8 @@ export function produzioneAttesa({ rifiuti, pefUd, pefUnd, classiUd, classiUnd, 
   const Qtot = somma(Object.values(perTipologia), (q) => q); // formula 4
   const QUD = Qtot * num(pefUd) / 100; // formula 2
   const QUnD = Qtot * num(pefUnd) / 100; // formula 3
+  // QUDes: rifiuti prodotti solo dalle domestiche (es. verde, inerti). Si
+  // tolgono dal denominatore perché non vanno ripartiti con le non domestiche.
   const QUDes = somma(Object.entries(perTipologia), ([t, q]) => (soloDomestica[t] ? q : 0));
   const denominatore = QUD + QUnD - QUDes;
   const pUnD = denominatore > 0 ? QUnD / denominatore : 0; // formula 5
@@ -85,6 +128,7 @@ export function produzioneAttesa({ rifiuti, pefUd, pefUnd, classiUd, classiUnd, 
     const quota = pesoUd > 0 ? (n * num(c.kb)) / pesoUd : 0;
     const atteso = {};
     tipologie.forEach((t) => {
+      // ×1000: da tonnellate a kg; ×coefficiente: primo anno parziale (formula 1).
       atteso[t.tipologia] = n > 0 ? ((t.qud * 1000 * quota) / n) * coefficiente : 0; // kg/anno
     });
     return { macro: "UD", classe: c.classe, n, kb: num(c.kb), quota, atteso };
@@ -108,11 +152,19 @@ export function produzioneAttesa({ rifiuti, pefUd, pefUnd, classiUd, classiUnd, 
 /* ---------------------------------------------------------------------
    Capitolo 6.1 — Pesi specifici (formula 18 o Tabella 8)
    PS(r) = Qtot(r) × 10⁶ / (Σ S×VC utenze + Σ S×VC contenitori centralizzati)
+   S = svuotamenti, VC = volume del contenitore in litri. Qtot in tonnellate:
+   × 10⁶ porta a grammi, quindi PS esce in g/litro = kg/m³.
+   La formula 18 si usa solo a consuntivo (ex post, opzione attiva) e se ci
+   sono quantità e volumi; altrimenti si usa il valore di Tabella 8 o del
+   Progetto (pesiDefault). Restituisce { ps: {tipologia: kg/m³ o null},
+   dettaglio: {tipologia: metodo usato} }.
    --------------------------------------------------------------------- */
 export function pesiSpecifici({ perTipologia, conferimenti, volumiCentralizzati = {}, consuntivo, pesiDefault }) {
   const ps = {};
   const dettaglio = {};
   Object.keys({ ...pesiDefault, ...perTipologia }).forEach((t) => {
+    // Litri conferiti dalle utenze; una riga con nUtenze > 1 rappresenta
+    // dati medi di classe e vale per tutte le sue utenze.
     const volUtenze = somma(
       conferimenti.filter((c) => c.tipologia === t),
       (c) => num(c.svuotamenti) * num(c.volume) * Math.max(1, num(c.nUtenze) || 1)
@@ -134,10 +186,18 @@ export function pesiSpecifici({ perTipologia, conferimenti, volumiCentralizzati 
    Capitolo 6.1 — Conferimenti in peso per utenza (formule 19-22)
    Ptot(r,i) = PD + PStIn + PCdR;  PD = S × VC × PS / 1000
    Priut(b,i) = Np × Pb (o peso misurato)
+   PD = conferimenti domiciliari, PStIn = strutture informatizzate,
+   PCdR = centri di raccolta (pesati direttamente o convertiti da litri).
+   PS in kg/m³ e volumi in litri: / 1000 dà kg.
+   Parametri: righe di conferimento e di riuso della Banca Dati Utenze,
+   pesi specifici, beni a riuso. Restituisce { utenze: [{ utenza, macro,
+   classe, nUtenze, ptot: {tipologia: kg}, priut: {bene: kg} }], avvisi }.
+   Più righe della stessa utenza si sommano.
    --------------------------------------------------------------------- */
 export function conferimentiInPeso({ conferimenti, riuso = [], ps, beni }) {
   const utenze = new Map();
   const avvisi = [];
+  // Restituisce (creandola alla prima occorrenza) la scheda dell'utenza "id".
   const prendi = (id, macro, classe, nUtenze) => {
     if (!utenze.has(id)) utenze.set(id, { utenza: id, macro, classe, nUtenze: nUtenze || 1, ptot: {}, priut: {} });
     return utenze.get(id);
@@ -170,6 +230,13 @@ export function conferimentiInPeso({ conferimenti, riuso = [], ps, beni }) {
 
 /* ---------------------------------------------------------------------
    Capitolo 7 — Buffer (Tabelle 15 e 16)
+   Percentuale dei crediti lordi trattenuta a garanzia. Si sommano le voci:
+   solo utenze virtuose (Cap. 7), utenze monitorate (Tab. 15), categorie non
+   domestiche non monitorate (Tab. 15), rifiuti misurati (Tab. 16, con le
+   riduzioni per misure nei centri); poi la tariffa puntuale dimezza il
+   totale e si applica il tetto dell'80%.
+   bufferManuale (se indicato) sostituisce il valore calcolato, sempre entro 0-80.
+   Restituisce { voci: [{ voce, valore }], calcolato, totale, manuale }.
    --------------------------------------------------------------------- */
 export function calcolaBuffer({
   soloVirtuose,
@@ -185,6 +252,7 @@ export function calcolaBuffer({
   const voci = [];
   if (soloVirtuose) voci.push({ voce: "Solo utenze che riducono la CO₂eq (Cap. 7)", valore: num(bufferVirtuose) });
 
+  // Chiave della Tabella 15 in ordine fisso (es. "res+und"), come in BUFFER_UTENZE.
   const chiave = ["res", "nonres", "und"].filter((k) => utenzeMonitorate?.[k]).join("+");
   if (chiave && BUFFER_UTENZE[chiave] !== undefined) {
     voci.push({ voce: `Utenze monitorate (Tab. 15): ${chiave.replace(/\+/g, ", ")}`, valore: BUFFER_UTENZE[chiave] });
@@ -193,6 +261,9 @@ export function calcolaBuffer({
   if (nonMon > 0) voci.push({ voce: `Categorie non domestiche non monitorate (Tab. 15)`, valore: nonMon });
 
   // Tabella 16: rifiuti misurati.
+  // Senza indifferenziato E organico misurati si resta alla condizione minima
+  // (30%), anche se altre frazioni sono misurate: scelta cautelativa
+  // (docs/crediti-cwp.md, punto 5).
   const m = rifiutiMisurati || {};
   let t16 = 30;
   let descr = "solo indifferenziato (condizione minima)";
@@ -209,6 +280,7 @@ export function calcolaBuffer({
   if (misuraCentralizzate) voci.push({ voce: "Misura presso Centri di Raccolta / Riuso (Tab. 16)", valore: -2 });
   if (misuraAltriNonCentralizzati) voci.push({ voce: "Misura ingombranti / verde / indumenti fuori dai centri (Tab. 16)", valore: -1 });
 
+  // Le riduzioni (−2, −1) non possono portare il totale sotto zero.
   let totale = Math.max(0, somma(voci, (v) => v.valore));
   if (tariffaPuntuale) {
     voci.push({ voce: "Tariffa puntuale attiva: buffer dimezzato", valore: -totale / 2 });
@@ -225,12 +297,23 @@ export function calcolaBuffer({
 /* ---------------------------------------------------------------------
    Calcolo completo: emissioni attese (Cap. 4), di progetto (Cap. 6.2),
    variazione di impatto (formule 31-32), buffer e crediti.
+   Parametro "dati": l'oggetto calcolo_crediti.dati (pefUd, pefUnd, rifiuti,
+   classiUd, classiUnd, fattori, beni, psConsuntivo, volumiCentralizzati,
+   opzioni del buffer e dell'interpretazione) più anno, tipo
+   (ex_ante/ex_post) e dataAvvio dalla testata del calcolo, e conferimenti e
+   riuso dalle tabelle calcolo_conferimento / calcolo_riuso (11_crediti.sql).
+   Restituisce il risultato completo (la pagina ne salva un riepilogo senza
+   il dettaglio per utenza in calcolo_crediti.risultato; lo usa anche il
+   rapporto PDF): periodo, attesi, pesi specifici, dettaglio per
+   utenza, ΔI, buffer, crediti { lordi, buffer, netti, debito } in tCO₂eq e
+   avvisi (dati mancanti o incoerenti, senza duplicati).
    --------------------------------------------------------------------- */
 export function calcolaCrediti(dati) {
   const avvisi = [];
   const { coefficiente, giorni } = coefficientePrimoAnno(dati.dataAvvio, dati.anno);
 
   // Fattori di emissione per tipologia e per bene.
+  // FE vuoto resta null (= mancante), non 0: così l'avviso lo segnala.
   const fattori = {};
   (dati.fattori || []).forEach((f) => {
     fattori[f.id] = { ...f, fe: f.fe === "" || f.fe == null ? null : num(f.fe) };
@@ -260,6 +343,7 @@ export function calcolaCrediti(dati) {
     fattori.indifferenziato = { ...ind, fe: indifferenziato.fe };
   }
 
+  // FE di una tipologia; se manca vale 0 (tipologia esclusa) con avviso.
   const fe = (t) => {
     const f = fattori[t]?.fe;
     if (f == null || !Number.isFinite(f)) {
@@ -270,11 +354,15 @@ export function calcolaCrediti(dati) {
   };
 
   // 2. Emissioni attese del territorio (formule 13-15), in tCO₂eq.
+  // EA(r) = − Qtot(r) × FEdes(r), con FEdes = FErid (docs/crediti-cwp.md, punto 1).
+  // Qtot in t e FE in kgCO₂eq/kg danno direttamente tCO₂eq.
   const eaTipologie = attesa.tipologie.map((t) => ({ ...t, fe: fe(t.tipologia), ea: -t.qtot * fe(t.tipologia) }));
   const EAterritorio = somma(eaTipologie, (t) => t.ea);
 
   // 3. Conferimenti in peso per utenza (Cap. 6.1).
   const conferimenti = dati.conferimenti || [];
+  // Tipologie presenti nella Banca Dati Utenze: solo su queste si calcola
+  // EA(i) (docs/crediti-cwp.md, punto 2).
   const tipologieMisurate = [...new Set(conferimenti.map((c) => c.tipologia))];
   const pesiDefault = {};
   (dati.fattori || []).forEach((f) => {
@@ -291,6 +379,8 @@ export function calcolaCrediti(dati) {
   avvisi.push(...pesi.avvisi);
 
   // 4. Per ogni utenza: EA(i) sui soli rifiuti misurati, EP(i), ΔI(i).
+  // Valori in kgCO₂eq. L'utenza si aggancia alla sua classe con "macro|classe"
+  // (UD o UnD + codice classe della delibera).
   const classiPerChiave = new Map(attesa.classi.map((c) => [`${c.macro}|${c.classe}`, c]));
   const senzaClasse = new Set();
   const risultatiUtenze = pesi.utenze.map((u) => {
@@ -314,12 +404,16 @@ export function calcolaCrediti(dati) {
   }
 
   // 5. Variazione di impatto del territorio (formula 32), kgCO₂eq.
+  // Virtuose = utenze con ΔI(i) < 0. Con l'opzione soloVirtuose si sommano
+  // solo queste (e calcolaBuffer aggiunge la relativa voce di buffer).
   const virtuose = risultatiUtenze.filter((u) => u.deltaI < 0);
   const deltaITutte = somma(risultatiUtenze, (u) => u.deltaI);
   const deltaIVirtuose = somma(virtuose, (u) => u.deltaI);
   const deltaI = dati.opzioni?.soloVirtuose ? deltaIVirtuose : deltaITutte;
 
   // 6. Buffer e crediti (tCO₂eq).
+  // ΔI < 0 → crediti lordi = −ΔI / 1000 (da kg a t); ΔI > 0 → debito, nessun credito.
+  // Crediti netti = lordi × (1 − buffer%) (docs/crediti-cwp.md, punto 4).
   const buffer = calcolaBuffer({ ...(dati.opzioni || {}), soloVirtuose: !!dati.opzioni?.soloVirtuose });
   const creditiLordi = deltaI < 0 ? -deltaI / 1000 : 0;
   const debito = deltaI > 0 ? deltaI / 1000 : 0;

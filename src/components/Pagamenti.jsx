@@ -47,10 +47,11 @@ export default function Pagamenti({ praticaId, solaLettura = false }) {
   async function salva() {
     setErrore("");
     if (!modulo.descrizione?.trim()) return setErrore("Indica la voce di pagamento.");
-    // Importo facoltativo; la virgola decimale diventa punto. Il punto delle
-    // migliaia non è gestito: "1.234,50" risulta non valido e "1.234" vale
-    // 1,234 €. Va scritto senza separatore delle migliaia.
-    const importo = modulo.importo === "" || modulo.importo == null ? null : Number(String(modulo.importo).replace(",", "."));
+    // Importo facoltativo, scritto all'italiana: "1.234,50", "1234,5" o
+    // "1234.50". Con la virgola, i punti sono separatori delle migliaia;
+    // senza virgola, un punto seguito da esattamente 3 cifre ("1.234") è
+    // un separatore delle migliaia, altrimenti è il decimale ("12.5").
+    const importo = leggiImporto(modulo.importo);
     if (importo != null && (isNaN(importo) || importo < 0)) return setErrore("Importo non valido.");
     setInCorso(true);
     const { error } = await salvaPagamento({
@@ -177,6 +178,16 @@ export default function Pagamenti({ praticaId, solaLettura = false }) {
 }
 
 // Stili locali (simili a quelli di stili.js, ma con misure proprie).
+// Converte l'importo scritto dall'utente in numero (null se vuoto, NaN se non valido).
+function leggiImporto(valore) {
+  if (valore === "" || valore == null) return null;
+  const t = String(valore).trim().replace(/\s|€/g, "");
+  if (!t) return null;
+  if (t.includes(",")) return Number(t.replace(/\./g, "").replace(",", "."));
+  if (/^\d{1,3}(\.\d{3})+$/.test(t)) return Number(t.replace(/\./g, ""));
+  return Number(t);
+}
+
 const lbl = { display: "grid", gap: 4, fontSize: 12, color: C.grafite, fontWeight: 600 };
 const campo = {
   width: "100%",

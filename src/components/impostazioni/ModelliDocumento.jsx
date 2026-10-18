@@ -1,3 +1,24 @@
+/* =========================================================================
+   ModelliDocumento
+   Scopo: modelli di documento (backlog 12), sezione della pagina
+     Impostazioni. L'Amministratore carica i modelli che i Comuni scaricano:
+     un modello può valere per una fase (compare dentro quella fase in ogni
+     pratica) o essere generale (compare in «I tuoi documenti»). Per
+     aggiornare un modello se ne carica uno nuovo e si ritira il vecchio: i
+     file non si sovrascrivono. «Ritira» / «Ripubblica» cambia solo il
+     campo attivo.
+   Usato da: pagina Impostazioni (/impostazioni).
+   Chi lo vede: admin.
+   Dati: elencaModelli({ tutti: true }), caricaModello, aggiornaModello,
+     urlModello (src/lib/dati.js); tabella modello_documento, archivio
+     privato «modelli» (script 17); controlli sul file in src/lib/file.js.
+   Sicurezza (garantita dal database, script 17): solo gli Amministratori
+     scrivono la tabella e caricano nell'archivio (app_is_admin); gli altri
+     utenti autenticati leggono solo i modelli attivi. Formati e dimensione
+     massima sono imposti anche dall'archivio. Le modifiche finiscono
+     nell'audit.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import React, { useEffect, useRef, useState } from "react";
 import { COLORI as C, FASI } from "../../lib/cwpProgram.js";
 import Badge from "../Badge.jsx";
@@ -5,19 +26,18 @@ import { elencaModelli, caricaModello, aggiornaModello, urlModello } from "../..
 import { ACCEPT, FORMATI_LEGGIBILI } from "../../lib/file.js";
 import { riquadro, campo, etichetta, btnPrimario, btnMini, btnLink } from "../stili.js";
 
-/* Modelli di documento (backlog 12) — Impostazioni, solo Amministratori.
-   L'Amministratore carica i modelli che i Comuni scaricano: un modello può
-   valere per una fase (compare dentro quella fase in ogni pratica) o essere
-   generale (compare in «I tuoi documenti»). Per aggiornare un modello se ne
-   carica uno nuovo e si ritira il vecchio: i file non si sovrascrivono.
-   Archivio "modelli" e regole di accesso: script 17. */
+/* Sezione «Modelli di documento» delle Impostazioni. Nessuna prop. */
 export default function ModelliDocumento() {
   const [modelli, setModelli] = useState([]);
+  // null = modulo chiuso; { titolo, descrizione, fase } = nuovo modello.
+  // fase è una stringa: "" = generale, "1"…"7" = numero della fase.
   const [modulo, setModulo] = useState(null);
   const [errore, setErrore] = useState("");
   const [inCorso, setInCorso] = useState(false);
+  // Il file si legge direttamente dal campo al salvataggio (non sta nello stato).
   const inputRef = useRef(null);
 
+  // Rilegge tutti i modelli, anche quelli ritirati.
   async function carica() {
     const { data, error } = await elencaModelli({ tutti: true });
     if (error) setErrore(error.message);
@@ -25,6 +45,8 @@ export default function ModelliDocumento() {
   }
   useEffect(() => { carica(); }, []);
 
+  // Carica il file e registra il modello, subito pubblicato (attivo).
+  // Il minimo di 3 caratteri del titolo è lo stesso vincolo della tabella.
   async function salva() {
     setErrore("");
     const file = inputRef.current?.files?.[0];
@@ -43,6 +65,8 @@ export default function ModelliDocumento() {
     carica();
   }
 
+  // Ritira (attivo = false) o ripubblica un modello. Un modello ritirato
+  // sparisce subito per i Comuni; il file resta nell'archivio.
   async function cambiaAttivo(m, attivo) {
     setErrore("");
     const { error } = await aggiornaModello(m.id, { attivo });
@@ -50,11 +74,13 @@ export default function ModelliDocumento() {
     carica();
   }
 
+  // Scarica il file con un collegamento temporaneo (60 secondi, come download).
   async function scarica(m) {
     const { data } = await urlModello(m.storage_path);
     if (data?.signedUrl) window.location.href = data.signedUrl;
   }
 
+  // Testo «Fase N · nome» oppure «Generale» (fase_numero null).
   const nomeFase = (n) => (n ? `Fase ${n} · ${FASI.find((f) => f.numero === n)?.nome || ""}` : "Generale");
 
   return (

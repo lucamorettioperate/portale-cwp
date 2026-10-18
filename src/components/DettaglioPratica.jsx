@@ -1,3 +1,39 @@
+/* =========================================================================
+   DettaglioPratica
+   Scopo: pagina di dettaglio di una pratica (Progetto o Rapporto di
+     Monitoraggio) con le sue 7 fasi. Riunisce in un'unica vista:
+     intestazione e stato, Ente di Validazione, cambio di stato, le fasi
+     (azioni, integrazioni, note, modelli, documenti), messaggi,
+     consultazione pubblica, Rapporti annuali, pagamenti, documenti generali
+     ed export del fascicolo.
+     Lo staff apre e chiude le fasi, modifica le scadenze, richiede
+     integrazioni, scrive note di fase, assegna l'Ente di Validazione e
+     cambia lo stato della pratica. Le azioni critiche richiedono una
+     motivazione, registrata nell'audit (requisiti §8).
+     Il Comune vede fasi, note condivise, modelli da scaricare, documenti,
+     pagamenti (sola lettura) e scrive messaggi alla Fondazione.
+   Usato da: pagine BackOffice (/pratiche, staff) e AreaCliente
+     (/ del Comune).
+   Chi lo vede: cliente/Comune (solo le pratiche delle sue organizzazioni),
+     operatore, admin.
+   Dati: da src/lib/dati.js leggiPratica, elencaIntegrazioni,
+     elencaNoteFase, elencaModelli, urlModello, elencaEnti; azioni con
+     funzioni del database: apriFase (staff_apri_fase), chiudiFase
+     (staff_chiudi_fase), modificaScadenzaFase (staff_modifica_scadenza),
+     cambiaStatoPratica (staff_cambia_stato_pratica), richiediIntegrazione
+     (staff_richiedi_integrazione) — script 08; impostaEntePratica
+     (staff_imposta_ente_validazione) — script 17. Export: esportaFascicolo
+     (src/lib/fascicolo.js). Tabelle: pratica, fase, richiesta_integrazione,
+     nota_fase, modello_documento, ente_validazione.
+   Sicurezza: tutte le azioni dello staff passano da funzioni del database
+     che verificano il ruolo (cwp_richiedi_staff), lo stato della pratica e
+     della fase e la motivazione (cwp_richiedi_motivazione, almeno 3
+     caratteri). Le RLS limitano il Comune alle sue pratiche. I controlli su
+     «staff» e «attiva» in questo file decidono solo quali pulsanti mostrare.
+     Le notifiche (apertura/chiusura fase, integrazioni, documenti…) le
+     generano i trigger del database, non questo componente.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)»
+   ========================================================================= */
 import React, { useEffect, useState } from "react";
 import { COLORI as C, STATI_PRATICA, STATI_FASE } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
@@ -26,14 +62,12 @@ import {
 import { formatoData, giorniA } from "../lib/date.js";
 import { esportaFascicolo } from "../lib/fascicolo.js";
 
-/* Dettaglio di una pratica con le sue 7 fasi.
-   L'Operatore/Admin apre e chiude le fasi, modifica le scadenze, richiede
-   integrazioni, scrive note di fase, assegna l'Ente di Validazione e cambia
-   lo stato della pratica. Le azioni critiche richiedono una motivazione,
-   registrata nell'audit (requisiti §8).
-   Il Comune vede fasi, note condivise, modelli da scaricare, documenti,
-   pagamenti (sola lettura) e scrive messaggi alla Fondazione.
-   Registro sviluppo e deploy: capitolo «Portale (frontend)». */
+/* Dettaglio di una pratica con le sue 7 fasi (componente principale).
+   Props:
+   - praticaId: id della pratica da mostrare;
+   - onAggiornato(): facoltativa, avvisa la pagina che qualcosa è cambiato
+     (il BackOffice ricarica l'elenco delle pratiche);
+   - onApri(id): facoltativa, apre un'altra pratica (Rapporto ↔ Progetto). */
 export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
   const { ruolo } = useAuth();
   const [pratica, setPratica] = useState(null);
@@ -41,10 +75,15 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
   const [note, setNote] = useState([]);
   const [modelli, setModelli] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
+  // Contatore usato nella key dei componenti Documenti: cambiandolo, React
+  // li ricrea e quindi rileggono i documenti dopo ogni azione.
   const [versione, setVersione] = useState(0); // per ricaricare i documenti
 
   const staff = ruolo === "operatore" || ruolo === "admin";
 
+  // Legge in parallelo pratica (con fasi, organizzazione, ente),
+  // integrazioni, note di fase e modelli attivi.
+  // silenzioso = true: non mostra «Caricamento…» (ricarica dopo un'azione).
   async function carica(silenzioso = false) {
     if (!silenzioso) setCaricamento(true);
     const [{ data }, { data: integr }, { data: nt }, { data: mod }] = await Promise.all([
@@ -60,6 +99,8 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
     setCaricamento(false);
   }
 
+  // Dopo ogni azione: ricarica i dati, forza la rilettura dei documenti e
+  // avvisa la pagina che contiene il dettaglio.
   async function dopoAzione() {
     await carica(true);
     setVersione((v) => v + 1);
@@ -72,8 +113,10 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
   }, [praticaId]);
 
   if (caricamento) return <Pannello>Caricamento…</Pannello>;
+  // Pratica inesistente oppure non visibile per le RLS (es. di un altro Comune).
   if (!pratica) return <Pannello>Pratica non trovata.</Pannello>;
 
+  // Fasi in ordine 1 → 7 (il database non garantisce l'ordine).
   const fasi = (pratica.fasi || []).sort((a, b) => a.numero - b.numero);
   const st = STATI_PRATICA[pratica.stato] || STATI_PRATICA.attiva;
 
@@ -151,15 +194,22 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
       {/* Pagamenti: lo staff li gestisce, il Comune li consulta */}
       <Pagamenti praticaId={pratica.id} solaLettura={!staff} />
 
-      {/* Documenti generali della pratica (contratto, amministrativi) */}
+      {/* Documenti generali della pratica (contratto, amministrativi).
+          Il Comune non può caricare sulle pratiche non attive. */}
       <Documenti key={`gen-${versione}`} praticaId={pratica.id} consentiCaricamento={staff || pratica.stato === "attiva"} />
     </div>
   );
 }
 
-/* Una fase: stato, date, azioni dello staff, integrazioni, documenti. */
+/* Una fase: stato, date, azioni dello staff, integrazioni, documenti.
+   Props: fase (riga della tabella fase), pratica, staff, richieste / note /
+   modelli (già filtrati per questa fase dal genitore), versione (per
+   ricaricare i documenti), onCambio() (dopo ogni azione riuscita).
+   Le azioni (apri, chiudi, richiedi integrazione, modifica scadenza)
+   compaiono solo allo staff e solo su pratica attiva. */
 function Fase({ fase: f, pratica, staff, richieste, note, modelli, versione, onCambio }) {
   const [form, setForm] = useState(null); // null | "integrazione" | "scadenza" | "chiusura"
+  // Testo del modulo aperto: descrizione dell'integrazione o motivazione.
   const [testo, setTesto] = useState("");
   const [data, setData] = useState(f.data_prevista_chiusura || "");
   const [errore, setErrore] = useState("");
@@ -169,8 +219,10 @@ function Fase({ fase: f, pratica, staff, richieste, note, modelli, versione, onC
   const aperta = f.stato === "in_corso" || f.stato === "in_attesa_integrazione";
   const attiva = pratica.stato === "attiva";
   const integrAperte = richieste.filter((r) => !r.risolta).length;
+  // Giorni alla scadenza (negativi se scaduta), solo per le fasi aperte.
   const residui = aperta ? giorniA(f.data_prevista_chiusura) : null;
 
+  // Apre uno dei moduli inline azzerando testo ed errori.
   function apriForm(tipo) {
     setErrore("");
     setTesto("");
@@ -178,6 +230,9 @@ function Fase({ fase: f, pratica, staff, richieste, note, modelli, versione, onC
     setForm(tipo);
   }
 
+  // Esegue un'azione del database (funzione che restituisce { error }).
+  // In caso di errore mostra il messaggio del database (es. «La motivazione
+  // è obbligatoria»); se riesce chiude il modulo e fa ricaricare la pratica.
   async function esegui(azione) {
     setErrore("");
     setInCorso(true);
@@ -191,6 +246,10 @@ function Fase({ fase: f, pratica, staff, richieste, note, modelli, versione, onC
     onCambio();
   }
 
+  // Chiusura della fase. Senza integrazioni aperte si chiude subito; con
+  // integrazioni aperte il primo clic apre il modulo «chiusura» e il secondo
+  // («Chiudi comunque») invia la motivazione. La stessa regola è applicata
+  // da staff_chiudi_fase nel database (script 08).
   function chiudi() {
     // Con integrazioni aperte la chiusura è un'eccezione: chiede la motivazione.
     if (integrAperte > 0 && form !== "chiusura") {
@@ -242,6 +301,9 @@ function Fase({ fase: f, pratica, staff, richieste, note, modelli, versione, onC
         {/* Azioni staff */}
         {staff && attiva && (
           <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+            {/* Apri fase: il database imposta data di apertura = oggi e
+                scadenza = oggi + giorni della fase (tabella durata_fase,
+                modificabile dall'Admin in Impostazioni; script 08 e 13). */}
             {f.stato === "non_iniziata" && (
               <button onClick={() => esegui(() => apriFase(f.id))} disabled={inCorso} style={btnPrimario}>
                 Apri fase
@@ -264,6 +326,8 @@ function Fase({ fase: f, pratica, staff, richieste, note, modelli, versione, onC
         {/* Moduli inline delle azioni */}
         {form && (
           <div style={formBox}>
+            {/* Richiesta di integrazione: la fase passa «in attesa di
+                integrazione» e il Comune riceve la notifica (script 08, 09). */}
             {form === "integrazione" && (
               <>
                 <label style={lbl}>
@@ -284,6 +348,7 @@ function Fase({ fase: f, pratica, staff, richieste, note, modelli, versione, onC
                 />
               </>
             )}
+            {/* Modifica scadenza: motivazione obbligatoria, registrata nell'audit. */}
             {form === "scadenza" && (
               <>
                 <label style={lbl}>
@@ -325,15 +390,18 @@ function Fase({ fase: f, pratica, staff, richieste, note, modelli, versione, onC
         {/* Modelli di documento previsti per questa fase (backlog 12) */}
         {modelli.length > 0 && <ModelliFase modelli={modelli} />}
 
-        {/* Documenti della fase */}
+        {/* Documenti della fase (il Comune non carica su pratica non attiva) */}
         <Documenti key={`${f.id}-${versione}`} praticaId={pratica.id} fase={f} compatto consentiCaricamento={staff || attiva} />
       </div>
     </div>
   );
 }
 
-/* Modelli da scaricare per la fase (caricati dall'Amministratore in Impostazioni). */
+/* Modelli da scaricare per la fase (caricati dall'Amministratore in Impostazioni).
+   Props: modelli (righe di modello_documento con fase_numero uguale alla
+   fase; solo quelli attivi, filtrati dalle RLS per chi non è Admin). */
 function ModelliFase({ modelli }) {
+  // Scarica il modello con un collegamento temporaneo (archivio «modelli»).
   async function scarica(m) {
     const { data } = await urlModello(m.storage_path);
     if (data?.signedUrl) window.location.href = data.signedUrl;
@@ -352,16 +420,24 @@ function ModelliFase({ modelli }) {
   );
 }
 
-/* Ente di Validazione della pratica: il Comune lo vede, lo staff lo assegna. */
+/* Ente di Validazione della pratica: il Comune lo vede, lo staff lo assegna.
+   Props: pratica (con l'ente collegato), staff, onFatto() dopo il salvataggio.
+   L'assegnazione passa da staff_imposta_ente_validazione (script 17), che
+   accetta solo enti attivi e solo dallo staff. L'anagrafica degli enti si
+   gestisce in Impostazioni (impostazioni/EntiValidazione.jsx). */
 function EnteValidazione({ pratica, staff, onFatto }) {
+  // null = selettore chiuso; un elenco = selettore aperto con quegli enti.
   const [enti, setEnti] = useState(null);
   const [scelta, setScelta] = useState(pratica.ente_validazione_id || "");
   const [errore, setErrore] = useState("");
 
+  // Apre il selettore: enti attivi più quello già assegnato (anche se
+  // disattivato nel frattempo, per non farlo sparire dalla scelta).
   async function modifica() {
     const { data } = await elencaEnti();
     setEnti((data || []).filter((e) => e.attivo || e.id === pratica.ente_validazione_id));
   }
+  // Salva la scelta; «— nessuno —» toglie l'ente dalla pratica.
   async function salva() {
     setErrore("");
     const { error } = await impostaEntePratica(pratica.id, scelta || null);
@@ -391,7 +467,12 @@ function EnteValidazione({ pratica, staff, onFatto }) {
   );
 }
 
-/* Cambio di stato della pratica con motivazione obbligatoria. */
+/* Cambio di stato della pratica con motivazione obbligatoria (solo staff).
+   Props: pratica, onFatto() dopo il cambio.
+   Stati: attiva, sospesa, annullata, chiusa. «Annullata» è definitiva:
+   il database rifiuta ogni cambio successivo (staff_cambia_stato_pratica,
+   script 08), per questo qui non si mostrano pulsanti. La motivazione
+   viene salvata sulla pratica (motivazione_stato) e nell'audit. */
 function CambioStato({ pratica, onFatto }) {
   const [aperto, setAperto] = useState(false);
   const [stato, setStato] = useState("");
@@ -401,6 +482,9 @@ function CambioStato({ pratica, onFatto }) {
 
   if (pratica.stato === "annullata") return null;
 
+  // Passaggi proposti per ogni stato attuale. Il database accetta qualunque
+  // passaggio tranne da «annullata»: questa tabella è una scelta di interfaccia
+  // (es. una pratica chiusa si può solo riattivare).
   const opzioni = {
     attiva: ["sospesa", "annullata", "chiusa"],
     sospesa: ["attiva", "annullata", "chiusa"],
@@ -408,6 +492,8 @@ function CambioStato({ pratica, onFatto }) {
   }[pratica.stato] || [];
   const etichette = { attiva: "Riattiva", sospesa: "Sospendi", annullata: "Annulla", chiusa: "Chiudi pratica" };
 
+  // Invia il cambio di stato. Effetto: il database notifica il Comune e
+  // registra l'operazione nell'audit con la motivazione.
   async function conferma() {
     setErrore("");
     setInCorso(true);
@@ -420,6 +506,7 @@ function CambioStato({ pratica, onFatto }) {
     }
   }
 
+  // Modulo chiuso: una fila di pulsanti, uno per ogni stato possibile.
   if (!aperto) {
     return (
       <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
@@ -457,10 +544,16 @@ function CambioStato({ pratica, onFatto }) {
   );
 }
 
-/* Export del fascicolo completo (ZIP). */
+/* Export del fascicolo completo (ZIP, requisiti §11).
+   Props: praticaId, staff. Lo staff ottiene anche pagamenti e audit; il
+   Comune solo ciò che le RLS gli lasciano leggere («Scarica documentazione»).
+   Il file ZIP è costruito nel browser da src/lib/fascicolo.js. */
 function BottoneFascicolo({ praticaId, staff }) {
+  // stato: "" = fermo; un testo di avanzamento = in lavorazione (mostrato sul
+  // pulsante); "Scaricato (…)" = finito con file mancanti (avviso sotto).
   const [stato, setStato] = useState("");
   const [errore, setErrore] = useState("");
+  // Avvia l'export; onAvanzamento aggiorna il testo del pulsante passo per passo.
   async function esporta() {
     setErrore("");
     setStato("Avvio…");
@@ -484,6 +577,7 @@ function BottoneFascicolo({ praticaId, staff }) {
   );
 }
 
+// Coppia di pulsanti dei moduli inline: conferma (testo in «conferma») e Annulla.
 function Bottoni({ inCorso, conferma, onConferma, onAnnulla }) {
   return (
     <div style={{ display: "flex", gap: 8 }}>
@@ -495,6 +589,7 @@ function Bottoni({ inCorso, conferma, onConferma, onAnnulla }) {
   );
 }
 
+// Riquadro centrato per i messaggi «Caricamento…» e «Pratica non trovata».
 function Pannello({ children }) {
   return (
     <div style={{ ...riquadro, padding: "40px 28px", textAlign: "center", color: C.grafite }}>
@@ -503,6 +598,7 @@ function Pannello({ children }) {
   );
 }
 
+// Stili locali (simili a quelli di stili.js, ma con misure proprie).
 const linkBtn = {
   background: "none",
   border: "none",

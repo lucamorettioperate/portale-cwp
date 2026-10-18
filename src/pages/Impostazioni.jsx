@@ -1,3 +1,25 @@
+/* =========================================================================
+   Impostazioni — indirizzo «/impostazioni»
+   Scopo: parametri del Programma modificabili dagli Amministratori, in tre
+     sezioni:
+     - Durata delle fasi (script 13): tabella delle 7 fasi con la durata in
+       giorni modificabile (dalla fase 2 alla 7), giorno di inizio e fine
+       calcolati e durata complessiva. La modifica vale per le fasi aperte
+       da quel momento; le scadenze già fissate restano invariate. Ogni
+       modifica richiede una motivazione ed è registrata nell'audit trail.
+     - Enti di Validazione (script 17, componente EntiValidazione);
+     - Modelli di documento per i Comuni (script 17, componente
+       ModelliDocumento).
+   Chi la usa: solo Amministratori (gli altri vedono un messaggio).
+   Dati: elencaDurateFasi() (tabella "durata_fase") e impostaDurataFase()
+     (RPC admin_imposta_durata_fase) di src/lib/dati.js; le altre due
+     sezioni hanno i propri accessi ai dati nei componenti.
+   Sicurezza: la tabella durata_fase non ha scrittura diretta. Solo la
+     funzione admin_imposta_durata_fase può cambiarla e controlla da sé
+     ruolo admin, motivazione, fase 2-7 e limiti 0-365, poi scrive l'audit.
+     I controlli in questa pagina servono solo a dare subito l'errore.
+   Registro sviluppo e deploy: capitolo «Portale (frontend)».
+   ========================================================================= */
 import React, { useEffect, useMemo, useState } from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
@@ -6,16 +28,14 @@ import { elencaDurateFasi, impostaDurataFase } from "../lib/dati.js";
 import EntiValidazione from "../components/impostazioni/EntiValidazione.jsx";
 import ModelliDocumento from "../components/impostazioni/ModelliDocumento.jsx";
 
-/* Impostazioni del Programma — solo Amministratori. Tre sezioni:
-   - Durata delle fasi (script 13);
-   - Enti di Validazione (script 17, componente EntiValidazione);
-   - Modelli di documento per i Comuni (script 17, componente ModelliDocumento).
-   Durata delle 7 fasi: la modifica vale per le fasi aperte da quel momento;
-   le scadenze già fissate restano invariate. Ogni modifica richiede una
-   motivazione ed è registrata nell'audit trail. */
+/* Pagina delle impostazioni. Nessuna prop.
+   Gestisce direttamente la sezione «Durata delle fasi»; le altre due sono
+   componenti autonomi. */
 export default function Impostazioni() {
   const { ruolo } = useAuth();
+  // Valori salvati nel database, una riga per fase.
   const [fasi, setFasi] = useState([]);
+  // Valori in modifica, come testo: { numeroFase: "giorni" }.
   const [bozza, setBozza] = useState({});
   const [motivazione, setMotivazione] = useState("");
   const [caricamento, setCaricamento] = useState(true);
@@ -23,6 +43,7 @@ export default function Impostazioni() {
   const [errore, setErrore] = useState("");
   const [esito, setEsito] = useState("");
 
+  // Legge le durate dal database e riallinea la bozza ai valori salvati.
   async function carica() {
     setCaricamento(true);
     const { data, error } = await elencaDurateFasi();
@@ -37,6 +58,10 @@ export default function Impostazioni() {
   }, [ruolo]);
 
   // Giorno di inizio e fine di ciascuna fase, calcolati sulle durate in bozza.
+  // Le fasi sono in sequenza: la fine di una è l'inizio della successiva.
+  // Un valore non valido (vuoto, decimale, fuori 0-365) è segnato in rosso e
+  // nel calcolo si usa il valore salvato.
+  // Ogni riga: dati della fase + inizio, fine, valido, cambiata.
   const righe = useMemo(() => {
     let giorno = 0;
     return fasi.map((f) => {
@@ -54,6 +79,9 @@ export default function Impostazioni() {
   const nonValide = righe.filter((r) => !r.valido);
   const totale = righe.length ? righe[righe.length - 1].fine : 0;
 
+  // Salva le sole durate cambiate, una chiamata per fase, tutte con la
+  // stessa motivazione (ognuna diventa un evento di audit). Al primo errore
+  // si ferma e rilegge: le fasi già salvate restano salvate.
   async function salva() {
     setErrore("");
     setEsito("");
@@ -123,6 +151,7 @@ export default function Impostazioni() {
                       {r.nome}
                     </td>
                     <td style={{ ...td, textAlign: "right" }}>
+                      {/* La fase 1 (Adesione) è il giorno di avvio: niente durata. */}
                       {r.numero === 1 ? (
                         <span style={{ color: C.grafite, fontSize: 12 }}>avvio</span>
                       ) : (
@@ -149,6 +178,7 @@ export default function Impostazioni() {
                     <td style={{ ...td, textAlign: "right" }}>{r.inizio}</td>
                     <td style={{ ...td, textAlign: "right" }}>{r.fine}</td>
                     <td style={{ ...td, color: C.grafite, fontSize: 12 }}>
+                      {/* aggiornato_da vuoto = mai modificato dal portale. */}
                       {r.aggiornato_da ? new Date(r.aggiornato_il).toLocaleDateString("it-IT") : "valore iniziale"}
                     </td>
                   </tr>
@@ -166,6 +196,8 @@ export default function Impostazioni() {
             </table>
           </div>
 
+          {/* Motivazione e pulsanti compaiono solo se c'è almeno una modifica.
+              «Annulla» riporta la bozza ai valori salvati. */}
           {cambiate.length > 0 && (
             <div style={{ marginTop: 16, display: "grid", gap: 8 }}>
               <label style={{ fontSize: 13, fontWeight: 600 }} htmlFor="motivazione-durate">
@@ -207,5 +239,6 @@ export default function Impostazioni() {
   );
 }
 
+// Stili delle celle della tabella.
 const th = { padding: "8px 10px", fontWeight: 700 };
 const td = { padding: "8px 10px", verticalAlign: "middle" };

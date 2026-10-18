@@ -17,9 +17,41 @@
 //  Secrets: RESEND_API_KEY, EMAIL_MITTENTE (facoltativo), PORTALE_URL (facoltativo).
 //  Pubblicazione: dashboard Supabase → Edge Functions; Verify JWT DISATTIVATO
 //  (la usano visitatori senza account).
+//
+//  Usato da: src/lib/dati.js → consultazionePubblica(), chiamata dalle
+//  pagine pubbliche di src/pages/ConsultazioniPubbliche.jsx
+//  (/consultazioni, /consultazioni/:id, /consultazioni/conferma).
+//
+//  Dati/servizi coinvolti:
+//   - tabelle consultazione, pratica, organizzazione, documento, commento
+//     (01_schema.sql, colonne dell'autore in 17_pratiche.sql),
+//     consultazione_errata e commento_in_attesa (17_pratiche.sql);
+//   - archivi Storage "documenti" (lettura con URL firmati) e
+//     "allegati-consultazione" (scrittura, 10 MB, 17_pratiche.sql);
+//   - Resend per l'email di conferma;
+//   - segreti automatici SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.
+//
+//  Sicurezza (importante per chi modifica):
+//   - il client usa la chiave service_role, che SCAVALCA le regole RLS:
+//     tutti i controlli (consultazione aperta, solo Progetti, formati,
+//     limiti) devono quindi stare qui dentro;
+//   - le risposte non devono mai contenere email, id utenti o nomi non
+//     autorizzati: si restituiscono solo i campi scelti in pubblica() e
+//     dettaglio();
+//   - l'osservazione diventa un vero commento solo dopo la conferma
+//     dell'email; prima resta in commento_in_attesa.
+//
+//  Uso / prova: dopo la pubblicazione aprire /consultazioni sul portale,
+//  inviare un'osservazione di prova e confermarla dall'email.
+//
+//  Registro sviluppo e deploy: capitolo 5 «Edge Functions»; capitolo 4
+//  «Database» (17_pratiche.sql); capitolo 8 «Procedure di rilascio»
+//  (pubblicazione delle Edge Function).
 // =====================================================================
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
+// Intestazioni CORS: la funzione è chiamata dal browser da un altro dominio
+// (portale su Vercel). "*" è accettabile perché non usa cookie né sessioni.
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -27,6 +59,9 @@ const corsHeaders = {
 };
 
 const MAX_ALLEGATO = 10 * 1024 * 1024; // 10 MB
+// Formati ammessi per l'allegato di un'osservazione: estensione → tipo MIME
+// e firma dei primi byte (vedi contenutoValido). Devono restare ammessi anche
+// dall'archivio "allegati-consultazione" (17_pratiche.sql).
 const ALLEGATI: Record<string, { mime: string; firma: "pdf" | "jpg" | "png" | "zip" }> = {
   pdf: { mime: "application/pdf", firma: "pdf" },
   jpg: { mime: "image/jpeg", firma: "jpg" },
@@ -36,9 +71,14 @@ const ALLEGATI: Record<string, { mime: string; firma: "pdf" | "jpg" | "png" | "z
   odt: { mime: "application/vnd.oasis.opendocument.text", firma: "zip" },
 };
 
+// Punto di ingresso: una sola richiesta POST con { azione, ... } nel corpo.
+// Ogni errore imprevisto diventa un messaggio generico (il dettaglio va solo
+// nei log della funzione, dashboard Supabase → Edge Functions → Logs).
 Deno.serve(async (req) => {
+  // Richiesta preliminare CORS del browser.
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
+    // Client con chiave service_role: nessuna regola RLS si applica.
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const body = await req.json().catch(() => ({}));
     switch (body.azione) {
@@ -54,19 +94,27 @@ Deno.serve(async (req) => {
   }
 });
 
+// Data di oggi aaaa-mm-gg (in UTC: il server della funzione lavora in UTC).
 const oggi = () => new Date().toISOString().slice(0, 10);
+// Formato di un id uuid: si controlla prima di interrogare il database.
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// true se la consultazione è attiva e oggi è tra apertura e chiusura
+// (estremi compresi; date mancanti = nessun limite). Confronto tra stringhe
+// ISO, valido perché hanno tutte lo stesso formato aaaa-mm-gg.
 function aperta(c: { attiva: boolean; data_apertura: string | null; data_chiusura: string | null }) {
   const d = oggi();
   return c.attiva && (!c.data_apertura || c.data_apertura <= d) && (!c.data_chiusura || d <= c.data_chiusura);
 }
 
+// Colonne lette per una consultazione, con pratica, ente e documento.
 const SELECT_CONS =
   "id, attiva, data_apertura, data_chiusura, " +
   "pratica:pratica_id (codice, titolo, tipo, organizzazione:organizzazione_id (denominazione)), " +
   "documento:documento_id (nome, versione, storage_path)";
 
+// Riduce una consultazione ai soli campi pubblicabili (niente id interni
+// di pratica o documento, niente percorsi dell'archivio).
 function pubblica(c: any) {
   return {
     id: c.id,
@@ -80,6 +128,8 @@ function pubblica(c: any) {
   };
 }
 
+// Azione "elenco": consultazioni attive e aperte oggi, solo dei Progetti
+// (i Rapporti di Monitoraggio non vanno in consultazione), per chiusura più vicina.
 async function elenco(admin: any) {
   const { data, error } = await admin.from("consultazione").select(SELECT_CONS)
     .eq("attiva", true).order("data_chiusura", { ascending: true });
@@ -87,12 +137,19 @@ async function elenco(admin: any) {
   return { consultazioni: (data || []).filter((c: any) => c.pratica?.tipo === "progetto" && aperta(c)).map(pubblica) };
 }
 
+// URL firmato (valido 1 ora) per scaricare un documento pubblicato
+// dall'archivio privato "documenti"; null se manca il percorso.
 async function firma(admin: any, path: string | null | undefined) {
   if (!path) return null;
   const { data } = await admin.storage.from("documenti").createSignedUrl(path, 3600);
   return data?.signedUrl || null;
 }
 
+// Azione "dettaglio": dati pubblici di una consultazione (anche già chiusa:
+// qui non si controlla aperta(), il campo "aperta" lo dice alla pagina),
+// errata corrige con i documenti e
+// osservazioni ammesse (stato "pubblicato" o "risposto"). Per le osservazioni
+// si leggono solo testo, firma pubblica, risposta e data: mai nome reale o email.
 async function dettaglio(admin: any, id: string) {
   if (!UUID.test(id)) return { errore: "Consultazione non trovata" };
   const { data: c } = await admin.from("consultazione").select(SELECT_CONS).eq("id", id).maybeSingle();
@@ -127,6 +184,9 @@ async function dettaglio(admin: any, id: string) {
   };
 }
 
+// Controlla i primi byte dell'allegato ("numeri magici"): %PDF entro 1 KB,
+// JPEG FF D8 FF, PNG 89 50 4E 47, ZIP "PK\3\4" (docx e odt sono archivi ZIP).
+// Stessa logica di src/lib/file.js nel portale.
 function contenutoValido(b: Uint8Array, firma: string) {
   const ini = (s: number[], da = 0) => s.every((v, i) => b[da + i] === v);
   if (firma === "pdf") { for (let i = 0; i < Math.min(b.length - 4, 1024); i++) if (ini([0x25, 0x50, 0x44, 0x46], i)) return true; return false; }
@@ -136,13 +196,23 @@ function contenutoValido(b: Uint8Array, firma: string) {
   return false;
 }
 
+// Impronta SHA-256 esadecimale di un testo. Si usa per il token di conferma:
+// nel database va solo l'impronta, così chi legge la tabella non può
+// confermare osservazioni altrui.
 async function sha256(testo: string) {
   const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(testo));
   return Array.from(new Uint8Array(d)).map((x) => x.toString(16).padStart(2, "0")).join("");
 }
 
+// Azione "invia": riceve un'osservazione dal modulo pubblico.
+// Corpo atteso: { id, nome, email, testo, privacy, nome_pubblico, sito,
+//   allegato?: { nome, dati (base64) } }.
+// Effetti: pulizia delle richieste scadute, eventuale allegato
+// nell'archivio, riga in commento_in_attesa, email di conferma con Resend.
+// Restituisce { ok: true } oppure { errore }.
 async function invia(admin: any, b: any) {
   // Campo trappola: un visitatore non lo vede, un robot lo compila.
+  // Al robot si risponde "ok" senza salvare nulla, così non capisce il filtro.
   if (b.sito) return { ok: true };
 
   const id = String(b.id || "");
@@ -180,7 +250,9 @@ async function invia(admin: any, b: any) {
     return { errore: "Troppe osservazioni inviate in poco tempo. Riprova tra un'ora." };
   }
 
-  // Allegato facoltativo.
+  // Allegato facoltativo (arriva in base64 nel corpo JSON).
+  // Ordine dei controlli: estensione ammessa → dimensione → contenuto reale.
+  // Il percorso è <id consultazione>/<uuid casuale>-<nome ripulito>.
   let allegato_path: string | null = null;
   let allegato_nome: string | null = null;
   if (b.allegato?.dati) {
@@ -199,6 +271,9 @@ async function invia(admin: any, b: any) {
     if (e) return { errore: "Allegato non caricato. Riprova." };
   }
 
+  // Token monouso: 32 byte casuali (64 caratteri esadecimali). Va solo
+  // nell'email; nel database si salva l'impronta. La scadenza di 48 ore
+  // (scade_il) la imposta il valore predefinito della tabella (17_pratiche.sql).
   const token = Array.from(crypto.getRandomValues(new Uint8Array(32))).map((x) => x.toString(16).padStart(2, "0")).join("");
   const token_hash = await sha256(token);
   const { error } = await admin.from("commento_in_attesa").insert({
@@ -216,6 +291,11 @@ async function invia(admin: any, b: any) {
   return { ok: true };
 }
 
+// Azione "conferma": l'autore apre il collegamento dell'email.
+// Cerca la richiesta per impronta del token, controlla scadenza e che la
+// consultazione sia ancora aperta, poi crea il commento in stato "ricevuto"
+// (da moderare) e cancella la richiesta: il collegamento vale una volta sola.
+// L'inserimento nel commento fa partire la notifica allo staff (trigger, 09/17).
 async function conferma(admin: any, token: string) {
   if (!/^[0-9a-f]{64}$/.test(token)) return { errore: "Collegamento non valido." };
   const { data: p } = await admin.from("commento_in_attesa").select("*").eq("token_hash", await sha256(token)).maybeSingle();
@@ -244,6 +324,11 @@ async function conferma(admin: any, token: string) {
   return { ok: true, consultazione_id: p.consultazione_id };
 }
 
+// Spedisce con Resend l'email di conferma (testo semplice + HTML).
+// Restituisce true se Resend ha accettato l'invio, false altrimenti (anche
+// se manca RESEND_API_KEY). Senza dominio verificato su Resend, il mittente
+// onboarding@resend.dev consegna solo all'indirizzo del titolare dell'account.
+// Nell'HTML ogni dato inserito dall'utente passa da esc() (niente HTML iniettato).
 async function emailConferma(email: string, nome: string, token: string, codice?: string, titolo?: string): Promise<boolean> {
   const KEY = Deno.env.get("RESEND_API_KEY");
   if (!KEY) return false;
@@ -294,10 +379,13 @@ async function emailConferma(email: string, nome: string, token: string, codice?
   return r.ok;
 }
 
+// Sostituisce i caratteri speciali HTML (& < > " ') con le entità.
 function esc(s: string) {
   return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 }
 
+// Risposta JSON con le intestazioni CORS. Gli errori "previsti" (dati non
+// validi) tornano con stato 200 e campo "errore", letti da dati.js.
 function json(payload: unknown, status = 200) {
   return new Response(JSON.stringify(payload), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 }
