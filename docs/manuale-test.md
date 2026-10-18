@@ -30,7 +30,7 @@ Il calcolo si basa su un confronto tra due valori:
 | Emissioni **attese** | Quanta CO₂ equivalente produrrebbero i rifiuti del territorio senza il progetto | Produzione di rifiuti del Comune (Catasto ISPRA) e classi di utenza della delibera TARI |
 | Emissioni **di progetto** | Quanta CO₂ equivalente producono davvero le utenze | Conferimenti misurati per ogni utenza (svuotamenti, pesi, centri di raccolta, riuso) |
 | **Crediti** | La riduzione: emissioni attese meno emissioni di progetto, in tonnellate di CO₂eq | Calcolo secondo la *Metodologia CWP v1.2* |
-| **Buffer** | Una quota dei crediti (fino al 30%) trattenuta a garanzia, più bassa se il Comune misura bene i conferimenti | Analisi del rischio della Metodologia |
+| **Buffer** | Una quota dei crediti trattenuta a garanzia: somma di più voci (utenze monitorate, rifiuti misurati, solo utenze virtuose), al massimo 80%, più bassa se il Comune misura bene i conferimenti e dimezzata con la tariffa puntuale | Analisi del rischio della Metodologia |
 
 **Chi partecipa.**
 

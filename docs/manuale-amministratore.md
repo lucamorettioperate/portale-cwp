@@ -410,7 +410,7 @@ Il calcolo confronta le emissioni **attese** del territorio (quelle che ci sareb
 | EP — emissioni di progetto | Emissioni calcolate sui conferimenti misurati delle utenze (formule 19-30) |
 | ΔI — variazione di impatto | EP − EA, per utenza e per il territorio (formula 31) |
 | Crediti lordi | −ΔI, in tonnellate di CO₂ equivalente (formula 32) |
-| Buffer | Quota di crediti trattenuta a garanzia, dal 30% in giù (Tabelle 15 e 16) |
+| Buffer | Quota di crediti trattenuta a garanzia: somma delle voci delle Tabelle 15 e 16 (più il 20% con le sole utenze virtuose), al massimo 80% |
 | Crediti netti | Crediti lordi × (1 − buffer) |
 | Debito | Se ΔI è positiva il territorio ha aumentato le emissioni: non ci sono crediti |
 
@@ -488,7 +488,7 @@ Ogni tabella ha **+ Riga**, **Importa CSV** e **Scarica il modello**; una riga s
 
 L'opzione **Calcola il peso specifico a consuntivo (formula 18), invece dei valori della Tabella 8** si usa quando il gestore ha sia pesi sia volumi misurati.
 
-**Passo 6 — Buffer (Analisi del rischio).** Il buffer parte dal 30% e si riduce in base a come il Comune misura i conferimenti:
+**Passo 6 — Buffer (Analisi del rischio).** Il buffer è la somma di più voci e non supera l'80%; ogni voce dipende da come il Comune misura utenze e conferimenti (per i rifiuti misurati si va dal 30% con il solo indifferenziato al 3% con tutte le frazioni principali):
 
 - utenze e rifiuti monitorati (Tabelle 15 e 16), compilabili a mano o con **Ricava dai dati importati**, che li ricava dalla Banca Dati Utenze;
 - **Misura presso Centri di Raccolta / Riuso (−2%)**;

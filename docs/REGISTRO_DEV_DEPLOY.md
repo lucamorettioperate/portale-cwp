@@ -427,6 +427,13 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Rilettura dei documenti ufficiali del Programma** (Guida, Definizioni,
+  Normativa, Standard, Metodologia, Politica di reclamo, Schema tariffario,
+  Gestione della qualità dei dati, v1.2) in vista della presentazione del
+  19/10: differenze con il portale nel capitolo «Decisioni», voce
+  «Aperte». Corretta nel Manuale Amministratore e nel Manuale Test la
+  descrizione del buffer (somma di più voci, al massimo 80%; il codice era
+  già corretto).
 - **Completamento funzionale dal confronto con i requisiti (punto 34)** —
   script `21_completamento_funzionale.sql` (provato sul banco locale,
   eseguito e verificato in produzione), funzione `consultazione-pubblica`
@@ -766,6 +773,39 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 - Scelte interpretative del calcolo crediti (soprattutto il segno del riuso,
   formule 26 e 29).
 - Antivirus: ClamAV su server proprio o servizio a pagamento.
+- Dalla rilettura dei documenti ufficiali del Programma (v1.2 del
+  04/09/2025), punti in cui il portale differisce e va deciso se allinearlo:
+  1. **Rapporto di Monitoraggio**: la Guida 6.3.1 prevede lo stesso
+     procedimento del Progetto, con feedback pubblico di 20 giorni,
+     adeguamento in 15, verifica dell'ente in 60 e verifica documentale in
+     10; il portale ha 4 fasi senza feedback (decisione del 18/10) e 75
+     giorni per l'ente (durata modificabile dall'Admin).
+  2. **Accesso al feedback pubblico**: la Guida 3.9 indica SPID, CIE o CNS;
+     il portale usa l'email confermata (decisione D).
+  3. **Conservazione**: la Guida (6.2.1, 6.5.1) indica 12 anni per il
+     soggetto promotore del programma; il portale ne calcola 10 dalla
+     chiusura. Lo Standard 4.14 chiede al promotore del progetto almeno 2
+     anni dopo la fine del progetto, i registri 5 anni dopo la vendita.
+  4. **Utenze**: la Guida 7.2 prevede fino a 2 delegati e un solo account
+     del rappresentante autorizzato; il portale ammette più utenze.
+  5. **Numero di Rapporti**: il portale ne ammette 10 (requisiti §2); lo
+     Standard 4.3.8 prevede un periodo di 10 anni oppure di 7 anni
+     rinnovabile 3 volte.
+  6. **Soggetto promotore del programma**: oggi lo Studio Associato
+     Wastelab; all'avvio della piattaforma online incarica un soggetto
+     giuridico (Guida 3.1).
+  7. **Funzioni previste dai documenti e non ancora nel portale**: parte
+     pubblica della piattaforma (elenchi di enti, registri e metodologie,
+     rapporti di validazione e verifica, Politica di reclamo, modulistica:
+     Guida 3.7); stati e ID univoci di progetti e crediti e collegamento al
+     registro esterno (Standard 6); reclami e chiarimenti (Politica di
+     reclamo, via PEC); tariffe dello Schema tariffario e sospensione fino
+     al saldo; ritiro e rientro; avviso dopo 2 anni senza Rapporti (Guida
+     6.4.1); un solo progetto per territorio (codice ISTAT, Standard 4.6);
+     controlli della Gestione qualità dei dati; tipologie ufficiali dei
+     documenti (Standard 4.2).
+  Confermata invece dalla Tabella 3 della Guida la mappatura delle fasi del
+  Progetto (10, 30, 20, 75, 15 giorni).
 
 ---
 
@@ -1024,7 +1064,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 91 file, 20.947 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 91 file, 20.965 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1155,7 +1195,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 91 file, 20.947 righe i
 | `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
 | `strumenti/impagina_pdf.py` | 416 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
-| `strumenti/revisioni_documenti.json` | 208 | — |
+| `strumenti/revisioni_documenti.json` | 226 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
