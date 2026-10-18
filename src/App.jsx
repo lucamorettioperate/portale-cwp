@@ -13,6 +13,7 @@ import Crediti from "./pages/Crediti.jsx";
 import CalcoloCrediti from "./pages/CalcoloCrediti.jsx";
 import Impostazioni from "./pages/Impostazioni.jsx";
 import FormatoDati from "./pages/FormatoDati.jsx";
+import Documentazione from "./pages/Documentazione.jsx";
 import { COLORI as C } from "./lib/cwpProgram.js";
 
 // Schermata di caricamento mentre si verifica la sessione.
@@ -107,6 +108,14 @@ export default function App() {
         element={
           <Protetta>
             <Impostazioni />
+          </Protetta>
+        }
+      />
+      <Route
+        path="/documentazione"
+        element={
+          <Protetta>
+            <Documentazione />
           </Protetta>
         }
       />

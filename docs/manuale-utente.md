@@ -1,7 +1,7 @@
 <!--
   Manuale Utente — testo sorgente.
-  Da questo file si genera il Word rifinito:  node strumenti/genera_manuale_utente.cjs
-  Il registro delle revisioni è in strumenti/manuale_utente_revisioni.json:
+  Da questo file si genera il Word rifinito:  node strumenti/genera_documenti.cjs manuale
+  Il registro delle revisioni è in strumenti/revisioni_documenti.json ("manuale"):
   a ogni modifica aggiungere una revisione (numero, data, descrizione).
   Il testo è lo stesso del manuale online (Claude Doc "Manuale Utente").
 -->
@@ -32,12 +32,14 @@ Le credenziali (email e password provvisoria) vi vengono fornite da Fondazione O
 3. Premete **Accedi**. Durante la verifica il pulsante mostra «Accesso in corso…».
 4. Si apre la pagina **Le mie pratiche**.
 
-In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato dati**), la campanella delle notifiche, l'indicazione *Cliente*, il vostro indirizzo email e il pulsante **Esci** per uscire.
+In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato dati**, **Manuale**), la campanella delle notifiche, l'indicazione *Cliente*, il vostro indirizzo email e il pulsante **Esci** per uscire.
 
 | Messaggio | Cosa significa | Cosa fare |
 | --- | --- | --- |
 | Email o password non corretti. | Credenziali sbagliate | Ricontrollate maiuscole e spazi, poi riprovate |
 | Accesso non riuscito. Riprova. | Problema temporaneo | Riprovate dopo qualche minuto |
+
+**Il manuale.** La voce **Manuale** del menu apre la pagina da cui scaricare questo manuale in PDF o in Word, sempre nella revisione più recente.
 
 **Password dimenticata o da cambiare.** Al momento il portale non ha la funzione «password dimenticata» né il cambio password: scrivete a Fondazione Operate, che vi assegnerà una nuova password provvisoria.
 

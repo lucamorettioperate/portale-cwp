@@ -14,18 +14,21 @@ function vociMenu(ruolo) {
       ["/audit", "Audit"],
       ["/crediti", "Crediti CWP"],
       ["/impostazioni", "Impostazioni"],
+      ["/documentazione", "Documentazione"],
     ];
   }
   if (ruolo === "operatore") {
     return [
       ["/", "Cruscotto"],
       ["/pratiche", "Pratiche"],
+      ["/documentazione", "Manuale"],
     ];
   }
   return [
     ["/", "Le mie pratiche"],
     ["/documenti", "I tuoi documenti"],
     ["/formato-dati", "Formato dati"],
+    ["/documentazione", "Manuale"],
   ];
 }
 

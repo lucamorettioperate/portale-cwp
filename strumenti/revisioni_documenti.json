@@ -1,0 +1,24 @@
+{
+  "manuale": [
+    {
+      "rev": "1.0",
+      "data": "18/10/2026",
+      "descrizione": "Prima emissione: accesso, pratiche e fasi, documenti, integrazioni, consultazione pubblica, rapporti di monitoraggio, notifiche, tracciato dati per il calcolo dei crediti.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.1",
+      "data": "18/10/2026",
+      "descrizione": "Voce di menu «Manuale» e pagina di download del manuale (capitolo 2).",
+      "autore": "Fondazione Operate"
+    }
+  ],
+  "registro": [
+    {
+      "rev": "1.0",
+      "data": "18/10/2026",
+      "descrizione": "Prima emissione: architettura, servizi, database (script 01-14), Edge Functions, pagine del portale (compresa Documentazione), funzionalità, procedure di rilascio, cronologia dal prototipo al 18/10/2026, artefatti, decisioni, backlog, problemi risolti.",
+      "autore": "Fondazione Operate"
+    }
+  ]
+}

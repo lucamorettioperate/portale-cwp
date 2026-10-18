@@ -205,6 +205,7 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 | `/audit` | Audit trail | Admin |
 | `/crediti`, `/crediti/:id` | Calcolo crediti CWP | Admin |
 | `/impostazioni` | Durata delle fasi | Admin |
+| `/documentazione` | Documentazione: Registro (solo Admin) e Manuale Utente, in Word e PDF | tutti (contenuto per ruolo) |
 
 **Struttura del codice**
 - `src/pages/` — pagine elencate sopra (+ `VerificaMfa.jsx`).
@@ -264,11 +265,14 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 **Edge Function**: sorgente nel repository → incolla nell'editor della
 dashboard → *Deploy updates* → controlla *Verify JWT* → prova.
 
-**Manuale Utente (Word/PDF)**: si modifica `docs/manuale-utente.md` (e lo
-stesso testo nel manuale online), si aggiunge una riga in
-`strumenti/manuale_utente_revisioni.json` (nuovo numero di revisione e
-data), si esegue `node strumenti/genera_manuale_utente.cjs` (richiede la
-libreria `docx` e LibreOffice) e si pubblica con commit e push.
+**Documenti in Word/PDF (Manuale Utente e questo Registro)**: si modifica il
+testo (`docs/manuale-utente.md`, e lo stesso nel manuale online;
+`docs/REGISTRO_DEV_DEPLOY.md`), si aggiunge una riga in
+`strumenti/revisioni_documenti.json` (nuovo numero di revisione e data), si
+esegue `node strumenti/genera_documenti.cjs` (richiede la libreria `docx` e
+LibreOffice) e si pubblica con commit e push. I file vanno in
+`public/manuali/` e `public/documentazione/` e si scaricano dalla pagina
+Documentazione del portale.
 
 **Segreti**: li inserisce solo Luca (Edge Functions → Secrets). Le chiavi non
 si scrivono mai in chat, nel codice o nel registro.
@@ -280,11 +284,17 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 18 ottobre 2026
+- **Pagina Documentazione** (`/documentazione`): l'Amministratore scarica il
+  Registro sviluppo e deploy e il Manuale Utente (Word e PDF, con revisione
+  e data); Operatori e Clienti scaricano il Manuale Utente (voce di menu
+  "Manuale"). Registro in Word/PDF con copertina, revisioni e sommario;
+  generatore unico `strumenti/genera_documenti.cjs`, revisioni in
+  `strumenti/revisioni_documenti.json`.
 - **Manuale Utente in Word, Rev. 1.0** — copertina con loghi, registro delle
   revisioni, sommario con numeri di pagina, intestazione e piè di pagina;
   generato da `docs/manuale-utente.md` con
-  `strumenti/genera_manuale_utente.cjs` (revisioni in
-  `strumenti/manuale_utente_revisioni.json`); pubblicato in
+  `strumenti/genera_documenti.cjs` (revisioni in
+  `strumenti/revisioni_documenti.json`); pubblicato in
   `public/manuali/` (.docx e .pdf) e collegato dalla pagina di accesso e da
   "Le mie pratiche". Verificato: rendering PDF di tutte le pagine.
 - **Registro sviluppo e deploy** (questo documento) e **manuali** Utente e
@@ -380,6 +390,7 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 | Registro sviluppo e deploy | `docs/REGISTRO_DEV_DEPLOY.md` + Progetto: `claude/registro-dev-deploy.md` | Questo documento |
 | Manuale Utente (Comuni) | Claude Doc: https://claude.ai/code/artifact/e2dd2bd5-8042-4744-8d5a-54d34dc50153 (creato 18/10) | Uso del portale per i Clienti, passo per passo |
 | Manuale Utente in Word/PDF (Rev. 1.0) | `public/manuali/Manuale_Utente_Portale_CWP.docx` e `.pdf`, online su `/manuali/…` | Versione rifinita e stampabile per i Comuni |
+| Registro sviluppo e deploy in Word/PDF | `public/documentazione/Registro_Dev_Deploy_Portale_CWP.docx` e `.pdf`, scaricabile da `/documentazione` (Admin) | Versione impaginata di questo registro |
 | Manuale Amministratore | Claude Doc: https://claude.ai/code/artifact/cc36ab09-61e6-4dad-aaf0-4082ea0a46da (creato 18/10) | Back-office, utenti, impostazioni, calcolo crediti, manutenzione |
 | Tracciato dati CWP v1.0 | `public/modelli/Tracciato_dati_CWP_v1.xlsx`, online su `/formato-dati` | Modello unico dei dati per il calcolo crediti |
 | Note sul calcolo crediti | `docs/crediti-cwp.md` | Corrispondenza con le formule, scelte interpretative |
@@ -419,50 +430,54 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ## 12. Backlog per chiudere lo sviluppo
 
+Numerazione stabile: un punto mantiene il suo numero anche quando è
+completato (va barrato qui e annotato in Cronologia).
+
 **Calcolo crediti (back-office)**
-1. Import diretto del tracciato dati (Excel/ZIP) nel calcolo.
-2. Aggregazione automatica delle singole letture (foglio 6_Letture).
-3. Controllo privacy all'import (colonne con dati personali).
-4. Scelta del file direttamente dalla pratica del Comune.
-5. Controlli di coerenza (classi, totali, valori anomali).
-6. Rapporto di calcolo in PDF.
-7. Registro dei crediti calcolati e confermati (forma da *Guida al
-   Programma* e *Standard CWP*).
-8. Collaudo con dati reali di un Comune.
-9. Conferma delle scelte interpretative.
 
-**Pratiche**: 10. note di fase · 11. schermata Enti di Validazione ·
-12. template documenti · 13. consultazione (errata corrige, allegati,
-commentatori esterni).
+- **1.** Import diretto del tracciato dati (Excel/ZIP) nel calcolo.
+- **2.** Aggregazione automatica delle singole letture (foglio 6_Letture).
+- **3.** Controllo privacy all'import (colonne con dati personali).
+- **4.** Scelta del file direttamente dalla pratica del Comune.
+- **5.** Controlli di coerenza (classi, totali, valori anomali).
+- **6.** Rapporto di calcolo in PDF.
+- **7.** Registro dei crediti calcolati e confermati (forma da *Guida al Programma* e *Standard CWP*).
+- **8.** Collaudo con dati reali di un Comune.
+- **9.** Conferma delle scelte interpretative.
 
-**Sicurezza**: 14. registro di sicurezza · 15. attivazione MFA ·
-16. antivirus (fine progetto) · 17. verifica dominio email ·
-18. ambiente di prova, backup e procedura di ripristino.
+**Pratiche**
 
-**Chiusura**: 19. collaudo completo e pulizia dati di test (comprese le
-notifiche "Email di prova") · 20. decisioni A e B.
+- **10.** Note di fase.
+- **11.** Schermata Enti di Validazione.
+- **12.** Template di documenti scaricabili dai Comuni.
+- **13.** Consultazione: errata corrige, allegati ai commenti, identificazione dei commentatori esterni.
 
-**Rifiniture emerse dalla stesura del Manuale Utente (18/10)**:
-22. **Recupero e cambio password** per gli utenti (oggi assenti: la
-password la riassegna la Fondazione) — priorità alta;
-23. dopo l'accesso da un link email, riportare l'utente alla pratica del
-link (oggi va alla pagina iniziale);
-24. pratica non attiva: spiegare perché i pulsanti di risposta alle
-integrazioni non compaiono e nascondere "+ Carica";
-25. date della consultazione in formato gg/mm/aaaa (oggi aaaa-mm-gg);
-26. canale di messaggi tra Comune e Fondazione nella pratica (oggi solo la
-nota delle integrazioni);
-27. valutare se mostrare ai Comuni le voci di pagamento (oggi solo staff).
+**Sicurezza**
 
-**Da rifinire**: 21. **Agente AI (Claude) integrato nel portale** —
-richiesto da Luca il 18/10. Ambito da definire; usi possibili: assistente
-per gli utenti dei Comuni (come compilare, cosa manca nella pratica),
-supporto agli Operatori (controllo completezza dei documenti, bozze di
-richieste di integrazione e di risposte ai commenti), verifica del tracciato
-dati prima dell'import, spiegazione dei risultati del calcolo crediti.
-Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che
-faccia da tramite, regole su quali dati l'agente può leggere (privacy) e
-registrazione delle sue azioni nell'audit.
+- **14.** Registro di sicurezza (accessi, tentativi falliti, cambi di permessi).
+- **15.** Attivazione della verifica in due passaggi (MFA).
+- **16.** Antivirus sui file caricati (a fine progetto).
+- **17.** Verifica del dominio email su Resend.
+- **18.** Ambiente di prova, backup e procedura di ripristino.
+
+**Chiusura**
+
+- **19.** Collaudo completo e pulizia dei dati di test (comprese le notifiche "Email di prova").
+- **20.** Decisioni A e B della Fondazione.
+
+**Rifiniture emerse dalla stesura del Manuale Utente (18/10)**
+
+- **22.** Recupero e cambio password per gli utenti (oggi assenti: la password la riassegna la Fondazione) — priorità alta.
+- **23.** Dopo l'accesso da un link email, riportare l'utente alla pratica del link (oggi va alla pagina iniziale).
+- **24.** Pratica non attiva: spiegare perché i pulsanti di risposta alle integrazioni non compaiono e nascondere "+ Carica".
+- **25.** Date della consultazione in formato gg/mm/aaaa (oggi aaaa-mm-gg).
+- **26.** Canale di messaggi tra Comune e Fondazione nella pratica (oggi solo la nota delle integrazioni).
+- **27.** Valutare se mostrare ai Comuni le voci di pagamento (oggi solo staff).
+- **28.** Riservatezza della documentazione: il registro è nel repository pubblico e i suoi file Word/PDF sono raggiungibili da chi conosce l'indirizzo (il portale li mostra solo agli Amministratori). Per renderli davvero riservati: archivio privato su Supabase con accesso solo Admin, o repository privato (oggi incompatibile con il piano gratuito di Vercel).
+
+**Da rifinire**
+
+- **21.** Agente AI (Claude) integrato nel portale — richiesto da Luca il 18/10. Ambito da definire; usi possibili: assistente per gli utenti dei Comuni (come compilare, cosa manca nella pratica), supporto agli Operatori (controllo completezza dei documenti, bozze di richieste di integrazione e di risposte ai commenti), verifica del tracciato dati prima dell'import, spiegazione dei risultati del calcolo crediti. Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che faccia da tramite, regole su quali dati l'agente può leggere (privacy) e registrazione delle sue azioni nell'audit.
 
 ---
 
