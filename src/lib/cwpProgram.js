@@ -78,6 +78,7 @@ export const TIPOLOGIE_DOCUMENTO = [
   "Documentazione amministrativa",
   "Documento di progetto",
   "Rapporto dell'Ente di Validazione",
+  "Rapporto di calcolo dei crediti",
   "Integrazione",
   "Altro",
 ];

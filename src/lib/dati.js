@@ -600,3 +600,10 @@ export async function aggiornaModello(id, campi) {
 export async function urlModello(path) {
   return await supabase.storage.from("modelli").createSignedUrl(path, 60, { download: true });
 }
+
+// Nome di un utente (per i rapporti: chi ha confermato un calcolo). Solo Admin.
+export async function nomeUtente(id) {
+  if (!id) return null;
+  const { data } = await supabase.from("profilo").select("nome_completo").eq("id", id).maybeSingle();
+  return data?.nome_completo || null;
+}

@@ -7,6 +7,7 @@ import Badge from "../components/Badge.jsx";
 import TabellaDati from "../components/crediti/TabellaDati.jsx";
 import ImportaTracciato, { ControlliCoerenza } from "../components/crediti/ImportaTracciato.jsx";
 import { controllaCoerenza } from "../lib/crediti/tracciato.js";
+import { caricaDocumento, nomeUtente } from "../lib/dati.js";
 import {
   leggiCalcolo,
   salvaCalcolo,
@@ -39,7 +40,7 @@ const PASSI = [
 /* Editor di un calcolo dei crediti (Metodologia CWP v1.2). */
 export default function CalcoloCrediti() {
   const { id } = useParams();
-  const { ruolo } = useAuth();
+  const { ruolo, utente } = useAuth();
   const navigate = useNavigate();
   const [calcolo, setCalcolo] = useState(null);
   const [dati, setDati] = useState(null);
@@ -260,6 +261,53 @@ export default function CalcoloCrediti() {
     setPasso("utenze");
   }
 
+  /* Rapporto di calcolo in PDF (backlog 6): dal risultato salvato.
+     archivia = true: il PDF è caricato tra i documenti della pratica
+     (tipologia «Rapporto di calcolo dei crediti», non visibile al Comune:
+     la visibilità si cambia poi nella pratica). */
+  async function rapporto(archivia = false) {
+    setMessaggio(null);
+    if (!calcolo.risultato) return setMessaggio({ errore: true, testo: "Premi prima «Calcola»: il rapporto si basa sul risultato salvato." });
+    if (modificato) return setMessaggio({ errore: true, testo: "Ci sono modifiche non salvate: premi «Calcola» (o «Salva») prima del rapporto." });
+    setInCorso(archivia ? "Archiviazione del rapporto…" : "Preparazione del rapporto…");
+    try {
+      const esiti = controllaCoerenza({ anno: calcolo.anno, rifiuti: dati.rifiuti, pefUd: dati.pefUd, pefUnd: dati.pefUnd, classiUd: dati.classiUd, classiUnd: dati.classiUnd, conferimenti, riuso, ps: psTipologie });
+      // jsPDF è caricato solo quando serve (alleggerisce il portale).
+      const { generaRapportoPdf } = await import("../lib/crediti/rapportoPdf.js");
+      const { blob, nomeFile } = await generaRapportoPdf({
+        calcolo,
+        dati,
+        risultato: calcolo.risultato,
+        coerenza: esiti,
+        confermatoDa: await nomeUtente(calcolo.confermato_da),
+      });
+      if (!archivia) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = nomeFile;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        setMessaggio({ testo: `Rapporto scaricato: ${nomeFile}` });
+      } else {
+        const { error } = await caricaDocumento({
+          praticaId: calcolo.pratica_id,
+          file: new File([blob], nomeFile, { type: "application/pdf" }),
+          tipologia: "Rapporto di calcolo dei crediti",
+          visibileCliente: false,
+          utenteId: utente?.id,
+        });
+        if (error) throw new Error(error.message);
+        setMessaggio({ testo: `Rapporto archiviato tra i documenti generali della pratica ${calcolo.pratica?.codice || ""} (non visibile al Comune finché non lo rendi visibile).` });
+      }
+    } catch (e) {
+      setMessaggio({ errore: true, testo: "Rapporto non generato: " + e.message });
+    }
+    setInCorso("");
+  }
+
   // Controlli di coerenza sui dati attuali (solo dove servono: costano su grandi Banche Dati).
   const psTipologie = Object.fromEntries(dati.fattori.map((f) => [f.id, Number(String(f.ps ?? "").replace(",", ".")) || 0]));
   const coerenza = ["utenze", "risultati"].includes(passo)
@@ -286,7 +334,7 @@ export default function CalcoloCrediti() {
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
             {confermato ? (
-              <Badge bg="#dfe9db" fg={C.green}>Confermato il {formatoData(calcolo.confermato_il)}</Badge>
+              <Badge bg="#dfe9db" fg={C.green}>Confermato il {formatoData(calcolo.confermato_il)}{calcolo.numero_registro ? ` · ${calcolo.numero_registro}` : ""}</Badge>
             ) : (
               <Badge bg={C.paperWarm} fg={C.grafite}>Bozza</Badge>
             )}
@@ -409,7 +457,7 @@ export default function CalcoloCrediti() {
               <Buffer dati={dati} opzioni={dati.opzioni} aggiorna={aggiornaOpzioni} sola={confermato} conferimenti={conferimenti} riuso={riuso} />
             )}
             {passo === "risultati" && (
-              <Risultati risultato={risultato} salvato={salvato} onCalcola={esegui} testa={testa} />
+              <Risultati risultato={risultato} salvato={salvato} onCalcola={esegui} testa={testa} onRapporto={rapporto} confermato={confermato} />
             )}
           </section>
         </div>
@@ -854,7 +902,7 @@ function Buffer({ opzioni, aggiorna, sola, conferimenti, riuso }) {
 }
 
 /* ---------------- Passo 7: risultati ---------------- */
-function Risultati({ risultato, salvato, onCalcola, testa }) {
+function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermato }) {
   const r = risultato || salvato;
   if (!r) {
     return (
@@ -919,6 +967,8 @@ function Risultati({ risultato, salvato, onCalcola, testa }) {
       </div>
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+        {salvato && <button onClick={() => onRapporto(false)} style={btnPrimario}>Scarica il rapporto (PDF)</button>}
+        {salvato && confermato && <button onClick={() => onRapporto(true)} style={btnMini}>Archivia il rapporto nella pratica</button>}
         <button onClick={esportaRiepilogo} style={btnMini}>Scarica il riepilogo (CSV)</button>
         {dettaglio && <button onClick={esportaUtenze} style={btnMini}>Scarica il dettaglio per utenza (CSV)</button>}
         {!dettaglio && <span style={{ fontSize: 12.5, color: C.grafite, alignSelf: "center" }}>Premi «Calcola» per il dettaglio per utenza.</span>}

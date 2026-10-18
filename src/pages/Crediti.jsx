@@ -7,11 +7,14 @@ import Badge from "../components/Badge.jsx";
 import { leggiCruscotto } from "../lib/dati.js";
 import { elencaCalcoli, creaCalcolo } from "../lib/crediti/archivio.js";
 import { formatoData } from "../lib/date.js";
+import RegistroCrediti from "../components/crediti/RegistroCrediti.jsx";
 
 const fmt = (v, d = 2) => (v == null ? "—" : Number(v).toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d }));
 
 /* Crediti CWP — sezione riservata agli Amministratori.
-   Elenco dei calcoli e creazione di un nuovo calcolo per pratica e anno. */
+   Due viste: «Calcoli» (elenco e creazione di un nuovo calcolo per pratica
+   e anno) e «Registro dei crediti» (calcoli ex post confermati con numero
+   di registro, componente RegistroCrediti, script 18). */
 export default function Crediti() {
   const { ruolo } = useAuth();
   const navigate = useNavigate();
@@ -20,6 +23,7 @@ export default function Crediti() {
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState("");
   const [nuovo, setNuovo] = useState(null);
+  const [vista, setVista] = useState("calcoli"); // "calcoli" | "registro"
 
   useEffect(() => {
     if (ruolo !== "admin") return;
@@ -72,7 +76,7 @@ export default function Crediti() {
               tariffaria, Banca Dati Utenze, buffer. Area riservata agli amministratori.
             </p>
           </div>
-          {!nuovo && (
+          {!nuovo && vista === "calcoli" && (
             <button
               onClick={() => setNuovo({ praticaId: pratiche[0]?.id || "", titolo: "", anno: annoCorrente - 1, tipo: "ex_post", dataAvvio: "" })}
               style={btnPrimario}
@@ -84,7 +88,19 @@ export default function Crediti() {
 
         {errore && <div style={{ color: C.red, fontSize: 13, marginBottom: 10 }}>{errore}</div>}
 
-        {nuovo && (
+        {/* Viste */}
+        <div role="tablist" style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+          {[["calcoli", "Calcoli"], ["registro", "Registro dei crediti"]].map(([k, t]) => (
+            <button key={k} role="tab" aria-selected={vista === k} onClick={() => setVista(k)}
+              style={{ ...btnMini, borderColor: vista === k ? C.green : C.line, color: vista === k ? C.green : C.grafite, background: vista === k ? C.greenSoft : C.white }}>
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {vista === "registro" && <RegistroCrediti />}
+
+        {vista === "calcoli" && nuovo && (
           <div style={{ ...riquadro, marginBottom: 16 }}>
             <h2 style={{ fontFamily: "'Archivo'", fontSize: 16, margin: "0 0 12px" }}>Nuovo calcolo</h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
@@ -125,7 +141,7 @@ export default function Crediti() {
           </div>
         )}
 
-        <div style={{ ...riquadro, padding: 0, overflowX: "auto" }}>
+        {vista === "calcoli" && <div style={{ ...riquadro, padding: 0, overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 720 }}>
             <thead>
               <tr style={{ textAlign: "left", color: C.grafite, fontSize: 11.5, textTransform: "uppercase", letterSpacing: 0.3 }}>
@@ -159,12 +175,13 @@ export default function Crediti() {
                   <td style={{ ...td, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700 }}>{fmt(c.crediti_netti, 3)}</td>
                   <td style={td}>
                     {c.stato === "confermato" ? <Badge bg="#dfe9db" fg={C.green}>Confermato</Badge> : <Badge bg={C.paperWarm} fg={C.grafite}>Bozza</Badge>}
+                    {c.numero_registro && <div style={{ fontSize: 11.5, color: C.grafite, marginTop: 3 }}>{c.numero_registro}</div>}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </div>}
       </main>
     </div>
   );

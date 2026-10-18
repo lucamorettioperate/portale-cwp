@@ -44,7 +44,7 @@ export function datiIniziali() {
 export async function elencaCalcoli() {
   return await supabase
     .from("calcolo_crediti")
-    .select("id, pratica_id, titolo, anno, tipo, stato, crediti_lordi, crediti_netti, buffer_pct, calcolato_il, aggiornato_il, versione_di, pratica:pratica_id (codice, tipo, anno_monitoraggio, organizzazione:organizzazione_id (denominazione))")
+    .select("id, pratica_id, titolo, anno, tipo, stato, numero_registro, crediti_lordi, crediti_netti, buffer_pct, calcolato_il, aggiornato_il, versione_di, pratica:pratica_id (codice, tipo, anno_monitoraggio, organizzazione:organizzazione_id (denominazione))")
     .order("aggiornato_il", { ascending: false });
 }
 
