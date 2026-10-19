@@ -134,6 +134,14 @@ prova("riferimento sempre alla soglia del 65% e controllo dei valori fuori scala
   assert.ok(simula({ annoBase: piccolo, anni: [] }).avvisi.some((x) => x.includes("fuori scala")));
 });
 
+prova("frazioni senza fattore (metallo): nessun credito fittizio a parità di totale", () => {
+  const conMetallo = { ...annoBase, rifiuti: { ...annoBase.rifiuti, metallo: 100, indifferenziato: 1500 } };
+  const b = riepilogoAnnoBase(conMetallo);
+  assert.equal(b.composizione.metallo, undefined);
+  const r = simula({ annoBase: conMetallo, anni: [{ anno: 2027, popolazione: 10000, totale: b.totale, seccoProCapite: 50 }], bufferPct: 0 });
+  vicino(r.righe[0].lordi, 0, 1e-6);
+});
+
 prova("avvisi: dati mancanti e secco oltre il totale", () => {
   assert.ok(simula({ annoBase: { popolazione: "", rifiuti: {} }, anni: [] }).avvisi.length >= 2);
   const r = simula({ annoBase, anni: [{ anno: 2027, popolazione: 10000, totale: 500, seccoProCapite: 120 }], bufferPct: 0 });

@@ -104,9 +104,17 @@ export function riepilogoAnnoBase(annoBase, fattori = fattoriPredefiniti()) {
   const totale = somma(Object.values(rifiuti), (q) => q);
   const secco = rifiuti[SECCO] || 0;
   const differenziata = totale - secco;
+  // Composizione della differenziata: solo le frazioni a recupero con un
+  // fattore di emissione, come nella formula 17 (le altre, es. metallo,
+  // non entrano nel calcolo delle emissioni). Così il fattore del secco e
+  // la differenziata usano gli stessi pesi.
+  const conFattore = Object.entries(rifiuti).filter(
+    ([t]) => t !== SECCO && fattori[t]?.recupero && Number.isFinite(Number(fattori[t]?.fe)) && fattori[t]?.fe !== null
+  );
+  const diffConFattore = somma(conFattore, ([, q]) => q);
   const composizione = {};
-  Object.entries(rifiuti).forEach(([t, q]) => {
-    if (t !== SECCO && differenziata > 0) composizione[t] = q / differenziata;
+  conFattore.forEach(([t, q]) => {
+    if (diffConFattore > 0) composizione[t] = q / diffConFattore;
   });
   const ind = fattoreIndifferenziato(rifiuti, fattori);
   return {
