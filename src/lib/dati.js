@@ -451,6 +451,13 @@ export async function elencaUtenti() {
   return await supabase.rpc("admin_elenco_utenti");
 }
 
+// Id dell'Amministratore principale (luca.moretti@operate.it), che nessuno
+// può cancellare, disattivare o declassare. RPC amministratore_principale_id
+// (29_amministratori.sql); solo staff. Restituisce { data: uuid | null }.
+export async function idAmministratorePrincipale() {
+  return await supabase.rpc("amministratore_principale_id");
+}
+
 // Aggiorna ruolo e organizzazioni di un utente.
 // - organizzazioniIds: elenco delle organizzazioni (comuni/aziende) associate;
 //   la prima resta anche come "organizzazione principale" sul profilo.

@@ -97,6 +97,9 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 1.2b | [A] Ripetete con territorio **999001** | Rifiutato: «Il territorio con codice ISTAT 999001 è già nel Progetto CWP-… (un solo progetto per territorio…)»; nessuna nuova pratica |
 | 1.2c | [O] Anagrafiche → Organizzazioni: Modifica «Comune di Prova»: tipo «Ente locale (T.U.E.L.)», codice fiscale, PEC, Delegato 1 e Delegato 2 | Dati salvati; sotto l'organizzazione compare la pratica creata |
 | 1.3 | [A] Utenti → + Nuovo utente, ruolo Cliente, associato a «Comune di Prova» | L'utente compare in elenco; annotate la password temporanea |
+| 1.3a | [A] Utenti → + Nuovo utente, ruolo **Amministratore** (compare il promemoria sull'accesso completo) → Crea; poi entrate con il nuovo account | Il nuovo utente ha il segno Admin e vede tutto il menu dell'Amministratore |
+| 1.3a2 | [A] Nella riga di luca.moretti@operate.it | Segno «Principale», nessun pulsante Modifica, Reimposta password o Disattiva |
+| 1.3a3 | [A] Con Modifica riportate il nuovo Amministratore a Operatore, poi Disattiva e Riattiva | Ruolo cambiato; disattivazione e riattivazione riuscite; voci nell'audit |
 | 1.3b | [A] Create un **secondo** utente Cliente associato a «Comune di Prova» | Rifiutato: «L'Organizzazione «Comune di Prova» ha già un account attivo… Disattiva quello attuale prima di attivarne un altro» |
 | 1.4 | [C] Accedete con la password temporanea | Il portale chiede subito una nuova password (min. 10 caratteri, lettere e numeri) |
 | 1.5 | [C] Aprite Il mio profilo e il Manuale | Dati dell'account; manuale scaricabile in PDF |

@@ -28,6 +28,8 @@ Nel portale la Fondazione lavora con due ruoli:
 | Audit trail | — | sì |
 | Impostazioni (pagina pubblica del Programma, metodologie, durata delle fasi, documenti richiesti, modelli) | — | sì |
 | Calcolo dei crediti CWP | — | sì |
+
+Gli **Amministratori** possono essere più di uno e hanno tutti accesso completo a tutti i dati. Un Amministratore può nominare altri Amministratori (capitolo «Gestione utenti»). L'**Amministratore principale** è luca.moretti@operate.it: nessuno lo può modificare, disattivare o cancellare.
 | Documentazione (Registro e questo manuale) | — | sì |
 
 L'**Ente di Validazione** (RINA) non ha un accesso al portale: i suoi rapporti vengono caricati dall'Operatore nella pratica.
@@ -388,7 +390,7 @@ La pagina **Utenti** elenca tutti gli utenti con nome, email, ruolo e organizzaz
 1. Premete **+ Nuovo utente**.
 2. Inserite **Email** e, facoltativo, **Nome e cognome**.
 3. La **Password temporanea** è già generata; **Genera** ne crea un'altra. Se la scrivete a mano deve avere almeno 10 caratteri, con lettere e numeri.
-4. Scegliete il **Ruolo**: *Cliente (comune / azienda)* oppure *Operatore di back-office*.
+4. Scegliete il **Ruolo**: *Cliente (comune / azienda)*, *Operatore di back-office* oppure *Amministratore*. Scegliendo Amministratore compare un promemoria: avrà accesso completo a tutti i dati e alla gestione utenti; assegnate questo ruolo solo a persone della Fondazione.
 5. Per un Cliente spuntate le **Organizzazioni associate** (almeno una; la prima è la principale). Con più di 6 organizzazioni compare la ricerca.
 6. Premete **Crea utente**. Se qualcosa non va a buon fine (ad esempio un'organizzazione non salvata o che ha già un account attivo), l'utente non viene creato e compare il motivo: correggete e riprovate.
 7. Comunicate all'utente email e password temporanea con un canale sicuro, separato dall'email di benvenuto.
@@ -400,9 +402,9 @@ La pagina **Utenti** elenca tutti gli utenti con nome, email, ruolo e organizzaz
 3. Create l'account del nuovo rappresentante con **+ Nuovo utente**, associandolo all'Organizzazione.
 4. In **Anagrafiche → Organizzazioni** aggiornate **Delegato 1** (e, se cambia, **Delegato 2**).
 
-**Modificare un utente.** **Modifica** permette di cambiare ruolo e organizzazioni. Passando a Operatore le associazioni alle organizzazioni si azzerano.
+**Modificare un utente.** **Modifica** permette di cambiare ruolo e organizzazioni. Passando a Operatore o ad Amministratore le associazioni alle organizzazioni si azzerano. Con **Modifica** si nomina Amministratore un utente esistente, o si riporta un Amministratore a Operatore.
 
-**Disattivare o riattivare.** Un utente **Disattivato** non vede più alcun dato ma resta nello storico. Non si può disattivare sé stessi. Un Cliente si riattiva solo se la sua Organizzazione non ha nel frattempo un altro account attivo.
+**Disattivare o riattivare.** Un utente **Disattivato** non vede più alcun dato ma resta nello storico. Non si può disattivare sé stessi. Si può disattivare anche un altro Amministratore. Un Cliente si riattiva solo se la sua Organizzazione non ha nel frattempo un altro account attivo.
 
 **Password temporanea e primo accesso.** Ogni nuovo utente entra con la password temporanea: al primo accesso il portale gli chiede di sceglierne una personale e non lo lascia proseguire finché non lo fa. Finché non l'ha cambiata non vede né modifica alcun dato del portale.
 
@@ -415,7 +417,9 @@ La pagina **Utenti** elenca tutti gli utenti con nome, email, ruolo e organizzaz
 
 La reimpostazione non è possibile per gli Amministratori né per sé stessi, e viene registrata nell'audit (senza la password).
 
-**Limiti.** Dal portale non si creano né si nominano Amministratori: si fa da Supabase, per sicurezza. La password di un Amministratore si gestisce con **Password dimenticata?** oppure da Supabase (*Authentication → Users*).
+**Amministratore principale.** La riga di luca.moretti@operate.it ha il segno **Principale** e nessun pulsante: nessun Amministratore la può modificare, declassare, disattivare o cancellare. Lo impedisce il database (script 29), non solo la pagina: nemmeno dal pannello *Authentication* di Supabase si può cancellare l'account. In caso di reale necessità la protezione si toglie solo dal *SQL Editor* di Supabase, con le istruzioni in fondo allo script 29.
+
+**Limiti.** Nessuno può cambiare il proprio ruolo né disattivare sé stesso. La password di un Amministratore non si reimposta dalla pagina Utenti: si gestisce con **Password dimenticata?** oppure da Supabase (*Authentication → Users*).
 
 ## Audit trail
 

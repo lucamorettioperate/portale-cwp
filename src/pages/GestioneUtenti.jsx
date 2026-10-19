@@ -3,8 +3,12 @@
    Scopo: elenco di tutti gli utenti (nome, email, organizzazioni, ruolo,
      stato) con, per ciascuno: modifica di ruolo e organizzazioni,
      reimpostazione della password temporanea, disattivazione/riattivazione.
-     Pulsante «+ Nuovo utente» per creare un cliente o un operatore con
-     password temporanea. Un utente cliente può essere associato a più
+     Pulsante «+ Nuovo utente» per creare un cliente, un operatore o un
+     amministratore con password temporanea. Gli Amministratori hanno
+     accesso completo a tutti i dati e possono nominare altri
+     Amministratori (script 29). L'Amministratore principale
+     (luca.moretti@operate.it, segno «Principale») non si modifica, non si
+     disattiva e non si cancella. Un utente cliente può essere associato a più
      organizzazioni (es. più comuni); la prima scelta è la principale.
      Ogni Organizzazione ha al massimo un account cliente attivo, quello
      del rappresentante autorizzato (Guida 7.2): lo impone il database
@@ -17,16 +21,19 @@
      aggiornaUtente (RPC admin_aggiorna_utente_completo, script 20: ruolo e
      organizzazioni in un'unica operazione), impostaUtenteAttivo (RPC
      admin_imposta_attivo), reimpostaPassword (Edge Function
-     "reimposta-password"). Password generate con generaPasswordTemporanea
-     di src/lib/password.js.
+     "reimposta-password"), idAmministratorePrincipale (RPC
+     amministratore_principale_id, script 29). Password generate con
+     generaPasswordTemporanea di src/lib/password.js.
    Sicurezza: ogni funzione del database e ogni Edge Function verifica da
      sé che il chiamante sia Amministratore con verifica a due fattori
-     (app_is_admin / sono_admin). Garantito lato server: non si nominano
-     amministratori (né in creazione né in modifica), non si reimposta la
-     password di un amministratore, non si disattiva se stessi. Solo
-     interfaccia: il fatto che le righe degli Amministratori non abbiano
-     pulsanti «Modifica» e «Disattiva» (il database non impedisce a un
-     admin di modificare il ruolo di un altro admin).
+     (app_is_admin / sono_admin). Garantito lato server (script 29): solo un
+     Amministratore nomina, declassa o disattiva un altro Amministratore;
+     nessuno cambia il proprio ruolo né disattiva se stesso; l'Amministratore
+     principale è protetto da un trigger anche contro la cancellazione
+     dell'account; non si reimposta la password di un amministratore (Edge
+     Function reimposta-password). La Edge Function crea-utente crea solo
+     clienti e operatori: un nuovo Amministratore si crea come operatore e
+     subito dopo si promuove (admin_aggiorna_utente_completo).
    Registro sviluppo e deploy: capitolo «Portale (frontend)».
    ========================================================================= */
 import React, { useEffect, useState } from "react";
@@ -41,6 +48,7 @@ import {
   aggiornaUtente,
   impostaUtenteAttivo,
   reimpostaPassword,
+  idAmministratorePrincipale,
 } from "../lib/dati.js";
 import { generaPasswordTemporanea } from "../lib/password.js";
 
@@ -63,8 +71,10 @@ function orgNomiUtente(u) {
    Contiene l'elenco (una RigaUtente per utente) e apre FormInvito per la
    creazione. Dopo ogni salvataggio rilegge tutto dal database. */
 export default function GestioneUtenti() {
-  const { ruolo } = useAuth();
+  const { ruolo, utente: io } = useAuth();
   const [utenti, setUtenti] = useState([]);
+  // Id dell'Amministratore principale (protetto), null se non impostato.
+  const [principaleId, setPrincipaleId] = useState(null);
   const [organizzazioni, setOrganizzazioni] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState("");
@@ -76,10 +86,12 @@ export default function GestioneUtenti() {
   // mostra l'elenco).
   async function carica() {
     setCaricamento(true);
-    const [u, o] = await Promise.all([elencaUtenti(), elencaOrganizzazioni()]);
+    const [u, o, p] = await Promise.all([elencaUtenti(), elencaOrganizzazioni(), idAmministratorePrincipale()]);
     if (u.error) setErrore(u.error.message);
     else setUtenti(u.data || []);
     setOrganizzazioni(o.data || []);
+    // Se lo script 29 non è ancora eseguito la funzione non esiste: nessun principale.
+    setPrincipaleId(p.error ? null : p.data || null);
     setCaricamento(false);
   }
 
@@ -107,8 +119,9 @@ export default function GestioneUtenti() {
           <div>
             <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 4px" }}>Gestione utenti</h1>
             <p style={{ fontSize: 13.5, color: C.grafite, margin: 0 }}>
-              Invita operatori e clienti, assegna ruolo e organizzazioni. Ogni Organizzazione ha un solo account cliente
-              attivo, quello del rappresentante autorizzato (Guida al Programma, cap. 7.2).
+              Invita clienti, operatori e amministratori, assegna ruolo e organizzazioni. Ogni Organizzazione ha un solo
+              account cliente attivo, quello del rappresentante autorizzato (Guida al Programma, cap. 7.2). Gli
+              amministratori vedono tutti i dati; l'amministratore principale non si può modificare né disattivare.
             </p>
           </div>
           <button onClick={() => setInvito(true)} style={btnPrimario}>
@@ -133,6 +146,8 @@ export default function GestioneUtenti() {
                 key={u.id}
                 utente={u}
                 organizzazioni={organizzazioni}
+                principale={u.id === principaleId}
+                sonoIo={u.id === io?.id}
                 ultimo={i === utenti.length - 1}
                 onSalvato={carica}
               />
@@ -160,11 +175,14 @@ export default function GestioneUtenti() {
    - utente: riga di admin_elenco_utenti (id, email, nome_completo, ruolo,
      attivo, organizzazioni…)
    - organizzazioni: tutte le organizzazioni, per la scelta
+   - principale: vero per l'Amministratore principale (nessuna azione)
+   - sonoIo: vero per la riga dell'utente collegato (non si cambia il
+     proprio ruolo e non ci si disattiva)
    - ultimo: vero per l'ultima riga (niente bordo inferiore)
    - onSalvato: richiamata dopo un salvataggio riuscito (rilettura elenco).
    Tre pannelli alternativi: nessuno, «modifica» (ruolo e organizzazioni),
    «reimposta» (nuova password temporanea). */
-function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
+function RigaUtente({ utente, organizzazioni, principale, sonoIo, ultimo, onSalvato }) {
   const [modifica, setModifica] = useState(false);
   // Valori in modifica (ruolo e organizzazioni scelte), copiati dall'utente.
   const [ruolo, setRuolo] = useState(utente.ruolo);
@@ -173,8 +191,11 @@ function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
   const [errore, setErrore] = useState("");
   const r = RUOLI[utente.ruolo];
   const nomiOrg = orgNomiUtente(utente);
-  // Gli Amministratori non si gestiscono da qui (vedi «Sicurezza» in testa).
-  const modificabile = utente.ruolo !== "admin";
+  // Ruolo e stato si cambiano per tutti tranne l'Amministratore principale
+  // e sé stessi (lo impone anche il database, script 29). La password di
+  // un Amministratore non si reimposta da qui (Edge Function).
+  const modificabile = !principale && !sonoIo;
+  const passwordReimpostabile = modificabile && utente.ruolo !== "admin";
   // Reimpostazione password: null = chiuso; { password } = conferma; { fatta } = esito.
   const [reimposta, setReimposta] = useState(null);
 
@@ -261,10 +282,11 @@ function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
         {!modifica && (
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             {!utente.attivo && <Badge bg="#f6dcd6" fg={C.red}>Disattivato</Badge>}
+            {principale && <Badge bg="#e3eadf" fg={C.green}>Principale</Badge>}
             {r && <Badge bg={r.soft} fg={r.color}>{r.short}</Badge>}
             {modificabile && <button onClick={apri} style={btnMini}>Modifica</button>}
             {/* La password si propone subito ma si applica solo con «Conferma». */}
-            {modificabile && utente.attivo && (
+            {passwordReimpostabile && utente.attivo && (
               <button onClick={() => { setErrore(""); setReimposta({ password: generaPasswordTemporanea() }); }} style={btnMini}>
                 Reimposta password
               </button>
@@ -320,15 +342,15 @@ function RigaUtente({ utente, organizzazioni, ultimo, onSalvato }) {
             borderRadius: 10,
           }}
         >
-          {/* Niente opzione «admin»: la nomina di amministratori non si fa
-              dal portale (la rifiuta anche il database). */}
           <label style={lbl}>
             Ruolo
             <select value={ruolo} onChange={(e) => setRuolo(e.target.value)} style={{ ...campo, maxWidth: 260 }}>
               <option value="cliente">Cliente (comune / azienda)</option>
               <option value="operatore">Operatore di back-office</option>
+              <option value="admin">Amministratore</option>
             </select>
           </label>
+          {ruolo === "admin" && utente.ruolo !== "admin" && <AvvisoAdmin />}
           {ruolo === "cliente" && (
             <SceltaOrganizzazioni
               organizzazioni={organizzazioni}
@@ -424,8 +446,19 @@ function SceltaOrganizzazioni({ organizzazioni, selezionate, onChange }) {
   );
 }
 
-/* Finestra «Nuovo utente»: crea un cliente o un operatore con password
-   temporanea (Edge Function "crea-utente"). Al termine mostra la password
+/* Avviso mostrato quando si sceglie il ruolo Amministratore. Nessuna prop. */
+function AvvisoAdmin() {
+  return (
+    <div style={{ fontSize: 12.5, color: C.grafite, background: "#f3e7d6", borderRadius: 8, padding: "8px 10px", margin: "-6px 0 14px" }}>
+      Un amministratore vede e modifica tutti i dati del portale, gestisce gli utenti e può nominare altri
+      amministratori. Assegna questo ruolo solo a persone della Fondazione.
+    </div>
+  );
+}
+
+/* Finestra «Nuovo utente»: crea un cliente, un operatore o un
+   amministratore con password temporanea (Edge Function "crea-utente";
+   per un amministratore l'utente si crea come operatore e poi si promuove). Al termine mostra la password
    da comunicare all'utente, che al primo accesso dovrà cambiarla.
    Props: organizzazioni (per la scelta), onChiudi (annulla, o clic fuori
    prima della creazione), onInvitato (chiusura dopo la creazione: la
@@ -459,10 +492,12 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
       return;
     }
     setInCorso(true);
+    // La Edge Function crea solo clienti e operatori: un amministratore si
+    // crea come operatore e si promuove subito dopo (funzione del database).
     const { data, error } = await creaUtente({
       email: email.trim(),
       password,
-      ruolo,
+      ruolo: ruolo === "admin" ? "operatore" : ruolo,
       organizzazioniIds: ruolo === "cliente" ? orgIds : [],
       nomeCompleto: nome.trim() || null,
     });
@@ -471,6 +506,15 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
       setInCorso(false);
       setErrore("Creazione non riuscita: " + (data?.error || error.message));
       return;
+    }
+    if (ruolo === "admin") {
+      const promozione = await aggiornaUtente(data.id, "admin", []);
+      if (promozione.error) {
+        setInCorso(false);
+        setErrore("L'utente è stato creato come operatore ma la nomina ad amministratore non è riuscita (" +
+          promozione.error.message + "). Riprova da «Modifica».");
+        return;
+      }
     }
     setInCorso(false);
     setOk(true);
@@ -518,8 +562,10 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
               <select value={ruolo} onChange={(e) => setRuolo(e.target.value)} style={campo}>
                 <option value="cliente">Cliente (comune / azienda)</option>
                 <option value="operatore">Operatore di back-office</option>
+                <option value="admin">Amministratore</option>
               </select>
             </label>
+            {ruolo === "admin" && <AvvisoAdmin />}
             {ruolo === "cliente" && (
               <SceltaOrganizzazioni
                 organizzazioni={organizzazioni}
