@@ -847,13 +847,14 @@ function Tile({ etichetta, valore, unita, principale = false }) {
 function GraficoBarre({ titolo, righe, valore, formato }) {
   const W = 520, H = 210, sx = 56, sy = 14, gh = H - sy - 28;
   // Asse che comprende anche i valori negativi (es. margine del primo anno).
-  const max = Math.max(1, ...righe.map(valore));
+  const max = Math.max(0, ...righe.map(valore));
   const min = Math.min(0, ...righe.map(valore));
-  const scala = (v) => sy + gh - ((v - min) / (max - min)) * gh;
+  const ampiezza = max - min || 1;
+  const scala = (v) => sy + gh - ((v - min) / ampiezza) * gh;
   const y0 = scala(0);
   const passo = (W - sx - 6) / Math.max(righe.length, 1);
   const larg = Math.max(4, Math.min(28, passo - 4));
-  const tacche = min < 0 ? [min, 0, max] : [0, max / 2, max];
+  const tacche = min < 0 ? (max > 0 ? [min, 0, max] : [min, min / 2, 0]) : [0, max / 2, max || 1];
   const ogni = righe.length > 12 ? 3 : 1;
   return (
     <figure style={{ margin: 0, background: C.white, border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 12px" }}>
