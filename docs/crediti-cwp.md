@@ -104,7 +104,22 @@ Costo per abitante interpolato linearmente tra 5.000 e 20.000 e tra 20.000 e 100
 
 In tutti i casi si aggiungono ente di validazione (una tantum), ente di verifica (ogni anno) e altri costi annui. Uscite: ricavi (con intervallo), costi, margine e cumulato per anno, anno di rientro, costo e ricavo per abitante nel periodo (come gli indicatori dell'Allegato A). Funzione `simulaEconomia` di `simulatore.js`.
 
-**Attenzione al confronto con le stime dei contratti.** L'Allegato A del contratto EsaCom stima circa 0,19-0,23 crediti per abitante all'anno (29.000-35.000 crediti per 154.247 abitanti, contabilizzando secco e organico per utenza con tariffazione puntuale). Il simulatore, che lavora sui totali del Comune e conta solo i rifiuti evitati, dà valori molto più bassi (Bovisio-Masciago: circa 0,04 crediti per abitante all'anno): il calcolo per utenza della Metodologia somma solo le utenze virtuose (formula 32), che a livello di Comune si compensano con le altre. Il metodo di stima va allineato con quello usato per l'Allegato A.
+**Confronto con le stime dei contratti EsaCom (analisi del 19/10/2026).** L'Allegato A del contratto di partecipazione EsaCom stima 29.077 crediti all'anno (anni 1-4), 32.500 (anni 5-7) e 35.356 (anni 8-10) per 154.247 abitanti, cioè 0,19-0,23 crediti per abitante all'anno, «contabilizzando il rifiuto urbano residuo e la frazione organica con tariffazione puntuale». Il simulatore nella prima versione faceva solo il **bilancio del Comune** e dava molto meno (Bovisio-Masciago: 0,04). La differenza è di metodo, non un errore di calcolo: l'Allegato A usa l'opzione della formula 32 che **conta solo le utenze virtuose** (Capitolo 4.6), con il buffer del Capitolo 7.
+
+Il simulatore ha ora i due metodi:
+
+| Metodo | Come stima | Bovisio-Masciago, 10 anni (ISPRA 2021, obiettivo 400 / 50 kg/ab) |
+|---|---|---|
+| Bilancio del Comune | ΔI = EP − EA sui totali; buffer impostato (20%) | 6.707 crediti netti, 0,040 per abitante all'anno |
+| Per utenza, solo utenze virtuose | Rifiuti misurati (secco e organico) che le utenze virtuose producono in meno del valore atteso; variabilità tra utenze 30%; buffer 30% (20% + Tabella 16 dimezzata per la tariffa puntuale) | 34.188 crediti netti, 0,204 per abitante all'anno |
+
+Con il metodo per utenza Bovisio-Masciago ricade nell'intervallo dell'Allegato A. La parte maggiore dei crediti non viene dalla variabilità ipotizzata (con variabilità 0% resterebbe oltre 0,19) ma dal fatto che il Comune ha già l'84% di differenziata: il secco delle utenze è molto sotto il valore atteso dello scenario di riferimento al 65%, e misurando solo secco e organico lo spostamento verso carta, vetro e plastica non si compensa (è il motivo del buffer della Tabella 16).
+
+Modello della stima per utenza: per ogni rifiuto misurato, con A = quantità attesa (riferimento al 65%), m = produzione prevista / A e σ = variabilità tra utenze, i rifiuti evitati dalle sole utenze virtuose sono A × [d·Φ(d/σ) + σ·φ(d/σ)] con d = 1 − m (media di max(0, 1 − X) per X normale di media m e scarto σ); crediti lordi = Σ rifiuti evitati × |FErid|. Funzioni `quotaVirtuose`, `bufferMetodologia` e `taraVariabilita` di `simulatore.js`. Lettura prudente del Capitolo 7: la tariffa puntuale dimezza la parte della Tabella 16, non il 20% delle utenze virtuose.
+
+Altre osservazioni sull'Allegato A:
+- i costi: le tabelle del 28/07/2026 con 154.247 abitanti danno 82.614 € all'anno (826.139 € in 10 anni, 5,36 € per abitante; le voci «una tantum» sono ammortizzate in 10 anni, come dice la tabella). L'Allegato indica 6,08 € per abitante: la differenza (circa 111.700 € in 10 anni) potrebbe essere il costo dell'ente di validazione e verifica, che le tabelle escludono. Da chiarire con chi ha preparato l'Allegato;
+- i ricavi per abitante dell'Allegato (11,31 e 22,92 €) usano gli stessi crediti per tutti i 10 anni (29.077 a 6 € e 35.356 a 10 €), non il profilo a scalini della tabella dei crediti.
 
 **Conformità al modello CWP (verifica del 19/10/2026).**
 

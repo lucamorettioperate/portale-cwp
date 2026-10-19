@@ -758,7 +758,16 @@ Il **Simulatore** (menu *Simulatore*, per Operatori e Amministratori) stima in a
 
 Per ogni Comune si possono creare più scenari; con **Duplica** si parte da uno esistente e si cambia solo qualche obiettivo.
 
-**1. Impostazioni.** Nome, durata (menu a tendina 7 / 10 / 21 anni, Standard 4.3.8), primo anno, **buffer previsto** (quota trattenuta dai crediti lordi, Capitolo 7 della Metodologia; 20% è un valore cautelativo) e note sulle ipotesi.
+**1. Impostazioni.** Nome, durata (menu a tendina 7 / 10 / 21 anni, Standard 4.3.8), primo anno, **metodo di stima dei crediti**, **buffer previsto** (quota trattenuta dai crediti lordi, Capitolo 7 della Metodologia) e note sulle ipotesi.
+
+**Metodo di stima.** Si sceglie tra due metodi, entrambi previsti dalla formula 32 della Metodologia:
+
+- **Bilancio del Comune (tutte le utenze insieme).** Confronta i totali del Comune con lo scenario di riferimento: le utenze che peggiorano compensano quelle che migliorano, quindi i crediti nascono solo dai rifiuti evitati in totale. È la stima più prudente.
+- **Per utenza: solo utenze virtuose (con buffer).** Contano solo le utenze che producono meno del valore atteso, per i rifiuti misurati per utenza (ad esempio secco e organico con la tariffa puntuale); i debiti delle altre li copre il buffer. È il metodo delle stime dell'Allegato A dei contratti tipo EsaCom. Senza Banca Dati Utenze la differenza tra le utenze si rappresenta con la **variabilità tra utenze** (proposta 30%): è un'ipotesi, da tarare sui dati reali del gestore.
+
+Nel riquadro sotto si indicano i **rifiuti misurati per utenza** (Tabella 16), le **utenze monitorate** (Tabella 15) e se sono attive la **tariffa puntuale**, la misura ai **centri di raccolta** (−2%) e la misura di ingombranti, verde o indumenti (−1%). Il portale mostra il **buffer secondo il Capitolo 7** con le voci che lo compongono: 20% se si contano solo le utenze virtuose, più le Tabelle 15 e 16, con la parte della Tabella 16 dimezzata dalla tariffa puntuale, al massimo 80%. **Usa questo buffer** lo applica allo scenario. Se il buffer impostato è più basso del minimo, i Risultati lo segnalano.
+
+**Taratura.** Con il metodo per utenza si può scrivere un valore di crediti netti per abitante all'anno da riprodurre (ad esempio 0,19 di una stima già fatta) e premere **Trova la variabilità**: il portale cerca la variabilità tra utenze che porta a quel risultato con i dati dello scenario.
 
 **2. Scenario di riferimento (Standard 4.8.1).** È la situazione «senza progetto» con cui si confrontano gli obiettivi, come nel Programma. Due modi, scelti con i pulsanti:
 
@@ -775,7 +784,8 @@ A destra il riepilogo: produzione totale e pro capite, secco pro capite, **% di 
 
 - crediti netti stimati nel periodo e media annua, % di differenziata dell'ultimo anno, rifiuti evitati;
 - grafico dei crediti netti per anno e grafico della % di differenziata rispetto all'anno base;
-- tabella anno per anno: produzione, scenario di riferimento, rifiuti evitati, crediti lordi, buffer, crediti netti e cumulati;
+- riquadro **Per abitante all'anno**: crediti netti medi per abitante, da confrontare con le stime dei contratti (Allegato A EsaCom: 0,19-0,23);
+- tabella anno per anno: produzione, scenario di riferimento, rifiuti evitati, crediti lordi, buffer, crediti netti e cumulati; con il metodo per utenza anche la colonna **Bilancio del Comune**, per confronto;
 - eventuali avvisi (dati mancanti, secco superiore al totale).
 
 Premete **Salva** per conservare lo scenario: nell'elenco *Scenari per Comune* compaiono, per confrontarli, la % di differenziata finale e i crediti netti stimati di ogni scenario. **Esporta CSV** scarica la tabella (si apre con Excel), **Stampa** produce una versione da stampare o salvare in PDF.

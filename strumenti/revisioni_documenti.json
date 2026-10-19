@@ -223,6 +223,12 @@
       "data": "19/10/2026",
       "descrizione": "Cruscotto diventa Dashboard; barra a LED delle 7 fasi per ogni pratica.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.2",
+      "data": "19/10/2026",
+      "descrizione": "Simulatore: metodo di stima per utenza (solo utenze virtuose), buffer del Capitolo 7, taratura.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -338,6 +344,12 @@
       "rev": "2.8",
       "data": "19/10/2026",
       "descrizione": "Prova 10.10b: barra a LED della Dashboard.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.9",
+      "data": "19/10/2026",
+      "descrizione": "Prove 8b.3b e 8b.3c: metodo per utenza, buffer e taratura.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -508,6 +520,12 @@
       "rev": "3.7",
       "data": "19/10/2026",
       "descrizione": "Dashboard con barra a LED delle 7 fasi.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.8",
+      "data": "19/10/2026",
+      "descrizione": "Simulatore allineato all'Allegato A EsaCom: metodo per utenza.",
       "autore": "Fondazione Operate"
     }
   ],

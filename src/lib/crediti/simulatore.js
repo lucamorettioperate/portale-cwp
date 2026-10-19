@@ -43,6 +43,28 @@
    genera crediti; i crediti nascono dalla riduzione dei rifiuti prodotti
    rispetto allo scenario di riferimento (prevenzione).
 
+   Due metodi di stima (aggiunti il 19/10/2026 dopo il confronto con
+   l'Allegato A dei contratti tipo EsaCom):
+   - «territorio» (bilancio del Comune): ΔI = EP − EA sui totali, tutte le
+     utenze insieme (formula 32 senza buffer di utenza): le utenze che
+     peggiorano compensano quelle che migliorano;
+   - «utenze» (per utenza, solo utenze virtuose): formula 32 con l'opzione
+     del Capitolo 4.6 — si sommano solo le utenze che producono meno del
+     valore atteso e si trattiene il buffer del 20% (Cap. 7). Senza Banca
+     Dati Utenze la produzione delle singole utenze si rappresenta con una
+     distribuzione normale intorno al valore medio dell'anno, con una
+     «variabilità tra utenze» (coefficiente di variazione, ipotesi da
+     tarare sui dati reali): per ogni rifiuto misurato i rifiuti evitati
+     dalle utenze virtuose valgono A × [d·Φ(d/σ) + σ·φ(d/σ)], con A =
+     quantità attesa, d = 1 − produzione/attesa, σ = variabilità. È il
+     metodo usato per le stime dell'Allegato A EsaCom (secco e organico
+     misurati per utenza, tariffa puntuale). Funzione taraVariabilita:
+     trova la variabilità che riproduce una stima di crediti per abitante.
+   Buffer secondo il Capitolo 7 (bufferMetodologia): 20% se si contano solo
+   le utenze virtuose + Tabella 15 (utenze monitorate) + Tabella 16
+   (rifiuti misurati, con −2% centri di raccolta e −1% altre tipologie;
+   dimezzata con la tariffa puntuale), massimo 80%.
+
    Usato da: src/pages/Simulatore.jsx; prove in test/simulatore.test.mjs.
    Dati/servizi coinvolti: nessuno (solo calcoli). Gli scenari si salvano in
    scenario_simulazione (supabase/28_simulatore.sql) tramite scenari.js.
@@ -82,6 +104,90 @@ export function fattoriPredefiniti() {
   return f;
 }
 
+/* ---------------------------------------------------------------------
+   Metodo di stima e buffer (Metodologia Cap. 4.6 formula 32 e Cap. 7).
+   --------------------------------------------------------------------- */
+export const METODI_STIMA = [
+  { id: "territorio", nome: "Bilancio del Comune (tutte le utenze insieme)" },
+  { id: "utenze", nome: "Per utenza: solo utenze virtuose (con buffer)" },
+];
+// Tabella 16: rifiuti misurati per utenza e buffer minimo.
+export const RIFIUTI_MISURATI = [
+  { id: "rur", nome: "Indifferenziato", tipologie: ["indifferenziato"], buffer: 30 },
+  { id: "rur_org", nome: "Indifferenziato e organico", tipologie: ["indifferenziato", "organico"], buffer: 20 },
+  { id: "rur_org_carta", nome: "Indifferenziato, organico e carta", tipologie: ["indifferenziato", "organico", "carta"], buffer: 10 },
+  { id: "rur_org_plastica", nome: "Indifferenziato, organico e plastica", tipologie: ["indifferenziato", "organico", "plastica"], buffer: 15 },
+  { id: "rur_org_vetro", nome: "Indifferenziato, organico e vetro", tipologie: ["indifferenziato", "organico", "vetro"], buffer: 15 },
+  { id: "rur_org_pv", nome: "Indifferenziato, organico, plastica e vetro", tipologie: ["indifferenziato", "organico", "plastica", "vetro"], buffer: 10 },
+  { id: "rur_org_carta_plastica", nome: "Indifferenziato, organico, carta e plastica", tipologie: ["indifferenziato", "organico", "carta", "plastica"], buffer: 6 },
+  { id: "rur_org_carta_vetro", nome: "Indifferenziato, organico, carta e vetro", tipologie: ["indifferenziato", "organico", "carta", "vetro"], buffer: 6 },
+  { id: "rur_org_carta_pv", nome: "Indifferenziato, organico, carta, plastica e vetro", tipologie: ["indifferenziato", "organico", "carta", "plastica", "vetro"], buffer: 3 },
+];
+// Tabella 15: utenze monitorate e buffer minimo.
+export const UTENZE_MONITORATE = [
+  { id: "tutte", nome: "Domestiche residenti, non residenti e non domestiche", buffer: 0 },
+  { id: "dom", nome: "Domestiche residenti e non residenti", buffer: 10 },
+  { id: "res_nondom", nome: "Domestiche residenti e non domestiche", buffer: 5 },
+  { id: "nonres_nondom", nome: "Domestiche non residenti e non domestiche", buffer: 20 },
+  { id: "res", nome: "Solo domestiche residenti", buffer: 15 },
+  { id: "nonres", nome: "Solo domestiche non residenti", buffer: 30 },
+  { id: "nondom", nome: "Solo non domestiche", buffer: 25 },
+];
+export const BUFFER_SOLO_VIRTUOSE = 20; // Cap. 7, valore predefinito
+export const BUFFER_MASSIMO = 80; // Cap. 7
+// Ipotesi iniziali della stima per utenza (modificabili nello scenario).
+export const STIMA_PREDEFINITA = {
+  rifiuti: "rur_org",
+  variabilita: 30, // % (coefficiente di variazione tra utenze: ipotesi da tarare)
+  utenze: "tutte",
+  centriRaccolta: false,
+  altreTipologie: false,
+  tariffaPuntuale: false,
+};
+
+// Buffer complessivo secondo il Capitolo 7. Parametri: soloVirtuose (metodo
+// «utenze»), utenze (Tabella 15), rifiuti (Tabella 16), centriRaccolta
+// (−2%), altreTipologie (−1%), tariffaPuntuale (dimezza la parte della
+// Tabella 16: lettura prudente del testo, che la cita subito dopo quella
+// tabella). Restituisce { totale, voci: [{ voce, pct }] }, al massimo 80%.
+export function bufferMetodologia({ soloVirtuose = false, utenze = "tutte", rifiuti = "rur_org", centriRaccolta = false, altreTipologie = false, tariffaPuntuale = false } = {}) {
+  const voci = [];
+  if (soloVirtuose) voci.push({ voce: "Solo utenze virtuose (Cap. 7)", pct: BUFFER_SOLO_VIRTUOSE });
+  const u = UTENZE_MONITORATE.find((x) => x.id === utenze) || UTENZE_MONITORATE[0];
+  if (u.buffer) voci.push({ voce: `Utenze monitorate: ${u.nome.toLowerCase()} (Tab. 15)`, pct: u.buffer });
+  const r = RIFIUTI_MISURATI.find((x) => x.id === rifiuti) || RIFIUTI_MISURATI[1];
+  let tab16 = r.buffer - (centriRaccolta ? 2 : 0) - (altreTipologie ? 1 : 0);
+  tab16 = Math.max(tab16, 0);
+  if (tariffaPuntuale) tab16 = tab16 / 2;
+  voci.push({
+    voce: `Rifiuti misurati: ${r.nome.toLowerCase()}${centriRaccolta ? ", con centri di raccolta" : ""}${altreTipologie ? ", con altre tipologie" : ""}${tariffaPuntuale ? " — dimezzato per la tariffa puntuale" : ""} (Tab. 16)`,
+    pct: tab16,
+  });
+  const totale = Math.min(somma(voci, (v) => v.pct), BUFFER_MASSIMO);
+  return { totale, voci };
+}
+
+// Funzione di ripartizione e densità della normale standard
+// (approssimazione di Abramowitz e Stegun 7.1.26, errore < 1,5·10⁻⁷).
+function phi(z) {
+  return Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI);
+}
+function Phi(z) {
+  const t = 1 / (1 + 0.3275911 * Math.abs(z) / Math.SQRT2);
+  const erf = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-(z * z) / 2);
+  return z >= 0 ? 0.5 * (1 + erf) : 0.5 * (1 - erf);
+}
+
+// Quota dei rifiuti attesi evitata dalle sole utenze virtuose: media di
+// max(0, 1 − X) con X = produzione/attesa di un'utenza, distribuita come
+// una normale di media m (produzione media dell'anno / attesa) e scarto σ
+// (variabilità tra utenze). Con σ = 0 è la riduzione media, se positiva.
+export function quotaVirtuose(m, sigma) {
+  const d = 1 - m;
+  if (!(sigma > 0)) return Math.max(d, 0);
+  return d * Phi(d / sigma) + sigma * phi(d / sigma);
+}
+
 // Dati iniziali di un nuovo scenario (anno base vuoto, buffer 20%).
 export function datiIniziali(annoInizio) {
   return {
@@ -91,6 +197,9 @@ export function datiIniziali(annoInizio) {
     // Situazione attuale (facoltativa): punto di partenza degli obiettivi.
     attuale: { anno: "", popolazione: "", proCapite: "", seccoProCapite: "" },
     bufferPct: BUFFER_PREDEFINITO,
+    // Metodo di stima (METODI_STIMA) e ipotesi della stima per utenza.
+    metodoStima: "territorio",
+    stimaUtenze: { ...STIMA_PREDEFINITA },
     anni: [],
   };
 }
@@ -287,6 +396,19 @@ export function simula(dati) {
   // Emissioni (tCO₂eq) di un insieme { tipologia: t }: − Σ Q × FE.
   const emissioni = (q) => somma(Object.entries(q), ([t, t_]) => -t_ * fe(t));
 
+  // Metodo di stima: «territorio» (predefinito, anche per gli scenari
+  // salvati prima del 19/10) oppure «utenze» (solo utenze virtuose).
+  const metodoStima = dati.metodoStima === "utenze" ? "utenze" : "territorio";
+  const su = { ...STIMA_PREDEFINITA, ...(dati.stimaUtenze || {}) };
+  const misurati = (RIFIUTI_MISURATI.find((r) => r.id === su.rifiuti) || RIFIUTI_MISURATI[1]).tipologie;
+  const sigma = Math.min(Math.max(num(su.variabilita), 0), 150) / 100;
+  if (metodoStima === "utenze") {
+    const atteso = bufferMetodologia({ ...su, soloVirtuose: true }).totale;
+    if (bufferPct + 1e-9 < atteso) {
+      avvisi.push(`Con questo metodo e queste ipotesi il buffer minimo del Capitolo 7 è ${atteso.toString().replace(".", ",")}%: quello impostato (${String(bufferPct).replace(".", ",")}%) è più basso.`);
+    }
+  }
+
   let cumLordi = 0;
   let cumNetti = 0;
   const righe = (dati.anni || []).map((a) => {
@@ -319,8 +441,22 @@ export function simula(dati) {
     const EA = emissioni(riferimento);
     const EP = emissioni(progetto);
     const deltaI = EP - EA;
-    const lordi = deltaI < 0 ? -deltaI : 0;
-    const debito = deltaI > 0 ? deltaI : 0;
+    const lordiTerritorio = deltaI < 0 ? -deltaI : 0;
+    // Metodo «utenze»: per ogni rifiuto misurato, rifiuti evitati dalle
+    // sole utenze virtuose × fattore (i debiti delle altre li copre il buffer).
+    let evitateVirtuose = 0;
+    let lordiUtenze = 0;
+    if (metodoStima === "utenze") {
+      misurati.forEach((tp) => {
+        const A = riferimento[tp] || 0;
+        if (!A) return;
+        const evitate = A * quotaVirtuose((progetto[tp] || 0) / A, sigma);
+        evitateVirtuose += evitate;
+        lordiUtenze += evitate * Math.max(0, -fe(tp));
+      });
+    }
+    const lordi = metodoStima === "utenze" ? lordiUtenze : lordiTerritorio;
+    const debito = metodoStima === "utenze" ? 0 : deltaI > 0 ? deltaI : 0;
     const quotaBuffer = (lordi * bufferPct) / 100;
     const netti = lordi - quotaBuffer;
     cumLordi += lordi;
@@ -341,6 +477,8 @@ export function simula(dati) {
       EA,
       EP,
       deltaI,
+      lordiTerritorio,
+      evitateVirtuose,
       lordi,
       buffer: quotaBuffer,
       netti,
@@ -367,7 +505,31 @@ export function simula(dati) {
         mediaAnnuaNetti: cumNetti / righe.length,
       }
     : null;
-  return { base, bufferPct, righe, totali, avvisi: [...new Set(avvisi)] };
+  return { base, bufferPct, metodoStima, righe, totali, avvisi: [...new Set(avvisi)] };
+}
+
+// Variabilità tra utenze (%) che porta i crediti netti medi per abitante
+// all'anno al valore indicato (es. 0,19 dell'Allegato A EsaCom), a parità
+// di tutto il resto. Metodo «utenze». Restituisce la variabilità (una
+// cifra decimale) oppure null se il valore non si raggiunge tra 0 e 150%.
+export function taraVariabilita(dati, creditiPerAbitante) {
+  const obiettivo = num(creditiPerAbitante);
+  if (!obiettivo) return null;
+  const media = (v) => {
+    const r = simula({ ...dati, metodoStima: "utenze", stimaUtenze: { ...STIMA_PREDEFINITA, ...(dati.stimaUtenze || {}), variabilita: v } });
+    if (!r.righe.length) return null;
+    return somma(r.righe, (x) => (x.popolazione ? x.netti / x.popolazione : 0)) / r.righe.length;
+  };
+  const alto = media(150);
+  if (alto == null || alto < obiettivo || media(0) > obiettivo) return null;
+  let lo = 0;
+  let hi = 150;
+  for (let i = 0; i < 50; i += 1) {
+    const mid = (lo + hi) / 2;
+    if (media(mid) < obiettivo) lo = mid;
+    else hi = mid;
+  }
+  return Math.round(((lo + hi) / 2) * 10) / 10;
 }
 
 // Righe per l'export CSV (separatore «;», decimali con la virgola).
@@ -375,7 +537,8 @@ export function righeCsv(scenario, risultato, economia = null) {
   const f = (v, d = 1) => (v == null ? "" : Number(v).toFixed(d).replace(".", ","));
   const intest = ["Anno", "Popolazione", "Produzione totale (t)", "Pro capite (kg/ab)", "Secco (t)", "Secco pro capite (kg/ab)", "Differenziata (t)", "% differenziata", "Punti oltre il 65%", "Scenario di riferimento (t)", "Riduzione (t)", "Crediti lordi (tCO2eq)", "Buffer (tCO2eq)", "Crediti netti (tCO2eq)", "Netti cumulati (tCO2eq)"];
   const righe = risultato.righe.map((r) => [r.anno, Math.round(r.popolazione), f(r.totale), f(r.proCapite), f(r.secco), f(r.seccoProCapite), f(r.differenziata), f(r.rd), f(r.rdOltreSoglia), f(r.riferimento), f(r.riduzione), f(r.lordi), f(r.buffer), f(r.netti), f(r.cumulatoNetti)]);
-  const testa = [[`Scenario: ${scenario.nome}`], [`Comune: ${scenario.comune}`], [`Durata: ${scenario.durata} anni dal ${scenario.anno_inizio}`], ["Stima ex ante non certificabile (Metodologia CWP v1.2, modello semplificato)"], []];
+  const metodo = (METODI_STIMA.find((m) => m.id === risultato.metodoStima) || METODI_STIMA[0]).nome;
+  const testa = [[`Scenario: ${scenario.nome}`], [`Comune: ${scenario.comune}`], [`Durata: ${scenario.durata} anni dal ${scenario.anno_inizio}`], [`Metodo di stima: ${metodo}; buffer ${risultato.bufferPct}%`], ["Stima ex ante non certificabile (Metodologia CWP v1.2, modello semplificato)"], []];
   const eco = economia
     ? [[], ["Simulazione economica (importi IVA esclusa)"], ["Anno", "Crediti", "Valore unitario (€)", "Ricavi (€)", "Partecipazione al Programma (€)", "Consulenza (€)", "Ente di validazione e verifica (€)", "Altri costi (€)", "Costi totali (€)", "Margine (€)", "Margine cumulato (€)"],
        ...economia.righe.map((r) => [r.anno, r.crediti, f(r.prezzo, 2), f(r.ricavi, 0), f(r.partecipazione, 0), f(r.consulenza, 0), f(r.costiEnte, 0), f(r.altriCosti, 0), f(r.costi, 0), f(r.margine, 0), f(r.cumulato, 0)])]

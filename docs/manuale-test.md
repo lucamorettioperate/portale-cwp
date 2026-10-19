@@ -238,6 +238,8 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 8b.2b | Passate ad «Anno con il 65% di differenziata» lasciando gli stessi rifiuti | Riquadro arancione «Lo Standard 4.8.1 chiede un anno con differenziata tra 64% e 66%» e avviso nei Risultati; tornando al cluster l'avviso sparisce |
 | 8b.2c | Situazione attuale: anno 2025, produzione 430 kg/ab, secco 90 kg/ab | «Differenziata attuale: 79,1%»; gli obiettivi nuovi partono da questi valori |
 | 8b.3 | Obiettivi: pro capite finale 350, secco pro capite finale 60 → Applica la traiettoria | Righe compilate in modo lineare; la % di differenziata cresce ogni anno; nei Risultati crediti netti positivi e crescenti, grafici aggiornati |
+| 8b.3b | Impostazioni: metodo «Per utenza: solo utenze virtuose», rifiuti misurati «Indifferenziato e organico», spuntate Tariffa puntuale | Buffer secondo il Capitolo 7: 30% (20% + 10%); se il buffer impostato è più basso compare l'avviso; con «Usa questo buffer» diventa 30; nei Risultati crediti più alti e colonna «Bilancio del Comune» per confronto |
+| 8b.3c | Taratura: scrivete 0,19 e premete Trova la variabilità | La variabilità cambia e il riquadro «Per abitante all'anno» mostra circa 0,190 (oppure il messaggio «Valore non raggiungibile» se con questi dati non si può) |
 | 8b.4 | Cambiate la durata a **21 anni**, poi a **7 anni** | Le righe diventano 21 e poi 7; i valori già inseriti per gli stessi anni restano |
 | 8b.5 | In un anno portate il secco pro capite oltre il pro capite totale | Avviso «il secco previsto supera la produzione totale» |
 | 8b.6 | Salva → Duplica con nome «Ambizioso», cambiate il secco finale a 40 → Salva | Nell'elenco del Comune due scenari con % finale e crediti a confronto |

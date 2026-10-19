@@ -6,7 +6,9 @@
    differenziata, fattore del secco), i dati dal cluster SOSE e da un
    calcolo, gli anni del periodo (7, 10, 21), la traiettoria lineare e la
    stima dei crediti anno per anno (riduzione → crediti; stesso totale con
-   più differenziata → nessun credito; aumento → debito; buffer).
+   più differenziata → nessun credito; aumento → debito; buffer), il
+   metodo per utenza con le sole utenze virtuose, il buffer del Capitolo 7
+   e la taratura sulla stima dell'Allegato A EsaCom.
    Uso: npm test (oppure node test/simulatore.test.mjs).
    Esito: "✓" per prova e "N prove superate"; altrimenti si ferma con
    l'errore.
@@ -16,6 +18,7 @@ import assert from "node:assert/strict";
 import {
   DURATE, riepilogoAnnoBase, rifiutiDaCluster, rifiutiDaCalcolo, anniDelPeriodo,
   traiettoriaLineare, simula, righeCsv, fattoriPredefiniti, puntoDiPartenza, simulaEconomia, economiaIniziale, prezziPerAnni, costiPerCaso, costoUnitario,
+  bufferMetodologia, quotaVirtuose, taraVariabilita,
 } from "../src/lib/crediti/simulatore.js";
 
 let n = 0;
@@ -220,6 +223,49 @@ prova("export CSV con separatore punto e virgola", () => {
   const csv = righeCsv({ nome: "Obiettivo", comune: "Prova", durata: 10, anno_inizio: 2027 }, r);
   assert.ok(csv.includes('"2027";"10000";"3600,0"'));
   assert.ok(csv.startsWith('"Scenario: Obiettivo"'));
+});
+
+prova("buffer del Capitolo 7 (Tabelle 15 e 16, tariffa puntuale, massimo 80%)", () => {
+  // Esempio del testo: indifferenziato, organico, vetro e centri di raccolta = 15 − 2 = 13%.
+  assert.equal(bufferMetodologia({ rifiuti: "rur_org_vetro", centriRaccolta: true }).totale, 13);
+  // Scenario EsaCom: solo utenze virtuose 20% + secco e organico 20% dimezzato = 30%.
+  assert.equal(bufferMetodologia({ soloVirtuose: true, rifiuti: "rur_org", tariffaPuntuale: true }).totale, 30);
+  // Caso limite del testo: 20 + 30 + 30 = 80%.
+  assert.equal(bufferMetodologia({ soloVirtuose: true, utenze: "nonres", rifiuti: "rur" }).totale, 80);
+});
+
+prova("quota evitata dalle utenze virtuose", () => {
+  vicino(quotaVirtuose(0.8, 0), 0.2);          // senza variabilità = riduzione media
+  vicino(quotaVirtuose(1.2, 0), 0);           // aumento medio, nessuna utenza virtuosa
+  vicino(quotaVirtuose(1, 0.3), 0.3 * 0.398942, 1e-5); // media invariata: σ·φ(0)
+  assert.ok(quotaVirtuose(1.2, 0.3) > 0);     // anche se in media peggiora, qualcuno migliora
+});
+
+prova("metodo per utenza: solo utenze virtuose, confronto con il bilancio del Comune", () => {
+  // Stessa produzione e stesso secco del riferimento: bilancio zero,
+  // per utenza crediti dalle sole utenze virtuose.
+  const anni = [{ anno: 2027, popolazione: 10000, totale: 4000, seccoProCapite: 140 }];
+  const terr = simula({ annoBase, anni, bufferPct: 0 });
+  vicino(terr.righe[0].lordi, 0, 1e-6);
+  const ut = simula({ annoBase, anni, bufferPct: 30, metodoStima: "utenze", stimaUtenze: { rifiuti: "rur_org", variabilita: 30 } });
+  const r = ut.righe[0];
+  vicino(r.lordiTerritorio, 0, 1e-6);
+  // Secco 1.400 t e organico 1.300 t: (1400 + 1300) × 0,3 × φ(0) t evitate.
+  vicino(r.evitateVirtuose, 2700 * 0.3 * 0.398942, 0.01);
+  vicino(r.netti, r.lordi * 0.7, 1e-6);
+  assert.equal(r.debito, 0);
+  // Buffer più basso del minimo del Capitolo 7: avviso.
+  assert.ok(simula({ annoBase, anni, bufferPct: 10, metodoStima: "utenze", stimaUtenze: { rifiuti: "rur_org" } }).avvisi.some((a) => a.includes("buffer minimo")));
+});
+
+prova("taratura della variabilità su una stima di crediti per abitante", () => {
+  const anni = [{ anno: 2027, popolazione: 10000, totale: 4000, seccoProCapite: 140 }];
+  const dati = { annoBase, anni, bufferPct: 30, stimaUtenze: { rifiuti: "rur_org" } };
+  const v = taraVariabilita(dati, 0.19);
+  assert.ok(v > 0 && v < 150);
+  const r = simula({ ...dati, metodoStima: "utenze", stimaUtenze: { rifiuti: "rur_org", variabilita: v } });
+  vicino(r.righe[0].netti / 10000, 0.19, 0.002);
+  assert.equal(taraVariabilita(dati, 50), null); // irraggiungibile
 });
 
 console.log(`${n} prove superate`);

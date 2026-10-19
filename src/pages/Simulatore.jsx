@@ -6,7 +6,10 @@
        totali; «+ Nuovo scenario» (Comune censito o solo nome).
      - Editor dello scenario in quattro parti:
        1. Impostazioni: nome, note, durata (menu 7 / 10 / 21 anni), anno di
-          inizio, buffer;
+          inizio, metodo di stima («bilancio del Comune» oppure «per utenza,
+          solo utenze virtuose» come nell'Allegato A dei contratti EsaCom,
+          con rifiuti misurati, variabilità tra utenze e taratura), buffer
+          con il calcolo guidato del Capitolo 7 (Tabelle 15-16);
        2. Scenario di riferimento (Standard 4.8.1): l'anno in cui il
           Comune ha raggiunto il 65% di differenziata (a mano o, per gli
           Amministratori, da un calcolo esistente) oppure i valori medi del
@@ -47,6 +50,7 @@ import { formatoData } from "../lib/date.js";
 import {
   DURATE, TIPOLOGIE, datiIniziali, riepilogoAnnoBase, rifiutiDaCluster, rifiutiDaCalcolo,
   anniDelPeriodo, traiettoriaLineare, simula, righeCsv, puntoDiPartenza, RD_SOGLIA, simulaEconomia, economiaIniziale, prezziPerAnni, PREZZO_PROPOSTO, costiPerCaso, listinoDi, CASI_COSTI,
+  METODI_STIMA, RIFIUTI_MISURATI, UTENZE_MONITORATE, STIMA_PREDEFINITA, bufferMetodologia, taraVariabilita,
 } from "../lib/crediti/simulatore.js";
 import { elencaScenari, leggiScenario, creaScenario, salvaScenario, duplicaScenario, eliminaScenario } from "../lib/crediti/scenari.js";
 
@@ -309,6 +313,10 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
   const [traiettoria, setTraiettoria] = useState({ proCapiteFinale: "", seccoProCapiteFinale: "" });
   const [calcoli, setCalcoli] = useState(null);
   const [calcoloScelto, setCalcoloScelto] = useState("");
+  // Taratura della variabilità: crediti per abitante all'anno da riprodurre
+  // (es. 0,19 dell'Allegato A EsaCom) ed esito dell'ultima taratura.
+  const [taraObiettivo, setTaraObiettivo] = useState("");
+  const [taraEsito, setTaraEsito] = useState("");
 
   // Anni del periodo allineati a durata e primo anno (senza perdere i valori).
   const anni = useMemo(
@@ -350,6 +358,24 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
 
   const t = risultato.totali;
   const unTonnellata = base.feSecco != null ? -base.feSecco : null;
+  // Metodo di stima, ipotesi della stima per utenza e buffer del Cap. 7.
+  const metodoStima = dati.metodoStima === "utenze" ? "utenze" : "territorio";
+  const su = { ...STIMA_PREDEFINITA, ...(dati.stimaUtenze || {}) };
+  const cambiaStima = (campi) => cambiaDati({ stimaUtenze: { ...su, ...campi } });
+  const bufferCap7 = bufferMetodologia({ ...su, soloVirtuose: metodoStima === "utenze" });
+  const popMedia = risultato.righe.length ? risultato.righe.reduce((s, r) => s + r.popolazione, 0) / risultato.righe.length : 0;
+  const perAbitante = t && popMedia ? t.mediaAnnuaNetti / popMedia : null;
+
+  // Cerca la variabilità che riproduce i crediti per abitante indicati.
+  function tara() {
+    const v = taraVariabilita({ ...dati, anni }, String(taraObiettivo).replace(",", "."));
+    if (v == null) {
+      setTaraEsito("Valore non raggiungibile con questi dati: con variabilità 0% i crediti sono già più alti, oppure servirebbe oltre il 150%.");
+      return;
+    }
+    cambiaStima({ variabilita: v });
+    setTaraEsito(`Variabilità impostata a ${String(v).replace(".", ",")}%.`);
+  }
 
   return (
     <section style={{ display: "grid", gap: 14 }}>
@@ -392,15 +418,90 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
             <input style={campo} type="number" value={scenario.anno_inizio} onChange={(e) => onCambia({ ...scenario, anno_inizio: Number(e.target.value) || scenario.anno_inizio, dati: { ...dati, anni: [] } })} />
           </label>
           <label style={lbl}>
+            Metodo di stima dei crediti
+            <select style={campo} value={metodoStima} onChange={(e) => cambiaDati({ metodoStima: e.target.value })}>
+              {METODI_STIMA.map((m) => (
+                <option key={m.id} value={m.id}>{m.nome}</option>
+              ))}
+            </select>
+          </label>
+          <label style={lbl}>
             Buffer previsto (%)
             <input style={campo} type="number" min="0" max="80" value={dati.bufferPct ?? 20} onChange={(e) => cambiaDati({ bufferPct: e.target.value })} />
           </label>
+        </div>
+
+        {/* Metodo di stima e buffer guidato (Metodologia Cap. 4.6 e 7) */}
+        <div style={{ marginTop: 12, padding: "12px 14px", background: C.paper, border: `1px solid ${C.line}`, borderRadius: 10 }}>
+          <p style={{ ...nota, margin: "0 0 10px" }}>
+            {metodoStima === "utenze" ? (
+              <>
+                <strong>Per utenza, solo utenze virtuose</strong> (formula 32 con buffer, come nelle stime dell'Allegato A dei contratti EsaCom):
+                si contano i rifiuti misurati per utenza (es. secco e organico con tariffa puntuale) e solo le utenze che ne producono meno del
+                valore atteso; i debiti delle altre li copre il buffer. Senza Banca Dati Utenze la differenza tra utenze si rappresenta con la
+                <em> variabilità tra utenze</em>: è un'ipotesi, da tarare sui dati reali del gestore.
+              </>
+            ) : (
+              <>
+                <strong>Bilancio del Comune</strong> (formula 32 su tutte le utenze): si confrontano i totali del Comune con lo scenario di
+                riferimento; le utenze che peggiorano compensano quelle che migliorano. È la stima più prudente.
+              </>
+            )}
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+            <label style={lbl}>
+              Rifiuti misurati per utenza (Tabella 16)
+              <select style={campo} value={su.rifiuti} onChange={(e) => cambiaStima({ rifiuti: e.target.value })}>
+                {RIFIUTI_MISURATI.map((r) => (
+                  <option key={r.id} value={r.id}>{r.nome}</option>
+                ))}
+              </select>
+            </label>
+            <label style={lbl}>
+              Utenze monitorate (Tabella 15)
+              <select style={campo} value={su.utenze} onChange={(e) => cambiaStima({ utenze: e.target.value })}>
+                {UTENZE_MONITORATE.map((u) => (
+                  <option key={u.id} value={u.id}>{u.nome}</option>
+                ))}
+              </select>
+            </label>
+            {metodoStima === "utenze" && (
+              <label style={lbl}>
+                Variabilità tra utenze (%)
+                <input style={campo} inputMode="decimal" value={su.variabilita ?? ""} onChange={(e) => cambiaStima({ variabilita: e.target.value })} />
+              </label>
+            )}
+          </div>
+          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12.5, margin: "4px 0 10px" }}>
+            {[["tariffaPuntuale", "Tariffa puntuale attiva"], ["centriRaccolta", "Misura anche ai centri di raccolta (−2%)"], ["altreTipologie", "Misura di ingombranti, verde o indumenti (−1%)"]].map(([k, l]) => (
+              <label key={k} style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <input type="checkbox" checked={!!su[k]} onChange={(e) => cambiaStima({ [k]: e.target.checked })} /> {l}
+              </label>
+            ))}
+          </div>
+          <div style={{ fontSize: 12.5, lineHeight: 1.6 }}>
+            <strong>Buffer secondo il Capitolo 7: {String(bufferCap7.totale).replace(".", ",")}%</strong>{" "}
+            <span style={{ color: C.grafite }}>({bufferCap7.voci.map((v) => `${v.voce} ${String(v.pct).replace(".", ",")}%`).join(" + ")})</span>{" "}
+            {num(dati.bufferPct ?? 20) !== bufferCap7.totale && (
+              <button className="no-stampa" style={btnMini} onClick={() => cambiaDati({ bufferPct: bufferCap7.totale })}>Usa questo buffer</button>
+            )}
+          </div>
+          {metodoStima === "utenze" && (
+            <div className="no-stampa" style={{ display: "flex", gap: 8, alignItems: "flex-end", flexWrap: "wrap", marginTop: 10 }}>
+              <label style={{ ...lbl, marginBottom: 0 }}>
+                Taratura: crediti netti per abitante all'anno da riprodurre
+                <input style={{ ...campo, maxWidth: 160 }} inputMode="decimal" placeholder="es. 0,19" value={taraObiettivo} onChange={(e) => setTaraObiettivo(e.target.value)} />
+              </label>
+              <button style={btnMini} onClick={tara} disabled={!taraObiettivo}>Trova la variabilità</button>
+              {taraEsito && <span style={{ fontSize: 12, color: C.grafite }}>{taraEsito}</span>}
+            </div>
+          )}
         </div>
         <label style={{ ...lbl, marginTop: 10 }}>
           Note
           <textarea style={{ ...campo, minHeight: 50 }} value={scenario.note || ""} onChange={(e) => onCambia({ ...scenario, note: e.target.value })} placeholder="Ipotesi, fonti dei dati, azioni previste (es. tariffa puntuale, porta a porta)…" />
         </label>
-        <p style={nota}>Durata: 10 anni, oppure 7 rinnovabili fino a 21 (Standard 4.3.8). Buffer: quota trattenuta dai crediti lordi (Capitolo 7 e Tabelle 15-16 della Metodologia); 20% è un valore cautelativo.</p>
+        <p style={nota}>Durata: 10 anni, oppure 7 rinnovabili fino a 21 (Standard 4.3.8). Buffer: quota trattenuta dai crediti lordi (Capitolo 7 e Tabelle 15-16 della Metodologia): «Usa questo buffer» applica il valore calcolato dalle scelte qui sopra; con la tariffa puntuale la parte della Tabella 16 è dimezzata.</p>
       </div>
 
       {/* 2. Scenario di riferimento (Standard 4.8.1) */}
@@ -610,6 +711,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 10, marginBottom: 14 }}>
               <Tile etichetta={`Crediti netti in ${t.anni} anni`} valore={fmt(t.netti, 0)} unita="tCO₂eq" principale />
               <Tile etichetta="Media annua" valore={fmt(t.mediaAnnuaNetti, 0)} unita="tCO₂eq/anno" />
+              <Tile etichetta="Per abitante all'anno" valore={perAbitante != null ? fmt(perAbitante, 3) : "—"} unita="crediti netti (Allegato A EsaCom: 0,19-0,23)" />
               <Tile etichetta={`Differenziata nel ${risultato.righe[risultato.righe.length - 1].anno}`} valore={`${fmt(t.rdFinale)}%`} unita={`soglia di riferimento: ${RD_SOGLIA}%`} />
               <Tile etichetta="Rifiuti evitati nel periodo" valore={fmt(t.riduzione, 0)} unita="t rispetto al riferimento" />
             </div>
@@ -627,6 +729,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
                     <th style={th}>Rifiuti evitati (t)</th>
                     <th style={th}>% differenziata</th>
                     <th style={th}>Punti oltre il {RD_SOGLIA}%</th>
+                    {metodoStima === "utenze" && <th style={th} title="Crediti lordi con il bilancio del Comune, per confronto">Bilancio del Comune</th>}
                     <th style={th}>Crediti lordi</th>
                     <th style={th}>Buffer</th>
                     <th style={th}>Crediti netti</th>
@@ -642,6 +745,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
                       <td style={tdN}>{fmt(r.riduzione)}</td>
                       <td style={tdN}>{fmt(r.rd)}%</td>
                       <td style={{ ...tdN, color: r.rdOltreSoglia >= 0 ? C.green : C.red }}>{r.rdOltreSoglia >= 0 ? "+" : ""}{fmt(r.rdOltreSoglia)}</td>
+                      {metodoStima === "utenze" && <td style={{ ...tdN, color: C.grafite }}>{fmt(r.lordiTerritorio)}</td>}
                       <td style={tdN}>{fmt(r.lordi)}</td>
                       <td style={{ ...tdN, color: C.grafite }}>{fmt(r.buffer)}</td>
                       <td style={{ ...tdN, fontWeight: 700 }}>{r.debito > 0 ? <span style={{ color: C.red }}>debito {fmt(r.debito)}</span> : fmt(r.netti)}</td>
@@ -654,6 +758,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
                     <td style={tdN}>{fmt(t.riduzione)}</td>
                     <td style={tdN}></td>
                     <td style={tdN}></td>
+                    {metodoStima === "utenze" && <td style={{ ...tdN, color: C.grafite }}>{fmt(risultato.righe.reduce((s, r) => s + r.lordiTerritorio, 0))}</td>}
                     <td style={tdN}>{fmt(t.lordi)}</td>
                     <td style={tdN}>{fmt(t.buffer)}</td>
                     <td style={tdN}>{fmt(t.netti)}</td>
@@ -665,7 +770,16 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
           </>
         )}
         <div style={{ marginTop: 14, padding: "12px 14px", background: C.greenSoft, borderRadius: 10, fontSize: 12.5, lineHeight: 1.55 }}>
-          <strong>Da dove vengono i crediti.</strong> Il simulatore applica le formule della Metodologia CWP v1.2: ogni tonnellata di rifiuti
+          {metodoStima === "utenze" && (
+            <>
+              <strong>Metodo per utenza.</strong> Contano i rifiuti misurati ({(RIFIUTI_MISURATI.find((x) => x.id === su.rifiuti) || RIFIUTI_MISURATI[1]).nome.toLowerCase()})
+              che le utenze virtuose producono in meno rispetto al valore atteso dello scenario di riferimento al {RD_SOGLIA}%. Se il Comune ha già
+              una differenziata alta, il secco delle utenze è molto sotto il riferimento e i crediti crescono anche senza ridurre la produzione
+              totale: per questo il risultato è più alto del bilancio del Comune (colonna di confronto nella tabella).
+              <br />
+            </>
+          )}
+          <strong>Da dove vengono i crediti{metodoStima === "utenze" ? " nel bilancio del Comune" : ""}.</strong> Il simulatore applica le formule della Metodologia CWP v1.2: ogni tonnellata di rifiuti
           prodotta pesa con il suo fattore di emissione e il secco con la media dei fattori della differenziata (formule 16-17). Perciò i crediti
           nascono dai <strong>rifiuti evitati</strong> rispetto allo scenario di riferimento, portato alla soglia del {RD_SOGLIA}% di differenziata (produzione pro capite del riferimento × popolazione):
           {unTonnellata != null && <> con i dati di questo Comune, <strong>1 t in meno ≈ {fmt(unTonnellata, 2)} tCO₂eq</strong> prima del buffer.</>} Spostare
