@@ -24,7 +24,7 @@
 """
 Impaginazione tipografica in PDF dei documenti del portale (WeasyPrint).
 
-Uso:  python3 strumenti/impagina_pdf.py manuale|amministratore|test|registro
+Uso:  python3 strumenti/impagina_pdf.py manuale|amministratore|test|registro|ripristino
 Legge lo stesso testo e le stesse revisioni del Word (strumenti/genera_documenti.cjs)
 e scrive il PDF accanto al .docx, sostituendo quello convertito da LibreOffice.
 
@@ -101,6 +101,19 @@ DOCUMENTI = {
         "numera": False,
         "riservato": True,
         "intro": "Il registro descrive com'è fatto il portale e come è cambiato nel tempo: architettura, servizi, database, codice sorgente, procedure di rilascio, decisioni e lavori ancora aperti.",
+    },
+    # Istruzioni di ripristino (copie di sicurezza e procedure di recupero).
+    "ripristino": {
+        "sorgente": "docs/ripristino.md",
+        "uscita": "public/documentazione/Istruzioni_Ripristino_Portale_CWP.pdf",
+        "sopratitolo": "Istruzioni di ripristino",
+        "titolo": "Portale Carbon WastePrint®",
+        "sottotitolo": "Copie di sicurezza e ripristino di servizi, GitHub e Claude",
+        "breve": "Istruzioni di ripristino",
+        "destinatari": "Amministratori del portale e sviluppatori — documento riservato",
+        "numera": True,
+        "riservato": True,
+        "intro": "Queste istruzioni spiegano dove stanno il codice e i dati del portale, quali copie di sicurezza fare e come rimettere in funzione GitHub, Vercel, Supabase, Resend e il progetto Claude se qualcosa va perso.",
     },
 }
 

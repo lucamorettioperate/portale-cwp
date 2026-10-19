@@ -864,6 +864,13 @@ Il back-office torna accessibile con la sola password. Dopo aver rimesso a posto
 
 **Chiavi e password.** Le chiavi dei servizi si inseriscono solo nelle rispettive dashboard. Non vanno mai scritte in email, chat o documenti.
 
+**Copie di sicurezza e ripristino.** Le procedure complete sono in un documento a parte, le **Istruzioni di ripristino** (pagina *Documentazione*, solo Amministratori; una copia è anche in ogni archivio di backup). Spiegano dove stanno codice e dati, quali copie fare e con che frequenza, e come rimettere in funzione GitHub, Vercel, Supabase, Resend e il progetto Claude. In sintesi:
+
+- a ogni rilascio importante si chiede a Claude l'archivio di backup completo e lo si conserva in due posti (computer e Google Drive);
+- le copie del database di Supabase non contengono i file caricati: i file si copiano a parte;
+- se un rilascio rompe qualcosa, su Vercel si ripubblica la versione precedente (*Deployments* › *Promote to Production*);
+- un repository GitHub cancellato si recupera entro 90 giorni da *Settings* › *Repositories* › *Deleted repositories*.
+
 ## Funzioni in arrivo
 
 Questo manuale descrive il portale alla data della revisione indicata in copertina. Sono in sviluppo, o in attesa di passaggi esterni, e saranno aggiunte qui quando disponibili:

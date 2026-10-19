@@ -127,6 +127,12 @@
       "data": "19/10/2026",
       "descrizione": "Fondazione Operate soggetto promotore del programma (esclusiva conferita da Wastelab).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.0",
+      "data": "19/10/2026",
+      "descrizione": "Copie di sicurezza e ripristino: rimando alle Istruzioni di ripristino e punti essenziali (capitolo Manutenzione ed emergenze).",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -268,6 +274,20 @@
       "rev": "2.3",
       "data": "19/10/2026",
       "descrizione": "Script 25-27 (documenti del Programma, PEC, soggetto promotore), decisione del 19/10 e presentazione aggiornata.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.4",
+      "data": "19/10/2026",
+      "descrizione": "Archivio di backup, ramo snapshot su GitHub e nuovo documento Istruzioni di ripristino (procedure di rilascio e cronologia).",
+      "autore": "Fondazione Operate"
+    }
+  ],
+  "ripristino": [
+    {
+      "rev": "1.0",
+      "data": "19/10/2026",
+      "descrizione": "Prima emissione: dove stanno codice e dati, copie di sicurezza, ripristino di GitHub, Vercel, Supabase, Resend e del progetto Claude, elenco di chiavi e impostazioni.",
       "autore": "Fondazione Operate"
     }
   ]

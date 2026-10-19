@@ -59,6 +59,13 @@ const DOCUMENTI = [
     percorso: "/documentazione/Registro_Dev_Deploy_Portale_CWP",
     soloAdmin: true,
   },
+  {
+    chiave: "ripristino",
+    titolo: "Istruzioni di ripristino",
+    descrizione: "Dove stanno codice e dati, quali copie di sicurezza fare e come rimettere in funzione GitHub, Vercel, Supabase, Resend e il progetto Claude se qualcosa va perso. Documento riservato agli Amministratori.",
+    percorso: "/documentazione/Istruzioni_Ripristino_Portale_CWP",
+    soloAdmin: true,
+  },
 ];
 
 /* Elenco dei documenti scaricabili per il ruolo (usato anche in "Il mio profilo").

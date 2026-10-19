@@ -452,6 +452,14 @@ Documentazione del portale.
 **Segreti**: li inserisce solo Luca (Edge Functions → Secrets). Le chiavi non
 si scrivono mai in chat, nel codice o nel registro.
 
+**Copie di sicurezza e ripristino**: procedure complete in `docs/ripristino.md`
+(Istruzioni di ripristino, Word e PDF in `public/documentazione/`). Contiene
+la mappa di dove stanno codice e dati, il calendario delle copie (archivio di
+backup, ramo `snapshot-<data>` su GitHub, copia manuale di database e file con
+la Supabase CLI) e il ripristino di GitHub, Vercel, Supabase (pausa, dati
+cancellati, ricostruzione da zero con gli script 01-27), Resend e progetto
+Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
+
 ---
 
 ## 9. Cronologia sviluppo e deploy
@@ -459,6 +467,12 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 19 ottobre 2026
+- **Copie di sicurezza e istruzioni di ripristino** — archivio di backup
+  completo (codice con storia completa, manuali, presentazione, documenti
+  ufficiali, documenti e memoria del progetto Claude, artefatti in PDF,
+  materiale ricevuto), ramo `snapshot-2026-10-19` su GitHub con la versione
+  della presentazione, nuovo documento «Istruzioni di ripristino»
+  (`docs/ripristino.md`, rev. 1.0) scaricabile dalla pagina Documentazione.
 - **Soggetto promotore del programma** — script `27_soggetto_promotore.sql`
   eseguito in produzione: la pagina /programma indica Fondazione Operate,
   gestore in esclusiva per conferimento di Wastelab (decisione del 19/10).
@@ -800,6 +814,8 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 | Controlli sui file | `docs/controlli-file.md` | Regole di caricamento, opzioni antivirus |
 | Crediti volontari dalla raccolta differenziata: valore e criticità | https://claude.ai/artifact/CLvQ82y6UwHznZBUujHy9J (15/10) | Analisi di contesto correlata al Programma |
 | Documenti di riferimento | allegati in chat del 17/10 | *Requisiti della piattaforma* (15/09/2026), *Metodologia CWP v1.2* |
+| Istruzioni di ripristino in Word/PDF | `docs/ripristino.md` → `public/documentazione/Istruzioni_Ripristino_Portale_CWP.docx` e `.pdf`, scaricabile da `/documentazione` (Admin) | Copie di sicurezza e ripristino di GitHub, Vercel, Supabase, Resend e progetto Claude |
+| Archivio di backup completo | File `Portale_CWP_backup_completo_<data>.zip` consegnato a Luca (prima copia 19/10/2026) e ramo GitHub `snapshot-2026-10-19` | Codice con storia completa, manuali, presentazione, documenti ufficiali, progetto Claude, artefatti in PDF |
 
 ---
 
@@ -1129,7 +1145,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 107 file, 24.777 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 107 file, 24.832 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1152,7 +1168,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 107 file, 24.777 righe 
 | `src/pages/Crediti.jsx` | 230 | sezione del calcolo dei crediti di CO₂eq (Metodologia Carbon WastePrint® v1.2). Due viste: - «Calcoli»: elenco di tutti i calcoli (titolo, pratica, anno e tipo, crediti netti, stato bozza/confermato) e modulo «+ Nuovo calcolo»… |
 | `src/pages/CreditiEmessiPagina.jsx` | 68 | elenco di tutti i lotti di crediti emessi dai Rapporti di Monitoraggio (Guida al Programma 6.3.2 e 6.3.3; script 24), con il totale emessi / attivi / ritirati e, per lo staff, le azioni su ogni lotto (caricamento sul registro,… |
 | `src/pages/Cruscotto.jsx` | 268 | (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso, in scadenza, scadute, in attesa del Cliente, integrazioni da verificare, consultazioni attive) e tabella di tutte le pratiche, Progetti e Rapporti, con ricerca e… |
-| `src/pages/Documentazione.jsx` | 137 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
+| `src/pages/Documentazione.jsx` | 144 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
 | `src/pages/FormatoDati.jsx` | 136 | spiega lo standard dei dati da inviare per il calcolo dei crediti e permette di scaricare il tracciato Excel. Il link si può mandare a Comuni e gestori anche senza credenziali. Contiene: elenco dei fogli del tracciato,… |
 | `src/pages/GestioneUtenti.jsx` | 608 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
 | `src/pages/Impostazioni.jsx` | 60 | parametri del Programma modificabili dagli Amministratori: - Durata delle fasi del Progetto e del Rapporto di Monitoraggio (script 13 e 21, componente DurateFasi); - Documenti richiesti per fase (script 21, componente… |
@@ -1271,12 +1287,12 @@ Inventario generato da `strumenti/inventario_codice.py`: 107 file, 24.777 righe 
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `strumenti/genera_documenti.cjs` | 554 | genera in Word (.docx) e PDF i documenti del portale, con copertina e loghi, registro delle revisioni, sommario con numeri di pagina, intestazione e piè di pagina: |
+| `strumenti/genera_documenti.cjs` | 569 | genera in Word (.docx) e PDF i documenti del portale, con copertina e loghi, registro delle revisioni, sommario con numeri di pagina, intestazione e piè di pagina: |
 | `strumenti/genera_esempi_tracciato.py` | 101 | genera i file di prova del tracciato dati per i test automatici (test/tracciato.test.mjs) e per il collaudo manuale (Manuale Test): - test/dati/tracciato_esempio.xlsx : tracciato compilato, Banca Dati con totali (foglio 5) -… |
 | `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
-| `strumenti/impagina_pdf.py` | 416 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
+| `strumenti/impagina_pdf.py` | 429 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
-| `strumenti/revisioni_documenti.json` | 274 | — |
+| `strumenti/revisioni_documenti.json` | 294 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

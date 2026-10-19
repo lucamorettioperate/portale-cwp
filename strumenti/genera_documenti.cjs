@@ -13,6 +13,8 @@
                               → public/documentazione/Manuale_Test_Portale_CWP.{docx,pdf}
    - Registro sviluppo/deploy docs/REGISTRO_DEV_DEPLOY.md
                               → public/documentazione/Registro_Dev_Deploy_Portale_CWP.{docx,pdf}
+   - Istruzioni di ripristino docs/ripristino.md
+                              → public/documentazione/Istruzioni_Ripristino_Portale_CWP.{docx,pdf}
 
    Le revisioni stanno in strumenti/revisioni_documenti.json (l'ultima di
    ogni documento è quella corrente): a ogni modifica si aggiunge una riga.
@@ -31,7 +33,7 @@
    quello tipografico di impagina_pdf.py, se WeasyPrint è installato.
 
    Uso:  node strumenti/genera_documenti.cjs            (tutti)
-         node strumenti/genera_documenti.cjs registro   (uno solo: manuale | amministratore | test | registro)
+         node strumenti/genera_documenti.cjs registro   (uno solo: manuale | amministratore | test | registro | ripristino)
    Richiede la libreria "docx" (npm install --no-save docx), LibreOffice
    (numeri di pagina del sommario del Word) e pdftotext; il PDF finale è
    impaginato da strumenti/impagina_pdf.py (pip install weasyprint markdown).
@@ -107,6 +109,19 @@ const DOCUMENTI = {
     destinatari: "Amministratori del portale — documento riservato",
     numeraCapitoli: false,
     nota: (r) => `Fotografia del registro alla revisione ${r.rev} del ${r.data}. Il registro è aggiornato a ogni nuova funzione, servizio o rilascio; la versione corrente si scarica dall'area Documentazione del portale (solo Amministratori).`,
+  },
+  // Istruzioni di ripristino: copie di sicurezza e procedure per rimettere in
+  // funzione GitHub, Vercel, Supabase, Resend e il progetto Claude.
+  ripristino: {
+    sorgente: "docs/ripristino.md",
+    uscita: "public/documentazione",
+    nome: "Istruzioni_Ripristino_Portale_CWP",
+    titolo: "ISTRUZIONI DI RIPRISTINO",
+    breve: "Istruzioni di ripristino",
+    sottotitolo: "Copie di sicurezza e ripristino di servizi, GitHub e Claude",
+    destinatari: "Amministratori del portale e sviluppatori — documento riservato",
+    numeraCapitoli: true,
+    nota: (r) => `Istruzioni alla revisione ${r.rev} del ${r.data}. Si aggiornano quando cambiano servizi, piani, script del database, funzioni o chiavi; una copia è dentro ogni archivio di backup e la versione corrente si scarica dall'area Documentazione del portale (solo Amministratori).`,
   },
 };
 
