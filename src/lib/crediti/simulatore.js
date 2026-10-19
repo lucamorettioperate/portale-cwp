@@ -385,10 +385,11 @@ export function righeCsv(scenario, risultato, economia = null) {
 
 /* =========================================================================
    Simulazione economica (richieste di Luca del 19/10/2026).
-   Dai crediti netti stimati anno per anno e dal valore unitario del credito
-   (€ per credito = € per tCO₂eq, digitato dall'utente; facoltativi un
-   valore minimo e uno massimo per lo scenario peggiore e migliore, come
-   nell'Allegato A del contratto tipo) stima ricavi, costi a carico del
+   Dai crediti netti stimati anno per anno e dal valore del credito
+   digitato ANNO PER ANNO (€ per credito = € per tCO₂eq; valore proposto
+   32 €, applicabile a tutti gli anni con una variazione annua facoltativa;
+   facoltativi un valore minimo e uno massimo per lo scenario peggiore e
+   migliore) stima ricavi, costi a carico del
    Comune o del gestore e margine. Tre listini dei costi del Programma:
    - "contratto" (predefinito): voci dei contratti tipo di Fondazione
      Operate (bozze EsaCom del 15/10/2026), modificabili, IVA esclusa, ogni
@@ -423,13 +424,28 @@ export const CONTRATTO_PREDEFINITO = {
   redRapportoAb: 0.2, // € per abitante per Rapporto
 };
 
-// Valori iniziali della parte economica di uno scenario.
+// Valore del credito proposto (€ per credito), da confermare anno per anno.
+export const PREZZO_PROPOSTO = 32;
+
+// Valori iniziali della parte economica di uno scenario. prezzi: valore
+// del credito per anno { anno: € }; prezzo: valore proposto per gli anni
+// senza un valore proprio.
 export function economiaIniziale() {
   return {
-    prezzo: "", prezzoMin: "", prezzoMax: "", crescitaPrezzo: 0, listino: "contratto",
+    prezzo: PREZZO_PROPOSTO, prezzi: {}, prezzoMin: "", prezzoMax: "", crescitaPrezzo: 0, listino: "contratto",
     contratto: { ...CONTRATTO_PREDEFINITO },
     costoValidazione: "", costoVerificaAnnua: "", altriCostiAnnui: "",
   };
+}
+
+// Valori del credito per tutti gli anni: il valore di partenza con la
+// variazione annua (%). Restituisce { anno: € } arrotondato ai centesimi.
+export function prezziPerAnni(anni, prezzo, crescitaPct = 0) {
+  const out = {};
+  anni.forEach((anno, i) => {
+    out[anno] = Math.round(num(prezzo) * Math.pow(1 + num(crescitaPct) / 100, i) * 100) / 100;
+  });
+  return out;
 }
 
 // Listino effettivo (compatibilità con gli scenari salvati con includiTariffe).
@@ -465,7 +481,9 @@ export function simulaEconomia(righe, economia = {}, popolazione) {
   const out = righe.map((r, i) => {
     const crediti = Math.floor(r.netti);
     const fattore = Math.pow(1 + crescita, i);
-    const prezzo = prezzo0 * fattore;
+    // Valore digitato per l'anno; se manca, il valore proposto con la variazione annua.
+    const proprio = num((economia.prezzi || {})[r.anno]);
+    const prezzo = proprio || prezzo0 * fattore;
     const ricavi = crediti * prezzo;
     const voci = {};
     if (listino === "contratto") {
@@ -490,7 +508,7 @@ export function simulaEconomia(righe, economia = {}, popolazione) {
     const margine = ricavi - costi;
     cumulato += margine;
     return {
-      anno: r.anno, crediti, prezzo, ricavi,
+      anno: r.anno, crediti, prezzo, prezzoDigitato: !!proprio, ricavi,
       ricaviMin: num(economia.prezzoMin) ? crediti * num(economia.prezzoMin) * fattore : null,
       ricaviMax: num(economia.prezzoMax) ? crediti * num(economia.prezzoMax) * fattore : null,
       voci, partecipazione, consulenza, tariffeProgramma: partecipazione + consulenza,

@@ -89,7 +89,7 @@ Stima ex ante, non certificabile.
 - ΔI(a) = EP(a) − EA(a); crediti lordi = −ΔI se negativa, altrimenti debito;
   netti = lordi × (1 − buffer).
 
-**Simulazione economica (19/10/2026).** Ricavi = crediti netti interi × valore unitario digitato (con variazione annua facoltativa; valori minimo e massimo facoltativi per gli scenari peggiore e migliore, come nell'Allegato A del contratto tipo). Costi a carico del Comune o del gestore, IVA esclusa, con tre listini:
+**Simulazione economica (19/10/2026).** Ricavi = crediti netti interi × valore del credito digitato anno per anno (proposto 32 €; «Applica a tutti gli anni» con variazione annua facoltativa). Costi a carico del Comune o del gestore, IVA esclusa, con tre listini:
 
 | Listino | Voci per ogni anno del periodo |
 |---|---|

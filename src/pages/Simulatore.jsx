@@ -18,10 +18,11 @@
           capite, secco residuo pro capite; traiettoria lineare automatica;
        4. Risultati: % di differenziata e crediti stimati per anno e sul
           periodo, grafici, tabella, avvisi, export CSV e stampa;
-       5. Simulazione economica: valore unitario del credito (digitato),
-          variazione annua, tariffe del Programma (Schema tariffario v1.2,
-          src/lib/tariffe.js) e costi dell'ente e di gestione; ricavi,
-          costi e margine per anno, anno di rientro dei costi.
+       5. Simulazione economica: valore del credito digitato anno per anno
+          (proposto 32 €, «Applica a tutti gli anni» con variazione annua);
+          costi a carico del Comune dai contratti tipo della Fondazione o
+          dallo Schema tariffario (src/lib/tariffe.js), ente e altri costi;
+          ricavi, costi e margine per anno, anno di rientro, per abitante.
      I risultati si ricalcolano a ogni modifica (motore nel browser,
      src/lib/crediti/simulatore.js); «Salva» li conserva nel database.
    Chi la usa: Operatori e Amministratori (il Comune non vede gli scenari:
@@ -43,7 +44,7 @@ import { CLUSTER } from "../lib/crediti/qualita.js";
 import { formatoData } from "../lib/date.js";
 import {
   DURATE, TIPOLOGIE, datiIniziali, riepilogoAnnoBase, rifiutiDaCluster, rifiutiDaCalcolo,
-  anniDelPeriodo, traiettoriaLineare, simula, righeCsv, puntoDiPartenza, RD_SOGLIA, simulaEconomia, economiaIniziale,
+  anniDelPeriodo, traiettoriaLineare, simula, righeCsv, puntoDiPartenza, RD_SOGLIA, simulaEconomia, economiaIniziale, prezziPerAnni, PREZZO_PROPOSTO,
 } from "../lib/crediti/simulatore.js";
 import { elencaScenari, leggiScenario, creaScenario, salvaScenario, duplicaScenario, eliminaScenario } from "../lib/crediti/scenari.js";
 
@@ -679,23 +680,22 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
       <div style={riquadro}>
         <h2 style={h2}>5. Simulazione economica: ricavi e costi per il Comune</h2>
         <h3 style={h3}>Ricavi dalla vendita dei crediti</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(175px, 1fr))", gap: 12 }}>
-          <label style={lbl}>
-            Valore unitario del credito (€)
-            <input style={{ ...campo, fontWeight: 700, borderColor: economia.prezzo ? C.line : C.ocra }} inputMode="decimal" placeholder="es. 8" value={economia.prezzo ?? ""} onChange={(e) => cambiaEconomia({ prezzo: e.target.value })} />
+        <p style={{ ...nota, margin: "0 0 8px" }}>
+          Il valore del credito si digita <strong>anno per anno</strong> nella colonna «Valore» della tabella qui sotto. Per compilare tutti gli anni in
+          una volta indicate il valore proposto (e, se volete, una variazione annua) e premete «Applica a tutti gli anni».
+        </p>
+        <div className="no-stampa" style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
+          <label style={{ ...lbl, marginBottom: 0 }}>
+            Valore proposto (€ per credito)
+            <input style={{ ...campo, width: 170, fontWeight: 700 }} inputMode="decimal" value={economia.prezzo ?? ""} placeholder={String(PREZZO_PROPOSTO)} onChange={(e) => cambiaEconomia({ prezzo: e.target.value })} />
           </label>
-          <label style={lbl}>
-            Valore minimo, scenario peggiore (€)
-            <input style={campo} inputMode="decimal" placeholder="facoltativo, es. 6" value={economia.prezzoMin ?? ""} onChange={(e) => cambiaEconomia({ prezzoMin: e.target.value })} />
+          <label style={{ ...lbl, marginBottom: 0 }}>
+            Variazione annua (%)
+            <input style={{ ...campo, width: 130 }} inputMode="decimal" value={economia.crescitaPrezzo ?? 0} onChange={(e) => cambiaEconomia({ crescitaPrezzo: e.target.value })} />
           </label>
-          <label style={lbl}>
-            Valore massimo, scenario migliore (€)
-            <input style={campo} inputMode="decimal" placeholder="facoltativo, es. 10" value={economia.prezzoMax ?? ""} onChange={(e) => cambiaEconomia({ prezzoMax: e.target.value })} />
-          </label>
-          <label style={lbl}>
-            Variazione annua del valore (%)
-            <input style={campo} inputMode="decimal" value={economia.crescitaPrezzo ?? 0} onChange={(e) => cambiaEconomia({ crescitaPrezzo: e.target.value })} />
-          </label>
+          <button style={btnMini} onClick={() => cambiaEconomia({ prezzi: prezziPerAnni(risultato.righe.map((r) => r.anno), economia.prezzo || PREZZO_PROPOSTO, economia.crescitaPrezzo) })}>
+            Applica a tutti gli anni
+          </button>
         </div>
 
         <h3 style={h3}>Costi a carico del Comune o del gestore (IVA esclusa)</h3>
@@ -747,7 +747,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
           </label>
         </div>
 
-        {!eco && <div style={{ marginTop: 12, fontSize: 13, color: C.grafite }}>Inserite il <strong>valore unitario del credito</strong> per vedere ricavi, costi e margine anno per anno.</div>}
+        {!eco && <div style={{ marginTop: 12, fontSize: 13, color: C.grafite }}>Indicate il <strong>valore del credito</strong> (proposto {PREZZO_PROPOSTO} €) per vedere ricavi, costi e margine anno per anno.</div>}
         {eco && (
           <>
             {eco.avvisi.length > 0 && (
@@ -756,10 +756,10 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
               </ul>
             )}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 10, margin: "14px 0" }}>
-              <Tile etichetta={`Ricavi in ${eco.righe.length} anni`} valore={`€ ${fmt(eco.totali.ricavi, 0)}`} unita={eco.totali.ricaviMin != null || eco.totali.ricaviMax != null ? `da € ${fmt(eco.totali.ricaviMin ?? eco.totali.ricavi, 0)} a € ${fmt(eco.totali.ricaviMax ?? eco.totali.ricavi, 0)}` : `${fmt(eco.totali.crediti, 0)} crediti × ${fmt(eco.totali.prezzoMedio, 2)} € in media`} />
+              <Tile etichetta={`Ricavi in ${eco.righe.length} anni`} valore={`€ ${fmt(eco.totali.ricavi, 0)}`} unita={`${fmt(eco.totali.crediti, 0)} crediti × ${fmt(eco.totali.prezzoMedio, 2)} € in media`} />
               <Tile etichetta="Costi per il Comune nel periodo" valore={`€ ${fmt(eco.totali.costi, 0)}`} unita={`€ ${fmt(eco.totali.costoAnnuoMedio, 0)} all'anno in media`} />
               <Tile etichetta="Margine netto" valore={`€ ${fmt(eco.totali.margine, 0)}`} unita={eco.totali.primoAnnoPositivo ? `costi rientrati nel ${eco.totali.primoAnnoPositivo}` : "i costi non rientrano nel periodo"} principale />
-              <Tile etichetta="Per abitante nel periodo" valore={eco.totali.costoProCapite != null ? `€ ${fmt(eco.totali.costoProCapite, 2)}` : "—"} unita={eco.totali.ricavoProCapite != null ? `di costo; ricavo € ${fmt(eco.totali.ricavoProCapite, 2)}${eco.totali.ricavoProCapiteMin != null || eco.totali.ricavoProCapiteMax != null ? ` (da ${fmt(eco.totali.ricavoProCapiteMin ?? eco.totali.ricavoProCapite, 2)} a ${fmt(eco.totali.ricavoProCapiteMax ?? eco.totali.ricavoProCapite, 2)})` : ""}` : ""} />
+              <Tile etichetta="Per abitante nel periodo" valore={eco.totali.costoProCapite != null ? `€ ${fmt(eco.totali.costoProCapite, 2)}` : "—"} unita={eco.totali.ricavoProCapite != null ? `di costo; ricavo € ${fmt(eco.totali.ricavoProCapite, 2)}` : ""} />
             </div>
             <div style={{ marginBottom: 14, maxWidth: 640 }}>
               <GraficoBarre titolo="Margine netto per anno (€)" righe={eco.righe} valore={(r) => r.margine} formato={(v) => fmt(v, 0)} />
@@ -786,7 +786,16 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
                     <tr key={r.anno} style={{ borderTop: `1px solid ${C.line}` }}>
                       <td style={{ ...td, fontWeight: 700 }}>{r.anno}</td>
                       <td style={tdN}>{fmt(r.crediti, 0)}</td>
-                      <td style={tdN}>{fmt(r.prezzo, 2)}</td>
+                      <td style={tdN}>
+                        <input
+                          style={{ ...inNum, width: 82, fontWeight: r.prezzoDigitato ? 700 : 400 }}
+                          inputMode="decimal"
+                          title="Valore del credito per questo anno (€)"
+                          value={(economia.prezzi || {})[r.anno] ?? ""}
+                          placeholder={fmt(r.prezzo, 2)}
+                          onChange={(e) => cambiaEconomia({ prezzi: { ...(economia.prezzi || {}), [r.anno]: e.target.value } })}
+                        />
+                      </td>
                       <td style={tdN}>{fmt(r.ricavi, 0)}</td>
                       <td style={{ ...tdN, color: C.grafite }} title={Object.entries(r.voci).map(([k, v]) => `${k}: ${fmt(v, 0)}`).join(" · ")}>{fmt(r.partecipazione, 0)}</td>
                       <td style={{ ...tdN, color: C.grafite }}>{fmt(r.consulenza, 0)}</td>

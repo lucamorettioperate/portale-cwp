@@ -15,7 +15,7 @@
 import assert from "node:assert/strict";
 import {
   DURATE, riepilogoAnnoBase, rifiutiDaCluster, rifiutiDaCalcolo, anniDelPeriodo,
-  traiettoriaLineare, simula, righeCsv, fattoriPredefiniti, puntoDiPartenza, simulaEconomia,
+  traiettoriaLineare, simula, righeCsv, fattoriPredefiniti, puntoDiPartenza, simulaEconomia, economiaIniziale, prezziPerAnni,
 } from "../src/lib/crediti/simulatore.js";
 
 let n = 0;
@@ -190,6 +190,16 @@ prova("costi dai contratti tipo (EsaCom): 154.247 abitanti come nelle bozze del 
   // Voci modificabili.
   const e2 = simulaEconomia(righe, { prezzo: 8, listino: "contratto", contratto: { regRapporto: 10000 } }, 154247);
   vicino(e.righe[0].costi - e2.righe[0].costi, 5000, 1e-6);
+});
+
+prova("valore del credito anno per anno (proposto 32 €)", () => {
+  assert.equal(economiaIniziale().prezzo, 32);
+  const righe = [{ anno: 2027, netti: 100 }, { anno: 2028, netti: 100 }, { anno: 2029, netti: 100 }];
+  const e = simulaEconomia(righe, { prezzo: 32, prezzi: { 2028: 40 }, listino: "nessuno" }, 10000);
+  assert.deepEqual(e.righe.map((r) => r.prezzo), [32, 40, 32]);
+  assert.equal(e.righe[1].prezzoDigitato, true);
+  vicino(e.totali.ricavi, 100 * (32 + 40 + 32));
+  assert.deepEqual(prezziPerAnni([2027, 2028], 32, 10), { 2027: 32, 2028: 35.2 });
 });
 
 prova("export CSV con separatore punto e virgola", () => {

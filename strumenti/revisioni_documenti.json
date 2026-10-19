@@ -175,6 +175,12 @@
       "data": "19/10/2026",
       "descrizione": "Simulatore: simulazione economica con valore unitario del credito e costi per il Comune (contratti tipo della Fondazione, Schema tariffario).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.6",
+      "data": "19/10/2026",
+      "descrizione": "Simulatore: valore del credito anno per anno, proposto 32 €.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -254,6 +260,12 @@
       "rev": "2.2",
       "data": "19/10/2026",
       "descrizione": "Prova 8b.7b della simulazione economica (ricavi e costi per il Comune).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.3",
+      "data": "19/10/2026",
+      "descrizione": "Prova 8b.7b aggiornata: valore del credito anno per anno.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -382,6 +394,12 @@
       "rev": "3.0",
       "data": "19/10/2026",
       "descrizione": "Simulatore: simulazione economica con i costi dei contratti tipo; decisione aperta sul metodo di stima.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.1",
+      "data": "19/10/2026",
+      "descrizione": "Simulatore: valore del credito anno per anno; tabelle dei costi in arrivo.",
       "autore": "Fondazione Operate"
     }
   ],

@@ -237,7 +237,7 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 8b.5 | In un anno portate il secco pro capite oltre il pro capite totale | Avviso «il secco previsto supera la produzione totale» |
 | 8b.6 | Salva → Duplica con nome «Ambizioso», cambiate il secco finale a 40 → Salva | Nell'elenco del Comune due scenari con % finale e crediti a confronto |
 | 8b.7 | Esporta CSV e Stampa | Il CSV si apre in Excel con una riga per anno; la stampa non mostra pulsanti né menu |
-| 8b.7b | Simulazione economica: valore unitario 8 €, minimo 6 €, massimo 10 €, listino «Contratti tipo della Fondazione» | Tabella anno per anno con ricavi, partecipazione al Programma, consulenza, costi e margine; riquadri con ricavi da minimo a massimo, costi, margine, costo e ricavo per abitante; cambiando una voce del contratto (es. registrazione Rapporto) i costi si aggiornano; con «Schema tariffario» compaiono le tariffe massime |
+| 8b.7b | Simulazione economica: valore proposto 32 €, variazione 2% → Applica a tutti gli anni; poi cambiate a mano il valore del 2030 a 40 €; listino «Contratti tipo della Fondazione» | Colonna «Valore» compilata anno per anno (32,00 · 32,64 · …), il 2030 a 40 € in grassetto; ricavi, partecipazione al Programma, consulenza, costi e margine per anno; riquadri con ricavi, costi, margine, costo e ricavo per abitante; cambiando una voce del contratto (es. registrazione Rapporto) i costi si aggiornano; con «Schema tariffario» compaiono le tariffe massime |
 | 8b.8 | [C] Provate ad aprire /simulatore | «Questa sezione è riservata alla Fondazione» |
 | 8b.9 | [A] Audit | Voci di creazione, modifica e cancellazione degli scenari |
 
