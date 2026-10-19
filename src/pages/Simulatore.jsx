@@ -39,7 +39,7 @@ import { CLUSTER } from "../lib/crediti/qualita.js";
 import { formatoData } from "../lib/date.js";
 import {
   DURATE, TIPOLOGIE, datiIniziali, riepilogoAnnoBase, rifiutiDaCluster, rifiutiDaCalcolo,
-  anniDelPeriodo, traiettoriaLineare, simula, righeCsv, puntoDiPartenza, RD_SOGLIA,
+  anniDelPeriodo, traiettoriaLineare, simula, righeCsv, puntoDiPartenza, RD_SOGLIA, simulaEconomia, economiaIniziale,
 } from "../lib/crediti/simulatore.js";
 import { elencaScenari, leggiScenario, creaScenario, salvaScenario, duplicaScenario, eliminaScenario } from "../lib/crediti/scenari.js";
 
@@ -309,6 +309,11 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
     [scenario.durata, scenario.anno_inizio, dati.anni, partenza]
   );
   const risultato = useMemo(() => simula({ ...dati, anni }), [dati, anni]);
+  // Parte economica: valore unitario del credito, tariffe del Programma e costi.
+  const economia = { ...economiaIniziale(), ...(dati.economia || {}) };
+  const popEconomia = num(attuale.popolazione) || base.popolazione;
+  const eco = useMemo(() => simulaEconomia(risultato.righe, economia, popEconomia), [risultato, dati.economia, popEconomia]);
+  const cambiaEconomia = (campi) => cambiaDati({ economia: { ...economia, ...campi } });
 
   const cambiaDati = (campi) => onCambia({ ...scenario, dati: { ...dati, anni, ...campi } });
   const cambiaBase = (campi) => cambiaDati({ annoBase: { ...annoBase, ...campi } });
@@ -328,7 +333,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
   }
 
   function esportaCsv() {
-    const blob = new Blob(["﻿" + righeCsv(scenario, risultato)], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob(["﻿" + righeCsv(scenario, risultato, eco)], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `Simulazione_${scenario.comune}_${scenario.nome}.csv`.replace(/[^\w.\-àèéìòù]+/g, "_");
@@ -665,6 +670,102 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
           </span>
         </div>
       </div>
+
+      {/* 5. Simulazione economica */}
+      <div style={riquadro}>
+        <h2 style={h2}>5. Simulazione economica</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(185px, 1fr))", gap: 12 }}>
+          <label style={lbl}>
+            Valore unitario del credito (€ per credito)
+            <input style={{ ...campo, fontWeight: 700, borderColor: economia.prezzo ? C.line : C.ocra }} inputMode="decimal" placeholder="es. 25" value={economia.prezzo ?? ""} onChange={(e) => cambiaEconomia({ prezzo: e.target.value })} />
+          </label>
+          <label style={lbl}>
+            Variazione annua del valore (%)
+            <input style={campo} inputMode="decimal" value={economia.crescitaPrezzo ?? 0} onChange={(e) => cambiaEconomia({ crescitaPrezzo: e.target.value })} />
+          </label>
+          <label style={lbl}>
+            Validazione dell'ente, una tantum (€)
+            <input style={campo} inputMode="decimal" value={economia.costoValidazione ?? ""} onChange={(e) => cambiaEconomia({ costoValidazione: e.target.value })} />
+          </label>
+          <label style={lbl}>
+            Verifica annuale dell'ente (€/anno)
+            <input style={campo} inputMode="decimal" value={economia.costoVerificaAnnua ?? ""} onChange={(e) => cambiaEconomia({ costoVerificaAnnua: e.target.value })} />
+          </label>
+          <label style={lbl}>
+            Altri costi annui: gestione, monitoraggio (€/anno)
+            <input style={campo} inputMode="decimal" value={economia.altriCostiAnnui ?? ""} onChange={(e) => cambiaEconomia({ altriCostiAnnui: e.target.value })} />
+          </label>
+        </div>
+        <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 13, margin: "4px 0 6px" }}>
+          <input type="checkbox" checked={economia.includiTariffe !== false} onChange={(e) => cambiaEconomia({ includiTariffe: e.target.checked })} />
+          Includi le tariffe del Programma (Schema tariffario v1.2: registrazione del Progetto e dei Rapporti, emissione e vendita dei crediti)
+        </label>
+        <p style={nota}>Un credito corrisponde a una tonnellata di CO₂eq; si contano i crediti netti interi. Tariffe massime dello Schema tariffario, IVA esclusa; fasce calcolate sulla popolazione {popEconomia ? popEconomia.toLocaleString("it-IT") : "—"}.</p>
+
+        {!eco && <div style={{ marginTop: 12, fontSize: 13, color: C.grafite }}>Inserite il <strong>valore unitario del credito</strong> per vedere ricavi, costi e margine anno per anno.</div>}
+        {eco && (
+          <>
+            {eco.avvisi.length > 0 && (
+              <ul style={{ margin: "12px 0", padding: "10px 14px 10px 30px", background: C.ocraSoft, borderRadius: 10, fontSize: 12.5 }}>
+                {eco.avvisi.map((a) => <li key={a}>{a}</li>)}
+              </ul>
+            )}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 10, margin: "14px 0" }}>
+              <Tile etichetta={`Ricavi in ${eco.righe.length} anni`} valore={`€ ${fmt(eco.totali.ricavi, 0)}`} unita={`${fmt(eco.totali.crediti, 0)} crediti × ${fmt(eco.totali.prezzoMedio, 2)} € in media`} />
+              <Tile etichetta="Costi nel periodo" valore={`€ ${fmt(eco.totali.costi, 0)}`} unita={`di cui tariffe del Programma € ${fmt(eco.totali.tariffeProgramma, 0)}`} />
+              <Tile etichetta="Margine netto" valore={`€ ${fmt(eco.totali.margine, 0)}`} unita={popEconomia ? `${fmt(eco.totali.margine / popEconomia / eco.righe.length, 2)} € per abitante all'anno` : ""} principale />
+              <Tile etichetta="Margine cumulato positivo dal" valore={eco.totali.primoAnnoPositivo ? String(eco.totali.primoAnnoPositivo) : "—"} unita={eco.totali.primoAnnoPositivo ? "anno di rientro dei costi" : "i costi non rientrano nel periodo"} />
+            </div>
+            <div style={{ marginBottom: 14, maxWidth: 640 }}>
+              <GraficoBarre titolo="Margine netto per anno (€)" righe={eco.righe} valore={(r) => r.margine} formato={(v) => fmt(v, 0)} />
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 900 }}>
+                <thead>
+                  <tr style={{ textAlign: "right", color: C.grafite, fontSize: 11.5 }}>
+                    <th style={{ ...th, textAlign: "left" }}>Anno</th>
+                    <th style={th}>Crediti</th>
+                    <th style={th}>Valore (€)</th>
+                    <th style={th}>Ricavi (€)</th>
+                    <th style={th}>Tariffe Programma (€)</th>
+                    <th style={th}>Ente (€)</th>
+                    <th style={th}>Altri costi (€)</th>
+                    <th style={th}>Margine (€)</th>
+                    <th style={th}>Cumulato (€)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {eco.righe.map((r) => (
+                    <tr key={r.anno} style={{ borderTop: `1px solid ${C.line}` }}>
+                      <td style={{ ...td, fontWeight: 700 }}>{r.anno}</td>
+                      <td style={tdN}>{fmt(r.crediti, 0)}</td>
+                      <td style={tdN}>{fmt(r.prezzo, 2)}</td>
+                      <td style={tdN}>{fmt(r.ricavi, 0)}</td>
+                      <td style={{ ...tdN, color: C.grafite }} title={`Progetto ${fmt(r.progetto, 0)} · Rapporto ${fmt(r.rapporto, 0)} · Emissione ${fmt(r.emissione, 0)} · Vendita ${fmt(r.vendita, 0)}`}>{fmt(r.tariffeProgramma, 0)}</td>
+                      <td style={{ ...tdN, color: C.grafite }}>{fmt(r.costiEnte, 0)}</td>
+                      <td style={{ ...tdN, color: C.grafite }}>{fmt(r.altriCosti, 0)}</td>
+                      <td style={{ ...tdN, fontWeight: 700, color: r.margine < 0 ? C.red : C.ink }}>{fmt(r.margine, 0)}</td>
+                      <td style={{ ...tdN, color: r.cumulato < 0 ? C.red : C.ink }}>{fmt(r.cumulato, 0)}</td>
+                    </tr>
+                  ))}
+                  <tr style={{ borderTop: `2px solid ${C.ink}`, fontWeight: 700 }}>
+                    <td style={td}>Totale</td>
+                    <td style={tdN}>{fmt(eco.totali.crediti, 0)}</td>
+                    <td style={tdN}></td>
+                    <td style={tdN}>{fmt(eco.totali.ricavi, 0)}</td>
+                    <td style={tdN}>{fmt(eco.totali.tariffeProgramma, 0)}</td>
+                    <td style={tdN}>{fmt(eco.totali.costiEnte, 0)}</td>
+                    <td style={tdN}>{fmt(eco.totali.altriCosti, 0)}</td>
+                    <td style={tdN}>{fmt(eco.totali.margine, 0)}</td>
+                    <td style={tdN}></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p style={nota}>Stima indicativa, non un piano finanziario: il valore del credito dipende dal mercato volontario e dal registro scelto; le tariffe sono quelle massime dello Schema tariffario (IVA esclusa).</p>
+          </>
+        )}
+      </div>
     </section>
   );
 }
@@ -693,36 +794,37 @@ function Tile({ etichetta, valore, unita, principale = false }) {
 // Grafico a barre (una serie, un asse). Il valore di ogni barra compare
 // al passaggio del mouse; la tabella sotto riporta tutti i numeri.
 function GraficoBarre({ titolo, righe, valore, formato }) {
-  const W = 520, H = 210, sx = 46, sy = 14, gh = H - sy - 28;
+  const W = 520, H = 210, sx = 56, sy = 14, gh = H - sy - 28;
+  // Asse che comprende anche i valori negativi (es. margine del primo anno).
   const max = Math.max(1, ...righe.map(valore));
+  const min = Math.min(0, ...righe.map(valore));
+  const scala = (v) => sy + gh - ((v - min) / (max - min)) * gh;
+  const y0 = scala(0);
   const passo = (W - sx - 6) / Math.max(righe.length, 1);
   const larg = Math.max(4, Math.min(28, passo - 4));
-  const tacche = [0, 0.5, 1].map((q) => q * max);
+  const tacche = min < 0 ? [min, 0, max] : [0, max / 2, max];
   const ogni = righe.length > 12 ? 3 : 1;
   return (
     <figure style={{ margin: 0, background: C.white, border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px 12px" }}>
       <figcaption style={{ fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>{titolo}</figcaption>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={titolo}>
-        {tacche.map((v) => {
-          const y = sy + gh - (v / max) * gh;
-          return (
-            <g key={v}>
-              <line x1={sx} x2={W - 4} y1={y} y2={y} stroke={C.line} strokeWidth="1" />
-              <text x={sx - 6} y={y + 4} textAnchor="end" fontSize="10" fill={C.grafite}>{formato(v)}</text>
-            </g>
-          );
-        })}
+        {tacche.map((v) => (
+          <g key={v}>
+            <line x1={sx} x2={W - 4} y1={scala(v)} y2={scala(v)} stroke={v === 0 ? C.grafite : C.line} strokeWidth="1" />
+            <text x={sx - 6} y={scala(v) + 4} textAnchor="end" fontSize="10" fill={C.grafite}>{formato(v)}</text>
+          </g>
+        ))}
         {righe.map((r, i) => {
-          const v = Math.max(0, valore(r));
-          const h = (v / max) * gh;
+          const v = valore(r);
+          const h = Math.abs(scala(v) - y0);
           const x = sx + i * passo + (passo - larg) / 2;
           return (
             <g key={r.anno}>
-              <path d={barra(x, sy + gh, larg, h)} fill={C.green}>
-                <title>{`${r.anno}: ${formato(valore(r))}`}</title>
+              <path d={v >= 0 ? barra(x, y0, larg, h) : barraGiu(x, y0, larg, h)} fill={v >= 0 ? C.green : C.red}>
+                <title>{`${r.anno}: ${formato(v)}`}</title>
               </path>
               <rect x={sx + i * passo} y={sy} width={passo} height={gh} fill="transparent">
-                <title>{`${r.anno}: ${formato(valore(r))}`}</title>
+                <title>{`${r.anno}: ${formato(v)}`}</title>
               </rect>
               {i % ogni === 0 && <text x={x + larg / 2} y={H - 10} textAnchor="middle" fontSize="10" fill={C.grafite}>{r.anno}</text>}
             </g>
@@ -731,6 +833,13 @@ function GraficoBarre({ titolo, righe, valore, formato }) {
       </svg>
     </figure>
   );
+}
+
+// Barra verso il basso (valore negativo), estremità arrotondata in basso.
+function barraGiu(x, y0, w, h) {
+  if (h <= 0) return "";
+  const r = Math.min(4, w / 2, h);
+  return `M${x},${y0} V${y0 + h - r} Q${x},${y0 + h} ${x + r},${y0 + h} H${x + w - r} Q${x + w},${y0 + h} ${x + w},${y0 + h - r} V${y0} Z`;
 }
 
 // Barra con estremità arrotondata (4px) e base piatta sull'asse.

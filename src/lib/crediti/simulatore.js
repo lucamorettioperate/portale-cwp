@@ -51,6 +51,10 @@
 import { TIPOLOGIE_RIFIUTO } from "./parametri.js";
 import { fattoreIndifferenziato } from "./calcolo.js";
 import { TABELLA3_CLUSTER, scostamentiTabella3 } from "./qualita.js";
+import {
+  ISCRIZIONE_PROGETTO, ISCRIZIONE_RAPPORTO, SALDO_PROGETTO, SALDO_RAPPORTO, VARIABILE_PROGETTO, VARIABILE_RAPPORTO,
+  saldoPerPopolazione, tariffaEmissione, tariffaVendita,
+} from "../tariffe.js";
 
 // Durate ammesse del periodo (Standard 4.3.8: 10 anni, oppure 7 rinnovabili
 // fino a 21). Il database accetta solo questi valori (script 28).
@@ -367,10 +371,89 @@ export function simula(dati) {
 }
 
 // Righe per l'export CSV (separatore «;», decimali con la virgola).
-export function righeCsv(scenario, risultato) {
+export function righeCsv(scenario, risultato, economia = null) {
   const f = (v, d = 1) => (v == null ? "" : Number(v).toFixed(d).replace(".", ","));
   const intest = ["Anno", "Popolazione", "Produzione totale (t)", "Pro capite (kg/ab)", "Secco (t)", "Secco pro capite (kg/ab)", "Differenziata (t)", "% differenziata", "Punti oltre il 65%", "Scenario di riferimento (t)", "Riduzione (t)", "Crediti lordi (tCO2eq)", "Buffer (tCO2eq)", "Crediti netti (tCO2eq)", "Netti cumulati (tCO2eq)"];
   const righe = risultato.righe.map((r) => [r.anno, Math.round(r.popolazione), f(r.totale), f(r.proCapite), f(r.secco), f(r.seccoProCapite), f(r.differenziata), f(r.rd), f(r.rdOltreSoglia), f(r.riferimento), f(r.riduzione), f(r.lordi), f(r.buffer), f(r.netti), f(r.cumulatoNetti)]);
   const testa = [[`Scenario: ${scenario.nome}`], [`Comune: ${scenario.comune}`], [`Durata: ${scenario.durata} anni dal ${scenario.anno_inizio}`], ["Stima ex ante non certificabile (Metodologia CWP v1.2, modello semplificato)"], []];
-  return [...testa, intest, ...righe].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\r\n");
+  const eco = economia
+    ? [[], ["Simulazione economica (Schema tariffario v1.2: tariffe massime, IVA esclusa)"], ["Anno", "Crediti", "Valore unitario (€)", "Ricavi (€)", "Tariffe del Programma (€)", "Costi ente (€)", "Altri costi (€)", "Margine (€)", "Margine cumulato (€)"],
+       ...economia.righe.map((r) => [r.anno, r.crediti, f(r.prezzo, 2), f(r.ricavi, 0), f(r.tariffeProgramma, 0), f(r.costiEnte, 0), f(r.altriCosti, 0), f(r.margine, 0), f(r.cumulato, 0)])]
+    : [];
+  return [...testa, intest, ...righe, ...eco].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\r\n");
+}
+
+/* =========================================================================
+   Simulazione economica (richiesta di Luca del 19/10/2026).
+   Dai crediti netti stimati anno per anno e dal valore unitario del credito
+   (€ per credito = € per tCO₂eq, digitato dall'utente) stima ricavi, costi
+   e margine. Costi considerati:
+   - tariffe del Programma dallo Schema tariffario v1.2 (tariffe MASSIME,
+     IVA esclusa, src/lib/tariffe.js): registrazione del Progetto nel primo
+     anno (3.000 € + saldo per popolazione + 0,15 € per credito previsto nel
+     periodo); per ogni anno Rapporto (1.000 € + saldo per popolazione +
+     0,20 € per credito dell'anno), emissione a scaglioni e vendita (20% del
+     valore, con il minimo a scaglioni);
+   - costi indicati dall'utente: validazione (una tantum, primo anno),
+     verifica annuale dell'ente, altri costi annui (gestione, monitoraggio).
+   I crediti si contano interi (1 credito = 1 tCO₂eq, parte intera dei
+   crediti netti). È una stima indicativa, non un piano finanziario.
+   ========================================================================= */
+
+// Valori iniziali della parte economica di uno scenario.
+export function economiaIniziale() {
+  return { prezzo: "", crescitaPrezzo: 0, includiTariffe: true, costoValidazione: "", costoVerificaAnnua: "", altriCostiAnnui: "" };
+}
+
+/* Parametri: righe della simulazione (simula().righe), economia { prezzo,
+   crescitaPrezzo (%/anno), includiTariffe, costoValidazione,
+   costoVerificaAnnua, altriCostiAnnui }, popolazione (per le fasce dello
+   Schema tariffario). Restituisce { righe, totali, avvisi } oppure null se
+   manca il valore unitario. */
+export function simulaEconomia(righe, economia = {}, popolazione) {
+  const prezzo0 = num(economia.prezzo);
+  if (!prezzo0 || !righe?.length) return null;
+  const avvisi = [];
+  const crescita = num(economia.crescitaPrezzo) / 100;
+  const tariffe = economia.includiTariffe !== false;
+  const validazione = num(economia.costoValidazione);
+  const verifica = num(economia.costoVerificaAnnua);
+  const altri = num(economia.altriCostiAnnui);
+  const creditiPeriodo = Math.floor(somma(righe, (r) => r.netti));
+  const saldoProgetto = saldoPerPopolazione(popolazione, SALDO_PROGETTO) ?? 0;
+  const saldoRapporto = saldoPerPopolazione(popolazione, SALDO_RAPPORTO) ?? 0;
+  if (tariffe && !popolazione) avvisi.push("Senza popolazione le quote dello Schema tariffario per fascia non si possono calcolare.");
+  let cumulato = 0;
+  const out = righe.map((r, i) => {
+    const crediti = Math.floor(r.netti);
+    const prezzo = prezzo0 * Math.pow(1 + crescita, i);
+    const ricavi = crediti * prezzo;
+    const progetto = tariffe && i === 0 ? ISCRIZIONE_PROGETTO + saldoProgetto + VARIABILE_PROGETTO * creditiPeriodo : 0;
+    const rapporto = tariffe ? ISCRIZIONE_RAPPORTO + saldoRapporto + VARIABILE_RAPPORTO * crediti : 0;
+    const emissione = tariffe ? tariffaEmissione(crediti) : 0;
+    const vendita = tariffe && crediti > 0 ? tariffaVendita(crediti, ricavi) : 0;
+    const tariffeProgramma = progetto + rapporto + emissione + vendita;
+    const costiEnte = (i === 0 ? validazione : 0) + verifica;
+    const costi = tariffeProgramma + costiEnte + altri;
+    const margine = ricavi - costi;
+    cumulato += margine;
+    return { anno: r.anno, crediti, prezzo, ricavi, progetto, rapporto, emissione, vendita, tariffeProgramma, costiEnte, altriCosti: altri, costi, margine, cumulato };
+  });
+  if (out.some((r) => r.margine < 0)) avvisi.push("In alcuni anni i costi superano i ricavi (margine negativo).");
+  const tot = (k) => somma(out, (r) => r[k]);
+  return {
+    righe: out,
+    totali: {
+      crediti: tot("crediti"),
+      ricavi: tot("ricavi"),
+      tariffeProgramma: tot("tariffeProgramma"),
+      costiEnte: tot("costiEnte"),
+      altriCosti: tot("altriCosti"),
+      costi: tot("costi"),
+      margine: tot("margine"),
+      prezzoMedio: tot("crediti") ? tot("ricavi") / tot("crediti") : prezzo0,
+      primoAnnoPositivo: (out.find((r) => r.cumulato > 0) || {}).anno || null,
+    },
+    avvisi,
+  };
 }

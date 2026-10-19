@@ -15,7 +15,7 @@
 import assert from "node:assert/strict";
 import {
   DURATE, riepilogoAnnoBase, rifiutiDaCluster, rifiutiDaCalcolo, anniDelPeriodo,
-  traiettoriaLineare, simula, righeCsv, fattoriPredefiniti, puntoDiPartenza,
+  traiettoriaLineare, simula, righeCsv, fattoriPredefiniti, puntoDiPartenza, simulaEconomia,
 } from "../src/lib/crediti/simulatore.js";
 
 let n = 0;
@@ -147,6 +147,31 @@ prova("avvisi: dati mancanti e secco oltre il totale", () => {
   const r = simula({ annoBase, anni: [{ anno: 2027, popolazione: 10000, totale: 500, seccoProCapite: 120 }], bufferPct: 0 });
   assert.equal(r.righe[0].secco, 500);
   assert.ok(r.avvisi.some((x) => x.includes("supera")));
+});
+
+prova("simulazione economica: ricavi, tariffe dello Schema tariffario, costi e margine", () => {
+  const righe = [{ anno: 2027, netti: 1500.7 }, { anno: 2028, netti: 2000.2 }];
+  assert.equal(simulaEconomia(righe, { prezzo: "" }, 10000), null);
+  const e = simulaEconomia(righe, { prezzo: 20, crescitaPrezzo: 10, includiTariffe: true, costoValidazione: 5000, costoVerificaAnnua: 3000, altriCostiAnnui: 1000 }, 16735);
+  const [a, b] = e.righe;
+  assert.equal(a.crediti, 1500);
+  assert.equal(a.ricavi, 30000);
+  vicino(b.prezzo, 22);
+  vicino(b.ricavi, 44000);
+  // Progetto (solo il 1° anno): 3.000 + 4.000 (fascia fino a 30.000 ab) + 0,15 × 3.500 crediti del periodo.
+  vicino(a.progetto, 3000 + 4000 + 0.15 * 3500);
+  assert.equal(b.progetto, 0);
+  // Rapporto: 1.000 + 2.000 + 0,20 × crediti; emissione a scaglioni; vendita 20% del valore.
+  vicino(a.rapporto, 1000 + 2000 + 0.2 * 1500);
+  vicino(a.emissione, 1000 * 1 + 500 * 0.5);
+  vicino(a.vendita, 6000);
+  vicino(a.costiEnte, 8000);
+  vicino(b.costiEnte, 3000);
+  vicino(a.margine, a.ricavi - a.costi);
+  vicino(e.totali.margine, a.margine + b.margine);
+  // Senza tariffe restano solo i costi indicati.
+  const s2 = simulaEconomia(righe, { prezzo: 20, includiTariffe: false }, 16735);
+  vicino(s2.totali.margine, 30000 + 40000);
 });
 
 prova("export CSV con separatore punto e virgola", () => {
