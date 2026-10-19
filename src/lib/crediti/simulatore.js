@@ -390,18 +390,20 @@ export function righeCsv(scenario, risultato, economia = null) {
    32 €, applicabile a tutti gli anni con una variazione annua facoltativa;
    facoltativi un valore minimo e uno massimo per lo scenario peggiore e
    migliore) stima ricavi, costi a carico del
-   Comune o del gestore e margine. Tre listini dei costi del Programma:
-   - "contratto" (predefinito): voci dei contratti tipo di Fondazione
-     Operate (bozze EsaCom del 15/10/2026), modificabili, IVA esclusa, ogni
-     anno del periodo:
-       contratto di partecipazione al Programma: registrazione del Progetto
-       3.000 €, registrazione dei crediti del Progetto 6.000 €,
-       registrazione del Rapporto di Monitoraggio 15.000 €, registrazione dei
-       crediti del Rapporto 0,10 € per abitante;
-       contratto di consulenza: redazione del Progetto 0,08 € per abitante,
-       redazione del Rapporto 0,20 € per abitante
-     (nei contratti EsaCom, 154.247 abitanti: 6.000 €, 15.425 €, 12.340 €,
-     30.849 €; i valori per abitante ne sono ricavati);
+   Comune o del gestore e margine. Listini dei costi del Programma:
+   - "caso1" e "caso2" (documento «Costi per il Soggetto Promotore» di
+     Fondazione Operate del 28/07/2026): Caso 1 = progetto volontario;
+     Caso 2 = progetto obbligatorio (Comuni che hanno inserito il CWP nei
+     bandi di gara). Durata 10 anni (durate diverse si computano a parte).
+     Per ogni attività un costo unitario in €/abitante/anno per fascia di
+     popolazione (fino a 5.000, 20.000 e oltre 100.000 abitanti), con
+     interpolazione lineare tra 5.000 e 20.000 e tra 20.000 e 100.000 e
+     arrotondamento per eccesso al centesimo; costo annuo = unitario ×
+     popolazione, non meno del minimo e non più del massimo €/anno.
+     Le voci una tantum (Progetto, registrazioni del Progetto e dei suoi
+     crediti) sono già ammortizzate in 10 anni: si pagano ogni anno.
+     Non comprende la validazione dell'ente (Nota 1 del documento).
+     Il Caso 1 riproduce le cifre dei contratti tipo EsaCom (154.247 ab.).
    - "schema": tariffe MASSIME dello Schema tariffario v1.2
      (src/lib/tariffe.js): Progetto nel primo anno (3.000 € + saldo per
      popolazione + 0,15 € per credito previsto nel periodo); ogni anno
@@ -414,15 +416,55 @@ export function righeCsv(scenario, risultato, economia = null) {
    stima indicativa, non un piano finanziario.
    ========================================================================= */
 
-// Voci predefinite del listino «contratto» (bozze EsaCom del 15/10/2026).
-export const CONTRATTO_PREDEFINITO = {
-  regProgetto: 3000, // € all'anno – contratto di partecipazione, art. 6.2
-  regCreditiProgetto: 6000, // € all'anno
-  regRapporto: 15000, // € per Rapporto annuale
-  regCreditiRapportoAb: 0.1, // € per abitante per Rapporto
-  redProgettoAb: 0.08, // € per abitante all'anno – contratto di consulenza, art. 6
-  redRapportoAb: 0.2, // € per abitante per Rapporto
+// Tabelle dei costi per il Soggetto promotore del progetto (28/07/2026).
+// Per ogni attività: minimo €/anno, €/ab/anno fino a 5.000 ab., a 20.000
+// ab. e oltre 100.000 ab., massimo €/anno; tipo: "consulenza" (redazione)
+// o "partecipazione" (registrazioni del Programma).
+const VOCI_COSTI = [
+  ["progetto", "Progetto (una tantum)", "consulenza"],
+  ["rapporto", "Rapporto di Monitoraggio", "consulenza"],
+  ["regProgetto", "Registrazione Progetto (una tantum)", "partecipazione"],
+  ["regCreditiProgetto", "Registrazione Crediti Progetto (una tantum)", "partecipazione"],
+  ["regRapporto", "Registrazione Rapporto di Monitoraggio", "partecipazione"],
+  ["regCreditiRapporto", "Registrazione Crediti Rapporto di Monitoraggio", "partecipazione"],
+];
+const TABELLE = {
+  caso1: [[300, 0.2, 0.1, 0.08, 15000], [400, 0.4, 0.3, 0.2, 40000], [100, 0.1, 0.1, 0.02, 3000], [100, 0.15, 0.1, 0.04, 6000], [150, 0.2, 0.18, 0.1, 15000], [100, 0.1, 0.1, 0.1, 20000]],
+  caso2: [[450, 0.3, 0.15, 0.12, 22500], [600, 0.6, 0.45, 0.33, 65000], [150, 0.15, 0.15, 0.03, 4500], [150, 0.25, 0.15, 0.06, 9000], [225, 0.3, 0.28, 0.15, 22500], [150, 0.15, 0.15, 0.15, 30000]],
 };
+export const CASI_COSTI = {
+  caso1: "Caso 1 – Progetto volontario",
+  caso2: "Caso 2 – Progetto obbligatorio (da bando di gara)",
+};
+export const DURATA_TARIFFE = 10;
+
+// Costo unitario €/ab/anno per una popolazione: fasce e interpolazione
+// lineare, arrotondamento per eccesso al centesimo (Nota 2 del documento).
+export function costoUnitario([, u5, u20, u100], popolazione) {
+  const p = num(popolazione);
+  let u;
+  if (p <= 5000) u = u5;
+  else if (p < 20000) u = u5 + ((u20 - u5) * (p - 5000)) / 15000;
+  else if (p <= 100000) u = u20 + ((u100 - u20) * (p - 20000)) / 80000;
+  else u = u100;
+  return Math.ceil(u * 100 - 1e-9) / 100;
+}
+
+/* Costi annui per il Soggetto promotore secondo il Caso 1 o 2.
+   Restituisce [{ voce, nome, tipo, unitario (€/ab/anno), importo (€/anno),
+   limite: "minimo" | "massimo" | null }]. */
+export function costiPerCaso(caso, popolazione) {
+  const tab = TABELLE[caso];
+  if (!tab) return [];
+  const p = num(popolazione);
+  return VOCI_COSTI.map(([voce, nome, tipo], i) => {
+    const riga = tab[i];
+    const unitario = costoUnitario(riga, p);
+    const calcolato = Math.round(unitario * p * 100) / 100;
+    const importo = Math.min(Math.max(calcolato, riga[0]), riga[4]);
+    return { voce, nome, tipo, unitario, importo, limite: calcolato < riga[0] ? "minimo" : calcolato > riga[4] ? "massimo" : null };
+  });
+}
 
 // Valore del credito proposto (€ per credito), da confermare anno per anno.
 export const PREZZO_PROPOSTO = 32;
@@ -432,8 +474,7 @@ export const PREZZO_PROPOSTO = 32;
 // senza un valore proprio.
 export function economiaIniziale() {
   return {
-    prezzo: PREZZO_PROPOSTO, prezzi: {}, prezzoMin: "", prezzoMax: "", crescitaPrezzo: 0, listino: "contratto",
-    contratto: { ...CONTRATTO_PREDEFINITO },
+    prezzo: PREZZO_PROPOSTO, prezzi: {}, prezzoMin: "", prezzoMax: "", crescitaPrezzo: 0, listino: "",
     costoValidazione: "", costoVerificaAnnua: "", altriCostiAnnui: "",
   };
 }
@@ -449,9 +490,13 @@ export function prezziPerAnni(anni, prezzo, crescitaPct = 0) {
 }
 
 // Listino effettivo (compatibilità con gli scenari salvati con includiTariffe).
-function listinoDi(economia) {
+// "" = caso non ancora scelto (nessuna tariffa finché non si sceglie);
+// "contratto" (scenari salvati prima del 19/10 pomeriggio) = Caso 1.
+export function listinoDi(economia) {
+  if (economia.listino === "contratto") return "caso1";
   if (economia.listino) return economia.listino;
-  return economia.includiTariffe === false ? "nessuno" : "schema";
+  if (economia.includiTariffe === false) return "nessuno";
+  return economia.includiTariffe === true ? "schema" : "";
 }
 
 /* Parametri: righe della simulazione (simula().righe), economia (vedi
@@ -468,8 +513,10 @@ export function simulaEconomia(righe, economia = {}, popolazione) {
   const pop = num(popolazione);
   const crescita = num(economia.crescitaPrezzo) / 100;
   const listino = listinoDi(economia);
-  const k = { ...CONTRATTO_PREDEFINITO, ...(economia.contratto || {}) };
-  Object.keys(k).forEach((c) => { k[c] = num(k[c]); });
+  const costiCaso = listino === "caso1" || listino === "caso2" ? costiPerCaso(listino, pop) : [];
+  if (costiCaso.length && righe.length !== DURATA_TARIFFE) {
+    avvisi.push(`Le tabelle dei costi valgono per progetti di ${DURATA_TARIFFE} anni: per ${righe.length} anni i costi si computano a parte (qui sono applicati gli stessi importi annui).`);
+  }
   const validazione = num(economia.costoValidazione);
   const verifica = num(economia.costoVerificaAnnua);
   const altri = num(economia.altriCostiAnnui);
@@ -486,23 +533,18 @@ export function simulaEconomia(righe, economia = {}, popolazione) {
     const prezzo = proprio || prezzo0 * fattore;
     const ricavi = crediti * prezzo;
     const voci = {};
-    if (listino === "contratto") {
-      voci.regProgetto = k.regProgetto;
-      voci.regCreditiProgetto = k.regCreditiProgetto;
-      voci.regRapporto = k.regRapporto;
-      voci.regCreditiRapporto = k.regCreditiRapportoAb * pop;
-      voci.redProgetto = k.redProgettoAb * pop;
-      voci.redRapporto = k.redRapportoAb * pop;
+    if (costiCaso.length) {
+      costiCaso.forEach((c) => { voci[c.voce] = c.importo; });
     } else if (listino === "schema") {
       voci.progetto = i === 0 ? ISCRIZIONE_PROGETTO + saldoProgetto + VARIABILE_PROGETTO * creditiPeriodo : 0;
       voci.rapporto = ISCRIZIONE_RAPPORTO + saldoRapporto + VARIABILE_RAPPORTO * crediti;
       voci.emissione = tariffaEmissione(crediti);
       voci.vendita = crediti > 0 ? tariffaVendita(crediti, ricavi) : 0;
     }
-    const partecipazione = listino === "contratto"
-      ? voci.regProgetto + voci.regCreditiProgetto + voci.regRapporto + voci.regCreditiRapporto
+    const partecipazione = costiCaso.length
+      ? somma(costiCaso.filter((c) => c.tipo === "partecipazione"), (c) => c.importo)
       : listino === "schema" ? voci.progetto + voci.rapporto + voci.emissione + voci.vendita : 0;
-    const consulenza = listino === "contratto" ? voci.redProgetto + voci.redRapporto : 0;
+    const consulenza = costiCaso.length ? somma(costiCaso.filter((c) => c.tipo === "consulenza"), (c) => c.importo) : 0;
     const costiEnte = (i === 0 ? validazione : 0) + verifica;
     const costi = partecipazione + consulenza + costiEnte + altri;
     const margine = ricavi - costi;
@@ -521,6 +563,7 @@ export function simulaEconomia(righe, economia = {}, popolazione) {
   const perAb = (v) => (pop ? v / pop : null);
   return {
     listino,
+    costiCaso,
     righe: out,
     totali: {
       crediti: tot("crediti"),

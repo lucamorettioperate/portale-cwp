@@ -89,13 +89,18 @@ Stima ex ante, non certificabile.
 - ΔI(a) = EP(a) − EA(a); crediti lordi = −ΔI se negativa, altrimenti debito;
   netti = lordi × (1 − buffer).
 
-**Simulazione economica (19/10/2026).** Ricavi = crediti netti interi × valore del credito digitato anno per anno (proposto 32 €; «Applica a tutti gli anni» con variazione annua facoltativa). Costi a carico del Comune o del gestore, IVA esclusa, con tre listini:
+**Simulazione economica (19/10/2026).** Ricavi = crediti netti interi × valore del credito digitato anno per anno (proposto 32 €; «Applica a tutti gli anni» con variazione annua facoltativa). Costi a carico del Comune o del gestore, IVA esclusa: il simulatore chiede se usare il **Caso 1** (progetto volontario) o il **Caso 2** (progetto obbligatorio da bando di gara), dalle tabelle «Costi per il Soggetto Promotore» di Fondazione Operate del 28/07/2026 (progetti di 10 anni, una tantum ammortizzati in 10 anni, validazione dell'ente esclusa):
 
-| Listino | Voci per ogni anno del periodo |
-|---|---|
-| Contratti tipo della Fondazione (predefinito; bozze EsaCom del 15/10/2026) | Partecipazione al Programma: registrazione Progetto 3.000 €, registrazione crediti Progetto 6.000 €, registrazione Rapporto 15.000 €, registrazione crediti Rapporto 0,10 €/abitante. Consulenza: redazione Progetto 0,08 €/abitante, redazione Rapporto 0,20 €/abitante. Valori modificabili; quelli per abitante ricavati dai contratti EsaCom (154.247 abitanti: 15.425 €, 12.340 €, 30.849 €) |
-| Schema tariffario v1.2 (tariffe massime, `src/lib/tariffe.js`) | Progetto nel primo anno (3.000 € + saldo per fascia di popolazione + 0,15 € per credito previsto); Rapporto (1.000 € + saldo per fascia + 0,20 € per credito); emissione a scaglioni; vendita 20% del valore con minimo a scaglioni |
-| Solo costi indicati | Nessuna tariffa |
+| Attività | Caso 1: min €/anno · €/ab ≤5.000 · 20.000 · >100.000 · max €/anno | Caso 2: idem |
+|---|---|---|
+| Progetto (una tantum) | 300 · 0,20 · 0,10 · 0,08 · 15.000 | 450 · 0,30 · 0,15 · 0,12 · 22.500 |
+| Rapporto di Monitoraggio | 400 · 0,40 · 0,30 · 0,20 · 40.000 | 600 · 0,60 · 0,45 · 0,33 · 65.000 |
+| Registrazione Progetto (una tantum) | 100 · 0,10 · 0,10 · 0,02 · 3.000 | 150 · 0,15 · 0,15 · 0,03 · 4.500 |
+| Registrazione Crediti Progetto (una tantum) | 100 · 0,15 · 0,10 · 0,04 · 6.000 | 150 · 0,25 · 0,15 · 0,06 · 9.000 |
+| Registrazione Rapporto di Monitoraggio | 150 · 0,20 · 0,18 · 0,10 · 15.000 | 225 · 0,30 · 0,28 · 0,15 · 22.500 |
+| Registrazione Crediti Rapporto di Monitoraggio | 100 · 0,10 · 0,10 · 0,10 · 20.000 | 150 · 0,15 · 0,15 · 0,15 · 30.000 |
+
+Costo per abitante interpolato linearmente tra 5.000 e 20.000 e tra 20.000 e 100.000 abitanti, arrotondato per eccesso al centesimo; costo annuo = unitario × popolazione, entro minimo e massimo. Il Caso 1 con 154.247 abitanti riproduce le cifre dei contratti tipo EsaCom. Funzioni `costoUnitario` e `costiPerCaso` di `simulatore.js`. In alternativa: Schema tariffario v1.2 (`src/lib/tariffe.js`, tariffe massime) o nessuna tariffa.
 
 In tutti i casi si aggiungono ente di validazione (una tantum), ente di verifica (ogni anno) e altri costi annui. Uscite: ricavi (con intervallo), costi, margine e cumulato per anno, anno di rientro, costo e ricavo per abitante nel periodo (come gli indicatori dell'Allegato A). Funzione `simulaEconomia` di `simulatore.js`.
 

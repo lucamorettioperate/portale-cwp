@@ -20,8 +20,10 @@
           periodo, grafici, tabella, avvisi, export CSV e stampa;
        5. Simulazione economica: valore del credito digitato anno per anno
           (proposto 32 €, «Applica a tutti gli anni» con variazione annua);
-          costi a carico del Comune dai contratti tipo della Fondazione o
-          dallo Schema tariffario (src/lib/tariffe.js), ente e altri costi;
+          costi a carico del Comune: la pagina chiede se simulare in base al
+          Caso 1 (progetto volontario) o al Caso 2 (progetto obbligatorio da
+          bando), tabelle del 28/07/2026; in alternativa Schema tariffario
+          (src/lib/tariffe.js) o nessuna tariffa; ente e altri costi;
           ricavi, costi e margine per anno, anno di rientro, per abitante.
      I risultati si ricalcolano a ogni modifica (motore nel browser,
      src/lib/crediti/simulatore.js); «Salva» li conserva nel database.
@@ -44,7 +46,7 @@ import { CLUSTER } from "../lib/crediti/qualita.js";
 import { formatoData } from "../lib/date.js";
 import {
   DURATE, TIPOLOGIE, datiIniziali, riepilogoAnnoBase, rifiutiDaCluster, rifiutiDaCalcolo,
-  anniDelPeriodo, traiettoriaLineare, simula, righeCsv, puntoDiPartenza, RD_SOGLIA, simulaEconomia, economiaIniziale, prezziPerAnni, PREZZO_PROPOSTO,
+  anniDelPeriodo, traiettoriaLineare, simula, righeCsv, puntoDiPartenza, RD_SOGLIA, simulaEconomia, economiaIniziale, prezziPerAnni, PREZZO_PROPOSTO, costiPerCaso, listinoDi, CASI_COSTI,
 } from "../lib/crediti/simulatore.js";
 import { elencaScenari, leggiScenario, creaScenario, salvaScenario, duplicaScenario, eliminaScenario } from "../lib/crediti/scenari.js";
 
@@ -699,37 +701,60 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
         </div>
 
         <h3 style={h3}>Costi a carico del Comune o del gestore (IVA esclusa)</h3>
-        <div className="no-stampa" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
-          {[["contratto", "Contratti tipo della Fondazione"], ["schema", "Schema tariffario (tariffe massime)"], ["nessuno", "Solo i costi indicati sotto"]].map(([v, l]) => (
-            <button key={v} onClick={() => cambiaEconomia({ listino: v })} style={{ ...btnMini, ...((economia.listino || "contratto") === v ? { background: C.green, color: C.white, borderColor: C.green } : {}) }}>
-              {l}
-            </button>
-          ))}
+        <div style={{ background: listinoDi(economia) ? C.paper : C.ocraSoft, borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>Simulare i costi in base al Caso 1 o al Caso 2?</div>
+          <div className="no-stampa" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {[
+              ["caso1", "Caso 1 – Progetto volontario"],
+              ["caso2", "Caso 2 – Progetto obbligatorio (da bando)"],
+            ].map(([v, l]) => (
+              <button key={v} onClick={() => cambiaEconomia({ listino: v })} style={{ ...btnMini, fontWeight: 700, ...(listinoDi(economia) === v ? { background: C.green, color: C.white, borderColor: C.green } : {}) }}>
+                {l}
+              </button>
+            ))}
+            {[["schema", "Schema tariffario"], ["nessuno", "Nessuna tariffa"]].map(([v, l]) => (
+              <button key={v} onClick={() => cambiaEconomia({ listino: v })} style={{ ...btnMini, fontSize: 12, ...(listinoDi(economia) === v ? { background: C.green, color: C.white, borderColor: C.green } : {}) }}>
+                {l}
+              </button>
+            ))}
+          </div>
+          <p style={{ ...nota, margin: "8px 0 0" }}>
+            Caso 1: progetti volontari del Comune o del gestore. Caso 2: progetti obbligatori, per esempio nei bandi di gara dei Comuni che hanno
+            inserito il CWP come metodo. Tabelle «Costi per il Soggetto Promotore» di Fondazione Operate (28/07/2026), progetti di 10 anni; non
+            comprendono la validazione dell'ente.
+          </p>
         </div>
-        {(economia.listino || "contratto") === "contratto" && (
-          <>
-            <p style={{ ...nota, margin: "0 0 8px" }}>
-              Voci dei contratti tipo di Fondazione Operate (bozze EsaCom del 15/10/2026), per ogni anno del periodo; modificabili. Le voci «per
-              abitante» si moltiplicano per la popolazione ({popEconomia ? popEconomia.toLocaleString("it-IT") : "—"} abitanti).
-            </p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 10 }}>
-              {[
-                ["regProgetto", "Registrazione Progetto (€/anno)"],
-                ["regCreditiProgetto", "Registrazione crediti Progetto (€/anno)"],
-                ["regRapporto", "Registrazione Rapporto di Monitoraggio (€/anno)"],
-                ["regCreditiRapportoAb", "Registrazione crediti Rapporto (€ per abitante)"],
-                ["redProgettoAb", "Consulenza: redazione Progetto (€ per abitante)"],
-                ["redRapportoAb", "Consulenza: redazione Rapporto (€ per abitante)"],
-              ].map(([c, l]) => (
-                <label key={c} style={lbl}>
-                  {l}
-                  <input style={campo} inputMode="decimal" value={(economia.contratto || {})[c] ?? ""} onChange={(e) => cambiaEconomia({ contratto: { ...(economia.contratto || {}), [c]: e.target.value } })} />
-                </label>
-              ))}
-            </div>
-          </>
+        {(listinoDi(economia) === "caso1" || listinoDi(economia) === "caso2") && (
+          <div style={{ overflowX: "auto", marginBottom: 6 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 620 }}>
+              <thead>
+                <tr style={{ textAlign: "right", color: C.grafite, fontSize: 11.5 }}>
+                  <th style={{ ...th, textAlign: "left" }}>{CASI_COSTI[listinoDi(economia)]} · {popEconomia ? popEconomia.toLocaleString("it-IT") : "—"} abitanti</th>
+                  <th style={th}>€ per abitante all'anno</th>
+                  <th style={th}>€ all'anno</th>
+                  <th style={{ ...th, textAlign: "left" }}>Contratto</th>
+                </tr>
+              </thead>
+              <tbody>
+                {costiPerCaso(listinoDi(economia), popEconomia).map((c) => (
+                  <tr key={c.voce} style={{ borderTop: `1px solid ${C.line}` }}>
+                    <td style={td}>{c.nome}{c.limite && <span style={{ color: C.grafite, fontSize: 11.5 }}> · {c.limite === "minimo" ? "costo minimo" : "costo massimo"}</span>}</td>
+                    <td style={tdN}>{fmt(c.unitario, 2)}</td>
+                    <td style={{ ...tdN, fontWeight: 700 }}>{fmt(c.importo, 2)}</td>
+                    <td style={{ ...td, color: C.grafite }}>{c.tipo === "consulenza" ? "consulenza" : "partecipazione al Programma"}</td>
+                  </tr>
+                ))}
+                <tr style={{ borderTop: `2px solid ${C.ink}`, fontWeight: 700 }}>
+                  <td style={td}>Totale annuo</td>
+                  <td style={tdN}>{popEconomia ? fmt(costiPerCaso(listinoDi(economia), popEconomia).reduce((x, c) => x + c.importo, 0) / popEconomia, 2) : "—"}</td>
+                  <td style={tdN}>{fmt(costiPerCaso(listinoDi(economia), popEconomia).reduce((x, c) => x + c.importo, 0), 2)}</td>
+                  <td style={td}></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         )}
-        {economia.listino === "schema" && (
+        {listinoDi(economia) === "schema" && (
           <p style={nota}>Tariffe massime dello Schema tariffario v1.2: registrazione del Progetto nel primo anno, registrazione di ogni Rapporto annuale, emissione dei crediti a scaglioni e vendita (20% del valore, con il minimo a scaglioni).</p>
         )}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 10, marginTop: 6 }}>

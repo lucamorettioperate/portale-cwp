@@ -358,7 +358,7 @@ I dati per il calcolo dei crediti si inviano con un unico modello Excel, il **Tr
 
 **File molto grandi.** Oltre 50 MB o oltre 1 milione di righe: salvate ogni foglio come file CSV con le stesse intestazioni (ad esempio `6_Letture.csv`), raccoglieteli in un archivio ZIP e caricate lo ZIP.
 
-**Simulazione dei crediti.** La Fondazione può preparare per il vostro Comune uno o più **scenari** su 7, 10 o 21 anni. Partendo dai dati di raccolta attuali e dagli obiettivi che indicate per ogni anno (produzione di rifiuti totale e pro capite, secco residuo pro capite), il simulatore calcola la percentuale di raccolta differenziata e **stima i crediti** che il Comune potrebbe generare anno per anno. Chiedetelo alla Fondazione: oggi gli scenari li vede solo lo staff. È una stima a scopo di pianificazione: i crediti veri si calcolano a consuntivo, con i dati del tracciato.
+**Simulazione dei crediti.** La Fondazione può preparare per il vostro Comune uno o più **scenari** su 7, 10 o 21 anni. Partendo dai dati di raccolta attuali e dagli obiettivi che indicate per ogni anno (produzione di rifiuti totale e pro capite, secco residuo pro capite), il simulatore calcola la percentuale di raccolta differenziata e **stima i crediti** che il Comune potrebbe generare anno per anno. Lo scenario comprende anche una **stima economica**: ricavi dalla vendita dei crediti (con il valore del credito anno per anno) e costi a carico del Comune secondo le tabelle della Fondazione per progetti volontari (Caso 1) o obbligatori da bando di gara (Caso 2). Chiedetelo alla Fondazione: oggi gli scenari li vede solo lo staff. È una stima a scopo di pianificazione: i crediti veri si calcolano a consuntivo, con i dati del tracciato.
 
 ## Reclami e richieste di chiarimento
 

@@ -237,7 +237,9 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 8b.5 | In un anno portate il secco pro capite oltre il pro capite totale | Avviso «il secco previsto supera la produzione totale» |
 | 8b.6 | Salva → Duplica con nome «Ambizioso», cambiate il secco finale a 40 → Salva | Nell'elenco del Comune due scenari con % finale e crediti a confronto |
 | 8b.7 | Esporta CSV e Stampa | Il CSV si apre in Excel con una riga per anno; la stampa non mostra pulsanti né menu |
-| 8b.7b | Simulazione economica: valore proposto 32 €, variazione 2% → Applica a tutti gli anni; poi cambiate a mano il valore del 2030 a 40 €; listino «Contratti tipo della Fondazione» | Colonna «Valore» compilata anno per anno (32,00 · 32,64 · …), il 2030 a 40 € in grassetto; ricavi, partecipazione al Programma, consulenza, costi e margine per anno; riquadri con ricavi, costi, margine, costo e ricavo per abitante; cambiando una voce del contratto (es. registrazione Rapporto) i costi si aggiornano; con «Schema tariffario» compaiono le tariffe massime |
+| 8b.7b | Simulazione economica: valore proposto 32 € → Applica a tutti gli anni; poi cambiate a mano il valore del 2030 a 40 € | Colonna «Valore» compilata anno per anno, il 2030 a 40 € in grassetto; ricavi aggiornati |
+| 8b.7c | Alla domanda «Simulare i costi in base al Caso 1 o al Caso 2?» scegliete Caso 1, poi Caso 2, con 16.735 abitanti | Tabella delle sei voci con € per abitante interpolati (Caso 1: Progetto 0,13 €/ab, totale annuo circa 16.233 €); con il Caso 2 i costi salgono; nella tabella annuale partecipazione al Programma e consulenza, margine e anno di rientro |
+| 8b.7d | Cambiate la durata a 7 anni | Avviso: le tabelle valgono per progetti di 10 anni, i costi si computano a parte |
 | 8b.8 | [C] Provate ad aprire /simulatore | «Questa sezione è riservata alla Fondazione» |
 | 8b.9 | [A] Audit | Voci di creazione, modifica e cancellazione degli scenari |
 

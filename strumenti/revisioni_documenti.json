@@ -77,6 +77,12 @@
       "data": "19/10/2026",
       "descrizione": "Simulazione dei crediti disponibile su richiesta alla Fondazione.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.3",
+      "data": "19/10/2026",
+      "descrizione": "Simulazione dei crediti: anche stima economica con costi Caso 1 e Caso 2.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -181,6 +187,12 @@
       "data": "19/10/2026",
       "descrizione": "Simulatore: valore del credito anno per anno, proposto 32 €.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.7",
+      "data": "19/10/2026",
+      "descrizione": "Simulatore: costi per il Comune secondo il Caso 1 (progetto volontario) o il Caso 2 (progetto obbligatorio da bando).",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -266,6 +278,12 @@
       "rev": "2.3",
       "data": "19/10/2026",
       "descrizione": "Prova 8b.7b aggiornata: valore del credito anno per anno.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.4",
+      "data": "19/10/2026",
+      "descrizione": "Prove 8b.7c e 8b.7d: costi Caso 1 e Caso 2.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -400,6 +418,12 @@
       "rev": "3.1",
       "data": "19/10/2026",
       "descrizione": "Simulatore: valore del credito anno per anno; tabelle dei costi in arrivo.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.2",
+      "data": "19/10/2026",
+      "descrizione": "Simulatore: costi Caso 1 e Caso 2 dalle tabelle del 28/07/2026.",
       "autore": "Fondazione Operate"
     }
   ],

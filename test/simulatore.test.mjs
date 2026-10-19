@@ -15,7 +15,7 @@
 import assert from "node:assert/strict";
 import {
   DURATE, riepilogoAnnoBase, rifiutiDaCluster, rifiutiDaCalcolo, anniDelPeriodo,
-  traiettoriaLineare, simula, righeCsv, fattoriPredefiniti, puntoDiPartenza, simulaEconomia, economiaIniziale, prezziPerAnni,
+  traiettoriaLineare, simula, righeCsv, fattoriPredefiniti, puntoDiPartenza, simulaEconomia, economiaIniziale, prezziPerAnni, costiPerCaso, costoUnitario,
 } from "../src/lib/crediti/simulatore.js";
 
 let n = 0;
@@ -174,22 +174,35 @@ prova("simulazione economica: ricavi, tariffe dello Schema tariffario, costi e m
   vicino(s2.totali.margine, 30000 + 40000);
 });
 
-prova("costi dai contratti tipo (EsaCom): 154.247 abitanti come nelle bozze del 15/10/2026", () => {
+prova("costi Caso 1 e Caso 2: fasce, interpolazione, minimi e massimi; Caso 1 = contratti EsaCom", () => {
+  // EsaCom, 154.247 abitanti, Caso 1: le cifre dei contratti tipo.
+  const es = Object.fromEntries(costiPerCaso("caso1", 154247).map((c) => [c.voce, c.importo]));
+  vicino(es.progetto, 12339.76, 0.01); // contratto: 12.340 €
+  vicino(es.rapporto, 30849.4, 0.01); // contratto: 30.849 €
+  assert.equal(es.regProgetto, 3000); // 0,02 × ab = 3.085 → massimo 3.000
+  assert.equal(es.regCreditiProgetto, 6000); // massimo 6.000
+  assert.equal(es.regRapporto, 15000); // massimo 15.000
+  vicino(es.regCreditiRapporto, 15424.7, 0.01); // contratto: 15.425 €
+  // Interpolazione tra 5.000 e 20.000 ab. con arrotondamento per eccesso.
+  assert.equal(costoUnitario([0, 0.2, 0.1, 0.08, 0], 16735), 0.13); // 0,1218 → 0,13
+  assert.equal(costoUnitario([0, 0.4, 0.3, 0.2, 0], 20000), 0.3);
+  assert.equal(costoUnitario([0, 0.4, 0.3, 0.2, 0], 60000), 0.25);
+  // Comune piccolo: si applica il minimo €/anno.
+  const piccolo = costiPerCaso("caso1", 1000);
+  assert.equal(piccolo[0].importo, 300);
+  assert.equal(piccolo[0].limite, "minimo");
+  // Caso 2 più caro del Caso 1 a parità di popolazione.
+  const tot = (c) => costiPerCaso(c, 16735).reduce((x, v) => x + v.importo, 0);
+  assert.ok(tot("caso2") > tot("caso1"));
+  // Nel simulatore: partecipazione = registrazioni, consulenza = redazioni.
   const righe = Array.from({ length: 10 }, (_, i) => ({ anno: 2027 + i, netti: 32000 }));
-  const e = simulaEconomia(righe, { prezzo: 8, prezzoMin: 6, prezzoMax: 10, listino: "contratto" }, 154247);
-  const a = e.righe[0];
-  vicino(a.voci.regCreditiRapporto, 15424.7, 0.01); // contratto: 15.425 €
-  vicino(a.voci.redProgetto, 12339.76, 0.01); // contratto: 12.340 €
-  vicino(a.voci.redRapporto, 30849.4, 0.01); // contratto: 30.849 €
-  vicino(a.partecipazione, 3000 + 6000 + 15000 + 15424.7, 0.01);
-  vicino(a.consulenza, 12339.76 + 30849.4, 0.01);
-  vicino(e.totali.costi, 10 * (a.partecipazione + a.consulenza), 0.1);
-  vicino(e.totali.ricavi, 10 * 32000 * 8);
-  vicino(e.totali.ricavoProCapiteMin, (10 * 32000 * 6) / 154247, 1e-9);
-  vicino(e.totali.costoProCapite, e.totali.costi / 154247, 1e-9);
-  // Voci modificabili.
-  const e2 = simulaEconomia(righe, { prezzo: 8, listino: "contratto", contratto: { regRapporto: 10000 } }, 154247);
-  vicino(e.righe[0].costi - e2.righe[0].costi, 5000, 1e-6);
+  const e = simulaEconomia(righe, { prezzo: 32, listino: "caso1" }, 154247);
+  vicino(e.righe[0].consulenza, 12339.76 + 30849.4, 0.01);
+  vicino(e.righe[0].partecipazione, 3000 + 6000 + 15000 + 15424.7, 0.01);
+  // Scenari salvati con il vecchio listino «contratto» = Caso 1.
+  vicino(simulaEconomia(righe, { prezzo: 32, listino: "contratto" }, 154247).totali.costi, e.totali.costi, 1e-6);
+  // Durata diversa da 10 anni: avviso.
+  assert.ok(simulaEconomia(righe.slice(0, 7), { prezzo: 32, listino: "caso2" }, 20000).avvisi.some((x) => x.includes("10 anni")));
 });
 
 prova("valore del credito anno per anno (proposto 32 €)", () => {

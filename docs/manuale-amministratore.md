@@ -765,15 +765,18 @@ A destra il riepilogo: produzione totale e pro capite, secco pro capite, **% di 
 
 Premete **Salva** per conservare lo scenario: nell'elenco *Scenari per Comune* compaiono, per confrontarli, la % di differenziata finale e i crediti netti stimati di ogni scenario. **Esporta CSV** scarica la tabella (si apre con Excel), **Stampa** produce una versione da stampare o salvare in PDF.
 
-**5. Simulazione economica: ricavi e costi per il Comune.** Il **valore del credito** (€ per credito; un credito è una tonnellata di CO₂eq) si digita **anno per anno** nella colonna «Valore» della tabella. Il portale propone **32 €**: per compilare tutti gli anni insieme indicate il valore proposto e, se volete, una variazione annua, poi premete **Applica a tutti gli anni**; correggete poi i singoli anni. Poi scegliete i **costi a carico del Comune o del gestore** (IVA esclusa):
+**5. Simulazione economica: ricavi e costi per il Comune.** Il **valore del credito** (€ per credito; un credito è una tonnellata di CO₂eq) si digita **anno per anno** nella colonna «Valore» della tabella. Il portale propone **32 €**: per compilare tutti gli anni insieme indicate il valore proposto e, se volete, una variazione annua, poi premete **Applica a tutti gli anni**; correggete poi i singoli anni. Poi il simulatore chiede: **«Simulare i costi in base al Caso 1 o al Caso 2?»**. Sono le tabelle «Costi per il Soggetto Promotore» di Fondazione Operate (28/07/2026), IVA esclusa, per progetti di 10 anni:
 
-- **Contratti tipo della Fondazione** (predefinito): le voci del contratto di partecipazione al Programma (registrazione del Progetto, dei crediti del Progetto, del Rapporto di Monitoraggio e dei crediti del Rapporto) e del contratto di consulenza (redazione del Progetto e del Rapporto), per ogni anno del periodo, con i valori delle bozze EsaCom del 15/10/2026; le voci «per abitante» si moltiplicano per la popolazione del Comune e tutte si possono modificare;
-- **Schema tariffario**: le tariffe massime pubblicate (registrazione, emissione e vendita dei crediti);
-- **Solo i costi indicati sotto**.
+- **Caso 1 – Progetto volontario**: il Comune o il gestore aderisce di propria iniziativa;
+- **Caso 2 – Progetto obbligatorio**: il progetto arriva da un bando di gara di un Comune che ha inserito il CWP come metodo; le tariffe sono più alte.
 
-In tutti i casi potete aggiungere il costo dell'ente di validazione (una tantum), della verifica annuale e altri costi annui. Per ogni anno compaiono crediti, valore, ricavi, partecipazione al Programma, consulenza, ente, altri costi, costi totali, margine e cumulato; in alto ricavi, costi, margine netto con l'anno di rientro e **costo e ricavo per abitante** nel periodo. È una stima indicativa, non un piano finanziario.
+Per ogni attività (Progetto, Rapporto di Monitoraggio, registrazione del Progetto, dei crediti del Progetto, del Rapporto e dei crediti del Rapporto) il portale calcola il costo per abitante in base alla popolazione: valori fissi fino a 5.000 abitanti e oltre 100.000, **interpolati** tra 5.000 e 20.000 e tra 20.000 e 100.000 abitanti, arrotondati per eccesso al centesimo. Il costo annuo è il costo per abitante × la popolazione, mai sotto il **minimo** né sopra il **massimo** annuo della tabella. Le voci una tantum sono già ammortizzate in 10 anni, quindi si pagano ogni anno. Una tabella mostra le sei voci con € per abitante, € all'anno e il totale annuo. Le tabelle non comprendono la validazione dell'ente. Per progetti di durata diversa da 10 anni compare un avviso: i costi vanno computati a parte.
 
-> **Da sapere.** Per un Comune piccolo le voci fisse dei contratti (registrazioni del Progetto e del Rapporto) pesano molto: nei contratti EsaCom i Comuni sono aggregati in un unico progetto (154.247 abitanti). Inoltre il simulatore stima meno crediti per abitante dell'Allegato A del contratto EsaCom, perché lavora sui totali del Comune e non per singola utenza: il metodo di stima va allineato.
+In alternativa si può scegliere lo **Schema tariffario** (tariffe massime pubblicate) o **nessuna tariffa**.
+
+In tutti i casi potete aggiungere il costo dell'ente di validazione (una tantum), della verifica annuale e altri costi annui. Per ogni anno compaiono crediti, valore, ricavi, partecipazione al Programma (registrazioni), consulenza (redazione di Progetto e Rapporto), ente, altri costi, costi totali, margine e cumulato; in alto ricavi, costi, margine netto con l'anno di rientro e **costo e ricavo per abitante** nel periodo. È una stima indicativa, non un piano finanziario.
+
+> **Da sapere.** Con il Caso 1 e 154.247 abitanti il simulatore riproduce le cifre dei contratti tipo EsaCom. Il simulatore stima meno crediti per abitante dell'Allegato A del contratto EsaCom, perché lavora sui totali del Comune e non per singola utenza: il metodo di stima va allineato.
 
 **Come stima i crediti.** Il simulatore usa le formule della Metodologia CWP v1.2 a livello di Comune:
 
