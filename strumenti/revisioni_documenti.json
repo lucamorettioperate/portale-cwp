@@ -71,6 +71,12 @@
       "data": "19/10/2026",
       "descrizione": "Simulazione dei crediti in arrivo (capitolo Dati per il calcolo dei crediti).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.2",
+      "data": "19/10/2026",
+      "descrizione": "Simulazione dei crediti disponibile su richiesta alla Fondazione.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -145,6 +151,12 @@
       "data": "19/10/2026",
       "descrizione": "Funzioni in arrivo: simulatore di scenari (7, 10 o 21 anni, obiettivi annui, % di differenziata e crediti stimati) e assistente virtuale (Claude).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.2",
+      "data": "19/10/2026",
+      "descrizione": "Nuovo capitolo «Simulatore di scenari»: creazione, anno base, obiettivi annui, risultati, modello di stima.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -206,6 +218,12 @@
       "rev": "1.9",
       "data": "19/10/2026",
       "descrizione": "In sviluppo: simulatore di scenari e assistente virtuale.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.0",
+      "data": "19/10/2026",
+      "descrizione": "Prove 8b del simulatore di scenari.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -304,6 +322,12 @@
       "rev": "2.5",
       "data": "19/10/2026",
       "descrizione": "Backlog punto 37 (simulatore di scenari), assistente virtuale in evidenza (punto 21), decisioni aperte e cronologia.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.6",
+      "data": "19/10/2026",
+      "descrizione": "Simulatore di scenari, prima versione: script 28, pagina /simulatore, motore e prove; decisioni aperte e cronologia.",
       "autore": "Fondazione Operate"
     }
   ],

@@ -59,26 +59,44 @@ modello da scaricare.
 7. **Residenti / non residenti**: la distinzione serve solo al buffer
    (Tabella 15); le classi domestiche sono quelle della delibera.
 
-## Simulatore di scenari (in progettazione)
+## Simulatore di scenari (prima versione 19/10/2026)
 
-Richiesto da Luca il 19/10/2026 (Registro, backlog punto 37). Serve a
-**stimare in anticipo** quanti crediti un Comune potrebbe generare,
-per esempio per presentare il Programma a un nuovo Comune. È una stima ex
-ante e non sostituisce il calcolo ex post con la Banca Dati Utenze.
+Richiesto da Luca il 19/10/2026 (Registro, backlog punto 37). Pagina
+`/simulatore` (Operatori e Amministratori), motore
+`src/lib/crediti/simulatore.js` (prove in `test/simulatore.test.mjs`),
+scenari salvati in `scenario_simulazione` (`supabase/28_simulatore.sql`).
+Stima ex ante, non certificabile.
 
 | Passo | Che cosa si inserisce o si ottiene |
 |---|---|
-| Scenario | Comune, nome e note dello scenario; più scenari per Comune, duplicabili e confrontabili |
-| Durata | Menu a tendina: 7, 10 o 21 anni (Standard 4.3.8); anno di partenza |
-| Anno base | Popolazione, produzione totale (t) e pro capite (kg/ab), % differenziata, ripartizione per frazione (Catasto ISPRA), cluster SOSE, fattori di emissione, buffer previsto |
-| Obiettivi annui | Per ogni anno: produzione totale e pro capite prevista, secco residuo pro capite obiettivo (kg/ab), popolazione prevista (facoltativa) |
-| Ricalcolo | Secco = secco pro capite × popolazione; differenziata = totale − secco; % differenziata = differenziata / totale; differenziata ripartita con le proporzioni dell'anno base |
-| Crediti simulati | Per anno: emissioni dello scenario di riferimento − emissioni dello scenario simulato (fattori della Metodologia), crediti lordi, buffer, crediti netti; totale del periodo |
-| Uscite | Tabella anno per anno, grafico, confronto tra scenari, PDF ed Excel |
+| Scenario | Comune (censito o solo nome), nome e note; più scenari per Comune, duplicabili e confrontabili |
+| Durata | Menu a tendina: 7, 10 o 21 anni (Standard 4.3.8); primo anno |
+| Anno base | Popolazione e rifiuti per tipologia (t): a mano, dai valori medi del cluster SOSE (Tabella 3 dello Standard) o da un calcolo esistente |
+| Obiettivi annui | Per ogni anno: popolazione, produzione totale (t o kg/ab), secco residuo pro capite (kg/ab); traiettoria lineare automatica |
+| Ricalcolo | Secco = secco pro capite × popolazione; differenziata = totale − secco; % differenziata = differenziata / totale |
+| Crediti simulati | Per anno: lordi, buffer, netti, cumulati; totale del periodo |
+| Uscite | Riepilogo, grafici, tabella, confronto tra scenari, CSV, stampa |
 
-**Da confermare con la Fondazione**: il modello di stima semplificato (a
-livello di Comune: senza Banca Dati Utenze le emissioni dello scenario si
-stimano dalla composizione dei rifiuti) e chi può vedere gli scenari.
+**Modello (semplificato, da confermare con la Fondazione)**
+
+- Scenario di riferimento dell'anno *a*: Q_rif(r, a) = Q_base(r) × Pop(a) / Pop_base.
+- Scenario simulato: Q(secco, a) = secco pro capite(a) × Pop(a); Q(r, a) =
+  (Totale(a) − Q(secco, a)) × quota di *r* nella differenziata dell'anno base.
+- Emissioni: E = − Σ Q(r) × FErid(r) (formule 13 e 25); FE del secco =
+  media dei FErid delle frazioni a recupero pesata con l'anno base
+  (formule 16-17).
+- ΔI(a) = EP(a) − EA(a); crediti lordi = −ΔI se negativa, altrimenti debito;
+  netti = lordi × (1 − buffer).
+
+**Conseguenza da comunicare.** Poiché il fattore del secco è la media dei
+fattori della differenziata, con composizione costante i crediti sono
+(rifiuti evitati in t) × |FE del secco|: spostare rifiuti dal secco alla
+differenziata alza la % di raccolta differenziata ma, a parità di
+produzione totale, non genera crediti. I crediti nascono dalla
+**prevenzione** (meno rifiuti prodotti). Se la Fondazione volesse dare
+peso anche alla qualità della differenziata, servirebbe una scelta
+metodologica (per esempio un fattore del secco diverso o una composizione
+della differenziata che cambia negli anni).
 
 ## Garanzie
 

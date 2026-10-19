@@ -224,6 +224,20 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 8.7 | [O] Menu Crediti emessi | Tutti i lotti con Comune e anno; totali emessi / attivi / ritirati |
 | 8.8 | Senza accesso, /programma: aprite il Progetto | Nel Rapporto anno 1: lotto con ID da/a, registro, attivi e ritirati; si scaricano la comunicazione di vendita e la dichiarazione di cancellazione |
 
+### 8b. Simulatore di scenari
+
+| N. | Prova | Risultato atteso |
+| --- | --- | --- |
+| 8b.1 | [O] Menu Simulatore → + Nuovo scenario: Comune scritto a mano «Comune di Prova», nome «Obiettivo», durata dal menu **10 anni**, primo anno 2027 → Crea | Si apre lo scenario con 10 righe di obiettivi (2027-2036) |
+| 8b.2 | Anno base: popolazione 10000, cluster 4 → Usa i valori medi del cluster | Tabella dei rifiuti compilata; riepilogo: produzione 445 kg/ab, secco 95 kg/ab, differenziata circa 78,7% |
+| 8b.3 | Obiettivi: pro capite finale 350, secco pro capite finale 60 → Applica la traiettoria | Righe compilate in modo lineare; la % di differenziata cresce ogni anno; nei Risultati crediti netti positivi e crescenti, grafici aggiornati |
+| 8b.4 | Cambiate la durata a **21 anni**, poi a **7 anni** | Le righe diventano 21 e poi 7; i valori già inseriti per gli stessi anni restano |
+| 8b.5 | In un anno portate il secco pro capite oltre il pro capite totale | Avviso «il secco previsto supera la produzione totale» |
+| 8b.6 | Salva → Duplica con nome «Ambizioso», cambiate il secco finale a 40 → Salva | Nell'elenco del Comune due scenari con % finale e crediti a confronto |
+| 8b.7 | Esporta CSV e Stampa | Il CSV si apre in Excel con una riga per anno; la stampa non mostra pulsanti né menu |
+| 8b.8 | [C] Provate ad aprire /simulatore | «Questa sezione è riservata alla Fondazione» |
+| 8b.9 | [A] Audit | Voci di creazione, modifica e cancellazione degli scenari |
+
 ### 9. Reclami e richieste di chiarimento
 
 | N. | Prova | Risultato atteso |
@@ -258,4 +272,4 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 - La verifica in due passaggi per lo staff è pronta ma spenta.
 - Non c'è ancora l'antivirus sui file caricati.
 
-**In sviluppo** (saranno aggiunti al percorso di prova quando disponibili): accesso con SPID, CIE o CNS; registro di sicurezza; antivirus; **simulatore di scenari** (durata 7, 10 o 21 anni, obiettivi annui di produzione e di secco residuo, % di differenziata e crediti stimati anno per anno); **assistente virtuale (Claude)** nel portale.
+**In sviluppo** (saranno aggiunti al percorso di prova quando disponibili): accesso con SPID, CIE o CNS; registro di sicurezza; antivirus; **assistente virtuale (Claude)** nel portale.

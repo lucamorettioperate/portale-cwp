@@ -731,6 +731,52 @@ Alcuni punti della Metodologia si prestano a interpretazioni. Il portale applica
 | Trasporto (Capitolo 9) | Non calcolato a parte: i fattori della Tabella 3 lo includono già |
 | Residenti / non residenti | La distinzione serve solo al buffer (Tabella 15) |
 
+## Simulatore di scenari
+
+Il **Simulatore** (menu *Simulatore*, per Operatori e Amministratori) stima in anticipo quanti crediti un Comune potrebbe generare in **7, 10 o 21 anni**. Serve per presentare il Programma a un Comune o per confrontare obiettivi diversi. È una **stima ex ante, non certificabile**: i crediti veri si calcolano a consuntivo, con il calcolo dei crediti e la Banca Dati Utenze.
+
+**Creare uno scenario**
+
+1. Menu **Simulatore** → **+ Nuovo scenario**.
+2. Scegliete il Comune tra quelli censiti oppure scrivetene il nome (si possono simulare anche Comuni non ancora aderenti).
+3. Date un nome allo scenario (per esempio «prudente», «obiettivo», «ambizioso»), scegliete la **durata** dal menu a tendina (7, 10 o 21 anni) e il primo anno → **Crea scenario**.
+
+Per ogni Comune si possono creare più scenari; con **Duplica** si parte da uno esistente e si cambia solo qualche obiettivo.
+
+**1. Impostazioni.** Nome, durata (menu a tendina 7 / 10 / 21 anni, Standard 4.3.8), primo anno, **buffer previsto** (quota trattenuta dai crediti lordi, Capitolo 7 della Metodologia; 20% è un valore cautelativo) e note sulle ipotesi.
+
+**2. Dati dell'anno base.** Anno, popolazione residente e rifiuti per tipologia in tonnellate (secco residuo compreso). Tre modi per compilarli:
+
+- a mano, dai dati del Catasto ISPRA o del gestore;
+- **Usa i valori medi del cluster**: scelto il cluster SOSE del Comune, il portale riempie la tabella con i valori medi pro capite della Tabella 3 dello Standard × popolazione;
+- **Importa da un calcolo dei crediti** (solo Amministratori): riprende i rifiuti del territorio da un calcolo già fatto.
+
+A destra il riepilogo: produzione totale e pro capite, secco pro capite, **% di raccolta differenziata** e fattore di emissione del secco (formule 16-17).
+
+**3. Obiettivi anno per anno.** Una riga per ogni anno del periodo: popolazione, **produzione totale prevista** (in tonnellate, oppure scrivendo il pro capite in kg/ab) e **secco residuo pro capite** obiettivo. Per non compilare tutto a mano, indicate gli obiettivi dell'ultimo anno (produzione pro capite e secco pro capite) e premete **Applica la traiettoria**: il portale riempie gli anni con un andamento lineare dall'anno base, poi potete correggere i singoli anni. Per ogni anno il portale ricalcola il secco in tonnellate e la **% di differenziata**.
+
+**4. Risultati.** Si aggiornano a ogni modifica:
+
+- crediti netti stimati nel periodo e media annua, % di differenziata dell'ultimo anno, rifiuti evitati;
+- grafico dei crediti netti per anno e grafico della % di differenziata rispetto all'anno base;
+- tabella anno per anno: produzione, scenario di riferimento, rifiuti evitati, crediti lordi, buffer, crediti netti e cumulati;
+- eventuali avvisi (dati mancanti, secco superiore al totale).
+
+Premete **Salva** per conservare lo scenario: nell'elenco *Scenari per Comune* compaiono, per confrontarli, la % di differenziata finale e i crediti netti stimati di ogni scenario. **Esporta CSV** scarica la tabella (si apre con Excel), **Stampa** produce una versione da stampare o salvare in PDF.
+
+**Come stima i crediti.** Il simulatore usa le formule della Metodologia CWP v1.2 a livello di Comune:
+
+| Grandezza | Come si calcola |
+| --- | --- |
+| Scenario di riferimento | Rifiuti pro capite dell'anno base, per tipologia, × popolazione dell'anno |
+| Scenario simulato | Secco obiettivo + differenziata (totale − secco) ripartita con le proporzioni dell'anno base |
+| Emissioni | − Σ quantità × fattore di emissione (formule 13 e 25); per il secco la media dei fattori della differenziata (formule 16-17) |
+| Crediti | Lordi = riduzione delle emissioni rispetto al riferimento; netti = lordi × (1 − buffer) |
+
+> **Da sapere.** Con queste formule i crediti nascono dai **rifiuti evitati**, cioè prodotti in meno rispetto allo scenario di riferimento: il riquadro *Da dove vengono i crediti* indica quante tCO₂eq vale una tonnellata in meno per quel Comune. Spostare rifiuti dal secco alla differenziata alza la percentuale di raccolta differenziata ma, a parità di produzione totale, non genera crediti. Il modello semplificato va confermato dalla Fondazione.
+
+Ogni creazione, modifica e cancellazione di uno scenario è registrata nell'audit. I Comuni non vedono gli scenari.
+
 ## Crediti emessi
 
 Dopo la registrazione di un Rapporto di Monitoraggio la Fondazione emette i crediti, con un **ID univoco per ogni credito** (Guida 6.3.2 e 6.3.3, Tabella 5; Standard 6.2). I crediti si seguono nel riquadro **Crediti emessi** del Rapporto e nella pagina **Crediti emessi** del menu.
@@ -878,5 +924,5 @@ Questo manuale descrive il portale alla data della revisione indicata in coperti
 - **Accesso degli stakeholder con SPID, CIE o CNS** (Guida 3.9): serve l'adesione della Fondazione come fornitore di servizi (con AgID o con un aggregatore accreditato) e il relativo contratto. Intanto chi partecipa al feedback pubblico si identifica con l'email confermata.
 - **Sicurezza:** registro di sicurezza (accessi e tentativi falliti), verifica in due passaggi attiva, antivirus sui file caricati, piano di protezione dagli attacchi informatici.
 - **Email:** verifica del dominio, per far arrivare le notifiche a tutti gli utenti.
-- **Simulatore di scenari** (sezione Crediti): per ogni Comune più scenari, con durata scelta da un menu a tendina (**7, 10 o 21 anni**). Si inseriscono i dati dell'anno base (popolazione, produzione totale e pro capite, raccolta differenziata, ripartizione per frazione e i parametri del calcolo) e, per ogni anno, gli obiettivi di produzione totale e pro capite e di **secco residuo pro capite**. Il simulatore ricalcola la **percentuale di differenziata** e stima **anno per anno i crediti** che il Comune potrebbe generare, con tabella, grafico e confronto tra scenari. È una stima ex ante, non un calcolo certificabile: il modello va confermato dalla Fondazione.
+- **Simulatore di scenari:** la prima versione è disponibile (capitolo «Simulatore di scenari»). In arrivo: stampa in PDF impaginata e, se la Fondazione lo decide, la visione dello scenario da parte del Comune.
 - **Assistente virtuale (Claude) integrato nel portale:** aiuta i Comuni nella compilazione (cosa manca nella pratica, come preparare i dati) e gli Operatori nei controlli (completezza dei documenti, bozze di richieste di integrazione e di risposte, spiegazione dei risultati del calcolo). Resta un supporto: le decisioni restano alla Fondazione e ogni sua azione è registrata nell'audit.

@@ -241,6 +241,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `25_documenti_programma.sql` | Gli otto documenti ufficiali del Programma v1.2 (Guida, Definizioni, Normativa, Standard, Metodologia, Politica di reclamo, Schema tariffario, Gestione qualità dei dati), caricati nella radice dell'archivio `modelli`, registrati come modelli pubblici «Documento del Programma»; PDF della Metodologia collegato alla metodologia approvata | 18/10/2026 (sera, verificato sulla pagina /programma) |
 | `26_pec_programma.sql` | PEC del Programma `operate@pec.it` (comunicata da Luca), mostrata sulla pagina pubblica nelle informazioni del Programma e per i reclami; modificabile poi da Impostazioni | 19/10/2026 (verificato sulla pagina /programma) |
 | `27_soggetto_promotore.sql` | Soggetto promotore del programma: Fondazione Operate, in esclusiva da Wastelab (gestione commerciale e tecnologica), testo sulla pagina pubblica | 19/10/2026 (verificato) |
+| `28_simulatore.sql` | Simulatore di scenari: tabella `scenario_simulazione` (Comune, nome, durata 7/10/21, primo anno, dati in jsonb, riepilogo), RLS solo staff (`scenario_staff`), data di modifica dal database, audit | 19/10/2026 — provato sul banco locale (`t28.sql`); **da eseguire in produzione** |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
 script successivi.
@@ -357,6 +358,7 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 | `/utenti` | Gestione utenti | Admin |
 | `/audit` | Audit trail | Admin |
 | `/crediti`, `/crediti/:id` | Calcolo crediti CWP | Admin |
+| `/simulatore` | Simulatore di scenari: stima ex ante dei crediti di un Comune su 7, 10 o 21 anni | Operatore, Admin |
 | `/impostazioni` | Informazioni del Programma e metodologie, durata delle fasi (Progetto e Rapporto), documenti richiesti per fase, modelli di documento (anche pubblici) | Admin |
 | `/documentazione` | Documentazione: Manuale Utente (PDF; Word solo Admin), Manuale Amministratore e Registro (solo Admin) | tutti (contenuto per ruolo) |
 
@@ -467,6 +469,14 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 19 ottobre 2026
+- **Simulatore di scenari, prima versione** (backlog 37) — script
+  `28_simulatore.sql` (tabella `scenario_simulazione`, solo staff, audit;
+  provato sul banco locale), pagina `/simulatore` nel menu di Operatori e
+  Amministratori, motore `src/lib/crediti/simulatore.js` con 9 prove
+  automatiche. Durata da menu 7/10/21 anni, più scenari per Comune, anno
+  base (a mano, cluster SOSE o calcolo esistente), obiettivi annui con
+  traiettoria lineare, % di differenziata e crediti anno per anno, grafici,
+  confronto, CSV e stampa. Lo script 28 va eseguito in produzione.
 - **Nuovo modulo in backlog: simulatore di scenari** (punto 37), richiesto
   da Luca: durata 7, 10 o 21 anni, più scenari per Comune, dati dell'anno
   base, obiettivi annui di produzione totale e pro capite e di secco
@@ -893,7 +903,10 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   permetterne la creazione mentre il Progetto è attivo (decisione del
   18/10), l'emissione dei crediti richiede comunque il Rapporto registrato.
 - Simulatore di scenari (punto 37): modello di stima semplificato da
-  confermare e visibilità degli scenari (solo Fondazione o anche il Comune).
+  confermare (con le formule della Metodologia i crediti nascono solo dai
+  rifiuti evitati, non dall'aumento della differenziata a parità di
+  totale) e visibilità degli scenari (oggi solo staff, scelta provvisoria
+  del 19/10).
 - Assistente virtuale (punto 21): ambito, dati che può leggere, costi d'uso.
 
 ---
@@ -914,7 +927,7 @@ completato (va barrato qui e annotato in Cronologia).
 - ~~**7.** Registro dei crediti calcolati e confermati~~ — fatto il 18/10: numero progressivo dei calcoli (elenco interno) e, con lo script 24, emissione dei crediti con ID univoci, caricamento sul registro esterno, vendite e cancellazione tombale (Guida 6.3.2-6.3.3).
 - **8.** Collaudo con dati reali di un Comune.
 - **9.** Conferma delle scelte interpretative.
-- **37.** **Simulatore di scenari** — richiesto da Luca il 19/10. Strumento
+- **37.** **Simulatore di scenari** — richiesto da Luca il 19/10; **prima versione fatta il 19/10** (script 28, pagina `/simulatore`, motore `simulatore.js`; da eseguire lo script in produzione). Restano: stampa PDF impaginata, eventuale visione da parte del Comune, conferma del modello. Strumento
   previsionale (ex ante, non certificabile) per stimare quanti crediti un
   Comune potrebbe generare:
     - **Scenari**: per ogni Comune più scenari con nome e note (per esempio
@@ -1186,13 +1199,13 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 107 file, 24.856 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 112 file, 26.180 righe in tutto.
 
 **Avvio e instradamento**
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `src/App.jsx` | 235 | associa ogni indirizzo alla sua pagina e decide chi può aprirla. Le pagine riservate passano dal componente Protetta, che nell'ordine chiede: sessione attiva, eventuale nuova password (link di recupero o password temporanea),… |
+| `src/App.jsx` | 244 | associa ogni indirizzo alla sua pagina e decide chi può aprirla. Le pagine riservate passano dal componente Protetta, che nell'ordine chiede: sessione attiva, eventuale nuova password (link di recupero o password temporanea),… |
 | `src/main.jsx` | 32 | monta l'applicazione nell'elemento #root di index.html e la avvolge nei contesti globali: StrictMode (controlli di React in sviluppo), BrowserRouter (indirizzi /pratiche, /crediti, …) e AuthProvider (sessione, ruolo, MFA).… |
 
 **Pagine (src/pages)**
@@ -1217,6 +1230,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 107 file, 24.856 righe 
 | `src/pages/Profilo.jsx` | 66 | mostra i dati dell'account (nome, email di accesso, ruolo), il collegamento al cambio password («/password») e i documenti da scaricare per il proprio ruolo: Manuale Utente per tutti; Manuale Amministratore e Registro sviluppo e… |
 | `src/pages/Programma.jsx` | 249 | la parte pubblica della piattaforma online richiesta dalla Guida al Programma (cap. 3.7) e dallo Standard CWP (cap. 2.3, 5 e 6): - informazioni del Programma: soggetto promotore del programma, PEC, email e sito ufficiale (Guida… |
 | `src/pages/Reclami.jsx` | 250 | reclami e richieste di chiarimento (Politica di reclamo del Programma; Guida al Programma cap. 8; script 24). - Chiunque abbia un account invia un reclamo o una richiesta di chiarimento dal portale e ne segue lo stato e la… |
+| `src/pages/Simulatore.jsx` | 735 | stima ex ante, non certificabile, dei crediti che un Comune potrebbe generare in 7, 10 o 21 anni (Registro, backlog punto 37). - Elenco degli scenari raggruppati per Comune, con confronto dei totali; «+ Nuovo scenario» (Comune… |
 | `src/pages/TuoiDocumenti.jsx` | 175 | (requisiti §5) raccoglie i documenti GENERALI (non legati a una fase) di tutte le pratiche dell'organizzazione: contratto, allegati, documentazione amministrativa e altri documenti della Fondazione, raggruppati per tipologia,… |
 | `src/pages/VerificaMfa.jsx` | 169 | (requisiti §13) - primo accesso: attivazione con QR code da inquadrare con un'app di autenticazione (Google Authenticator, Microsoft Authenticator, Authy…), con chiave da inserire a mano in alternativa; - accessi successivi:… |
 
@@ -1229,7 +1243,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 107 file, 24.856 righe 
 | `src/components/CreditiEmessi.jsx` | 319 | crediti di carbonio emessi da un Rapporto di Monitoraggio registrato (Guida al Programma 6.3.2 e 6.3.3, Tabella 5; Standard 6.2; script 24): - emissione di un lotto con ID univoci (solo Amministratori), anche collegata a un… |
 | `src/components/DettaglioPratica.jsx` | 912 | pagina di dettaglio di una pratica (Progetto o Rapporto di Monitoraggio) con le sue 7 fasi (Guida al Programma 6.2 e 6.3.1). |
 | `src/components/Documenti.jsx` | 317 | gestione documentale di una pratica: elenco con versioni, caricamento di nuovi file e download. Lo staff sceglie anche tipologia e visibilità (Cliente, Pubblico) e può cambiarle dopo il caricamento. |
-| `src/components/Header.jsx` | 162 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
+| `src/components/Header.jsx` | 164 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
 | `src/components/Integrazioni.jsx` | 266 | richieste di integrazione di una fase (requisiti §4). Ciclo: l'Operatore richiede → il Cliente carica un documento e risponde → l'Operatore chiude la richiesta. Con la chiusura della fase la possibilità di integrare termina. La… |
 | `src/components/Messaggi.jsx` | 129 | conversazione tra Comune e Fondazione Operate dentro una pratica (backlog 26). Mostra i messaggi in ordine di data, quelli dell'utente a destra, e permette di scriverne di nuovi. |
 | `src/components/NoteFase.jsx` | 108 | note scritte sotto una delle fasi di una pratica (backlog 10). Lo staff legge tutte le note e ne aggiunge di nuove, interne (solo Fondazione) o condivise con il Comune; il Comune vede solo le condivise. |
@@ -1258,6 +1272,8 @@ Inventario generato da `strumenti/inventario_codice.py`: 107 file, 24.856 righe 
 | `src/lib/crediti/parametri.js` | 95 | tabelle numeriche della Metodologia usate come valori iniziali di ogni calcolo: fattori di emissione per tipologia di rifiuto (Tab. 3, 4, 7), pesi specifici (Tab. 8), beni a riuso (Tab. 5), buffer (Tab. 15 e Cap. 7), giorni… |
 | `src/lib/crediti/qualita.js` | 124 | indicatori di qualità dei dati di un calcolo dei crediti, oltre ai controlli di coerenza di tracciato.js: - soglia di scostamento ±30% (cap. 3.1.2) tra la produzione pro capite dei rifiuti del territorio e i valori medi del… |
 | `src/lib/crediti/rapportoPdf.js` | 369 | genera nel browser, con jsPDF e jspdf-autotable, il rapporto di un calcolo: scheda, sintesi dei crediti, buffer, dati di ingresso, risultati per tipologia e per classe, avvisi, controlli di coerenza e scelte interpretative. Il… |
+| `src/lib/crediti/scenari.js` | 60 | unico punto in cui il portale legge e scrive la tabella scenario_simulazione (supabase/28_simulatore.sql). |
+| `src/lib/crediti/simulatore.js` | 297 | dati i rifiuti dell'anno base (per tipologia) e, per ogni anno del periodo, gli obiettivi di produzione totale e di secco residuo pro capite, ricalcola la percentuale di raccolta differenziata e stima i crediti anno per anno con… |
 | `src/lib/crediti/tracciato.js` | 657 | legge il file del tracciato compilato dal Comune o dal gestore, blocca l'import se trova dati personali, converte i fogli nei dati del motore di calcolo (calcolo.js) e segnala le incoerenze. |
 | `src/lib/csv.js` | 157 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
 | `src/lib/cwpProgram.js` | 185 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
@@ -1301,6 +1317,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 107 file, 24.856 righe 
 | `supabase/25_documenti_programma.sql` | 35 | DOCUMENTI UFFICIALI DEL PROGRAMMA SULLA PAGINA PUBBLICA (18/10/2026) |
 | `supabase/26_pec_programma.sql` | 19 | PEC DEL PROGRAMMA (19/10/2026) |
 | `supabase/27_soggetto_promotore.sql` | 28 | SOGGETTO PROMOTORE DEL PROGRAMMA (19/10/2026) |
+| `supabase/28_simulatore.sql` | 75 | salva gli scenari del simulatore dei crediti (Registro, backlog punto 37). Uno scenario è una stima ex ante, non certificabile, di quanti crediti un Comune potrebbe generare in 7, 10 o 21 anni (Standard 4.3.8), a partire dai… |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
@@ -1321,6 +1338,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 107 file, 24.856 righe 
 | `test/csv.test.mjs` | 53 | verifica che i CSV salvati da Excel in italiano (BOM, separatore ";", virgola decimale, punto delle migliaia, testi tra virgolette con ";" dentro, righe vuote) siano letti correttamente; che intestazioni con maiuscole/accenti… |
 | `test/date.test.mjs` | 31 | verificare le date in ora italiana usate per aprire le consultazioni (30 giorni) e per i nomi dei file: oggiItalia() deve dare sempre aaaa-mm-gg in fuso Europe/Rome, aggiungiGiorni() deve contare i giorni sul calendario (fine… |
 | `test/qualita.test.mjs` | 43 | verificare il confronto con la Tabella 3 dello Standard CWP (soglia ±30%) e gli indicatori di completezza, unicità, letture a buon fine e tempestività. |
+| `test/simulatore.test.mjs` | 122 | verificare il riepilogo dell'anno base (totale, pro capite, % differenziata, fattore del secco), i dati dal cluster SOSE e da un calcolo, gli anni del periodo (7, 10, 21), la traiettoria lineare e la stima dei crediti anno per… |
 | `test/tariffe.test.mjs` | 44 | verificare gli importi proposti per le voci di pagamento con gli esempi dello Schema tariffario v1.2: fasce di popolazione, quote per credito previsto, scaglioni cumulativi di emissione e minimo di vendita. |
 | `test/tracciato.test.mjs` | 110 | cinque prove sui file di esempio: lettura dell'Excel compilato, blocco dei dati personali (con valori oscurati nei messaggi), ZIP di CSV con singole letture (aggregazione ed esclusione delle letture fuori anno), controlli di… |
 
@@ -1333,7 +1351,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 107 file, 24.856 righe 
 | `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
 | `strumenti/impagina_pdf.py` | 429 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
-| `strumenti/revisioni_documenti.json` | 318 | — |
+| `strumenti/revisioni_documenti.json` | 342 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
@@ -1355,12 +1373,19 @@ Amministratore.
 | Rapporto PDF | `src/lib/crediti/rapportoPdf.js` | archiviazione come `documento` della pratica |
 | Prove | `test/crediti.test.mjs`, `test/tracciato.test.mjs`, `test/date.test.mjs` | — |
 
-**Simulatore di scenari (in progettazione, backlog punto 37)**: stima ex
-ante e non certificabile dei crediti di un Comune su 7, 10 o 21 anni, a
-partire dai dati dell'anno base e da obiettivi annui di produzione totale,
-pro capite e di secco residuo; ricalcola la % di differenziata e i crediti
-anno per anno, con più scenari per Comune. Descrizione completa nel backlog e
-in `docs/crediti-cwp.md`.
+**Simulatore di scenari (backlog punto 37, prima versione 19/10)**: stima
+ex ante e non certificabile dei crediti di un Comune su 7, 10 o 21 anni.
+
+| Parte | File | Database |
+|---|---|---|
+| Pagina (elenco per Comune, editor in 4 parti, grafici, CSV, stampa) | `src/pages/Simulatore.jsx` | — |
+| Motore (anno base, anni del periodo, traiettoria, simulazione) | `src/lib/crediti/simulatore.js` (usa `parametri.js`, `calcolo.js`, `qualita.js`) | — (nel browser) |
+| Salvataggio | `src/lib/crediti/scenari.js` | `scenario_simulazione` (28), policy `scenario_staff`, audit |
+| Prove | `test/simulatore.test.mjs` | `t28.sql` sul banco locale |
+
+Modello e conseguenze (i crediti nascono dai rifiuti evitati; più
+differenziata a parità di totale non genera crediti) in
+`docs/crediti-cwp.md`.
 
 **Flusso**: creazione (bozza) → import del tracciato o inserimento a mano
 → «Calcola» (motore nel browser, riepilogo salvato senza il dettaglio per

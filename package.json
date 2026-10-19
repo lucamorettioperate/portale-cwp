@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node test/crediti.test.mjs && node test/csv.test.mjs && node test/tracciato.test.mjs && node test/date.test.mjs && node test/tariffe.test.mjs && node test/qualita.test.mjs"
+    "test": "node test/crediti.test.mjs && node test/csv.test.mjs && node test/tracciato.test.mjs && node test/date.test.mjs && node test/tariffe.test.mjs && node test/qualita.test.mjs && node test/simulatore.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

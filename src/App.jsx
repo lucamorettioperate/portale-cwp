@@ -13,7 +13,7 @@
 
    Sicurezza: questi controlli servono all'esperienza d'uso (cosa mostrare).
    Il controllo del ruolo per le pagine Admin (/utenti, /audit, /crediti,
-   /impostazioni) e per la pagina dello staff /anagrafiche è fatto anche
+   /impostazioni) e per le pagine dello staff /anagrafiche e /simulatore è fatto anche
    dentro le pagine e, soprattutto, dal database con RLS e funzioni: una
    rotta aperta per errore non espone dati.
 
@@ -45,6 +45,7 @@ import Profilo from "./pages/Profilo.jsx";
 import Programma from "./pages/Programma.jsx";
 import Reclami from "./pages/Reclami.jsx";
 import CreditiEmessiPagina from "./pages/CreditiEmessiPagina.jsx";
+import Simulatore from "./pages/Simulatore.jsx";
 import { COLORI as C } from "./lib/cwpProgram.js";
 
 // Schermata di caricamento mentre si verifica la sessione.
@@ -218,6 +219,14 @@ export default function App() {
         element={
           <Protetta>
             <CreditiEmessiPagina />
+          </Protetta>
+        }
+      />
+      <Route
+        path="/simulatore"
+        element={
+          <Protetta>
+            <Simulatore />
           </Protetta>
         }
       />
