@@ -239,6 +239,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `23_allineamento_guida.sql` | Allineamento alla Guida al Programma: Rapporto a 7 fasi (10/20/15/60/10 gg, migrazione dei Rapporti a 4 fasi), «Feedback pubblico» anche per i Rapporti (`cwp_giorni_feedback`), responsabili delle fasi con i nomi della Guida; conservazione 12 anni; periodo di riferimento (`periodo_riferimento`, `cwp_massimo_rapporti`: 10 o 21 Rapporti) e `rapporto_coerente` (nessun Rapporto per Progetti ritirati o annullati); un solo account cliente attivo per Organizzazione (`trg_account_unico`) e fino a 2 delegati (`organizzazione.delegati`); stato nel Programma (`cwp_stato_programma`) e data di registrazione (`trg_fase_registrazione`); ritiro e rientro in `staff_cambia_stato_pratica`; territorio (`codici_istat`, un solo Progetto per territorio, `trg_pratica_territorio`), co-promotori, popolazione e crediti previsti, `staff_aggiorna_dati_pratica`; avviso dopo 2 anni senza Rapporti (in `genera_notifiche_scadenze`); documenti richiesti dalla Guida e documenti riservati mai pubblici (`trg_documento_riservato`); voce dello Schema tariffario sul pagamento e sospensione fino al saldo in `staff_apri_fase`; verifica sull'accuratezza e accertamenti (`staff_estendi_verifica`); notifiche ridefinite | 18/10/2026 |
 | `24_programma_pubblico_crediti_reclami.sql` | Informazioni del Programma (`info_programma`, `admin_imposta_info_programma`); tabelle `registro_scambio` e `metodologia`; modelli pubblici (`modello_documento.pubblico`, `categoria`); crediti emessi: `credito_lotto`, `credito_vendita`, `admin_emetti_crediti`, `staff_carica_su_registro`, `staff_registra_vendita`, `staff_registra_cancellazione`, `cwp_riepilogo_lotto`, avviso giornaliero `genera_avvisi_crediti` (pg_cron `cwp_avvisi_crediti`); reclami: tabella `reclamo` con codice automatico, `invia_reclamo`, `miei_reclami`, notifiche; dati pubblici `pubblico_programma` e `pubblico_percorso_file` (solo chiave di servizio) | 18/10/2026 (sera, verificato) |
 | `25_documenti_programma.sql` | Gli otto documenti ufficiali del Programma v1.2 (Guida, Definizioni, Normativa, Standard, Metodologia, Politica di reclamo, Schema tariffario, Gestione qualità dei dati), caricati nella radice dell'archivio `modelli`, registrati come modelli pubblici «Documento del Programma»; PDF della Metodologia collegato alla metodologia approvata | 18/10/2026 (sera, verificato sulla pagina /programma) |
+| `26_pec_programma.sql` | PEC del Programma `operate@pec.it` (comunicata da Luca), mostrata sulla pagina pubblica nelle informazioni del Programma e per i reclami; modificabile poi da Impostazioni | 19/10/2026 (verificato sulla pagina /programma) |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
 script successivi.
@@ -456,13 +457,18 @@ si scrivono mai in chat, nel codice o nel registro.
 
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
+### 19 ottobre 2026
+- **PEC del Programma** — script `26_pec_programma.sql` eseguito in
+  produzione alle 7:00: `operate@pec.it` compare sulla pagina pubblica
+  /programma (informazioni del Programma e reclami).
+
 ### 18 ottobre 2026
 - **Pagina pubblica popolata (sera)** — caricati dalla dashboard (Storage →
   `modelli`) gli otto PDF ufficiali del Programma e registrati con lo script
   `25_documenti_programma.sql`; script 24 rieseguito per l'ordine dei
   documenti come nella Guida. Verificati elenco e download dalla pagina
-  /programma. Restano da inserire, perché servono dati della Fondazione: PEC
-  del Programma, enti di validazione e verifica e registri riconosciuti,
+  /programma. Restano da inserire, perché servono dati della Fondazione: enti
+  di validazione e verifica e registri riconosciuti,
   modulistica (i moduli non sono ancora disponibili).
 - **Allineamento ai documenti ufficiali del Programma (punto 35, sera)** —
   tre rilasci. (1) Script `22_stato_ritirata.sql` e
@@ -1113,7 +1119,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 105 file, 24.706 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 106 file, 24.725 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1226,6 +1232,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 105 file, 24.706 righe 
 | `supabase/23_allineamento_guida.sql` | 857 | ALLINEAMENTO AI DOCUMENTI UFFICIALI DEL PROGRAMMA (18/10/2026) |
 | `supabase/24_programma_pubblico_crediti_reclami.sql` | 571 | PIATTAFORMA PUBBLICA, CREDITI EMESSI E RECLAMI (18/10/2026) |
 | `supabase/25_documenti_programma.sql` | 35 | DOCUMENTI UFFICIALI DEL PROGRAMMA SULLA PAGINA PUBBLICA (18/10/2026) |
+| `supabase/26_pec_programma.sql` | 19 | PEC DEL PROGRAMMA (19/10/2026) |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
