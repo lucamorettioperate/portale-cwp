@@ -241,6 +241,12 @@
       "data": "19/10/2026",
       "descrizione": "Ordinamento di tutte le tabelle e degli elenchi.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.4",
+      "data": "19/10/2026",
+      "descrizione": "Presentazione di riepilogo nella pagina Documentazione.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -551,6 +557,12 @@
       "data": "19/10/2026",
       "descrizione": "Ordinamento di tabelle ed elenchi in tutto il portale.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.0",
+      "data": "19/10/2026",
+      "descrizione": "Presentazione di riepilogo nel portale e nelle regole di rilascio.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -558,6 +570,20 @@
       "rev": "1.0",
       "data": "19/10/2026",
       "descrizione": "Prima emissione: dove stanno codice e dati, copie di sicurezza, ripristino di GitHub, Vercel, Supabase, Resend e del progetto Claude, elenco di chiavi e impostazioni.",
+      "autore": "Fondazione Operate"
+    }
+  ],
+  "presentazione": [
+    {
+      "rev": "1.0",
+      "data": "19/10/2026",
+      "descrizione": "Presentazione dello stato dei lavori per l'incontro del 19/10 alle 15 (13 slide).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.0",
+      "data": "19/10/2026",
+      "descrizione": "Diventa il recap del portale, nell'area Documentazione degli Amministratori e aggiornata a ogni rilascio: slide «Novità del 19 ottobre» (Dashboard, ordinamento, utenti, email, simulatore per utenza, ACN), esempio Bovisio con i due metodi.",
       "autore": "Fondazione Operate"
     }
   ]

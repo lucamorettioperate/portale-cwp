@@ -919,8 +919,10 @@ Dalla voce **Documentazione** del menu (e da **Il mio profilo**) l'Amministrator
 | Manuale Amministratore | solo Amministratori | Questo manuale: funzioni della Fondazione e calcolo dei crediti |
 | Manuale Test | solo Amministratori | Guida sintetica per chi collauda il portale: metodo CWP, ruolo del portale, percorso di prova con i risultati attesi |
 | Registro sviluppo e deploy | solo Amministratori | Architettura, servizi, database, codice, cronologia dei rilasci, decisioni e backlog |
+| Istruzioni di ripristino | solo Amministratori | Copie di sicurezza e ripristino di GitHub, Vercel, Supabase, Resend e del progetto Claude |
+| Presentazione di riepilogo | solo Amministratori | Recap del portale in slide (PDF e PowerPoint): metodologia, funzioni, novità, punti aperti, simulatore, piani a pagamento, scelte da prendere |
 
-Operatori e Comuni trovano il Manuale Utente nella voce **Manuale** del menu; i Comuni anche in **I tuoi documenti**. Ogni documento riporta in copertina il numero di revisione e la data; a ogni nuova funzione i tre manuali e il registro vengono aggiornati insieme.
+Operatori e Comuni trovano il Manuale Utente nella voce **Manuale** del menu; i Comuni anche in **I tuoi documenti**. Ogni documento riporta in copertina il numero di revisione e la data; a ogni nuova funzione si aggiornano insieme i manuali, il Registro e la Presentazione di riepilogo. Per la presentazione il secondo pulsante è **Scarica PowerPoint**.
 
 ## Manutenzione ed emergenze
 

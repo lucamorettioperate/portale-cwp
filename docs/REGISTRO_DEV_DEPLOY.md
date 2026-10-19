@@ -451,7 +451,18 @@ Documentazione del portale.
 **Regole di lavoro (richieste di Luca del 18/10)**
 - A ogni rilascio si aggiornano insieme quattro documenti: questo Registro,
   il Manuale Utente, il Manuale Amministratore e il Manuale Test
-  (`docs/manuale-test.md`, sintetico, per i collaudatori).
+  (`docs/manuale-test.md`, sintetico, per i collaudatori). **Dal 19/10
+  anche la Presentazione di riepilogo** (richiesta di Luca): si aggiornano
+  i testi in `strumenti/presentazione/genera_presentazione.cjs` (e le
+  schermate in `strumenti/presentazione/immagini/` se cambiano le pagine),
+  si aggiunge la revisione «presentazione» in `revisioni_documenti.json` e
+  si esegue `npm install --no-save pptxgenjs sharp react-icons` poi
+  `node strumenti/presentazione/genera_presentazione.cjs`: produce
+  `public/documentazione/Presentazione_Portale_CWP.pptx` e, con
+  LibreOffice, il PDF, scaricabili dagli Amministratori nella pagina
+  Documentazione. Data, revisione, versioni, script, funzioni e righe di
+  codice si aggiornano da soli; i contenuti (novità, esempi, scelte) a
+  mano.
 - Il codice si commenta in italiano mentre si scrive: in testa a ogni file
   lo scopo e il capitolo del registro di riferimento; sopra ogni funzione
   cosa fa; nel corpo le regole di sicurezza e i passaggi non ovvi (punto 31).
@@ -474,6 +485,17 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 19 ottobre 2026
+- **Presentazione di riepilogo nel portale** (richiesta di Luca: è un
+  recap, va sempre aggiornata e messa a disposizione degli Amministratori)
+  — generatore nel repository (`strumenti/presentazione/`), uscita in
+  `public/documentazione/` (PowerPoint e PDF), voce «Presentazione di
+  riepilogo» nella pagina Documentazione con «Scarica PowerPoint».
+  Revisione 2.0 (14 slide): nuova slide «Novità del 19 ottobre»
+  (Dashboard a LED, ordinamento, utenti, email con le credenziali,
+  campanella, simulatore per utenza, decisione ACN); Analisi funzionale,
+  architettura, ruoli, punti aperti, simulatore (esempio Bovisio con i due
+  metodi) e scelte da prendere aggiornati. Controllata a schermo e con il
+  validatore dei file PowerPoint.
 - **Ordinamento di tutte le tabelle e degli elenchi** (richiesta di Luca) —
   componente `src/components/Ordinamento.jsx` (hook `useOrdinamento`,
   intestazioni `ThOrdinabile` con ▲/▼/↕ e aria-sort, menu «Ordina per»
@@ -1314,7 +1336,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 118 file, 28.583 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 119 file, 29.211 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1337,7 +1359,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 118 file, 28.583 righe 
 | `src/pages/Crediti.jsx` | 240 | sezione del calcolo dei crediti di CO₂eq (Metodologia Carbon WastePrint® v1.2). Due viste: - «Calcoli»: elenco di tutti i calcoli (titolo, pratica, anno e tipo, crediti netti, stato bozza/confermato) e modulo «+ Nuovo calcolo»… |
 | `src/pages/CreditiEmessiPagina.jsx` | 83 | elenco di tutti i lotti di crediti emessi dai Rapporti di Monitoraggio (Guida al Programma 6.3.2 e 6.3.3; script 24), con il totale emessi / attivi / ritirati e, per lo staff, le azioni su ogni lotto (caricamento sul registro,… |
 | `src/pages/Cruscotto.jsx` | 299 | (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso, in scadenza, scadute, in attesa del Cliente, integrazioni da verificare, consultazioni attive) e tabella di tutte le pratiche, Progetti e Rapporti, con ricerca e… |
-| `src/pages/Documentazione.jsx` | 144 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
+| `src/pages/Documentazione.jsx` | 159 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
 | `src/pages/FormatoDati.jsx` | 136 | spiega lo standard dei dati da inviare per il calcolo dei crediti e permette di scaricare il tracciato Excel. Il link si può mandare a Comuni e gestori anche senza credenziali. Contiene: elenco dei fogli del tracciato,… |
 | `src/pages/GestioneUtenti.jsx` | 763 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
 | `src/pages/Impostazioni.jsx` | 60 | parametri del Programma modificabili dagli Amministratori: - Durata delle fasi del Progetto e del Rapporto di Monitoraggio (script 13 e 21, componente DurateFasi); - Documenti richiesti per fase (script 21, componente… |
@@ -1472,7 +1494,8 @@ Inventario generato da `strumenti/inventario_codice.py`: 118 file, 28.583 righe 
 | `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
 | `strumenti/impagina_pdf.py` | 429 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
-| `strumenti/revisioni_documenti.json` | 564 | — |
+| `strumenti/presentazione/genera_presentazione.cjs` | 587 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
+| `strumenti/revisioni_documenti.json` | 590 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

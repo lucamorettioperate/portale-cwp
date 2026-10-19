@@ -4,8 +4,10 @@
      Word, ciascuno con la revisione più recente e la sua data.
      - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli
        Amministratori).
-     - Manuale Amministratore, Manuale Test e Registro sviluppo e deploy:
-       solo Amministratori.
+     - Manuale Amministratore, Manuale Test, Registro sviluppo e deploy,
+       Istruzioni di ripristino e la Presentazione di riepilogo (PDF e
+       PowerPoint, strumenti/presentazione/genera_presentazione.cjs): solo
+       Amministratori.
      Il titolo della pagina è «Documentazione» per l'Admin, «Manuale» per
      gli altri. L'elenco (ElencoDocumenti) è riusato in «Il mio profilo».
    Chi la usa: tutti gli utenti con accesso; il contenuto dipende dal ruolo.
@@ -29,7 +31,8 @@ import REVISIONI from "../../strumenti/revisioni_documenti.json";
 /* Catalogo dei documenti.
    - chiave: voce corrispondente in revisioni_documenti.json
    - percorso: indirizzo del file SENZA estensione (si aggiungono .pdf e .docx)
-   - soloAdmin: se vero il documento compare solo agli Amministratori. */
+   - soloAdmin: se vero il documento compare solo agli Amministratori
+   - secondo: formato del secondo pulsante (predefinito Word, .docx). */
 const DOCUMENTI = [
   {
     chiave: "manuale",
@@ -41,7 +44,7 @@ const DOCUMENTI = [
   {
     chiave: "amministratore",
     titolo: "Manuale Amministratore",
-    descrizione: "Funzioni della Fondazione passo per passo: cruscotto, pratiche e fasi, documenti, integrazioni, consultazione, pagamenti, utenti, audit, impostazioni e calcolo dei crediti CWP. Documento riservato agli Amministratori.",
+    descrizione: "Funzioni della Fondazione passo per passo: dashboard, pratiche e fasi, documenti, integrazioni, consultazione, pagamenti, utenti, audit, impostazioni e calcolo dei crediti CWP. Documento riservato agli Amministratori.",
     percorso: "/documentazione/Manuale_Amministratore_Portale_CWP",
     soloAdmin: true,
   },
@@ -65,6 +68,14 @@ const DOCUMENTI = [
     descrizione: "Dove stanno codice e dati, quali copie di sicurezza fare e come rimettere in funzione GitHub, Vercel, Supabase, Resend e il progetto Claude se qualcosa va perso. Documento riservato agli Amministratori.",
     percorso: "/documentazione/Istruzioni_Ripristino_Portale_CWP",
     soloAdmin: true,
+  },
+  {
+    chiave: "presentazione",
+    titolo: "Presentazione di riepilogo",
+    descrizione: "Recap del portale in slide: metodologia, funzioni, novità, architettura e ruoli, punti aperti, simulatore, piani a pagamento e scelte da prendere. Aggiornata a ogni rilascio. Documento riservato agli Amministratori.",
+    percorso: "/documentazione/Presentazione_Portale_CWP",
+    soloAdmin: true,
+    secondo: { estensione: "pptx", etichetta: "Scarica PowerPoint" },
   },
 ];
 
@@ -98,7 +109,11 @@ export function ElencoDocumenti({ compatto = false }) {
             {!compatto && rev && <p style={{ fontSize: 12.5, color: C.grafite, margin: "0 0 12px" }}>Ultima revisione: {rev.descrizione}</p>}
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: compatto ? 10 : 0 }}>
               <a href={`${d.percorso}.pdf`} target="_blank" rel="noreferrer" style={pulsante(true)}>Apri PDF</a>
-              {admin && <a href={`${d.percorso}.docx`} download style={pulsante(false)}>Scarica Word</a>}
+              {admin && (
+                <a href={`${d.percorso}.${d.secondo?.estensione || "docx"}`} download style={pulsante(false)}>
+                  {d.secondo?.etichetta || "Scarica Word"}
+                </a>
+              )}
             </div>
           </section>
         );
