@@ -115,14 +115,23 @@ prova("aumento dei rifiuti: debito e nessun credito; popolazione in crescita", (
   vicino(r.righe[1].lordi, 0, 1e-6);
 });
 
-prova("conformità del riferimento: 64-66% di differenziata e Tabella 3 ±30%", () => {
+prova("riferimento sempre alla soglia del 65% e controllo dei valori fuori scala", () => {
   const anni = [{ anno: 2027, popolazione: 10000, totale: 3600, seccoProCapite: 80 }];
-  const al70 = { ...annoBase, rifiuti: { organico: 1400, carta: 800, vetro: 400, plastica: 200, indifferenziato: 1200 } };
-  assert.ok(simula({ annoBase: al70, anni }).avvisi.some((x) => x.includes("Standard 4.8.1")));
-  assert.ok(!simula({ annoBase: { ...al70, metodo: "cluster" }, anni }).avvisi.some((x) => x.includes("Standard 4.8.1")));
+  // Dati al 65%: nessun avviso, secco di riferimento = 35% del totale.
+  const r65 = simula({ annoBase, anni });
+  assert.equal(r65.avvisi.length, 0);
+  vicino(r65.righe[0].seccoRiferimento, 1400);
+  vicino(r65.righe[0].rdOltreSoglia, (2800 / 3600) * 100 - 65);
+  // Dati all'85%: riportati al 65% con avviso, stessa produzione totale.
+  const al85 = { ...annoBase, rifiuti: { organico: 1700, carta: 1000, vetro: 450, plastica: 250, indifferenziato: 600 } };
+  const r85 = simula({ annoBase: al85, anni });
+  assert.ok(r85.avvisi.some((x) => x.includes("riporta alla soglia del 65%")));
+  vicino(r85.righe[0].seccoRiferimento, 1400);
+  vicino(r85.righe[0].riferimento, 4000);
+  // Tabella 3: avviso di scostamento; valori fuori scala (es. 2,5 kg/ab).
   assert.ok(simula({ annoBase: { ...annoBase, cluster: 4 }, anni }).avvisi.some((x) => x.includes("Tabella 3")));
-  const cl = { metodo: "cluster", cluster: 4, popolazione: 10000, rifiuti: rifiutiDaCluster(4, 10000) };
-  assert.equal(simula({ annoBase: cl, anni }).avvisi.length, 0);
+  const piccolo = { metodo: "anno", popolazione: 44000, rifiuti: { organico: 11, carta: 18, plastica: 31, indifferenziato: 16 } };
+  assert.ok(simula({ annoBase: piccolo, anni: [] }).avvisi.some((x) => x.includes("fuori scala")));
 });
 
 prova("avvisi: dati mancanti e secco oltre il totale", () => {

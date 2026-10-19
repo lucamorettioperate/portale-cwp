@@ -80,7 +80,7 @@ Stima ex ante, non certificabile.
 
 **Modello (semplificato, da confermare con la Fondazione)**
 
-- Scenario di riferimento dell'anno *a*: Q_rif(r, a) = Q_rif(r) × Pop(a) / Pop_rif, con Q_rif dall'anno di riferimento dello Standard 4.8.1 (o dalla Tabella 3).
+- Scenario di riferimento dell'anno *a*, sempre alla soglia del 65% di differenziata (richiesta di Luca del 19/10): Tot_rif(a) = Tot_rif × Pop(a) / Pop_rif; secco = 35% di Tot_rif(a); frazione *r* = 65% di Tot_rif(a) × quota di *r* nella differenziata del riferimento. Tot_rif dall'anno di riferimento dello Standard 4.8.1 o dalla Tabella 3.
 - Scenario simulato: Q(secco, a) = secco pro capite(a) × Pop(a); Q(r, a) =
   (Totale(a) − Q(secco, a)) × quota di *r* nella differenziata dell'anno base.
 - Emissioni: E = − Σ Q(r) × FErid(r) (formule 13 e 25); FE del secco =

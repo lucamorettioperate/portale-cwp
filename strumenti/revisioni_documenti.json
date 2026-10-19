@@ -163,6 +163,12 @@
       "data": "19/10/2026",
       "descrizione": "Simulatore conforme al modello CWP: scenario di riferimento dello Standard 4.8.1, situazione attuale, conformità.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.4",
+      "data": "19/10/2026",
+      "descrizione": "Simulatore: riferimento sempre alla soglia del 65% di differenziata e controllo dei valori fuori scala.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -352,6 +358,12 @@
       "rev": "2.8",
       "data": "19/10/2026",
       "descrizione": "Verifica di conformità del simulatore al modello CWP.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.9",
+      "data": "19/10/2026",
+      "descrizione": "Simulatore: soglia del 65%, controllo dello scenario di Bovisio.",
       "autore": "Fondazione Operate"
     }
   ],

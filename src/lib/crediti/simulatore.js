@@ -150,6 +150,15 @@ export function rifiutiDaCalcolo(datiCalcolo) {
 // Intervallo dello Standard 4.8.1 per l'anno di riferimento (65% ± 1%).
 export const RD_RIFERIMENTO_MIN = 64;
 export const RD_RIFERIMENTO_MAX = 66;
+// Soglia minima di differenziata del Programma (obiettivo di legge, Standard
+// 4.8.1 e 4.9.1): lo scenario di riferimento si porta sempre al 65% e i
+// risultati si calcolano per differenza da questa soglia (richiesta di Luca
+// del 19/10/2026).
+export const RD_SOGLIA = 65;
+// Produzione pro capite plausibile (kg/ab/anno): fuori da qui quasi sempre
+// i dati sono in un'unità di misura sbagliata.
+const PRO_CAPITE_MIN = 150;
+const PRO_CAPITE_MAX = 1200;
 
 /* Punto di partenza degli obiettivi: la situazione attuale se compilata
    (pro capite e secco pro capite), altrimenti lo scenario di riferimento.
@@ -227,10 +236,14 @@ export function simula(dati) {
   if (!base.popolazione) avvisi.push("Manca la popolazione dello scenario di riferimento.");
   if (!base.totale) avvisi.push("Mancano i rifiuti dello scenario di riferimento.");
   if (base.totale && !base.secco) avvisi.push("Nello scenario di riferimento manca il secco residuo (indifferenziato).");
-  // Conformità dello scenario di riferimento (Standard 4.8.1 e 4.9.1).
+  // Conformità dello scenario di riferimento (Standard 4.8.1 e 4.9.1): il
+  // riferimento si porta sempre alla soglia del 65% di differenziata.
   const metodo = dati.annoBase?.metodo || "anno";
-  if (metodo === "anno" && base.totale && (base.rd < RD_RIFERIMENTO_MIN - 1e-9 || base.rd > RD_RIFERIMENTO_MAX + 1e-9)) {
-    avvisi.push(`Scenario di riferimento non conforme: lo Standard 4.8.1 chiede l'anno in cui il Comune ha raggiunto il 65% di differenziata (tra 64% e 66%); qui è ${base.rd.toFixed(1).replace(".", ",")}%. Indicate quell'anno oppure usate i valori medi del cluster SOSE (Tabella 3).`);
+  if (base.totale && Math.abs(base.rd - RD_SOGLIA) > 1e-6) {
+    avvisi.push(`I dati del riferimento hanno il ${base.rd.toFixed(1).replace(".", ",")}% di differenziata: il calcolo li riporta alla soglia del ${RD_SOGLIA}% (Standard 4.8.1), con la stessa produzione totale e il secco al ${100 - RD_SOGLIA}%.`);
+  }
+  if (base.totale && base.popolazione && (base.proCapite < PRO_CAPITE_MIN || base.proCapite > PRO_CAPITE_MAX)) {
+    avvisi.push(`Produzione del riferimento di ${base.proCapite.toFixed(1).replace(".", ",")} kg per abitante all'anno: valore fuori scala (di solito tra 300 e 700). Controllate che i rifiuti siano in tonnellate all'anno e la popolazione.`);
   }
   if (metodo === "anno" && base.totale && base.popolazione && dati.annoBase?.cluster) {
     const fuori = scostamentiTabella3({
@@ -267,12 +280,14 @@ export function simula(dati) {
   const righe = (dati.anni || []).map((a) => {
     const pop = num(a.popolazione) || base.popolazione;
     const fattorePop = pop / base.popolazione;
-    // Scenario di riferimento: pro capite dell'anno base × popolazione.
-    const riferimento = {};
-    Object.entries(base.rifiuti).forEach(([t, q]) => {
-      riferimento[t] = q * fattorePop;
-    });
+    // Scenario di riferimento alla soglia del 65%: produzione pro capite
+    // del riferimento × popolazione; secco = 35% del totale, differenziata
+    // = 65% con la composizione del riferimento.
     const totRiferimento = base.totale * fattorePop;
+    const riferimento = { [SECCO]: totRiferimento * (1 - RD_SOGLIA / 100) };
+    Object.entries(base.composizione).forEach(([t, quota]) => {
+      riferimento[t] = totRiferimento * (RD_SOGLIA / 100) * quota;
+    });
     // Scenario simulato: secco obiettivo + differenziata con la
     // composizione dell'anno base.
     let totale = num(a.totale);
@@ -307,6 +322,8 @@ export function simula(dati) {
       seccoProCapite: pop ? (secco * 1000) / pop : 0,
       differenziata,
       rd: totale ? (differenziata / totale) * 100 : 0,
+      rdOltreSoglia: totale ? (differenziata / totale) * 100 - RD_SOGLIA : 0,
+      seccoRiferimento: riferimento[SECCO],
       riferimento: totRiferimento,
       riduzione: totRiferimento - totale,
       EA,
@@ -344,8 +361,8 @@ export function simula(dati) {
 // Righe per l'export CSV (separatore «;», decimali con la virgola).
 export function righeCsv(scenario, risultato) {
   const f = (v, d = 1) => (v == null ? "" : Number(v).toFixed(d).replace(".", ","));
-  const intest = ["Anno", "Popolazione", "Produzione totale (t)", "Pro capite (kg/ab)", "Secco (t)", "Secco pro capite (kg/ab)", "Differenziata (t)", "% differenziata", "Scenario di riferimento (t)", "Riduzione (t)", "Crediti lordi (tCO2eq)", "Buffer (tCO2eq)", "Crediti netti (tCO2eq)", "Netti cumulati (tCO2eq)"];
-  const righe = risultato.righe.map((r) => [r.anno, Math.round(r.popolazione), f(r.totale), f(r.proCapite), f(r.secco), f(r.seccoProCapite), f(r.differenziata), f(r.rd), f(r.riferimento), f(r.riduzione), f(r.lordi), f(r.buffer), f(r.netti), f(r.cumulatoNetti)]);
+  const intest = ["Anno", "Popolazione", "Produzione totale (t)", "Pro capite (kg/ab)", "Secco (t)", "Secco pro capite (kg/ab)", "Differenziata (t)", "% differenziata", "Punti oltre il 65%", "Scenario di riferimento (t)", "Riduzione (t)", "Crediti lordi (tCO2eq)", "Buffer (tCO2eq)", "Crediti netti (tCO2eq)", "Netti cumulati (tCO2eq)"];
+  const righe = risultato.righe.map((r) => [r.anno, Math.round(r.popolazione), f(r.totale), f(r.proCapite), f(r.secco), f(r.seccoProCapite), f(r.differenziata), f(r.rd), f(r.rdOltreSoglia), f(r.riferimento), f(r.riduzione), f(r.lordi), f(r.buffer), f(r.netti), f(r.cumulatoNetti)]);
   const testa = [[`Scenario: ${scenario.nome}`], [`Comune: ${scenario.comune}`], [`Durata: ${scenario.durata} anni dal ${scenario.anno_inizio}`], ["Stima ex ante non certificabile (Metodologia CWP v1.2, modello semplificato)"], []];
   return [...testa, intest, ...righe].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\r\n");
 }

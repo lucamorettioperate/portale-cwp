@@ -39,7 +39,7 @@ import { CLUSTER } from "../lib/crediti/qualita.js";
 import { formatoData } from "../lib/date.js";
 import {
   DURATE, TIPOLOGIE, datiIniziali, riepilogoAnnoBase, rifiutiDaCluster, rifiutiDaCalcolo,
-  anniDelPeriodo, traiettoriaLineare, simula, righeCsv, puntoDiPartenza,
+  anniDelPeriodo, traiettoriaLineare, simula, righeCsv, puntoDiPartenza, RD_SOGLIA,
 } from "../lib/crediti/simulatore.js";
 import { elencaScenari, leggiScenario, creaScenario, salvaScenario, duplicaScenario, eliminaScenario } from "../lib/crediti/scenari.js";
 
@@ -480,9 +480,10 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
             <Cifra etichetta="Produzione pro capite" valore={`${fmt(base.proCapite)} kg/ab`} />
             <Cifra etichetta="Secco residuo pro capite" valore={`${fmt(base.seccoProCapite)} kg/ab`} />
             <Cifra etichetta="Raccolta differenziata" valore={`${fmt(base.rd)}%`} forte />
-            {metodo === "anno" && base.totale > 0 && (
-              <div style={{ fontSize: 12, padding: "6px 10px", borderRadius: 8, background: base.rd >= 64 && base.rd <= 66 ? C.greenSoft : C.ocraSoft }}>
-                {base.rd >= 64 && base.rd <= 66 ? "✓ Conforme allo Standard 4.8.1 (differenziata tra 64% e 66%)" : "⚠ Lo Standard 4.8.1 chiede un anno con differenziata tra 64% e 66%: cambiate anno o usate i valori del cluster"}
+            {base.totale > 0 && (
+              <div style={{ fontSize: 12, padding: "6px 10px", borderRadius: 8, background: C.greenSoft, lineHeight: 1.45 }}>
+                <strong>Nel calcolo il riferimento è sempre alla soglia del {RD_SOGLIA}%</strong> (Standard 4.8.1): stessa produzione totale, secco al{" "}
+                {100 - RD_SOGLIA}% ({fmt((base.proCapite * (100 - RD_SOGLIA)) / 100)} kg/ab). Ogni anno i risultati si calcolano per differenza da questa soglia.
               </div>
             )}
             <Cifra etichetta="Fattore del secco (formule 16-17)" valore={base.feSecco == null ? "—" : `${fmt(base.feSecco, 2)} kgCO₂eq/kg`} />
@@ -597,12 +598,12 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 10, marginBottom: 14 }}>
               <Tile etichetta={`Crediti netti in ${t.anni} anni`} valore={fmt(t.netti, 0)} unita="tCO₂eq" principale />
               <Tile etichetta="Media annua" valore={fmt(t.mediaAnnuaNetti, 0)} unita="tCO₂eq/anno" />
-              <Tile etichetta={`Differenziata nel ${risultato.righe[risultato.righe.length - 1].anno}`} valore={`${fmt(t.rdFinale)}%`} unita={`riferimento: ${fmt(base.rd)}%`} />
+              <Tile etichetta={`Differenziata nel ${risultato.righe[risultato.righe.length - 1].anno}`} valore={`${fmt(t.rdFinale)}%`} unita={`soglia di riferimento: ${RD_SOGLIA}%`} />
               <Tile etichetta="Rifiuti evitati nel periodo" valore={fmt(t.riduzione, 0)} unita="t rispetto al riferimento" />
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 14, marginBottom: 14 }}>
               <GraficoBarre titolo="Crediti netti stimati per anno (tCO₂eq)" righe={risultato.righe} valore={(r) => r.netti} formato={(v) => fmt(v, 0)} />
-              <GraficoLinea titolo="Raccolta differenziata (%)" righe={risultato.righe} valore={(r) => r.rd} formato={(v) => `${fmt(v)}%`} iniziale={base.rd} />
+              <GraficoLinea titolo="Raccolta differenziata (%)" righe={risultato.righe} valore={(r) => r.rd} formato={(v) => `${fmt(v)}%`} iniziale={RD_SOGLIA} />
             </div>
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 860 }}>
@@ -613,6 +614,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
                     <th style={th}>Riferimento (t)</th>
                     <th style={th}>Rifiuti evitati (t)</th>
                     <th style={th}>% differenziata</th>
+                    <th style={th}>Punti oltre il {RD_SOGLIA}%</th>
                     <th style={th}>Crediti lordi</th>
                     <th style={th}>Buffer</th>
                     <th style={th}>Crediti netti</th>
@@ -627,6 +629,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
                       <td style={{ ...tdN, color: C.grafite }}>{fmt(r.riferimento)}</td>
                       <td style={tdN}>{fmt(r.riduzione)}</td>
                       <td style={tdN}>{fmt(r.rd)}%</td>
+                      <td style={{ ...tdN, color: r.rdOltreSoglia >= 0 ? C.green : C.red }}>{r.rdOltreSoglia >= 0 ? "+" : ""}{fmt(r.rdOltreSoglia)}</td>
                       <td style={tdN}>{fmt(r.lordi)}</td>
                       <td style={{ ...tdN, color: C.grafite }}>{fmt(r.buffer)}</td>
                       <td style={{ ...tdN, fontWeight: 700 }}>{r.debito > 0 ? <span style={{ color: C.red }}>debito {fmt(r.debito)}</span> : fmt(r.netti)}</td>
@@ -637,6 +640,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
                     <td style={td}>Totale</td>
                     <td style={tdN} colSpan={2}></td>
                     <td style={tdN}>{fmt(t.riduzione)}</td>
+                    <td style={tdN}></td>
                     <td style={tdN}></td>
                     <td style={tdN}>{fmt(t.lordi)}</td>
                     <td style={tdN}>{fmt(t.buffer)}</td>
@@ -651,7 +655,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
         <div style={{ marginTop: 14, padding: "12px 14px", background: C.greenSoft, borderRadius: 10, fontSize: 12.5, lineHeight: 1.55 }}>
           <strong>Da dove vengono i crediti.</strong> Il simulatore applica le formule della Metodologia CWP v1.2: ogni tonnellata di rifiuti
           prodotta pesa con il suo fattore di emissione e il secco con la media dei fattori della differenziata (formule 16-17). Perciò i crediti
-          nascono dai <strong>rifiuti evitati</strong> rispetto allo scenario di riferimento (produzione pro capite dell'anno di riferimento × popolazione):
+          nascono dai <strong>rifiuti evitati</strong> rispetto allo scenario di riferimento, portato alla soglia del {RD_SOGLIA}% di differenziata (produzione pro capite del riferimento × popolazione):
           {unTonnellata != null && <> con i dati di questo Comune, <strong>1 t in meno ≈ {fmt(unTonnellata, 2)} tCO₂eq</strong> prima del buffer.</>} Spostare
           rifiuti dal secco alla differenziata alza la percentuale di raccolta differenziata ma, a parità di produzione totale, non genera crediti.
           <br />
@@ -758,7 +762,7 @@ function GraficoLinea({ titolo, righe, valore, formato, iniziale }) {
           </g>
         ))}
         <line x1={sx} x2={W - 4} y1={scala(iniziale)} y2={scala(iniziale)} stroke={C.ocra} strokeWidth="1.5" strokeDasharray="4 4" />
-        <text x={W - 6} y={scala(iniziale) - 5} textAnchor="end" fontSize="10" fill={C.grafite}>riferimento {formato(iniziale)}</text>
+        <text x={W - 6} y={scala(iniziale) - 5} textAnchor="end" fontSize="10" fill={C.grafite}>soglia {formato(iniziale)}</text>
         <polyline points={punti} fill="none" stroke={C.green} strokeWidth="2" />
         {righe.map((r, i) => (
           <g key={r.anno}>
