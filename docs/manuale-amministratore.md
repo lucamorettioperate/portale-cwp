@@ -922,7 +922,21 @@ Dalla voce **Documentazione** del menu (e da **Il mio profilo**) l'Amministrator
 | Istruzioni di ripristino | solo Amministratori | Copie di sicurezza e ripristino di GitHub, Vercel, Supabase, Resend e del progetto Claude |
 | Presentazione di riepilogo | solo Amministratori | Recap del portale in slide (PDF e PowerPoint): metodologia, funzioni, novità, punti aperti, simulatore, piani a pagamento, scelte da prendere |
 
+**Documenti ufficiali del Programma.** In fondo alla pagina Documentazione ci sono gli **8 documenti ufficiali del Programma Carbon WastePrint® versione 1.2** (04/09/2025): 0. Guida al Programma, 1. Definizioni, 2. Normativa di riferimento, 3. Standard, 4. Metodologia, 5. Politica di reclamo, 6. Schema tariffario, 7. Gestione della qualità dei dati. **Apri PDF** li apre in una nuova scheda, **Scarica** li salva. Sono gli stessi pubblicati sulla pagina pubblica del Programma e si aggiornano da Impostazioni → Modelli (categoria «programma»).
+
 Operatori e Comuni trovano il Manuale Utente nella voce **Manuale** del menu; i Comuni anche in **I tuoi documenti**. Ogni documento riporta in copertina il numero di revisione e la data; a ogni nuova funzione si aggiornano insieme i manuali, il Registro e la Presentazione di riepilogo. Per la presentazione il secondo pulsante è **Scarica PowerPoint**.
+
+## Assistente virtuale
+
+In basso a destra di ogni pagina c'è il pulsante **✦ Assistente**: apre una chat con un assistente basato su **Claude** (Anthropic) che risponde alle domande sul funzionamento del portale e del Programma. Per ora è disponibile per gli **Amministratori** e per gli **utenti degli enti**.
+
+**Cosa sa.** Risponde solo dalla sua base di conoscenza: per gli Amministratori il Manuale Utente, questo manuale, le tariffe (Schema tariffario v1.2 e costi Caso 1 e Caso 2 del 28/07/2026) e le note sul calcolo dei crediti; per gli enti il Manuale Utente e le tariffe. Se una cosa non c'è lo dice e invita a scrivere alla Fondazione. **Non vede i dati delle pratiche** e non fa operazioni: spiega dove e come farle.
+
+**Come si usa.** Si scrive la domanda (o si sceglie un esempio) e si preme **Invio** o **Invia**; **Nuova** ricomincia la conversazione, **✕** chiude la finestra. La conversazione resta solo nella pagina: il portale non salva domande né risposte, conta solo quante domande fa ogni utente e i token usati (limite predefinito 40 domande al giorno per utente). Le risposte sono generate da un'intelligenza artificiale: in caso di dubbio vale il manuale.
+
+**Attivazione e costi.** L'assistente funziona con una chiave della **Claude Console** di Anthropic, che solo Luca inserisce nei segreti di Supabase (`ANTHROPIC_API_KEY`). L'uso si paga con i crediti dell'organizzazione della Console a cui appartiene la chiave: con un piano Claude **Max o Team** si possono collegare i **crediti API mensili** del piano a quell'organizzazione (Impostazioni → Fatturazione su claude.ai). Il modello predefinito è **Claude Haiku 5.5**, il più economico: la base di conoscenza si rilegge dalla cache, quindi una domanda costa di solito meno di un centesimo di dollaro.
+
+**Aggiornare le conoscenze.** Quando cambiano i manuali o le tariffe si rigenera la base di conoscenza (`node strumenti/genera_base_conoscenza.cjs`) e si pubblica: l'assistente la rilegge entro 10 minuti.
 
 ## Manutenzione ed emergenze
 
@@ -970,4 +984,4 @@ Questo manuale descrive il portale alla data della revisione indicata in coperti
 - **Sicurezza:** registro di sicurezza (accessi e tentativi falliti), verifica in due passaggi attiva, antivirus sui file caricati, piano di protezione dagli attacchi informatici.
 - **Email:** verifica del dominio, per far arrivare le notifiche a tutti gli utenti.
 - **Simulatore di scenari:** la prima versione è disponibile (capitolo «Simulatore di scenari»). In arrivo: stampa in PDF impaginata e, se la Fondazione lo decide, la visione dello scenario da parte del Comune.
-- **Assistente virtuale (Claude) integrato nel portale:** aiuta i Comuni nella compilazione (cosa manca nella pratica, come preparare i dati) e gli Operatori nei controlli (completezza dei documenti, bozze di richieste di integrazione e di risposte, spiegazione dei risultati del calcolo). Resta un supporto: le decisioni restano alla Fondazione e ogni sua azione è registrata nell'audit.
+- **Assistente virtuale, passi successivi:** la prima versione risponde sul funzionamento del portale (capitolo «Assistente virtuale»). In arrivo: estensione agli Operatori e, con regole sulla privacy, l'aiuto sulla singola pratica (cosa manca, bozze di richieste di integrazione e di risposte, spiegazione dei risultati del calcolo). Resta un supporto: le decisioni restano alla Fondazione.

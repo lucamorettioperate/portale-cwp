@@ -95,6 +95,12 @@
       "data": "19/10/2026",
       "descrizione": "Ordinamento degli elenchi e delle tabelle.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.6",
+      "data": "19/10/2026",
+      "descrizione": "Nuovo capitolo «L'assistente virtuale».",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -247,6 +253,12 @@
       "data": "19/10/2026",
       "descrizione": "Presentazione di riepilogo nella pagina Documentazione.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.5",
+      "data": "19/10/2026",
+      "descrizione": "Assistente virtuale; documenti ufficiali del Programma nella Documentazione.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -374,6 +386,12 @@
       "rev": "3.0",
       "data": "19/10/2026",
       "descrizione": "Prova 10.10c: ordinamento.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.1",
+      "data": "19/10/2026",
+      "descrizione": "Prove 10.11-10.11c: assistente virtuale e documenti ufficiali.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -563,6 +581,12 @@
       "data": "19/10/2026",
       "descrizione": "Presentazione di riepilogo nel portale e nelle regole di rilascio.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.1",
+      "data": "19/10/2026",
+      "descrizione": "Assistente virtuale (script 31, funzione assistente, base di conoscenza); documenti ufficiali; barra a LED più fine.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -584,6 +608,12 @@
       "rev": "2.0",
       "data": "19/10/2026",
       "descrizione": "Diventa il recap del portale, nell'area Documentazione degli Amministratori e aggiornata a ogni rilascio: slide «Novità del 19 ottobre» (Dashboard, ordinamento, utenti, email, simulatore per utenza, ACN), esempio Bovisio con i due metodi.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.1",
+      "data": "19/10/2026",
+      "descrizione": "Assistente virtuale pronto e da attivare; documenti ufficiali nella Documentazione; barra a LED più fine.",
       "autore": "Fondazione Operate"
     }
   ]

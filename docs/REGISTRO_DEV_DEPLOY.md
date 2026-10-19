@@ -246,6 +246,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `27_soggetto_promotore.sql` | Soggetto promotore del programma: Fondazione Operate, in esclusiva da Wastelab (gestione commerciale e tecnologica), testo sulla pagina pubblica | 19/10/2026 (verificato) |
 | `28_simulatore.sql` | Simulatore di scenari: tabella `scenario_simulazione` (Comune, nome, durata 7/10/21, primo anno, dati in jsonb, riepilogo), RLS solo staff (`scenario_staff`), data di modifica dal database, audit | 19/10/2026 — provato sul banco locale (`t28.sql`); eseguito in produzione da Luca il 19/10 (testo senza commenti, stesso contenuto) |
 | `29_amministratori.sql` | Più Amministratori: `admin_aggiorna_utente` accetta il ruolo `admin` e cambia il ruolo di un altro Admin (mai il proprio); colonna `profilo.amministratore_principale` (indice unico) assegnata a luca.moretti@operate.it; trigger `trg_profilo_principale` (dal portale non si cambia ruolo o stato del principale, non se ne cancella il profilo, non si sposta il segno) e `trg_account_principale` su `auth.users` (l'account non si cancella nemmeno dal pannello); `admin_imposta_attivo` con messaggio dedicato; `amministratore_principale_id()` per la pagina Utenti | 19/10/2026 — provato sul banco locale (`t29.sql`: 12 controlli); eseguito in produzione da Luca il 19/10 (verificato: riga «Principale» nella pagina Utenti) |
+| `31_assistente.sql` | Assistente virtuale: tabella `assistente_uso` (utente, giorno in ora italiana, domande, token in entrata e in uscita; nessun testo), RLS «solo le proprie righe»; `assistente_registra_uso` e `assistente_domande_oggi` solo per la funzione del server (esecuzione tolta agli utenti); `assistente_riepilogo_uso()` per mese, solo Amministratori | 19/10/2026 — provato sul banco locale; **da eseguire in produzione** |
 | `30_elimina_utente.sql` | Cancellazione di un utente mai attivo: `utente_mai_attivo` (nessuna voce di audit come autore e nessuna riga che lo indichi come autore o responsabile in qualunque tabella con chiave esterna verso `auth.users` o `profilo` non a cascata: documenti, messaggi, note, pagamenti, calcoli, scenari, reclami…; uso interno), `admin_utenti_eliminabili()` per la pagina Utenti, `admin_elimina_utente(id)` (solo Admin, mai sé stessi né il principale; cancella da `auth.users`, a cascata profilo, associazioni e notifiche; voce «cancellazione profilo» nell'audit) | 19/10/2026 — provato sul banco locale (`t30b.sql`); eseguito in produzione da Luca il 19/10 (pulsante «Elimina» verificato sul portale); controllo esteso alle colonne «autore» lo stesso giorno: da rieseguire la sola `utente_mai_attivo` |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
@@ -327,6 +328,7 @@ autenticazione, dal SQL Editor:
 | Funzione | Cosa fa | Protezione | Pubblicazione |
 |---|---|---|---|
 | `crea-utente` | L'Amministratore crea un utente con password temporanea e lo associa a tutte le sue organizzazioni (`admin_imposta_organizzazioni` con il token dell'Admin); se un passo fallisce l'account appena creato viene eliminato | Verifica che il chiamante sia Admin (`sono_admin`); password temporanea di almeno 10 caratteri con lettere e numeri; niente creazione di Admin; dal 19/10 email all'utente con indirizzo del portale, email di accesso e password temporanea (Resend), esito `email_inviata`/`motivo_email` restituito al portale | Dashboard Supabase (editor web); ripubblicata 18/10 (script 20); Verify JWT attivo; **versione 19/10 con l'email da ripubblicare** |
+| `assistente` | Assistente virtuale (Claude, Anthropic Messages API): risponde dalla base di conoscenza `public/assistente/kb-amministratore.md` (Admin) o `kb-comune.md` (utenti degli enti), letta dal portale e tenuta in memoria 10 minuti; base di conoscenza nella cache dei prompt per 1 ora; modello predefinito `claude-haiku-5-5` (`ASSISTENTE_MODELLO`); conta domande e token con `assistente_registra_uso` | Ruolo letto dal server (solo admin e cliente, profilo attivo, senza password temporanea); limite di domande al giorno (`ASSISTENTE_LIMITE_GIORNO`, predefinito 40); massimo 12 messaggi da 2.000 caratteri; chiave `ANTHROPIC_API_KEY` solo nei segreti; nessun testo salvato; non legge le pratiche | **Da pubblicare** (dashboard Supabase, Verify JWT attivo) dopo lo script 31 e l'inserimento della chiave da parte di Luca |
 | `reimposta-password` | L'Amministratore assegna una password temporanea a un Cliente o Operatore; il flag obbliga al cambio al primo accesso; audit; dal 19/10 email all'utente con la nuova password temporanea (Resend), esito restituito al portale | Verifica `sono_admin`; esclusi amministratori e sé stessi | Dashboard Supabase (editor web), 18/10; Verify JWT attivo; **versione 19/10 con l'email da ripubblicare** |
 | `consultazione-pubblica` | Pagine pubbliche del feedback pubblico (data di «oggi» in ora italiana dal 18/10; numero delle osservazioni dallo script 21; dalla sera del 18/10 anche i Rapporti di Monitoraggio, ripubblicata; azioni `programma` e `file` per la pagina pubblica /programma, script 24, ripubblicata la sera del 18/10, Verify JWT spento): elenco, dettaglio (documento, errata corrige, osservazioni ammesse), invio di un'osservazione con allegato facoltativo ed email di conferma, conferma dell'email (l'osservazione diventa *Ricevuto*) | Verify JWT **disattivato** di proposito (pubblico senza account): nessun dato personale restituito, 3 invii/ora per indirizzo e 100/ora per consultazione, campo trappola anti-robot, allegati max 10 MB con controllo del contenuto, token monouso 48 ore salvato come SHA-256 | Dashboard Supabase (editor web), 18/10 |
 | `recupera-password` | «Password dimenticata?»: genera il collegamento di recupero (`auth.admin.generateLink`) e spedisce con Resend l'email in italiano «Portale Carbon WastePrint (CWP) — Richiesta di reimpostazione della password», al posto del modello email di Supabase | Verify JWT **disattivato** di proposito (la chiama chi non ha fatto l'accesso): risponde sempre `ok` senza rivelare se l'indirizzo esiste; niente email agli utenti disattivati; massimo una richiesta ogni 2 minuti per indirizzo; il collegamento porta solo al portale | Dashboard Supabase (editor web), 18/10 |
@@ -463,6 +465,10 @@ Documentazione del portale.
   Documentazione. Data, revisione, versioni, script, funzioni e righe di
   codice si aggiornano da soli; i contenuti (novità, esempi, scelte) a
   mano.
+- **Dal 19/10 anche la base di conoscenza dell'assistente virtuale:** dopo
+  aver aggiornato manuali o tariffe (`docs/conoscenza/tariffe.md`) si
+  esegue `node strumenti/genera_base_conoscenza.cjs`, che rigenera
+  `public/assistente/kb-comune.md` e `kb-amministratore.md`.
 - Il codice si commenta in italiano mentre si scrive: in testa a ogni file
   lo scopo e il capitolo del registro di riferimento; sopra ogni funzione
   cosa fa; nel corpo le regole di sicurezza e i passaggi non ovvi (punto 31).
@@ -485,6 +491,26 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 19 ottobre 2026
+- **Assistente virtuale, prima versione** (richiesta di Luca: aiuto ad
+  Amministratori ed enti su una base di conoscenza del portale) — funzione
+  del server `assistente` con Claude Haiku 5.5 e cache dei prompt; base di
+  conoscenza generata da `strumenti/genera_base_conoscenza.cjs` (Manuale
+  Utente e tariffe per gli enti; più Manuale Amministratore e note sul
+  calcolo per gli Admin; riepilogo tariffe in
+  `docs/conoscenza/tariffe.md`); script `31_assistente.sql` per il
+  limite giornaliero e il conteggio dei token; pulsante «✦ Assistente» in
+  basso a destra (componente `AssistenteVirtuale.jsx` nell'intestazione).
+  Verificato a schermo con risposta simulata (computer e telefono) e sul
+  banco locale; non provato con Claude perché la chiave la inserisce Luca.
+  Costi: l'uso API è a parte rispetto ai piani claude.ai, ma con un piano
+  Max o Team si possono usare i crediti API mensili collegando
+  un'organizzazione della Console.
+- **Documenti ufficiali del Programma nella Documentazione** (richiesta di
+  Luca) — sezione «Documenti ufficiali del Programma Carbon WastePrint®»
+  per gli Amministratori con gli 8 documenti v1.2 (modelli di categoria
+  «programma», indirizzi firmati: Apri PDF / Scarica).
+- **Barra a LED più fine e più corta** (richiesta di Luca) — luci da 7 px,
+  barra lunga circa la metà.
 - **Presentazione di riepilogo nel portale** (richiesta di Luca: è un
   recap, va sempre aggiornata e messa a disposizione degli Amministratori)
   — generatore nel repository (`strumenti/presentazione/`), uscita in
@@ -1165,7 +1191,7 @@ completato (va barrato qui e annotato in Cronologia).
 
 - ~~**35.** Allineamento ai documenti ufficiali del Programma~~ — fatto la sera del 18/10 (script 22-24, portale, funzione `consultazione-pubblica`): vedi Decisioni e Cronologia. Resta SPID/CIE/CNS (punto 36).
 - **36.** Accesso degli stakeholders con SPID, CIE o CNS (Guida 3.9): adesione come fornitore di servizi (AgID o aggregatore), poi integrazione nella pagina del feedback pubblico.
-- **21.** **Assistente virtuale (Claude)** integrato nel portale — richiesto da Luca il 18/10, confermato tra i punti aperti il 19/10. Funziona con i modelli Claude di Anthropic tramite API (lo sviluppo del portale si fa con Claude Code). Ambito da definire; usi possibili: assistente per gli utenti dei Comuni (come compilare, cosa manca nella pratica), supporto agli Operatori (controllo completezza dei documenti, bozze di richieste di integrazione e di risposte ai commenti), verifica del tracciato dati prima dell'import, spiegazione dei risultati del calcolo crediti. Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che faccia da tramite, regole su quali dati l'agente può leggere (privacy) e registrazione delle sue azioni nell'audit.
+- **21.** **Assistente virtuale (Claude)** integrato nel portale — richiesto da Luca il 18/10, confermato tra i punti aperti il 19/10. **Prima versione fatta il 19/10** (Amministratori ed enti, risposte dalla base di conoscenza su portale e tariffe: script 31, funzione `assistente`, componente `AssistenteVirtuale`); da attivare con la chiave Anthropic. Restano i passi successivi descritti qui sotto (Operatori, aiuto sulla singola pratica). Funziona con i modelli Claude di Anthropic tramite API (lo sviluppo del portale si fa con Claude Code). Ambito da definire; usi possibili: assistente per gli utenti dei Comuni (come compilare, cosa manca nella pratica), supporto agli Operatori (controllo completezza dei documenti, bozze di richieste di integrazione e di risposte ai commenti), verifica del tracciato dati prima dell'import, spiegazione dei risultati del calcolo crediti. Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che faccia da tramite, regole su quali dati l'agente può leggere (privacy) e registrazione delle sue azioni nell'audit.
 
 ---
 
@@ -1336,7 +1362,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 119 file, 29.211 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 123 file, 29.821 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1359,7 +1385,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 119 file, 29.211 righe 
 | `src/pages/Crediti.jsx` | 240 | sezione del calcolo dei crediti di CO₂eq (Metodologia Carbon WastePrint® v1.2). Due viste: - «Calcoli»: elenco di tutti i calcoli (titolo, pratica, anno e tipo, crediti netti, stato bozza/confermato) e modulo «+ Nuovo calcolo»… |
 | `src/pages/CreditiEmessiPagina.jsx` | 83 | elenco di tutti i lotti di crediti emessi dai Rapporti di Monitoraggio (Guida al Programma 6.3.2 e 6.3.3; script 24), con il totale emessi / attivi / ritirati e, per lo staff, le azioni su ogni lotto (caricamento sul registro,… |
 | `src/pages/Cruscotto.jsx` | 299 | (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso, in scadenza, scadute, in attesa del Cliente, integrazioni da verificare, consultazioni attive) e tabella di tutte le pratiche, Progetti e Rapporti, con ricerca e… |
-| `src/pages/Documentazione.jsx` | 159 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
+| `src/pages/Documentazione.jsx` | 211 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
 | `src/pages/FormatoDati.jsx` | 136 | spiega lo standard dei dati da inviare per il calcolo dei crediti e permette di scaricare il tracciato Excel. Il link si può mandare a Comuni e gestori anche senza credenziali. Contiene: elenco dei fogli del tracciato,… |
 | `src/pages/GestioneUtenti.jsx` | 763 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
 | `src/pages/Impostazioni.jsx` | 60 | parametri del Programma modificabili dagli Amministratori: - Durata delle fasi del Progetto e del Rapporto di Monitoraggio (script 13 e 21, componente DurateFasi); - Documenti richiesti per fase (script 21, componente… |
@@ -1375,13 +1401,14 @@ Inventario generato da `strumenti/inventario_codice.py`: 119 file, 29.211 righe 
 
 | File | Righe | Cosa contiene |
 |---|---|---|
+| `src/components/AssistenteVirtuale.jsx` | 188 | pulsante «Assistente» in basso a destra che apre una finestra di conversazione. Le domande vanno alla funzione del server «assistente» (supabase/functions/assistente), che risponde con Claude usando solo la base di conoscenza… |
 | `src/components/Badge.jsx` | 37 | etichetta colorata compatta per mostrare uno stato (pratica, fase, documento, pagamento, calcolo…). Solo grafica. |
-| `src/components/BarraFasi.jsx` | 71 | barra orizzontale di 7 «luci», una per fase (richiesta di Luca del 19/10/2026). Le fasi completate sono accese, quelle ancora da fare spente. Le luci accese delle fasi 1-6 sono ambra; la settima (Chiusura) è verde. La fase in… |
+| `src/components/BarraFasi.jsx` | 72 | barra orizzontale di 7 «luci», una per fase (richiesta di Luca del 19/10/2026). Le fasi completate sono accese, quelle ancora da fare spente. Le luci accese delle fasi 1-6 sono ambra; la settima (Chiusura) è verde. La fase in… |
 | `src/components/Consultazione.jsx` | 435 | riquadro «Feedback pubblico» (il termine della Guida al Programma, cap. 3.9) di un Progetto o di un Rapporto di Monitoraggio (fase 3, requisiti §6; per i Rapporti Guida 6.3.1, script 23). Lo staff apre il feedback pubblicando un… |
 | `src/components/CreditiEmessi.jsx` | 319 | crediti di carbonio emessi da un Rapporto di Monitoraggio registrato (Guida al Programma 6.3.2 e 6.3.3, Tabella 5; Standard 6.2; script 24): - emissione di un lotto con ID univoci (solo Amministratori), anche collegata a un… |
 | `src/components/DettaglioPratica.jsx` | 912 | pagina di dettaglio di una pratica (Progetto o Rapporto di Monitoraggio) con le sue 7 fasi (Guida al Programma 6.2 e 6.3.1). |
 | `src/components/Documenti.jsx` | 325 | gestione documentale di una pratica: elenco con versioni, caricamento di nuovi file e download. Lo staff sceglie anche tipologia e visibilità (Cliente, Pubblico) e può cambiarle dopo il caricamento. |
-| `src/components/Header.jsx` | 164 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
+| `src/components/Header.jsx` | 169 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
 | `src/components/Integrazioni.jsx` | 266 | richieste di integrazione di una fase (requisiti §4). Ciclo: l'Operatore richiede → il Cliente carica un documento e risponde → l'Operatore chiude la richiesta. Con la chiusura della fase la possibilità di integrare termina. La… |
 | `src/components/Messaggi.jsx` | 129 | conversazione tra Comune e Fondazione Operate dentro una pratica (backlog 26). Mostra i messaggi in ordine di data, quelli dell'utente a destra, e permette di scriverne di nuovi. |
 | `src/components/NoteFase.jsx` | 108 | note scritte sotto una delle fasi di una pratica (backlog 10). Lo staff legge tutte le note e ne aggiunge di nuove, interne (solo Fondazione) o condivise con il Comune; il Comune vede solo le condivise. |
@@ -1417,7 +1444,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 119 file, 29.211 righe 
 | `src/lib/csv.js` | 157 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
 | `src/lib/cwpProgram.js` | 185 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
 | `src/lib/date.js` | 68 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO (anche la data italiana, indipendente dal fuso del computer). |
-| `src/lib/dati.js` | 1054 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
+| `src/lib/dati.js` | 1081 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
 | `src/lib/fascicolo.js` | 354 | ZIP con: riepilogo PDF (Riepilogo.pdf, src/lib/fascicoloPdf.js), dati della pratica con l'Ente di Validazione, fasi, tutti i documenti in tutte le versioni (cartella Validazione per il rapporto dell'Ente; per i Rapporti anche il… |
 | `src/lib/fascicoloPdf.js` | 129 | un documento leggibile da stampare o archiviare insieme ai file del fascicolo: dati della pratica e dell'Ente di Validazione, fasi, elenco dei documenti (con l'impronta SHA-256), integrazioni, consultazioni pubbliche, pagamenti… |
 | `src/lib/file.js` | 158 | prima di inviare un file all'archivio controlla formato ammesso, dimensione, contenuto reale (primi byte, "firma" del formato) e prepara un nome sicuro per il percorso nell'archivio. Traduce anche gli errori dello Storage di… |
@@ -1460,12 +1487,14 @@ Inventario generato da `strumenti/inventario_codice.py`: 119 file, 29.211 righe 
 | `supabase/28_simulatore.sql` | 75 | salva gli scenari del simulatore dei crediti (Registro, backlog punto 37). Uno scenario è una stima ex ante, non certificabile, di quanti crediti un Comune potrebbe generare in 7, 10 o 21 anni (Standard 4.3.8), a partire dai… |
 | `supabase/29_amministratori.sql` | 168 | 1. Gli Amministratori possono nominare altri Amministratori dalla pagina «Gestione utenti» (prima la nomina si faceva solo da Supabase). Un Amministratore ha accesso completo a tutti i dati, come quello principale. 2.… |
 | `supabase/30_elimina_utente.sql` | 104 | un Amministratore può cancellare un utente che non ha mai operato nel portale, cioè che non compare come autore di nessuna voce dell'audit trail (nessun documento, messaggio, modifica, cambio della password…). Serve, ad esempio,… |
+| `supabase/31_assistente.sql` | 79 | la funzione del server «assistente» (Claude di Anthropic) registra quante domande fa ogni utente al giorno e i token usati, per applicare un limite giornaliero e controllare la spesa. Nessun testo delle domande o delle risposte… |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
 
 | File | Righe | Cosa contiene |
 |---|---|---|
+| `supabase/functions/assistente/index.ts` | 179 | assistente virtuale del portale basato su Claude (Anthropic). Risponde alle domande sul funzionamento del portale e del Programma usando SOLO una base di conoscenza: manuali e tariffe (file public/assistente/kb-*.md, generati da… |
 | `supabase/functions/consultazione-pubblica/index.ts` | 432 | servizio della pagina pubblica delle consultazioni (requisiti §6, decisioni B e D del 18/10/2026). Chiunque, senza account, può: - "elenco": vedere le consultazioni aperte; - "dettaglio": leggere documento, errata corrige e… |
 | `supabase/functions/crea-utente/index.ts` | 263 | crea un nuovo utente con password temporanea e imposta ruolo + organizzazione. All'utente parte un'email con indirizzo del portale, email di accesso e password temporanea (Resend, funzione inviaEmailAccesso in fondo al file); se… |
 | `supabase/functions/invia-email-notifica/index.ts` | 160 | invia per email ogni nuova notifica del portale (requisiti §9: "email + notifica interna"). |
@@ -1489,13 +1518,14 @@ Inventario generato da `strumenti/inventario_codice.py`: 119 file, 29.211 righe 
 
 | File | Righe | Cosa contiene |
 |---|---|---|
+| `strumenti/genera_base_conoscenza.cjs` | 48 | unisce i testi dei manuali e delle tariffe in due file che la funzione del server «assistente» (supabase/functions/assistente) legge e passa a Claude come contesto: - public/assistente/kb-comune.md: per gli utenti degli enti… |
 | `strumenti/genera_documenti.cjs` | 569 | genera in Word (.docx) e PDF i documenti del portale, con copertina e loghi, registro delle revisioni, sommario con numeri di pagina, intestazione e piè di pagina: |
 | `strumenti/genera_esempi_tracciato.py` | 101 | genera i file di prova del tracciato dati per i test automatici (test/tracciato.test.mjs) e per il collaudo manuale (Manuale Test): - test/dati/tracciato_esempio.xlsx : tracciato compilato, Banca Dati con totali (foglio 5) -… |
 | `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
 | `strumenti/impagina_pdf.py` | 429 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
-| `strumenti/presentazione/genera_presentazione.cjs` | 587 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 590 | — |
+| `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
+| `strumenti/revisioni_documenti.json` | 620 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

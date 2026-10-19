@@ -12,7 +12,9 @@
      admin). Senza accesso si vedono solo i loghi.
    Dati: useAuth() (src/lib/AuthContext.jsx) per utente, ruolo ed esci();
      RUOLI e COLORI da src/lib/cwpProgram.js. Le notifiche le legge il
-     componente Notifiche.
+     componente Notifiche. Per Amministratori e utenti degli enti mostra
+     anche il pulsante dell'assistente virtuale (AssistenteVirtuale), fisso
+     in basso a destra.
    Sicurezza: il menu per ruolo è solo interfaccia (nasconde le voci che
      non servono). Il vero controllo è in App.jsx (rotte protette), nelle
      pagine e soprattutto nel database (RLS e funzioni): un utente che
@@ -24,6 +26,7 @@ import { Link, useLocation } from "react-router-dom";
 import { COLORI as C, RUOLI } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Notifiche from "./Notifiche.jsx";
+import AssistenteVirtuale from "./AssistenteVirtuale.jsx";
 
 // Voci di menu per ruolo: elenco di coppie [indirizzo, etichetta].
 // Qualunque ruolo diverso da admin e operatore (compreso un profilo
@@ -70,7 +73,7 @@ function vociMenu(ruolo) {
    esci a destra. Nessuna prop: legge tutto da useAuth() e dall'indirizzo
    corrente (per evidenziare la voce di menu attiva). */
 export default function Header() {
-  const { utente, ruolo, esci, backendPronto } = useAuth();
+  const { utente, ruolo, esci, backendPronto, passwordDaCambiare } = useAuth();
   const r = ruolo ? RUOLI[ruolo] : null;
   const location = useLocation();
 
@@ -159,6 +162,8 @@ export default function Header() {
           </button>
         </div>
       )}
+      {/* Assistente virtuale (Claude): per ora Amministratori ed enti. */}
+      {backendPronto && utente && !passwordDaCambiare && (ruolo === "admin" || ruolo === "cliente") && <AssistenteVirtuale ruolo={ruolo} />}
     </header>
   );
 }

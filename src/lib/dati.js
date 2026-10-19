@@ -902,6 +902,33 @@ export async function urlModello(path) {
   return await supabase.storage.from("modelli").createSignedUrl(path, 60, { download: true });
 }
 
+// Assistente virtuale (Edge Function «assistente», Claude di Anthropic).
+// messaggi: [{ ruolo: "utente" | "assistente", testo }], gli ultimi della
+// conversazione. Restituisce { data: { testo, domande_oggi, limite } } oppure
+// { error: { message } } con il motivo scritto dalla funzione (limite
+// giornaliero, assistente non attivo, ruolo non abilitato…).
+export async function chiediAssistente(messaggi) {
+  const { data, error } = await supabase.functions.invoke("assistente", { body: { messaggi } });
+  if (error) {
+    let motivo = error.message;
+    try {
+      const corpo = await error.context?.json();
+      if (corpo?.error) motivo = corpo.error;
+    } catch {
+      /* corpo non leggibile: resta il messaggio generico */
+    }
+    return { data: null, error: { message: motivo } };
+  }
+  if (data?.error) return { data: null, error: { message: data.error } };
+  return { data, error: null };
+}
+
+// Come urlModello ma per aprire il file nel browser (senza scaricarlo):
+// usato per i documenti ufficiali del Programma nella pagina Documentazione.
+export async function urlModelloApri(path) {
+  return await supabase.storage.from("modelli").createSignedUrl(path, 60);
+}
+
 // Nomi di più utenti in una volta: { [id]: nome }. Per lo staff, che legge
 // tutti i profili (RLS profilo_self_select); per il Cliente restituisce solo
 // il proprio. Serve a pagamenti (operatore) e fascicolo (audit).
