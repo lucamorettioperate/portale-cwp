@@ -329,6 +329,12 @@
       "data": "19/10/2026",
       "descrizione": "Simulatore di scenari, prima versione: script 28, pagina /simulatore, motore e prove; decisioni aperte e cronologia.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.7",
+      "data": "19/10/2026",
+      "descrizione": "Script 28 del simulatore eseguito in produzione.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [

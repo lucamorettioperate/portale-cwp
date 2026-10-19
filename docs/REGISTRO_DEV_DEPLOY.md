@@ -241,7 +241,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `25_documenti_programma.sql` | Gli otto documenti ufficiali del Programma v1.2 (Guida, Definizioni, Normativa, Standard, Metodologia, Politica di reclamo, Schema tariffario, Gestione qualità dei dati), caricati nella radice dell'archivio `modelli`, registrati come modelli pubblici «Documento del Programma»; PDF della Metodologia collegato alla metodologia approvata | 18/10/2026 (sera, verificato sulla pagina /programma) |
 | `26_pec_programma.sql` | PEC del Programma `operate@pec.it` (comunicata da Luca), mostrata sulla pagina pubblica nelle informazioni del Programma e per i reclami; modificabile poi da Impostazioni | 19/10/2026 (verificato sulla pagina /programma) |
 | `27_soggetto_promotore.sql` | Soggetto promotore del programma: Fondazione Operate, in esclusiva da Wastelab (gestione commerciale e tecnologica), testo sulla pagina pubblica | 19/10/2026 (verificato) |
-| `28_simulatore.sql` | Simulatore di scenari: tabella `scenario_simulazione` (Comune, nome, durata 7/10/21, primo anno, dati in jsonb, riepilogo), RLS solo staff (`scenario_staff`), data di modifica dal database, audit | 19/10/2026 — provato sul banco locale (`t28.sql`); **da eseguire in produzione** |
+| `28_simulatore.sql` | Simulatore di scenari: tabella `scenario_simulazione` (Comune, nome, durata 7/10/21, primo anno, dati in jsonb, riepilogo), RLS solo staff (`scenario_staff`), data di modifica dal database, audit | 19/10/2026 — provato sul banco locale (`t28.sql`); eseguito in produzione da Luca il 19/10 (testo senza commenti, stesso contenuto) |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
 script successivi.
@@ -476,7 +476,9 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   automatiche. Durata da menu 7/10/21 anni, più scenari per Comune, anno
   base (a mano, cluster SOSE o calcolo esistente), obiettivi annui con
   traiettoria lineare, % di differenziata e crediti anno per anno, grafici,
-  confronto, CSV e stampa. Lo script 28 va eseguito in produzione.
+  confronto, CSV e stampa. Script 28 eseguito in produzione da Luca nel
+  SQL Editor (in questa sessione i clic nel browser erano bloccati da un
+  controllo di sicurezza).
 - **Nuovo modulo in backlog: simulatore di scenari** (punto 37), richiesto
   da Luca: durata 7, 10 o 21 anni, più scenari per Comune, dati dell'anno
   base, obiettivi annui di produzione totale e pro capite e di secco
@@ -927,7 +929,7 @@ completato (va barrato qui e annotato in Cronologia).
 - ~~**7.** Registro dei crediti calcolati e confermati~~ — fatto il 18/10: numero progressivo dei calcoli (elenco interno) e, con lo script 24, emissione dei crediti con ID univoci, caricamento sul registro esterno, vendite e cancellazione tombale (Guida 6.3.2-6.3.3).
 - **8.** Collaudo con dati reali di un Comune.
 - **9.** Conferma delle scelte interpretative.
-- **37.** **Simulatore di scenari** — richiesto da Luca il 19/10; **prima versione fatta il 19/10** (script 28, pagina `/simulatore`, motore `simulatore.js`; da eseguire lo script in produzione). Restano: stampa PDF impaginata, eventuale visione da parte del Comune, conferma del modello. Strumento
+- **37.** **Simulatore di scenari** — richiesto da Luca il 19/10; **prima versione fatta il 19/10** (script 28 eseguito in produzione, pagina `/simulatore`, motore `simulatore.js`). Restano: stampa PDF impaginata, eventuale visione da parte del Comune, conferma del modello. Strumento
   previsionale (ex ante, non certificabile) per stimare quanti crediti un
   Comune potrebbe generare:
     - **Scenari**: per ogni Comune più scenari con nome e note (per esempio
