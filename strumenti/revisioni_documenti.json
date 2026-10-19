@@ -217,6 +217,12 @@
       "data": "19/10/2026",
       "descrizione": "Eliminazione degli utenti che non hanno mai operato (script 30).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.1",
+      "data": "19/10/2026",
+      "descrizione": "Cruscotto diventa Dashboard; barra a LED delle 7 fasi per ogni pratica.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -326,6 +332,12 @@
       "rev": "2.7",
       "data": "19/10/2026",
       "descrizione": "Prova 1.3d: eliminazione di un utente mai attivo.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.8",
+      "data": "19/10/2026",
+      "descrizione": "Prova 10.10b: barra a LED della Dashboard.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -490,6 +502,12 @@
       "rev": "3.6",
       "data": "19/10/2026",
       "descrizione": "Tendina delle notifiche sempre dentro lo schermo.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.7",
+      "data": "19/10/2026",
+      "descrizione": "Dashboard con barra a LED delle 7 fasi.",
       "autore": "Fondazione Operate"
     }
   ],

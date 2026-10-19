@@ -541,6 +541,15 @@ export async function leggiCruscotto() {
   return await supabase.rpc("staff_cruscotto");
 }
 
+// Stato delle 7 fasi di più pratiche, per l'indicatore a LED della
+// Dashboard (src/components/BarraFasi.jsx). Tabella "fase" (script 01),
+// leggibile dallo staff per le regole RLS. Parametro: elenco di id pratica.
+// Restituisce { data: [{ pratica_id, numero, nome, stato }] }.
+export async function leggiFasiPratiche(praticaIds) {
+  if (!praticaIds.length) return { data: [], error: null };
+  return await supabase.from("fase").select("pratica_id, numero, nome, stato").in("pratica_id", praticaIds);
+}
+
 // ---- Rapporti di Monitoraggio annuali ----
 // Crea il Rapporto dell'anno successivo per un Progetto (al massimo 10 o 21
 // secondo il periodo di riferimento, PERIODI_RIFERIMENTO),

@@ -17,7 +17,7 @@ Nel portale la Fondazione lavora con due ruoli:
 
 | Cosa | Operatore di back-office | Amministratore |
 | --- | --- | --- |
-| Cruscotto, pratiche, fasi, scadenze | sì | sì |
+| Dashboard, pratiche, fasi, scadenze | sì | sì |
 | Documenti, integrazioni, feedback pubblico, pagamenti | sì | sì |
 | Export del fascicolo | sì | sì |
 | Anagrafiche (Organizzazioni, Enti di Validazione, Registri) | sì | sì |
@@ -48,8 +48,8 @@ Si accede da [portale-cwp.vercel.app](https://portale-cwp.vercel.app) con **Emai
 
 | Ruolo | Voci di menu |
 | --- | --- |
-| Operatore | Cruscotto, Pratiche, Anagrafiche, Crediti emessi, Reclami, Manuale |
-| Amministratore | Cruscotto, Pratiche, Utenti, Audit, Anagrafiche, Calcolo crediti, Crediti emessi, Reclami, Impostazioni, Documentazione |
+| Operatore | Dashboard, Pratiche, Anagrafiche, Crediti emessi, Reclami, Manuale |
+| Amministratore | Dashboard, Pratiche, Utenti, Audit, Anagrafiche, Calcolo crediti, Crediti emessi, Reclami, Impostazioni, Documentazione |
 
 **Il mio profilo.** Facendo clic sulla propria email si apre la pagina con i dati dell'account, il pulsante **Cambia password** e i documenti da scaricare (per l'Amministratore: Manuale Utente, Manuale Amministratore e Registro sviluppo e deploy).
 
@@ -65,9 +65,11 @@ Si accede da [portale-cwp.vercel.app](https://portale-cwp.vercel.app) con **Emai
 
 *Accessi successivi:* dopo la password inserite il codice a 6 cifre e premete **Accedi**. Con l'errore «Codice non valido o scaduto» attendete il codice successivo dell'app e riprovate. Se perdete il telefono vedete il capitolo «Manutenzione ed emergenze».
 
-## Cruscotto
+## Dashboard
 
-Il **Cruscotto** è la pagina iniziale dello staff: mostra in un'unica tabella tutte le pratiche, Progetti e Rapporti, con la fase corrente, la scadenza e ciò che c'è da fare.
+La **Dashboard** è la pagina iniziale dello staff: mostra in un'unica tabella tutte le pratiche, Progetti e Rapporti, con l'avanzamento, la fase corrente, la scadenza e ciò che c'è da fare.
+
+**Barra di avanzamento a LED.** La colonna **Avanzamento** mostra per ogni pratica (quindi per ogni Comune) una barra di 7 luci, una per fase. Le fasi **completate sono accese** (ambra), quelle **ancora da fare sono spente**. La **settima luce**, la Chiusura, si accende in **verde**. La fase in corso è spenta ma ha un contorno ambra, così si vede subito dove è arrivata la pratica. Accanto c'è il conteggio, ad esempio «4/7». Passando il mouse su una luce compaiono numero, nome e stato della fase.
 
 **Riquadri in alto.** Ogni riquadro conta le pratiche e, se cliccato, filtra la tabella. Si clicca di nuovo per togliere il filtro.
 
@@ -248,7 +250,7 @@ Una richiesta di integrazione chiede al Comune un documento o un chiarimento dur
 
 Se il Comune non risponde potete premere **Chiudi senza risposta**, scrivere la motivazione e confermare con **Conferma chiusura**.
 
-Quando non restano richieste aperte la fase torna *In corso*. Nel Cruscotto i riquadri *In attesa del Cliente* e *Integrazioni da verificare* mostrano le richieste da seguire.
+Quando non restano richieste aperte la fase torna *In corso*. Nella Dashboard i riquadri *In attesa del Cliente* e *Integrazioni da verificare* mostrano le richieste da seguire.
 
 ## Feedback pubblico
 

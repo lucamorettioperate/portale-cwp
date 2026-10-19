@@ -32,7 +32,7 @@ import Notifiche from "./Notifiche.jsx";
 function vociMenu(ruolo) {
   if (ruolo === "admin") {
     return [
-      ["/", "Cruscotto"],
+      ["/", "Dashboard"],
       ["/pratiche", "Pratiche"],
       ["/utenti", "Utenti"],
       ["/audit", "Audit"],
@@ -47,7 +47,7 @@ function vociMenu(ruolo) {
   }
   if (ruolo === "operatore") {
     return [
-      ["/", "Cruscotto"],
+      ["/", "Dashboard"],
       ["/pratiche", "Pratiche"],
       ["/anagrafiche", "Anagrafiche"],
       ["/simulatore", "Simulatore"],

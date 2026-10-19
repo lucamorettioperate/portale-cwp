@@ -1,14 +1,20 @@
 /* =========================================================================
-   Cruscotto — indirizzo «/» per Operatore e Admin (src/App.jsx, HomePerRuolo)
+   Cruscotto (nel menu «Dashboard») — indirizzo «/» per Operatore e Admin
+   (src/App.jsx, HomePerRuolo)
    Scopo: (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso,
      in scadenza, scadute, in attesa del Cliente, integrazioni da
      verificare, consultazioni attive) e tabella di tutte le pratiche,
      Progetti e Rapporti, con ricerca e filtri per stato, tipo, anno e fase.
-     Un clic su una riga apre la pratica in «/pratiche?id=…».
+     Un clic su una riga apre la pratica in «/pratiche?id=…». Per ogni
+     pratica la colonna «Avanzamento» mostra la barra a LED delle 7 fasi
+     (componente BarraFasi: accese le completate, spente quelle da fare,
+     la settima verde).
    Chi la usa: Operatore e Amministratore.
    Dati: leggiCruscotto() di src/lib/dati.js = RPC staff_cruscotto
      (script 09): una riga per pratica con fase corrente, scadenza, giorni
-     alla scadenza, conteggio integrazioni e stato della consultazione.
+     alla scadenza, conteggio integrazioni e stato della consultazione;
+     leggiFasiPratiche() = stato di tutte le fasi (tabella fase) per la
+     barra a LED.
      Tutti i filtri lavorano nel browser su queste righe.
    Sicurezza: staff_cruscotto rifiuta chi non è staff (app_is_staff, che
      richiede anche la verifica a due fattori se attiva). La pagina non ha
@@ -21,7 +27,8 @@ import { useNavigate } from "react-router-dom";
 import { COLORI as C, STATI_PRATICA, STATI_FASE } from "../lib/cwpProgram.js";
 import Header from "../components/Header.jsx";
 import Badge from "../components/Badge.jsx";
-import { leggiCruscotto } from "../lib/dati.js";
+import { leggiCruscotto, leggiFasiPratiche } from "../lib/dati.js";
+import BarraFasi from "../components/BarraFasi.jsx";
 import { formatoData } from "../lib/date.js";
 
 // Una pratica è "in scadenza" se la fase aperta scade entro questi giorni.
@@ -54,6 +61,8 @@ const RIQUADRI = [
 export default function Cruscotto() {
   const navigate = useNavigate();
   const [righe, setRighe] = useState([]);
+  // Fasi di ogni pratica per la barra a LED: { [pratica_id]: [fasi] }.
+  const [fasiPerPratica, setFasiPerPratica] = useState({});
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState("");
   // Riquadro selezionato come filtro (id di RIQUADRI) oppure null.
@@ -71,6 +80,12 @@ export default function Cruscotto() {
       if (error) setErrore(error.message);
       else setRighe(data || []);
       setCaricamento(false);
+      // Poi lo stato delle fasi per la barra a LED (se non si legge, la
+      // barra resta spenta: la Dashboard funziona comunque).
+      const { data: fasi } = await leggiFasiPratiche((data || []).map((r) => r.id));
+      const mappa = {};
+      for (const f of fasi || []) (mappa[f.pratica_id] ||= []).push(f);
+      setFasiPerPratica(mappa);
     })();
   }, []);
 
@@ -112,7 +127,7 @@ export default function Cruscotto() {
     <div style={{ background: C.paper, minHeight: "100vh" }}>
       <Header />
       <main style={{ maxWidth: 1240, margin: "0 auto", padding: "22px 24px" }}>
-        <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 16px" }}>Cruscotto</h1>
+        <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 16px" }}>Dashboard</h1>
 
         {errore && <div style={{ color: C.red, fontSize: 13, marginBottom: 12 }}>{errore}</div>}
 
@@ -183,11 +198,12 @@ export default function Cruscotto() {
 
         {/* Elenco */}
         <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 760 }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 900 }}>
             <thead>
               <tr style={{ textAlign: "left", color: C.grafite, fontSize: 11.5, textTransform: "uppercase", letterSpacing: 0.3 }}>
                 <th style={th}>Pratica</th>
                 <th style={th}>Organizzazione</th>
+                <th style={th}>Avanzamento</th>
                 <th style={th}>Stato</th>
                 <th style={th}>Fase corrente</th>
                 <th style={th}>Scadenza</th>
@@ -196,7 +212,7 @@ export default function Cruscotto() {
             </thead>
             <tbody>
               {!caricamento && filtrate.length === 0 && (
-                <tr><td colSpan={6} style={{ ...td, color: C.grafite, textAlign: "center", padding: 24 }}>Nessuna pratica corrisponde ai filtri.</td></tr>
+                <tr><td colSpan={7} style={{ ...td, color: C.grafite, textAlign: "center", padding: 24 }}>Nessuna pratica corrisponde ai filtri.</td></tr>
               )}
               {filtrate.map((p) => {
                 const sp = STATI_PRATICA[p.stato] || STATI_PRATICA.attiva;
@@ -219,6 +235,7 @@ export default function Cruscotto() {
                       </div>
                     </td>
                     <td style={td}>{p.organizzazione}</td>
+                    <td style={{ ...td, verticalAlign: "middle" }}><BarraFasi fasi={fasiPerPratica[p.id] || []} /></td>
                     <td style={td}><Badge bg={sp.bg} fg={sp.fg}>{sp.label}</Badge></td>
                     <td style={td}>
                       {p.fase_numero ? (

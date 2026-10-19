@@ -72,7 +72,7 @@ Il portale è lo strumento unico con cui Comune e Fondazione seguono la pratica.
 | Feedback pubblico | Pagina pubblica per 30 giorni (Progetto) o 20 (Rapporto); documento bloccato; osservazioni numerate con email confermata e allegato; moderazione con motivazione; risposte del Comune; errata corrige | tutti, anche senza accesso |
 | Pagamenti | Voci previste con la voce dello Schema tariffario, proposta degli importi dallo Schema tariffario, incassi registrati a mano (nessun pagamento online); con una voce scaduta non si aprono nuove fasi, la fase 5 richiede la tariffa di iscrizione saldata | Fondazione; il Comune consulta |
 | Notifiche | Campanella nel portale ed email per ogni evento importante; avvisi di scadenza | tutti |
-| Cruscotto | Tutte le pratiche con fase, scadenza e cose da fare, filtri e ricerca | Fondazione |
+| Dashboard | Tutte le pratiche con barra a LED delle 7 fasi, fase, scadenza e cose da fare, filtri e ricerca | Fondazione |
 | Export | Fascicolo completo della pratica in un file ZIP con riepilogo PDF | tutti |
 | Audit | Registro non modificabile di ogni operazione, con motivazione | Amministratore |
 | Utenti e impostazioni | Creazione utenti (un solo account cliente attivo per Organizzazione), associazione ai Comuni, reimpostazione password, durata delle fasi, documenti richiesti, modelli di documento (anche pubblici), informazioni del Programma, metodologie approvate | Amministratore |
@@ -136,7 +136,7 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 3.1b | [O] Su «Prova scadenza» Registra incasso, poi Apri fase 2 | L'avviso rosso sparisce; la fase si apre con scadenza = oggi + 12 giorni (prova 1.1); notifica al Comune |
 | 3.2 | [C] Nella fase 2 guardate «Documenti richiesti», poi caricate un file scegliendo «Delibera tariffaria» | Prima «○ manca», dopo «✓ presente»; lo staff riceve la notifica «Il Cliente ha caricato un documento» |
 | 3.3 | [C] Provate a caricare un file .exe, un file vuoto, un .txt rinominato in .pdf | Tutti rifiutati con un messaggio chiaro |
-| 3.4 | [O] Richiedi integrazione («manca la delibera TARI») | Fase In attesa di integrazione; notifica al Comune; nel Cruscotto «In attesa del Cliente» |
+| 3.4 | [O] Richiedi integrazione («manca la delibera TARI») | Fase In attesa di integrazione; notifica al Comune; nella Dashboard «In attesa del Cliente» |
 | 3.5 | [C] Rispondete all'integrazione caricando un file | Richiesta «Risposta ricevuta»; notifica allo staff |
 | 3.6 | [O] Accetta e chiudi, poi Chiudi fase 2 | La fase torna In corso dopo la chiusura dell'integrazione, poi Completata; nell'intestazione «Nel Programma: in fase di validazione» |
 | 3.7 | [C] Riaprite la fase 2 completata | Il pulsante + Carica non c'è più (si carica solo nelle fasi aperte) |
@@ -271,7 +271,8 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 10.7 | [C] Controllate menu e pratiche visibili | Menu: Le mie pratiche, I tuoi documenti, Formato dati, Reclami, Il Programma, Manuale; solo le pratiche del proprio Comune |
 | 10.8 | Senza accesso, /programma | Informazioni del Programma (soggetto promotore, email, sito), enti di validazione e verifica (RINA (prova)), registri (Registro (prova)), metodologie, la modulistica pubblica della prova 1.7 e come presentare un reclamo |
 | 10.9 | [A] Audit: cercate il codice della pratica di prova | Tutte le operazioni fatte, con autore, data e motivazione |
-| 10.10 | [A] Cruscotto: provate riquadri, filtri e ricerca | La tabella si filtra di conseguenza |
+| 10.10 | [A] Dashboard: provate riquadri, filtri e ricerca | La tabella si filtra di conseguenza |
+| 10.10b | [A] Dashboard: guardate la colonna Avanzamento della pratica di prova e passate il mouse sulle luci | Tante luci accese (ambra) quante le fasi completate, le altre spente; la fase in corso ha il contorno ambra; a pratica chiusa la settima luce è verde; il conteggio «n/7» corrisponde |
 
 ## Limiti noti e funzioni in arrivo
 
