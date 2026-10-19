@@ -121,6 +121,12 @@
       "data": "19/10/2026",
       "descrizione": "PEC del Programma e documenti ufficiali già pubblicati sulla pagina pubblica.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.9",
+      "data": "19/10/2026",
+      "descrizione": "Fondazione Operate soggetto promotore del programma (esclusiva conferita da Wastelab).",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -170,6 +176,12 @@
       "rev": "1.7",
       "data": "18/10/2026",
       "descrizione": "Percorso di prova esteso alle funzioni dell'allineamento ai documenti CWP: territorio ISTAT, stati del Programma, Rapporto a 7 fasi, tariffe e sospensione, accuratezza, ritiro, account unico, crediti emessi, reclami, pagina pubblica, qualità dei dati.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.8",
+      "data": "19/10/2026",
+      "descrizione": "Tolto il limite noto sull'incarico del soggetto promotore del programma.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -250,6 +262,12 @@
       "rev": "2.2",
       "data": "18/10/2026",
       "descrizione": "Script 22-24, allineamento ai documenti ufficiali del Programma (punto 35), nuove pagine e funzioni, decisioni aggiornate, punto 36 (SPID/CIE/CNS).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.3",
+      "data": "19/10/2026",
+      "descrizione": "Script 25-27 (documenti del Programma, PEC, soggetto promotore), decisione del 19/10 e presentazione aggiornata.",
       "autore": "Fondazione Operate"
     }
   ]

@@ -127,8 +127,8 @@ function InfoForm({ info, setInfo, onSalva, esito }) {
     <section style={{ ...riquadro, marginBottom: 18 }}>
       <h2 style={{ fontFamily: "'Archivo'", fontSize: 17, margin: "0 0 6px" }}>Il Programma (pagina pubblica)</h2>
       <p style={{ fontSize: 13, color: C.grafite, margin: "0 0 12px", lineHeight: 1.5 }}>
-        Compaiono sulla pagina pubblica /programma. Il soggetto promotore del programma è oggi lo Studio Associato Wastelab, che
-        all'avvio della piattaforma incarica un soggetto giuridico (Guida 3.1): aggiornare il testo quando l'incarico è formalizzato.
+        Compaiono sulla pagina pubblica /programma. Il soggetto promotore del programma è Fondazione Operate, gestore in esclusiva
+        per conferimento dello Studio Associato Wastelab, proprietario del Programma (Guida 3.1).
       </p>
       {CAMPI.map(([k, label]) => (
         <label key={k} style={etichetta}>

@@ -473,7 +473,7 @@ La pagina **Impostazioni** (solo Amministratori) ha sei sezioni: Il Programma (p
 
 ### Il Programma (pagina pubblica)
 
-Le informazioni che compaiono sulla pagina pubblica del Programma (Guida 3.1 e 3.6): **Soggetto promotore del programma**, **PEC del Programma (anche per i reclami)**, **Email** e **Sito ufficiale**. Valori iniziali: soggetto promotore Studio Associato Wastelab (Guida 3.1), in attesa dell'incarico al soggetto giuridico che gestirà la piattaforma; email info@carbonwasteprint.com; sito www.carbonwasteprint.com; PEC operate@pec.it (dal 19/10/2026). Tra i modelli di documento sono già pubblicati, come «Documento del Programma», gli otto documenti ufficiali v1.2 (Guida, Definizioni, Normativa, Standard, Metodologia, Politica di reclamo, Schema tariffario, Gestione della qualità dei dati), e il PDF della Metodologia è collegato alla metodologia approvata. Cambiate i campi e premete **Salva**; ogni modifica finisce nell'audit. Quando l'incarico al soggetto promotore sarà formalizzato, aggiornate il testo.
+Le informazioni che compaiono sulla pagina pubblica del Programma (Guida 3.1 e 3.6): **Soggetto promotore del programma**, **PEC del Programma (anche per i reclami)**, **Email** e **Sito ufficiale**. Valori iniziali: soggetto promotore Fondazione Operate, gestore in esclusiva del Programma (parte commerciale e parte tecnologica, portale CWP) per conferimento dello Studio Associato Wastelab, proprietario del Programma (dal 19/10/2026); email info@carbonwasteprint.com; sito www.carbonwasteprint.com; PEC operate@pec.it (dal 19/10/2026). Tra i modelli di documento sono già pubblicati, come «Documento del Programma», gli otto documenti ufficiali v1.2 (Guida, Definizioni, Normativa, Standard, Metodologia, Politica di reclamo, Schema tariffario, Gestione della qualità dei dati), e il PDF della Metodologia è collegato alla metodologia approvata. Cambiate i campi e premete **Salva**; ogni modifica finisce nell'audit. Quando l'incarico al soggetto promotore sarà formalizzato, aggiornate il testo.
 
 ### Metodologie approvate
 
@@ -869,7 +869,6 @@ Il back-office torna accessibile con la sola password. Dopo aver rimesso a posto
 Questo manuale descrive il portale alla data della revisione indicata in copertina. Sono in sviluppo, o in attesa di passaggi esterni, e saranno aggiunte qui quando disponibili:
 
 - **Accesso degli stakeholder con SPID, CIE o CNS** (Guida 3.9): serve l'adesione della Fondazione come fornitore di servizi (con AgID o con un aggregatore accreditato) e il relativo contratto. Intanto chi partecipa al feedback pubblico si identifica con l'email confermata.
-- **Incarico formale del soggetto promotore del programma** (Guida 3.1): è un atto dello Studio Associato Wastelab, non del portale; quando sarà formalizzato si aggiorna il testo in *Impostazioni → Il Programma*.
 - **Sicurezza:** registro di sicurezza (accessi e tentativi falliti), verifica in due passaggi attiva, antivirus sui file caricati, piano di protezione dagli attacchi informatici.
 - **Email:** verifica del dominio, per far arrivare le notifiche a tutti gli utenti.
 

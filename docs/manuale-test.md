@@ -255,7 +255,6 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 
 - Le email (notifiche e conferme del feedback pubblico) arrivano solo all'indirizzo del titolare del servizio email finché il dominio della Fondazione non è verificato.
 - Chi invia un'osservazione nel feedback pubblico si identifica con l'email confermata: l'accesso con **SPID, CIE o CNS** previsto dalla Guida al Programma non è ancora disponibile (serve l'adesione della Fondazione come fornitore di servizi, tramite AgID o un aggregatore accreditato).
-- Il soggetto promotore del programma mostrato sulla pagina pubblica è quello iniziale (Studio Associato Wastelab), in attesa dell'**incarico formale** al soggetto che gestirà la piattaforma: è un atto esterno al portale; quando arriva, l'Amministratore aggiorna il dato in Impostazioni.
 - La verifica in due passaggi per lo staff è pronta ma spenta.
 - Non c'è ancora l'antivirus sui file caricati.
 

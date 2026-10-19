@@ -240,6 +240,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `24_programma_pubblico_crediti_reclami.sql` | Informazioni del Programma (`info_programma`, `admin_imposta_info_programma`); tabelle `registro_scambio` e `metodologia`; modelli pubblici (`modello_documento.pubblico`, `categoria`); crediti emessi: `credito_lotto`, `credito_vendita`, `admin_emetti_crediti`, `staff_carica_su_registro`, `staff_registra_vendita`, `staff_registra_cancellazione`, `cwp_riepilogo_lotto`, avviso giornaliero `genera_avvisi_crediti` (pg_cron `cwp_avvisi_crediti`); reclami: tabella `reclamo` con codice automatico, `invia_reclamo`, `miei_reclami`, notifiche; dati pubblici `pubblico_programma` e `pubblico_percorso_file` (solo chiave di servizio) | 18/10/2026 (sera, verificato) |
 | `25_documenti_programma.sql` | Gli otto documenti ufficiali del Programma v1.2 (Guida, Definizioni, Normativa, Standard, Metodologia, Politica di reclamo, Schema tariffario, Gestione qualità dei dati), caricati nella radice dell'archivio `modelli`, registrati come modelli pubblici «Documento del Programma»; PDF della Metodologia collegato alla metodologia approvata | 18/10/2026 (sera, verificato sulla pagina /programma) |
 | `26_pec_programma.sql` | PEC del Programma `operate@pec.it` (comunicata da Luca), mostrata sulla pagina pubblica nelle informazioni del Programma e per i reclami; modificabile poi da Impostazioni | 19/10/2026 (verificato sulla pagina /programma) |
+| `27_soggetto_promotore.sql` | Soggetto promotore del programma: Fondazione Operate, in esclusiva da Wastelab (gestione commerciale e tecnologica), testo sulla pagina pubblica | 19/10/2026 (verificato) |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
 script successivi.
@@ -458,6 +459,12 @@ si scrivono mai in chat, nel codice o nel registro.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 19 ottobre 2026
+- **Soggetto promotore del programma** — script `27_soggetto_promotore.sql`
+  eseguito in produzione: la pagina /programma indica Fondazione Operate,
+  gestore in esclusiva per conferimento di Wastelab (decisione del 19/10).
+  Presentazione aggiornata: slide «Architettura e infrastruttura» e «Chi fa
+  cosa nel portale», collegamenti al portale nelle slide di analisi
+  funzionale, tolta la scelta sull'incarico del soggetto promotore.
 - **PEC del Programma** — script `26_pec_programma.sql` eseguito in
   produzione alle 7:00: `operate@pec.it` compare sulla pagina pubblica
   /programma (informazioni del Programma e reclami).
@@ -844,6 +851,12 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   emessi con ID, registro esterno, vendite e cancellazione; reclami;
   controlli della Gestione qualità dei dati nel calcolo.
 
+- 19/10 — **Soggetto promotore del programma: Fondazione Operate.** Lo Studio
+  Associato Wastelab, proprietario del Programma, ha conferito in esclusiva a
+  Fondazione Operate, con accordi legali e commerciali, la gestione della
+  parte commerciale e della parte tecnologica (portale CWP). Pubblicato sulla
+  pagina /programma (script 27).
+
 **Aperte**
 - Scelte interpretative del calcolo crediti (soprattutto il segno del riuso,
   formule 26 e 29).
@@ -852,9 +865,6 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   (Guida 3.9): serve l'adesione della Fondazione come fornitore di servizi
   (direttamente con AgID o tramite un aggregatore accreditato) e il relativo
   contratto. Intanto resta l'email confermata (decisione D).
-- Incarico formale del soggetto promotore del programma (Guida 3.1): oggi è
-  lo Studio Associato Wastelab, che all'avvio della piattaforma incarica un
-  soggetto giuridico. Il testo pubblicato si aggiorna in Impostazioni.
 - Rapporti prima della registrazione del Progetto: lo Standard 4.5 li
   prevede dopo lo stato «progetto registrato»; il portale continua a
   permetterne la creazione mentre il Progetto è attivo (decisione del
@@ -946,7 +956,7 @@ completato (va barrato qui e annotato in Cronologia).
 
 **Da rifinire**
 
-- ~~**35.** Allineamento ai documenti ufficiali del Programma~~ — fatto la sera del 18/10 (script 22-24, portale, funzione `consultazione-pubblica`): vedi Decisioni e Cronologia. Restano SPID/CIE/CNS (punto 36) e l'incarico del soggetto promotore del programma.
+- ~~**35.** Allineamento ai documenti ufficiali del Programma~~ — fatto la sera del 18/10 (script 22-24, portale, funzione `consultazione-pubblica`): vedi Decisioni e Cronologia. Resta SPID/CIE/CNS (punto 36).
 - **36.** Accesso degli stakeholders con SPID, CIE o CNS (Guida 3.9): adesione come fornitore di servizi (AgID o aggregatore), poi integrazione nella pagina del feedback pubblico.
 - **21.** Agente AI (Claude) integrato nel portale — richiesto da Luca il 18/10. Ambito da definire; usi possibili: assistente per gli utenti dei Comuni (come compilare, cosa manca nella pratica), supporto agli Operatori (controllo completezza dei documenti, bozze di richieste di integrazione e di risposte ai commenti), verifica del tracciato dati prima dell'import, spiegazione dei risultati del calcolo crediti. Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che faccia da tramite, regole su quali dati l'agente può leggere (privacy) e registrazione delle sue azioni nell'audit.
 
@@ -1119,7 +1129,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 106 file, 24.725 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 107 file, 24.777 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1233,6 +1243,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 106 file, 24.725 righe 
 | `supabase/24_programma_pubblico_crediti_reclami.sql` | 571 | PIATTAFORMA PUBBLICA, CREDITI EMESSI E RECLAMI (18/10/2026) |
 | `supabase/25_documenti_programma.sql` | 35 | DOCUMENTI UFFICIALI DEL PROGRAMMA SULLA PAGINA PUBBLICA (18/10/2026) |
 | `supabase/26_pec_programma.sql` | 19 | PEC DEL PROGRAMMA (19/10/2026) |
+| `supabase/27_soggetto_promotore.sql` | 28 | SOGGETTO PROMOTORE DEL PROGRAMMA (19/10/2026) |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
@@ -1265,7 +1276,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 106 file, 24.725 righe 
 | `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
 | `strumenti/impagina_pdf.py` | 416 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
-| `strumenti/revisioni_documenti.json` | 250 | — |
+| `strumenti/revisioni_documenti.json` | 274 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
