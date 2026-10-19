@@ -503,6 +503,11 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   ora si vede formattato invece che con gli asterischi. Aggiornati Manuale
   Amministratore 3.6, Manuale Test 3.2, Istruzioni di ripristino 1.1,
   Registro 4.2 e Presentazione 2.2.
+  Poi, su richiesta di Luca, il messaggio d'attesa è diventato «Un attimo…»
+  (prima «Sto cercando nei manuali…») e il backlog ha in testa il riepilogo
+  «Da fare subito» con le azioni aperte (punti 38 e 39 nuovi). Manuale
+  Utente 2.7, Manuale Amministratore 3.7, Manuale Test 3.3, Registro 4.3,
+  Presentazione 2.3.
 - **Assistente virtuale, prima versione** (richiesta di Luca: aiuto ad
   Amministratori ed enti su una base di conoscenza del portale) — funzione
   del server `assistente` con Claude Haiku 5.5 e cache dei prompt; base di
@@ -1091,6 +1096,30 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 Numerazione stabile: un punto mantiene il suo numero anche quando è
 completato (va barrato qui e annotato in Cronologia).
 
+**Da fare subito (stato al 19/10/2026 sera)** — riepilogo delle azioni
+aperte; il dettaglio è nei punti numerati qui sotto.
+
+*Azioni di Luca (Claude non le può fare: chiavi, pubblicazioni, account)*
+- Ripubblicare le funzioni `crea-utente` e `reimposta-password` (versione
+  del 19/10 con l'email delle credenziali; capitolo 5).
+- Rieseguire nel SQL Editor la sola funzione `utente_mai_attivo` dello
+  script 30 (controllo esteso alle colonne «autore»).
+- Verificare il dominio email su Resend (punto 17): finché manca, le email
+  arrivano solo al titolare dell'account.
+- Decidere se spostare la fatturazione dell'assistente su un'organizzazione
+  della Claude Console intestata alla Fondazione (oggi è «Luca's Individual
+  Org»; ricevute a nome di Luca) — punto 21.
+
+*Sviluppo (Claude)*
+- Utenti online per l'Amministratore principale (punto 38, in corso).
+- Assistente: messaggi d'errore in italiano semplice (punto 39, proposto,
+  in attesa di conferma); poi Operatori e aiuto sulla singola pratica
+  (punto 21).
+- Simulatore: stampa PDF e conferma del modello (punto 37).
+- Sicurezza (punti 14-18 e 30) e passaggio ai piani a pagamento (punto 29).
+- Collaudo con dati reali e conferma delle scelte interpretative (punti 8,
+  9 e 19).
+
 **Calcolo crediti (back-office)**
 
 - ~~**1.** Import diretto del tracciato dati (Excel/ZIP) nel calcolo~~ — fatto il 18/10.
@@ -1203,7 +1232,9 @@ completato (va barrato qui e annotato in Cronologia).
 
 - ~~**35.** Allineamento ai documenti ufficiali del Programma~~ — fatto la sera del 18/10 (script 22-24, portale, funzione `consultazione-pubblica`): vedi Decisioni e Cronologia. Resta SPID/CIE/CNS (punto 36).
 - **36.** Accesso degli stakeholders con SPID, CIE o CNS (Guida 3.9): adesione come fornitore di servizi (AgID o aggregatore), poi integrazione nella pagina del feedback pubblico.
-- **21.** **Assistente virtuale (Claude)** integrato nel portale — richiesto da Luca il 18/10, confermato tra i punti aperti il 19/10. **Prima versione fatta il 19/10** (Amministratori ed enti, risposte dalla base di conoscenza su portale e tariffe: script 31, funzione `assistente`, componente `AssistenteVirtuale`); **attivo dal 19/10** (chiave e crediti della Claude Console di Luca). Restano i passi successivi descritti qui sotto (Operatori, aiuto sulla singola pratica). Funziona con i modelli Claude di Anthropic tramite API (lo sviluppo del portale si fa con Claude Code). Ambito da definire; usi possibili: assistente per gli utenti dei Comuni (come compilare, cosa manca nella pratica), supporto agli Operatori (controllo completezza dei documenti, bozze di richieste di integrazione e di risposte ai commenti), verifica del tracciato dati prima dell'import, spiegazione dei risultati del calcolo crediti. Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che faccia da tramite, regole su quali dati l'agente può leggere (privacy) e registrazione delle sue azioni nell'audit.
+- **38.** **Utenti online** — richiesto da Luca il 19/10: l'Amministratore principale (luca.moretti@operate.it) vede quanti e quali utenti sono collegati in quel momento. In corso: segnale di presenza del portale, script del database (sarà il 32), indicatore nell'intestazione e pannello con l'elenco.
+- **39.** **Messaggi d'errore dell'assistente in italiano semplice** — proposto il 19/10: oggi, se Anthropic rifiuta una richiesta (per esempio credito finito), l'utente vede il messaggio tecnico in inglese. Da sostituire con frasi semplici («L'assistente è momentaneamente non disponibile, riprova più tardi»), lasciando il dettaglio tecnico nei log della funzione. Richiede di ripubblicare la funzione `assistente`. In attesa della conferma di Luca.
+- **21.** **Assistente virtuale (Claude)** integrato nel portale — richiesto da Luca il 18/10, confermato tra i punti aperti il 19/10. **Prima versione fatta il 19/10** (Amministratori ed enti, risposte dalla base di conoscenza su portale e tariffe: script 31, funzione `assistente`, componente `AssistenteVirtuale`); **attivo dal 19/10** (chiave e crediti della Claude Console di Luca; da decidere se spostare la fatturazione su un'organizzazione della Fondazione). Durante l'attesa della risposta la finestra mostra «Un attimo…» (richiesta di Luca del 19/10). Restano i passi successivi descritti qui sotto (Operatori, aiuto sulla singola pratica). Funziona con i modelli Claude di Anthropic tramite API (lo sviluppo del portale si fa con Claude Code). Ambito da definire; usi possibili: assistente per gli utenti dei Comuni (come compilare, cosa manca nella pratica), supporto agli Operatori (controllo completezza dei documenti, bozze di richieste di integrazione e di risposte ai commenti), verifica del tracciato dati prima dell'import, spiegazione dei risultati del calcolo crediti. Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che faccia da tramite, regole su quali dati l'agente può leggere (privacy) e registrazione delle sue azioni nell'audit.
 
 ---
 
@@ -1377,7 +1408,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 123 file, 29.861 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 123 file, 29.891 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1540,7 +1571,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 123 file, 29.861 righe 
 | `strumenti/impagina_pdf.py` | 429 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 650 | — |
+| `strumenti/revisioni_documenti.json` | 680 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

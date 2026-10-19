@@ -402,7 +402,7 @@ Anche il vostro Progetto compare qui da quando è in fase di validazione. Sono p
 In basso a destra di ogni pagina trovate il pulsante **✦ Assistente**: apre una chat con un assistente basato su intelligenza artificiale (Claude) che risponde alle domande sul portale e sul Programma, per esempio come caricare un documento, cosa fare con una richiesta di integrazione o quanto costa una voce del Programma.
 
 1. Premete **✦ Assistente**.
-2. Scrivete la domanda, oppure scegliete uno degli esempi, e premete **Invio**.
+2. Scrivete la domanda, oppure scegliete uno degli esempi, e premete **Invio**. Mentre prepara la risposta compare «Un attimo…»: di solito bastano pochi secondi.
 3. Con **Nuova** ricominciate da capo; con **✕** chiudete la finestra.
 
 L'assistente risponde solo con le informazioni di questo manuale e delle tariffe del Programma; **non vede le vostre pratiche** e non fa operazioni al posto vostro. Le risposte possono contenere errori: in caso di dubbio vale il manuale, oppure scrivete a Fondazione Operate con i Messaggi della pratica. Le domande e le risposte non vengono salvate; c'è un limite di domande al giorno.

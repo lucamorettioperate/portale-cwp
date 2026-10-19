@@ -97,7 +97,7 @@ export default function AssistenteVirtuale({ ruolo }) {
                 {m.ruolo === "utente" ? m.testo : <TestoRisposta testo={m.testo} />}
               </div>
             ))}
-            {attesa && <div style={{ ...bollaAssistente, color: C.grafite }}>Sto cercando nei manuali…</div>}
+            {attesa && <div style={{ ...bollaAssistente, color: C.grafite }}>Un attimo…</div>}
             <div ref={fondo} />
           </div>
 
