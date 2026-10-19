@@ -473,7 +473,7 @@ La pagina **Impostazioni** (solo Amministratori) ha sei sezioni: Il Programma (p
 
 ### Il Programma (pagina pubblica)
 
-Le informazioni che compaiono sulla pagina pubblica del Programma (Guida 3.1 e 3.6): **Soggetto promotore del programma**, **PEC del Programma (anche per i reclami)**, **Email** e **Sito ufficiale**. Valori iniziali: soggetto promotore Studio Associato Wastelab (Guida 3.1), in attesa dell'incarico al soggetto giuridico che gestirà la piattaforma; email info@carbonwasteprint.com; sito www.carbonwasteprint.com; la PEC è da inserire. Cambiate i campi e premete **Salva**; ogni modifica finisce nell'audit. Quando l'incarico al soggetto promotore sarà formalizzato, aggiornate il testo.
+Le informazioni che compaiono sulla pagina pubblica del Programma (Guida 3.1 e 3.6): **Soggetto promotore del programma**, **PEC del Programma (anche per i reclami)**, **Email** e **Sito ufficiale**. Valori iniziali: soggetto promotore Studio Associato Wastelab (Guida 3.1), in attesa dell'incarico al soggetto giuridico che gestirà la piattaforma; email info@carbonwasteprint.com; sito www.carbonwasteprint.com; PEC operate@pec.it (dal 19/10/2026). Tra i modelli di documento sono già pubblicati, come «Documento del Programma», gli otto documenti ufficiali v1.2 (Guida, Definizioni, Normativa, Standard, Metodologia, Politica di reclamo, Schema tariffario, Gestione della qualità dei dati), e il PDF della Metodologia è collegato alla metodologia approvata. Cambiate i campi e premete **Salva**; ogni modifica finisce nell'audit. Quando l'incarico al soggetto promotore sarà formalizzato, aggiornate il testo.
 
 ### Metodologie approvate
 

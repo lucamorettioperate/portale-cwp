@@ -115,6 +115,12 @@
       "data": "18/10/2026",
       "descrizione": "Allineamento ai documenti ufficiali del Programma (script 22-24): Rapporto a 7 fasi, feedback pubblico, stati del Programma, dati del progetto e territorio ISTAT, ritiro e rientro, account unico e delegati, registri, tariffe e sospensione, accuratezza e accertamenti, informazioni del Programma e metodologie, modelli pubblici; nuovi capitoli Crediti emessi, Reclami, Pagina pubblica; qualità dei dati nel calcolo.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.8",
+      "data": "19/10/2026",
+      "descrizione": "PEC del Programma e documenti ufficiali già pubblicati sulla pagina pubblica.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
