@@ -11,8 +11,9 @@
 --  Regole (tutte controllate qui, non solo nella pagina):
 --   - solo un Amministratore (app_is_admin);
 --   - mai sé stessi né l'Amministratore principale (script 29);
---   - nessuna voce di audit con l'utente come autore, e nessun reclamo
---     assegnato all'utente.
+--   - nessuna voce di audit con l'utente come autore, e nessuna riga del
+--     portale che lo indichi come autore o responsabile (documenti,
+--     messaggi, pagamenti, calcoli, scenari, reclami assegnati…).
 --  La cancellazione toglie l'account (auth.users) e, a cascata, profilo,
 --  associazioni alle organizzazioni e notifiche. Nell'audit resta la voce
 --  «cancellazione profilo» con l'Amministratore che l'ha fatta.
@@ -23,14 +24,42 @@
 -- =====================================================================
 
 
--- Vero se l'utente non ha mai operato (nessuna voce di audit come autore
--- e nessun reclamo assegnato). Uso interno.
+-- Vero se l'utente non ha mai operato. Uso interno. Controlla:
+--  1. nessuna voce dell'audit trail con l'utente come autore;
+--  2. nessuna riga, in nessuna tabella del portale, che lo indichi come
+--     autore o responsabile (caricato da, autore, registrato da, creato
+--     da, gestore del reclamo…). Le colonne si trovano da sole leggendo le
+--     chiavi esterne verso auth.users e profilo, quindi valgono anche per
+--     le tabelle che si aggiungeranno. Si escludono i legami «a cascata»
+--     (profilo, associazioni alle organizzazioni, notifiche), che
+--     appartengono all'utente e si cancellano con lui.
 create or replace function utente_mai_attivo(p_utente uuid)
 returns boolean
-language sql stable security definer set search_path = public as $$
-  select not exists (select 1 from audit_event where utente_id = p_utente)
-     and not exists (select 1 from reclamo where gestore_id = p_utente);
-$$;
+language plpgsql stable security definer set search_path = public as $$
+declare
+  r record;
+  v_trovato boolean;
+begin
+  if exists (select 1 from audit_event where utente_id = p_utente) then
+    return false;
+  end if;
+  for r in
+    select c.conrelid::regclass::text as tabella, a.attname::text as colonna
+      from pg_constraint c
+      join pg_attribute a on a.attrelid = c.conrelid and a.attnum = c.conkey[1]
+     where c.contype = 'f'
+       and c.confrelid in ('auth.users'::regclass, 'public.profilo'::regclass)
+       and c.connamespace = 'public'::regnamespace
+       and c.confdeltype <> 'c'
+  loop
+    execute format('select exists (select 1 from %s where %I = $1)', r.tabella, r.colonna)
+      into v_trovato using p_utente;
+    if v_trovato then
+      return false;
+    end if;
+  end loop;
+  return true;
+end $$;
 revoke execute on function utente_mai_attivo(uuid) from public, anon, authenticated;
 
 -- Elenco degli utenti cancellabili, per la pagina «Gestione utenti»
