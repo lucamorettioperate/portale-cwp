@@ -49,6 +49,7 @@ begin
   return v;
 end $$;
 revoke execute on function assistente_registra_uso(uuid, bigint, bigint) from public, anon, authenticated;
+grant execute on function assistente_registra_uso(uuid, bigint, bigint) to service_role;
 
 -- Domande fatte oggi da un utente (per il limite giornaliero). Solo la
 -- funzione del server.
@@ -59,6 +60,7 @@ language sql stable security definer set search_path = public as $$
                     where utente_id = p_utente and giorno = (now() at time zone 'Europe/Rome')::date), 0);
 $$;
 revoke execute on function assistente_domande_oggi(uuid) from public, anon, authenticated;
+grant execute on function assistente_domande_oggi(uuid) to service_role;
 
 -- Riepilogo per gli Amministratori: domande e token per mese.
 create or replace function assistente_riepilogo_uso()
