@@ -745,15 +745,16 @@ Per ogni Comune si possono creare più scenari; con **Duplica** si parte da uno 
 
 **1. Impostazioni.** Nome, durata (menu a tendina 7 / 10 / 21 anni, Standard 4.3.8), primo anno, **buffer previsto** (quota trattenuta dai crediti lordi, Capitolo 7 della Metodologia; 20% è un valore cautelativo) e note sulle ipotesi.
 
-**2. Dati dell'anno base.** Anno, popolazione residente e rifiuti per tipologia in tonnellate (secco residuo compreso). Tre modi per compilarli:
+**2. Scenario di riferimento (Standard 4.8.1).** È la situazione «senza progetto» con cui si confrontano gli obiettivi, come nel Programma. Due modi, scelti con i pulsanti:
 
-- a mano, dai dati del Catasto ISPRA o del gestore;
-- **Usa i valori medi del cluster**: scelto il cluster SOSE del Comune, il portale riempie la tabella con i valori medi pro capite della Tabella 3 dello Standard × popolazione;
-- **Importa da un calcolo dei crediti** (solo Amministratori): riprende i rifiuti del territorio da un calcolo già fatto.
+- **Anno con il 65% di differenziata**: l'anno in cui il Comune ha raggiunto l'obiettivo di legge (tra 64% e 66%, dati Catasto ISPRA), con popolazione e rifiuti per tipologia in tonnellate; si compilano a mano o, per gli Amministratori, si importano da un calcolo dei crediti. Se la differenziata dell'anno indicato è fuori dall'intervallo il portale lo segnala (Standard 4.8.1 e addizionalità normativa 4.9.1); se è indicato il cluster, segnala anche le tipologie che si scostano più del 30% dalla Tabella 3 (Gestione della qualità dei dati, 3.1.2);
+- **Valori medi del cluster (Tabella 3)**: quando il Comune non ha un anno con il 65%, si sceglie il cluster SOSE, si indica la popolazione ISPRA 2022 e si preme **Calcola dai valori medi del cluster**.
 
-A destra il riepilogo: produzione totale e pro capite, secco pro capite, **% di raccolta differenziata** e fattore di emissione del secco (formule 16-17).
+A destra il riepilogo: produzione totale e pro capite, secco pro capite, **% di raccolta differenziata**, esito del controllo sul 65% e fattore di emissione del secco (formule 16-17).
 
-**3. Obiettivi anno per anno.** Una riga per ogni anno del periodo: popolazione, **produzione totale prevista** (in tonnellate, oppure scrivendo il pro capite in kg/ab) e **secco residuo pro capite** obiettivo. Per non compilare tutto a mano, indicate gli obiettivi dell'ultimo anno (produzione pro capite e secco pro capite) e premete **Applica la traiettoria**: il portale riempie gli anni con un andamento lineare dall'anno base, poi potete correggere i singoli anni. Per ogni anno il portale ricalcola il secco in tonnellate e la **% di differenziata**.
+**Situazione attuale (facoltativa).** L'ultimo anno con dati disponibili (popolazione, produzione pro capite, secco pro capite): è il punto di partenza degli obiettivi e della traiettoria. I crediti si calcolano sempre rispetto allo scenario di riferimento.
+
+**3. Obiettivi anno per anno.** Una riga per ogni anno del periodo: popolazione, **produzione totale prevista** (in tonnellate, oppure scrivendo il pro capite in kg/ab) e **secco residuo pro capite** obiettivo. Per non compilare tutto a mano, indicate gli obiettivi dell'ultimo anno (produzione pro capite e secco pro capite) e premete **Applica la traiettoria**: il portale riempie gli anni con un andamento lineare dalla situazione attuale (o dal riferimento), poi potete correggere i singoli anni. Per ogni anno il portale ricalcola il secco in tonnellate e la **% di differenziata**.
 
 **4. Risultati.** Si aggiornano a ogni modifica:
 
@@ -768,12 +769,14 @@ Premete **Salva** per conservare lo scenario: nell'elenco *Scenari per Comune* c
 
 | Grandezza | Come si calcola |
 | --- | --- |
-| Scenario di riferimento | Rifiuti pro capite dell'anno base, per tipologia, × popolazione dell'anno |
-| Scenario simulato | Secco obiettivo + differenziata (totale − secco) ripartita con le proporzioni dell'anno base |
+| Scenario di riferimento | Rifiuti pro capite dell'anno di riferimento (o del cluster), per tipologia, × popolazione dell'anno |
+| Scenario simulato | Secco obiettivo + differenziata (totale − secco) ripartita con le proporzioni del riferimento |
 | Emissioni | − Σ quantità × fattore di emissione (formule 13 e 25); per il secco la media dei fattori della differenziata (formule 16-17) |
 | Crediti | Lordi = riduzione delle emissioni rispetto al riferimento; netti = lordi × (1 − buffer) |
 
 > **Da sapere.** Con queste formule i crediti nascono dai **rifiuti evitati**, cioè prodotti in meno rispetto allo scenario di riferimento: il riquadro *Da dove vengono i crediti* indica quante tCO₂eq vale una tonnellata in meno per quel Comune. Spostare rifiuti dal secco alla differenziata alza la percentuale di raccolta differenziata ma, a parità di produzione totale, non genera crediti. Il modello semplificato va confermato dalla Fondazione.
+
+**Conformità al modello CWP.** La stima ex ante a livello di Comune è ammessa dalla Metodologia (Capitolo 6.1, valori medi su tutte le utenze; Capitolo 6.2, emissioni di progetto ex ante «complessivamente a livello di Ente»). Il simulatore segue lo Standard per la durata (4.3.8), lo scenario di riferimento (4.8.1) e l'addizionalità (4.9.1), e la Metodologia per fattori di emissione (Tabelle 3-4), fattore del secco (formule 16-17), variazione di impatto e buffer (formule 31-32, Capitolo 7). I beni a riuso valgono zero, come chiede la Metodologia per la stima ex ante (Capitolo 6.1), e non ci sono perdite (leakage, Capitolo 6.3). Non sono considerati il primo anno parziale (formula 1) e la componente trasporto (Capitolo 9). Il calcolo per singola utenza resta quello ex post.
 
 Ogni creazione, modifica e cancellazione di uno scenario è registrata nell'audit. I Comuni non vedono gli scenari.
 

@@ -157,6 +157,12 @@
       "data": "19/10/2026",
       "descrizione": "Nuovo capitolo «Simulatore di scenari»: creazione, anno base, obiettivi annui, risultati, modello di stima.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.3",
+      "data": "19/10/2026",
+      "descrizione": "Simulatore conforme al modello CWP: scenario di riferimento dello Standard 4.8.1, situazione attuale, conformità.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -224,6 +230,12 @@
       "rev": "2.0",
       "data": "19/10/2026",
       "descrizione": "Prove 8b del simulatore di scenari.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.1",
+      "data": "19/10/2026",
+      "descrizione": "Prove 8b.2b e 8b.2c (scenario di riferimento e situazione attuale).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -334,6 +346,12 @@
       "rev": "2.7",
       "data": "19/10/2026",
       "descrizione": "Script 28 del simulatore eseguito in produzione.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.8",
+      "data": "19/10/2026",
+      "descrizione": "Verifica di conformità del simulatore al modello CWP.",
       "autore": "Fondazione Operate"
     }
   ],

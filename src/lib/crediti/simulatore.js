@@ -13,9 +13,25 @@
    - variazione di impatto ΔI = EP − EA; crediti lordi = −ΔI se negativa;
      crediti netti = lordi × (1 − buffer) (formule 31-32, Cap. 7).
 
+   Conformità al modello CWP (controllata il 19/10/2026):
+   - scenario di riferimento = anno di riferimento dello Standard 4.8.1:
+     l'anno in cui il Comune ha raggiunto il 65% di differenziata (tra 64%
+     e 66%, Catasto ISPRA) oppure, se non c'è, i valori medi pro capite del
+     cluster SOSE (Tabella 3) × popolazione ISPRA 2022; il simulatore
+     avvisa se la % dell'anno indicato è fuori dall'intervallo
+     (addizionalità normativa, Standard 4.9.1) e se le quantità si
+     scostano più del 30% dalla Tabella 3 (Gestione qualità dei dati 3.1.2);
+   - stima ex ante a livello di Comune: ammessa dalla Metodologia (Cap. 6.1,
+     semplificazione a: valori medi su tutte le utenze; Cap. 6.2: emissioni
+     di progetto ex ante anche «complessivamente a livello di Ente»);
+   - beni a riuso: zero nella stima ex ante (Cap. 6.1); nessun leakage
+     (Cap. 6.3); durata 7 (fino a 3 volte) o 10 anni (Standard 4.3.8).
    Modello semplificato (da confermare con la Fondazione, docs/crediti-cwp.md):
    - scenario di riferimento (EA) dell'anno = produzione pro capite
-     dell'anno base, per tipologia, × popolazione dell'anno;
+     dell'anno di riferimento, per tipologia, × popolazione dell'anno
+     (i valori attesi per utenza applicati alle utenze presenti);
+   - situazione attuale (facoltativa): punto di partenza degli obiettivi
+     annui e della traiettoria; se manca si parte dal riferimento;
    - scenario simulato (EP) dell'anno = secco obiettivo + differenziata
      (totale − secco) ripartita tra le frazioni con le proporzioni
      dell'anno base;
@@ -34,7 +50,7 @@
    ========================================================================= */
 import { TIPOLOGIE_RIFIUTO } from "./parametri.js";
 import { fattoreIndifferenziato } from "./calcolo.js";
-import { TABELLA3_CLUSTER } from "./qualita.js";
+import { TABELLA3_CLUSTER, scostamentiTabella3 } from "./qualita.js";
 
 // Durate ammesse del periodo (Standard 4.3.8: 10 anni, oppure 7 rinnovabili
 // fino a 21). Il database accetta solo questi valori (script 28).
@@ -65,7 +81,11 @@ export function fattoriPredefiniti() {
 // Dati iniziali di un nuovo scenario (anno base vuoto, buffer 20%).
 export function datiIniziali(annoInizio) {
   return {
-    annoBase: { anno: annoInizio - 1, popolazione: "", cluster: "", rifiuti: {} },
+    // annoBase = scenario di riferimento (Standard 4.8.1); metodo "anno"
+    // (anno con differenziata 64-66%) o "cluster" (Tabella 3 × pop. 2022).
+    annoBase: { metodo: "anno", anno: "", popolazione: "", cluster: "", rifiuti: {} },
+    // Situazione attuale (facoltativa): punto di partenza degli obiettivi.
+    attuale: { anno: "", popolazione: "", proCapite: "", seccoProCapite: "" },
     bufferPct: BUFFER_PREDEFINITO,
     anni: [],
   };
@@ -127,9 +147,27 @@ export function rifiutiDaCalcolo(datiCalcolo) {
   return out;
 }
 
+// Intervallo dello Standard 4.8.1 per l'anno di riferimento (65% ± 1%).
+export const RD_RIFERIMENTO_MIN = 64;
+export const RD_RIFERIMENTO_MAX = 66;
+
+/* Punto di partenza degli obiettivi: la situazione attuale se compilata
+   (pro capite e secco pro capite), altrimenti lo scenario di riferimento.
+   Restituisce { popolazione, totale, proCapite, seccoProCapite, fonte }. */
+export function puntoDiPartenza(base, attuale) {
+  const pc = num(attuale?.proCapite);
+  const sc = num(attuale?.seccoProCapite);
+  if (pc > 0) {
+    const pop = num(attuale?.popolazione) || base.popolazione;
+    return { popolazione: pop, totale: (pc * pop) / 1000, proCapite: pc, seccoProCapite: sc || base.seccoProCapite, fonte: "attuale" };
+  }
+  return { popolazione: base.popolazione, totale: base.totale, proCapite: base.proCapite, seccoProCapite: base.seccoProCapite, fonte: "riferimento" };
+}
+
 /* Anni del periodo: N righe { anno, popolazione, totale, seccoProCapite }
    dall'anno di inizio. Conserva i valori già inseriti per gli stessi anni;
-   i nuovi anni partono dai valori dell'anno base (nessun cambiamento). */
+   i nuovi anni partono dal punto di partenza (nessun cambiamento).
+   Parametro base: riepilogo del riferimento o puntoDiPartenza(). */
 export function anniDelPeriodo({ durata, annoInizio, anni = [], base }) {
   const perAnno = new Map(anni.map((a) => [Number(a.anno), a]));
   return Array.from({ length: Number(durata) }, (_, i) => {
@@ -151,7 +189,8 @@ export function anniDelPeriodo({ durata, annoInizio, anni = [], base }) {
   });
 }
 
-/* Traiettoria lineare: dall'anno base agli obiettivi dell'ultimo anno
+/* Traiettoria lineare: dal punto di partenza (situazione attuale o
+   riferimento: parametro base) agli obiettivi dell'ultimo anno
    (produzione pro capite e secco pro capite in kg/ab). La popolazione
    resta quella già indicata per ogni anno (o quella dell'anno base). */
 export function traiettoriaLineare({ anni, base, proCapiteFinale, seccoProCapiteFinale }) {
@@ -185,9 +224,24 @@ export function simula(dati) {
   const fattori = { ...fattoriPredefiniti(), ...(dati.fattori || {}) };
   const base = riepilogoAnnoBase(dati.annoBase, fattori);
   const bufferPct = Math.min(Math.max(num(dati.bufferPct), 0), 100);
-  if (!base.popolazione) avvisi.push("Manca la popolazione dell'anno base.");
-  if (!base.totale) avvisi.push("Mancano i rifiuti dell'anno base.");
-  if (base.totale && !base.secco) avvisi.push("Nell'anno base manca il secco residuo (indifferenziato).");
+  if (!base.popolazione) avvisi.push("Manca la popolazione dello scenario di riferimento.");
+  if (!base.totale) avvisi.push("Mancano i rifiuti dello scenario di riferimento.");
+  if (base.totale && !base.secco) avvisi.push("Nello scenario di riferimento manca il secco residuo (indifferenziato).");
+  // Conformità dello scenario di riferimento (Standard 4.8.1 e 4.9.1).
+  const metodo = dati.annoBase?.metodo || "anno";
+  if (metodo === "anno" && base.totale && (base.rd < RD_RIFERIMENTO_MIN - 1e-9 || base.rd > RD_RIFERIMENTO_MAX + 1e-9)) {
+    avvisi.push(`Scenario di riferimento non conforme: lo Standard 4.8.1 chiede l'anno in cui il Comune ha raggiunto il 65% di differenziata (tra 64% e 66%); qui è ${base.rd.toFixed(1).replace(".", ",")}%. Indicate quell'anno oppure usate i valori medi del cluster SOSE (Tabella 3).`);
+  }
+  if (metodo === "anno" && base.totale && base.popolazione && dati.annoBase?.cluster) {
+    const fuori = scostamentiTabella3({
+      rifiuti: Object.entries(base.rifiuti).map(([tipologia, qtot]) => ({ tipologia, qtot })),
+      popolazione: base.popolazione,
+      cluster: dati.annoBase.cluster,
+    }).filter((r) => r.oltre);
+    if (fuori.length) {
+      avvisi.push(`Scostamento oltre il 30% dai valori medi del cluster (Tabella 3, Gestione qualità dei dati 3.1.2) per: ${fuori.map((r) => r.tipologia).join(", ")}. Nel Progetto serve una motivazione.`);
+    }
+  }
   if (base.feSecco == null && base.totale) avvisi.push("Non è possibile ricavare il fattore del secco: servono frazioni a recupero con fattore di emissione.");
   if (!base.popolazione || !base.totale || base.feSecco == null) {
     return { base, righe: [], totali: null, avvisi };

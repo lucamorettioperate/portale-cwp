@@ -229,7 +229,9 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | N. | Prova | Risultato atteso |
 | --- | --- | --- |
 | 8b.1 | [O] Menu Simulatore → + Nuovo scenario: Comune scritto a mano «Comune di Prova», nome «Obiettivo», durata dal menu **10 anni**, primo anno 2027 → Crea | Si apre lo scenario con 10 righe di obiettivi (2027-2036) |
-| 8b.2 | Anno base: popolazione 10000, cluster 4 → Usa i valori medi del cluster | Tabella dei rifiuti compilata; riepilogo: produzione 445 kg/ab, secco 95 kg/ab, differenziata circa 78,7% |
+| 8b.2 | Scenario di riferimento → Valori medi del cluster (Tabella 3): popolazione 10000, cluster 4 → Calcola dai valori medi del cluster | Tabella dei rifiuti compilata; riepilogo: produzione 445 kg/ab, secco 95 kg/ab, differenziata circa 78,7% |
+| 8b.2b | Passate ad «Anno con il 65% di differenziata» lasciando gli stessi rifiuti | Riquadro arancione «Lo Standard 4.8.1 chiede un anno con differenziata tra 64% e 66%» e avviso nei Risultati; tornando al cluster l'avviso sparisce |
+| 8b.2c | Situazione attuale: anno 2025, produzione 430 kg/ab, secco 90 kg/ab | «Differenziata attuale: 79,1%»; gli obiettivi nuovi partono da questi valori |
 | 8b.3 | Obiettivi: pro capite finale 350, secco pro capite finale 60 → Applica la traiettoria | Righe compilate in modo lineare; la % di differenziata cresce ogni anno; nei Risultati crediti netti positivi e crescenti, grafici aggiornati |
 | 8b.4 | Cambiate la durata a **21 anni**, poi a **7 anni** | Le righe diventano 21 e poi 7; i valori già inseriti per gli stessi anni restano |
 | 8b.5 | In un anno portate il secco pro capite oltre il pro capite totale | Avviso «il secco previsto supera la produzione totale» |

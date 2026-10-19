@@ -71,7 +71,8 @@ Stima ex ante, non certificabile.
 |---|---|
 | Scenario | Comune (censito o solo nome), nome e note; più scenari per Comune, duplicabili e confrontabili |
 | Durata | Menu a tendina: 7, 10 o 21 anni (Standard 4.3.8); primo anno |
-| Anno base | Popolazione e rifiuti per tipologia (t): a mano, dai valori medi del cluster SOSE (Tabella 3 dello Standard) o da un calcolo esistente |
+| Scenario di riferimento | Standard 4.8.1: anno con differenziata 64-66% (a mano o da un calcolo esistente) oppure valori medi del cluster SOSE (Tabella 3) × popolazione ISPRA 2022; avvisi se fuori intervallo o oltre ±30% dalla Tabella 3 |
+| Situazione attuale | Facoltativa: ultimo anno disponibile, punto di partenza di obiettivi e traiettoria |
 | Obiettivi annui | Per ogni anno: popolazione, produzione totale (t o kg/ab), secco residuo pro capite (kg/ab); traiettoria lineare automatica |
 | Ricalcolo | Secco = secco pro capite × popolazione; differenziata = totale − secco; % differenziata = differenziata / totale |
 | Crediti simulati | Per anno: lordi, buffer, netti, cumulati; totale del periodo |
@@ -79,7 +80,7 @@ Stima ex ante, non certificabile.
 
 **Modello (semplificato, da confermare con la Fondazione)**
 
-- Scenario di riferimento dell'anno *a*: Q_rif(r, a) = Q_base(r) × Pop(a) / Pop_base.
+- Scenario di riferimento dell'anno *a*: Q_rif(r, a) = Q_rif(r) × Pop(a) / Pop_rif, con Q_rif dall'anno di riferimento dello Standard 4.8.1 (o dalla Tabella 3).
 - Scenario simulato: Q(secco, a) = secco pro capite(a) × Pop(a); Q(r, a) =
   (Totale(a) − Q(secco, a)) × quota di *r* nella differenziata dell'anno base.
 - Emissioni: E = − Σ Q(r) × FErid(r) (formule 13 e 25); FE del secco =
@@ -87,6 +88,22 @@ Stima ex ante, non certificabile.
   (formule 16-17).
 - ΔI(a) = EP(a) − EA(a); crediti lordi = −ΔI se negativa, altrimenti debito;
   netti = lordi × (1 − buffer).
+
+**Conformità al modello CWP (verifica del 19/10/2026).**
+
+| Punto | Documento CWP | Nel simulatore |
+|---|---|---|
+| Durata | Standard 4.3.8: 7 anni ripetibili tre volte o 10 anni | Menu 7 / 10 / 21 anni |
+| Scenario di riferimento | Standard 4.8 e 4.8.1: anno con differenziata 64-66% o Tabella 3 × popolazione ISPRA 2022 | I due metodi, con controllo dell'intervallo |
+| Addizionalità normativa | Standard 4.9.1 | Avviso se l'anno di riferimento è fuori 64-66% |
+| Qualità dei dati | Gestione qualità 3.1.2: ±30% dalla Tabella 3 | Avviso per tipologia |
+| Stima ex ante aggregata | Metodologia 6.1 (semplificazione a) e 6.2 | Valori medi su tutto il Comune |
+| Emissioni | Formule 13 e 25, FErid Tabelle 3-4 | Stesse formule e fattori di `parametri.js` |
+| Fattore del secco | Formule 16-17 | Media pesata del riferimento |
+| Crediti e buffer | Formule 31-32, Capitolo 7 | Lordi, buffer, netti, debito |
+| Riuso ex ante | Metodologia 6.1: valore pari a zero | Non considerato |
+| Leakage | Metodologia 6.3: non previsto | Non considerato |
+| Non coperti | Formula 1 (primo anno parziale), Capitolo 9 (trasporto), buffer da Tabelle 15-16 | Buffer impostato a mano (20% predefinito) |
 
 **Conseguenza da comunicare.** Poiché il fattore del secco è la media dei
 fattori della differenziata, con composizione costante i crediti sono

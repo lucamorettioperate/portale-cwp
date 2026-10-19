@@ -7,9 +7,13 @@
      - Editor dello scenario in quattro parti:
        1. Impostazioni: nome, note, durata (menu 7 / 10 / 21 anni), anno di
           inizio, buffer;
-       2. Anno base: popolazione e rifiuti per tipologia (a mano, dai
-          valori medi del cluster SOSE della Tabella 3 dello Standard o, per
-          gli Amministratori, da un calcolo dei crediti esistente);
+       2. Scenario di riferimento (Standard 4.8.1): l'anno in cui il
+          Comune ha raggiunto il 65% di differenziata (a mano o, per gli
+          Amministratori, da un calcolo esistente) oppure i valori medi del
+          cluster SOSE (Tabella 3) × popolazione ISPRA 2022; avvisi di
+          conformità (64-66%, scostamento ±30% dalla Tabella 3);
+          più la situazione attuale facoltativa, punto di partenza degli
+          obiettivi;
        3. Obiettivi anno per anno: popolazione, produzione totale (t) o pro
           capite, secco residuo pro capite; traiettoria lineare automatica;
        4. Risultati: % di differenziata e crediti stimati per anno e sul
@@ -35,7 +39,7 @@ import { CLUSTER } from "../lib/crediti/qualita.js";
 import { formatoData } from "../lib/date.js";
 import {
   DURATE, TIPOLOGIE, datiIniziali, riepilogoAnnoBase, rifiutiDaCluster, rifiutiDaCalcolo,
-  anniDelPeriodo, traiettoriaLineare, simula, righeCsv,
+  anniDelPeriodo, traiettoriaLineare, simula, righeCsv, puntoDiPartenza,
 } from "../lib/crediti/simulatore.js";
 import { elencaScenari, leggiScenario, creaScenario, salvaScenario, duplicaScenario, eliminaScenario } from "../lib/crediti/scenari.js";
 
@@ -128,7 +132,7 @@ export default function Simulatore() {
           <div>
             <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 4px" }}>Simulatore di scenari</h1>
             <p style={{ fontSize: 13.5, color: C.grafite, margin: 0, maxWidth: 720 }}>
-              Quanti crediti potrebbe generare un Comune in 7, 10 o 21 anni? Dai dati dell'anno base e dagli obiettivi annui di produzione dei
+              Quanti crediti potrebbe generare un Comune in 7, 10 o 21 anni? Dallo scenario di riferimento del Programma (Standard 4.8.1) e dagli obiettivi annui di produzione dei
               rifiuti e di secco residuo, il simulatore ricalcola la % di raccolta differenziata e stima i crediti anno per anno.
               <strong> Stima ex ante, non certificabile.</strong>
             </p>
@@ -291,19 +295,24 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
   const dati = scenario.dati || {};
   const annoBase = dati.annoBase || { rifiuti: {} };
   const base = useMemo(() => riepilogoAnnoBase(annoBase), [annoBase]);
+  const attuale = dati.attuale || {};
+  // Punto di partenza degli obiettivi: situazione attuale o riferimento.
+  const partenza = useMemo(() => puntoDiPartenza(base, attuale), [base, attuale]);
+  const metodo = annoBase.metodo || "anno";
   const [traiettoria, setTraiettoria] = useState({ proCapiteFinale: "", seccoProCapiteFinale: "" });
   const [calcoli, setCalcoli] = useState(null);
   const [calcoloScelto, setCalcoloScelto] = useState("");
 
   // Anni del periodo allineati a durata e primo anno (senza perdere i valori).
   const anni = useMemo(
-    () => anniDelPeriodo({ durata: scenario.durata, annoInizio: scenario.anno_inizio, anni: dati.anni || [], base }),
-    [scenario.durata, scenario.anno_inizio, dati.anni, base]
+    () => anniDelPeriodo({ durata: scenario.durata, annoInizio: scenario.anno_inizio, anni: dati.anni || [], base: partenza }),
+    [scenario.durata, scenario.anno_inizio, dati.anni, partenza]
   );
   const risultato = useMemo(() => simula({ ...dati, anni }), [dati, anni]);
 
   const cambiaDati = (campi) => onCambia({ ...scenario, dati: { ...dati, anni, ...campi } });
   const cambiaBase = (campi) => cambiaDati({ annoBase: { ...annoBase, ...campi } });
+  const cambiaAttuale = (campi) => cambiaDati({ attuale: { ...attuale, ...campi } });
   const cambiaRifiuto = (t, v) => cambiaBase({ rifiuti: { ...(annoBase.rifiuti || {}), [t]: v } });
   const cambiaAnno = (i, campi) => cambiaDati({ anni: anni.map((a, j) => (j === i ? { ...a, ...campi } : a)) });
 
@@ -382,20 +391,34 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
         <p style={nota}>Durata: 10 anni, oppure 7 rinnovabili fino a 21 (Standard 4.3.8). Buffer: quota trattenuta dai crediti lordi (Capitolo 7 e Tabelle 15-16 della Metodologia); 20% è un valore cautelativo.</p>
       </div>
 
-      {/* 2. Anno base */}
+      {/* 2. Scenario di riferimento (Standard 4.8.1) */}
       <div style={riquadro}>
-        <h2 style={h2}>2. Dati dell'anno base</h2>
+        <h2 style={h2}>2. Scenario di riferimento (Standard 4.8.1)</h2>
+        <p style={{ ...nota, margin: "0 0 10px" }}>
+          È la situazione «senza progetto» con cui si confrontano gli obiettivi. Lo Standard chiede l'<strong>anno in cui il Comune ha raggiunto
+          il 65% di raccolta differenziata</strong> (tra 64% e 66%, dati Catasto ISPRA); se non esiste, i <strong>valori medi pro capite del cluster
+          SOSE</strong> (Tabella 3) × la popolazione ISPRA 2022.
+        </p>
+        <div className="no-stampa" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+          {[["anno", "Anno con il 65% di differenziata"], ["cluster", "Valori medi del cluster (Tabella 3)"]].map(([v, l]) => (
+            <button key={v} onClick={() => cambiaBase({ metodo: v })} style={{ ...btnMini, ...(metodo === v ? { background: C.green, color: C.white, borderColor: C.green } : {}) }}>
+              {l}
+            </button>
+          ))}
+        </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 12 }}>
+          {metodo === "anno" && (
+            <label style={lbl}>
+              Anno di riferimento
+              <input style={campo} type="number" value={annoBase.anno ?? ""} onChange={(e) => cambiaBase({ anno: e.target.value })} />
+            </label>
+          )}
           <label style={lbl}>
-            Anno base
-            <input style={campo} type="number" value={annoBase.anno ?? ""} onChange={(e) => cambiaBase({ anno: e.target.value })} />
-          </label>
-          <label style={lbl}>
-            Popolazione residente
+            {metodo === "cluster" ? "Popolazione (Catasto ISPRA 2022)" : "Popolazione nell'anno di riferimento"}
             <input style={campo} inputMode="numeric" value={annoBase.popolazione ?? ""} onChange={(e) => cambiaBase({ popolazione: e.target.value })} />
           </label>
           <label style={lbl}>
-            Cluster SOSE (Tabella 3)
+            Cluster SOSE (Tabella 2 dello Standard)
             <select style={campo} value={annoBase.cluster ?? ""} onChange={(e) => cambiaBase({ cluster: e.target.value })}>
               <option value="">—</option>
               {CLUSTER.map((c, i) => (
@@ -405,16 +428,18 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
           </label>
         </div>
         <div className="no-stampa" style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "4px 0 12px" }}>
-          <button
-            style={btnMini}
-            disabled={!annoBase.cluster || !num(annoBase.popolazione)}
-            title="Riempie i rifiuti con i valori medi pro capite del cluster × popolazione"
-            onClick={() => cambiaBase({ rifiuti: rifiutiDaCluster(annoBase.cluster, annoBase.popolazione) })}
-          >
-            Usa i valori medi del cluster
-          </button>
-          {ruolo === "admin" && calcoli === null && <button style={btnMini} onClick={caricaCalcoli}>Importa da un calcolo dei crediti…</button>}
-          {ruolo === "admin" && calcoli !== null && (
+          {metodo === "cluster" && (
+            <button
+              style={btnPrimario}
+              disabled={!annoBase.cluster || !num(annoBase.popolazione)}
+              title="Riempie i rifiuti con i valori medi pro capite del cluster × popolazione"
+              onClick={() => cambiaBase({ anno: 2022, rifiuti: rifiutiDaCluster(annoBase.cluster, annoBase.popolazione) })}
+            >
+              Calcola dai valori medi del cluster
+            </button>
+          )}
+          {metodo === "anno" && ruolo === "admin" && calcoli === null && <button style={btnMini} onClick={caricaCalcoli}>Importa da un calcolo dei crediti…</button>}
+          {metodo === "anno" && ruolo === "admin" && calcoli !== null && (
             <>
               <select style={{ ...campo, width: "auto", minWidth: 260 }} value={calcoloScelto} onChange={(e) => setCalcoloScelto(e.target.value)}>
                 <option value="">— scegli un calcolo —</option>
@@ -455,25 +480,63 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
             <Cifra etichetta="Produzione pro capite" valore={`${fmt(base.proCapite)} kg/ab`} />
             <Cifra etichetta="Secco residuo pro capite" valore={`${fmt(base.seccoProCapite)} kg/ab`} />
             <Cifra etichetta="Raccolta differenziata" valore={`${fmt(base.rd)}%`} forte />
+            {metodo === "anno" && base.totale > 0 && (
+              <div style={{ fontSize: 12, padding: "6px 10px", borderRadius: 8, background: base.rd >= 64 && base.rd <= 66 ? C.greenSoft : C.ocraSoft }}>
+                {base.rd >= 64 && base.rd <= 66 ? "✓ Conforme allo Standard 4.8.1 (differenziata tra 64% e 66%)" : "⚠ Lo Standard 4.8.1 chiede un anno con differenziata tra 64% e 66%: cambiate anno o usate i valori del cluster"}
+              </div>
+            )}
             <Cifra etichetta="Fattore del secco (formule 16-17)" valore={base.feSecco == null ? "—" : `${fmt(base.feSecco, 2)} kgCO₂eq/kg`} />
           </div>
         </div>
+      </div>
+
+      {/* 2b. Situazione attuale (facoltativa) */}
+      <div style={riquadro}>
+        <h2 style={h2}>Situazione attuale (facoltativa)</h2>
+        <p style={{ ...nota, margin: "0 0 10px" }}>
+          L'ultimo anno con dati disponibili: è il punto di partenza degli obiettivi e della traiettoria. I crediti si calcolano sempre rispetto
+          allo scenario di riferimento. Se lasciate vuoto, gli obiettivi partono dal riferimento.
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 12 }}>
+          <label style={lbl}>
+            Anno
+            <input style={campo} type="number" value={attuale.anno ?? ""} onChange={(e) => cambiaAttuale({ anno: e.target.value })} />
+          </label>
+          <label style={lbl}>
+            Popolazione
+            <input style={campo} inputMode="numeric" value={attuale.popolazione ?? ""} placeholder={base.popolazione ? String(base.popolazione) : ""} onChange={(e) => cambiaAttuale({ popolazione: e.target.value })} />
+          </label>
+          <label style={lbl}>
+            Produzione pro capite (kg/ab)
+            <input style={campo} inputMode="decimal" value={attuale.proCapite ?? ""} onChange={(e) => cambiaAttuale({ proCapite: e.target.value })} />
+          </label>
+          <label style={lbl}>
+            Secco residuo pro capite (kg/ab)
+            <input style={campo} inputMode="decimal" value={attuale.seccoProCapite ?? ""} onChange={(e) => cambiaAttuale({ seccoProCapite: e.target.value })} />
+          </label>
+        </div>
+        {partenza.fonte === "attuale" && (
+          <p style={nota}>
+            Differenziata attuale: <strong>{partenza.proCapite ? fmt(((partenza.proCapite - partenza.seccoProCapite) / partenza.proCapite) * 100) : "—"}%</strong>.
+            {" "}I nuovi anni degli obiettivi e la traiettoria partono da questi valori.
+          </p>
+        )}
       </div>
 
       {/* 3. Obiettivi anno per anno */}
       <div style={riquadro}>
         <h2 style={h2}>3. Obiettivi anno per anno</h2>
         <div className="no-stampa" style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap", background: C.paper, borderRadius: 10, padding: "10px 12px", marginBottom: 12 }}>
-          <div style={{ fontSize: 12.5, color: C.grafite, maxWidth: 280 }}>Traiettoria lineare dall'anno base agli obiettivi dell'ultimo anno ({scenario.anno_inizio + scenario.durata - 1}):</div>
+          <div style={{ fontSize: 12.5, color: C.grafite, maxWidth: 280 }}>Traiettoria lineare dalla {partenza.fonte === "attuale" ? "situazione attuale" : "situazione di riferimento"} agli obiettivi dell'ultimo anno ({scenario.anno_inizio + scenario.durata - 1}):</div>
           <label style={{ ...lbl, marginBottom: 0 }}>
             Produzione pro capite finale (kg/ab)
-            <input style={{ ...campo, width: 150 }} inputMode="decimal" placeholder={fmt(base.proCapite)} value={traiettoria.proCapiteFinale} onChange={(e) => setTraiettoria({ ...traiettoria, proCapiteFinale: e.target.value })} />
+            <input style={{ ...campo, width: 150 }} inputMode="decimal" placeholder={fmt(partenza.proCapite)} value={traiettoria.proCapiteFinale} onChange={(e) => setTraiettoria({ ...traiettoria, proCapiteFinale: e.target.value })} />
           </label>
           <label style={{ ...lbl, marginBottom: 0 }}>
             Secco pro capite finale (kg/ab)
-            <input style={{ ...campo, width: 150 }} inputMode="decimal" placeholder={fmt(base.seccoProCapite)} value={traiettoria.seccoProCapiteFinale} onChange={(e) => setTraiettoria({ ...traiettoria, seccoProCapiteFinale: e.target.value })} />
+            <input style={{ ...campo, width: 150 }} inputMode="decimal" placeholder={fmt(partenza.seccoProCapite)} value={traiettoria.seccoProCapiteFinale} onChange={(e) => setTraiettoria({ ...traiettoria, seccoProCapiteFinale: e.target.value })} />
           </label>
-          <button style={btnMini} disabled={!base.totale || !base.popolazione} onClick={() => cambiaDati({ anni: traiettoriaLineare({ anni, base, proCapiteFinale: traiettoria.proCapiteFinale, seccoProCapiteFinale: traiettoria.seccoProCapiteFinale }) })}>
+          <button style={btnMini} disabled={!base.totale || !base.popolazione} onClick={() => cambiaDati({ anni: traiettoriaLineare({ anni, base: partenza, proCapiteFinale: traiettoria.proCapiteFinale, seccoProCapiteFinale: traiettoria.seccoProCapiteFinale }) })}>
             Applica la traiettoria
           </button>
         </div>
@@ -534,7 +597,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 10, marginBottom: 14 }}>
               <Tile etichetta={`Crediti netti in ${t.anni} anni`} valore={fmt(t.netti, 0)} unita="tCO₂eq" principale />
               <Tile etichetta="Media annua" valore={fmt(t.mediaAnnuaNetti, 0)} unita="tCO₂eq/anno" />
-              <Tile etichetta={`Differenziata nel ${risultato.righe[risultato.righe.length - 1].anno}`} valore={`${fmt(t.rdFinale)}%`} unita={`da ${fmt(base.rd)}% dell'anno base`} />
+              <Tile etichetta={`Differenziata nel ${risultato.righe[risultato.righe.length - 1].anno}`} valore={`${fmt(t.rdFinale)}%`} unita={`riferimento: ${fmt(base.rd)}%`} />
               <Tile etichetta="Rifiuti evitati nel periodo" valore={fmt(t.riduzione, 0)} unita="t rispetto al riferimento" />
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 14, marginBottom: 14 }}>
@@ -588,7 +651,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
         <div style={{ marginTop: 14, padding: "12px 14px", background: C.greenSoft, borderRadius: 10, fontSize: 12.5, lineHeight: 1.55 }}>
           <strong>Da dove vengono i crediti.</strong> Il simulatore applica le formule della Metodologia CWP v1.2: ogni tonnellata di rifiuti
           prodotta pesa con il suo fattore di emissione e il secco con la media dei fattori della differenziata (formule 16-17). Perciò i crediti
-          nascono dai <strong>rifiuti evitati</strong> rispetto allo scenario di riferimento (produzione pro capite dell'anno base × popolazione):
+          nascono dai <strong>rifiuti evitati</strong> rispetto allo scenario di riferimento (produzione pro capite dell'anno di riferimento × popolazione):
           {unTonnellata != null && <> con i dati di questo Comune, <strong>1 t in meno ≈ {fmt(unTonnellata, 2)} tCO₂eq</strong> prima del buffer.</>} Spostare
           rifiuti dal secco alla differenziata alza la percentuale di raccolta differenziata ma, a parità di produzione totale, non genera crediti.
           <br />
@@ -602,7 +665,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
   );
 }
 
-// Cifra di riepilogo dell'anno base.
+// Cifra di riepilogo dello scenario di riferimento.
 function Cifra({ etichetta, valore, forte = false }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "8px 12px", background: forte ? C.greenSoft : C.paper, borderRadius: 8 }}>
@@ -673,7 +736,7 @@ function barra(x, y0, w, h) {
   return `M${x},${y0} V${y0 - h + r} Q${x},${y0 - h} ${x + r},${y0 - h} H${x + w - r} Q${x + w},${y0 - h} ${x + w},${y0 - h + r} V${y0} Z`;
 }
 
-// Grafico a linea (una serie, un asse) con il punto di partenza dell'anno base.
+// Grafico a linea (una serie, un asse) con il livello dello scenario di riferimento.
 function GraficoLinea({ titolo, righe, valore, formato, iniziale }) {
   const W = 520, H = 210, sx = 46, sy = 14, gh = H - sy - 28;
   const valori = righe.map(valore);
@@ -695,7 +758,7 @@ function GraficoLinea({ titolo, righe, valore, formato, iniziale }) {
           </g>
         ))}
         <line x1={sx} x2={W - 4} y1={scala(iniziale)} y2={scala(iniziale)} stroke={C.ocra} strokeWidth="1.5" strokeDasharray="4 4" />
-        <text x={W - 6} y={scala(iniziale) - 5} textAnchor="end" fontSize="10" fill={C.grafite}>anno base {formato(iniziale)}</text>
+        <text x={W - 6} y={scala(iniziale) - 5} textAnchor="end" fontSize="10" fill={C.grafite}>riferimento {formato(iniziale)}</text>
         <polyline points={punti} fill="none" stroke={C.green} strokeWidth="2" />
         {righe.map((r, i) => (
           <g key={r.anno}>
