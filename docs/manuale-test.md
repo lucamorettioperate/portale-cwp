@@ -258,4 +258,4 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 - La verifica in due passaggi per lo staff è pronta ma spenta.
 - Non c'è ancora l'antivirus sui file caricati.
 
-**In sviluppo** (saranno aggiunti al percorso di prova quando disponibili): accesso con SPID, CIE o CNS; registro di sicurezza; antivirus.
+**In sviluppo** (saranno aggiunti al percorso di prova quando disponibili): accesso con SPID, CIE o CNS; registro di sicurezza; antivirus; **simulatore di scenari** (durata 7, 10 o 21 anni, obiettivi annui di produzione e di secco residuo, % di differenziata e crediti stimati anno per anno); **assistente virtuale (Claude)** nel portale.

@@ -358,6 +358,8 @@ I dati per il calcolo dei crediti si inviano con un unico modello Excel, il **Tr
 
 **File molto grandi.** Oltre 50 MB o oltre 1 milione di righe: salvate ogni foglio come file CSV con le stesse intestazioni (ad esempio `6_Letture.csv`), raccoglieteli in un archivio ZIP e caricate lo ZIP.
 
+**In arrivo: simulazione dei crediti.** La Fondazione potrà preparare per il vostro Comune uno o più **scenari** su 7, 10 o 21 anni. Partendo dai dati di raccolta attuali e dagli obiettivi che indicate per ogni anno (produzione di rifiuti totale e pro capite, secco residuo pro capite), il simulatore calcola la percentuale di raccolta differenziata e **stima i crediti** che il Comune potrebbe generare anno per anno. È una stima a scopo di pianificazione: i crediti veri si calcolano a consuntivo, con i dati del tracciato.
+
 ## Reclami e richieste di chiarimento
 
 La voce **Reclami** del menu apre la pagina **Reclami e richieste di chiarimento**, secondo la Politica di reclamo del Programma. Potete scrivere in qualsiasi momento: ricevete una conferma e poi una risposta scritta. Qui si trattano soprattutto l'interpretazione delle regole e dei criteri del Programma. Per una questione con un ente di validazione e verifica o con un registro, rivolgetevi prima a loro.

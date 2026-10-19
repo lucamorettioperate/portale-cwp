@@ -467,6 +467,13 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 19 ottobre 2026
+- **Nuovo modulo in backlog: simulatore di scenari** (punto 37), richiesto
+  da Luca: durata 7, 10 o 21 anni, più scenari per Comune, dati dell'anno
+  base, obiettivi annui di produzione totale e pro capite e di secco
+  residuo, ricalcolo della % di differenziata e stima dei crediti anno per
+  anno. Assistente virtuale (punto 21) messo in evidenza tra i punti aperti.
+  Aggiornati Registro, manuali, note sul calcolo, analisi requisiti e
+  presentazione.
 - **Copie di sicurezza e istruzioni di ripristino** — archivio di backup
   completo (codice con storia completa, manuali, presentazione, documenti
   ufficiali, documenti e memoria del progetto Claude, artefatti in PDF,
@@ -885,6 +892,9 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   prevede dopo lo stato «progetto registrato»; il portale continua a
   permetterne la creazione mentre il Progetto è attivo (decisione del
   18/10), l'emissione dei crediti richiede comunque il Rapporto registrato.
+- Simulatore di scenari (punto 37): modello di stima semplificato da
+  confermare e visibilità degli scenari (solo Fondazione o anche il Comune).
+- Assistente virtuale (punto 21): ambito, dati che può leggere, costi d'uso.
 
 ---
 
@@ -904,6 +914,37 @@ completato (va barrato qui e annotato in Cronologia).
 - ~~**7.** Registro dei crediti calcolati e confermati~~ — fatto il 18/10: numero progressivo dei calcoli (elenco interno) e, con lo script 24, emissione dei crediti con ID univoci, caricamento sul registro esterno, vendite e cancellazione tombale (Guida 6.3.2-6.3.3).
 - **8.** Collaudo con dati reali di un Comune.
 - **9.** Conferma delle scelte interpretative.
+- **37.** **Simulatore di scenari** — richiesto da Luca il 19/10. Strumento
+  previsionale (ex ante, non certificabile) per stimare quanti crediti un
+  Comune potrebbe generare:
+    - **Scenari**: per ogni Comune più scenari con nome e note (per esempio
+      «prudente», «obiettivo», «ambizioso»), duplicabili e confrontabili.
+    - **Durata**: menu a tendina **7, 10 o 21 anni** (Standard 4.3.8: 10 anni,
+      oppure 7 rinnovabili fino a 21) e anno di partenza.
+    - **Dati dell'anno base**: popolazione residente, produzione totale dei
+      rifiuti urbani (t) e pro capite (kg/ab), percentuale di raccolta
+      differenziata, ripartizione per frazione (Catasto ISPRA), cluster SOSE e
+      parametri del calcolo (fattori di emissione, buffer previsto); si
+      possono riprendere dal tracciato dati o da un calcolo esistente.
+    - **Obiettivi per anno**: per ogni anno del periodo, produzione totale
+      prevista (t) e pro capite, e **secco residuo pro capite** (kg/ab)
+      obiettivo; facoltativa la popolazione prevista.
+    - **Ricalcolo per anno**: secco totale = secco pro capite × popolazione;
+      differenziata = totale − secco; **% di differenziata** = differenziata /
+      totale; la differenziata si ripartisce tra le frazioni con le
+      proporzioni dell'anno base (modificabili).
+    - **Crediti simulati per anno**: emissioni dello scenario di riferimento
+      meno emissioni dello scenario simulato, con i fattori di emissione della
+      Metodologia; crediti lordi, buffer, crediti netti; totale del periodo.
+    - **Uscite**: tabella anno per anno, grafico, confronto tra scenari,
+      stampa in PDF ed export in Excel.
+    - **Da decidere**: il modello di stima semplificato (a livello di Comune,
+      senza Banca Dati Utenze) va confermato dalla Fondazione; chi vede gli
+      scenari (solo Fondazione o anche il Comune interessato).
+    - **Tecnica prevista**: tabelle `scenario_simulazione` e `scenario_anno`
+      (nuovo script), pagina «Simulatore» nell'area Crediti, motore
+      `src/lib/crediti/simulatore.js` che riusa i parametri di `parametri.js`,
+      prove automatiche, audit di creazione e modifica.
 
 **Pratiche**
 
@@ -974,7 +1015,7 @@ completato (va barrato qui e annotato in Cronologia).
 
 - ~~**35.** Allineamento ai documenti ufficiali del Programma~~ — fatto la sera del 18/10 (script 22-24, portale, funzione `consultazione-pubblica`): vedi Decisioni e Cronologia. Resta SPID/CIE/CNS (punto 36).
 - **36.** Accesso degli stakeholders con SPID, CIE o CNS (Guida 3.9): adesione come fornitore di servizi (AgID o aggregatore), poi integrazione nella pagina del feedback pubblico.
-- **21.** Agente AI (Claude) integrato nel portale — richiesto da Luca il 18/10. Ambito da definire; usi possibili: assistente per gli utenti dei Comuni (come compilare, cosa manca nella pratica), supporto agli Operatori (controllo completezza dei documenti, bozze di richieste di integrazione e di risposte ai commenti), verifica del tracciato dati prima dell'import, spiegazione dei risultati del calcolo crediti. Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che faccia da tramite, regole su quali dati l'agente può leggere (privacy) e registrazione delle sue azioni nell'audit.
+- **21.** **Assistente virtuale (Claude)** integrato nel portale — richiesto da Luca il 18/10, confermato tra i punti aperti il 19/10. Funziona con i modelli Claude di Anthropic tramite API (lo sviluppo del portale si fa con Claude Code). Ambito da definire; usi possibili: assistente per gli utenti dei Comuni (come compilare, cosa manca nella pratica), supporto agli Operatori (controllo completezza dei documenti, bozze di richieste di integrazione e di risposte ai commenti), verifica del tracciato dati prima dell'import, spiegazione dei risultati del calcolo crediti. Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che faccia da tramite, regole su quali dati l'agente può leggere (privacy) e registrazione delle sue azioni nell'audit.
 
 ---
 
@@ -1145,7 +1186,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 107 file, 24.832 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 107 file, 24.856 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1292,7 +1333,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 107 file, 24.832 righe 
 | `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
 | `strumenti/impagina_pdf.py` | 429 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
-| `strumenti/revisioni_documenti.json` | 294 | — |
+| `strumenti/revisioni_documenti.json` | 318 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
@@ -1313,6 +1354,13 @@ Amministratore.
 | Salvataggio e versioni | `src/lib/crediti/archivio.js` | immutabilità e numero di registro: `calcolo_immutabile` (11, 18); coerenza del risultato: `calcolo_coerenza`, `calcolo_bdu_modificata`; nuova versione: `admin_nuova_versione_calcolo` (20) |
 | Rapporto PDF | `src/lib/crediti/rapportoPdf.js` | archiviazione come `documento` della pratica |
 | Prove | `test/crediti.test.mjs`, `test/tracciato.test.mjs`, `test/date.test.mjs` | — |
+
+**Simulatore di scenari (in progettazione, backlog punto 37)**: stima ex
+ante e non certificabile dei crediti di un Comune su 7, 10 o 21 anni, a
+partire dai dati dell'anno base e da obiettivi annui di produzione totale,
+pro capite e di secco residuo; ricalcola la % di differenziata e i crediti
+anno per anno, con più scenari per Comune. Descrizione completa nel backlog e
+in `docs/crediti-cwp.md`.
 
 **Flusso**: creazione (bozza) → import del tracciato o inserimento a mano
 → «Calcola» (motore nel browser, riepilogo salvato senza il dettaglio per

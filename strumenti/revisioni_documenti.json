@@ -65,6 +65,12 @@
       "data": "18/10/2026",
       "descrizione": "Allineamento ai documenti ufficiali del Programma: Rapporto a 7 fasi, feedback pubblico (30 e 20 giorni), stato nel Programma e ID, dati del progetto, un solo account per Organizzazione, ritiro e rientro, conservazione 12 anni, tipologie ufficiali, Schema tariffario, verifica sull'accuratezza; nuovi capitoli Crediti emessi, Reclami, pagina pubblica del Programma.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.1",
+      "data": "19/10/2026",
+      "descrizione": "Simulazione dei crediti in arrivo (capitolo Dati per il calcolo dei crediti).",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -133,6 +139,12 @@
       "data": "19/10/2026",
       "descrizione": "Copie di sicurezza e ripristino: rimando alle Istruzioni di ripristino e punti essenziali (capitolo Manutenzione ed emergenze).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.1",
+      "data": "19/10/2026",
+      "descrizione": "Funzioni in arrivo: simulatore di scenari (7, 10 o 21 anni, obiettivi annui, % di differenziata e crediti stimati) e assistente virtuale (Claude).",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -188,6 +200,12 @@
       "rev": "1.8",
       "data": "19/10/2026",
       "descrizione": "Tolto il limite noto sull'incarico del soggetto promotore del programma.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.9",
+      "data": "19/10/2026",
+      "descrizione": "In sviluppo: simulatore di scenari e assistente virtuale.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -280,6 +298,12 @@
       "rev": "2.4",
       "data": "19/10/2026",
       "descrizione": "Archivio di backup, ramo snapshot su GitHub e nuovo documento Istruzioni di ripristino (procedure di rilascio e cronologia).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.5",
+      "data": "19/10/2026",
+      "descrizione": "Backlog punto 37 (simulatore di scenari), assistente virtuale in evidenza (punto 21), decisioni aperte e cronologia.",
       "autore": "Fondazione Operate"
     }
   ],

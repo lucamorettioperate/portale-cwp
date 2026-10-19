@@ -59,6 +59,27 @@ modello da scaricare.
 7. **Residenti / non residenti**: la distinzione serve solo al buffer
    (Tabella 15); le classi domestiche sono quelle della delibera.
 
+## Simulatore di scenari (in progettazione)
+
+Richiesto da Luca il 19/10/2026 (Registro, backlog punto 37). Serve a
+**stimare in anticipo** quanti crediti un Comune potrebbe generare,
+per esempio per presentare il Programma a un nuovo Comune. È una stima ex
+ante e non sostituisce il calcolo ex post con la Banca Dati Utenze.
+
+| Passo | Che cosa si inserisce o si ottiene |
+|---|---|
+| Scenario | Comune, nome e note dello scenario; più scenari per Comune, duplicabili e confrontabili |
+| Durata | Menu a tendina: 7, 10 o 21 anni (Standard 4.3.8); anno di partenza |
+| Anno base | Popolazione, produzione totale (t) e pro capite (kg/ab), % differenziata, ripartizione per frazione (Catasto ISPRA), cluster SOSE, fattori di emissione, buffer previsto |
+| Obiettivi annui | Per ogni anno: produzione totale e pro capite prevista, secco residuo pro capite obiettivo (kg/ab), popolazione prevista (facoltativa) |
+| Ricalcolo | Secco = secco pro capite × popolazione; differenziata = totale − secco; % differenziata = differenziata / totale; differenziata ripartita con le proporzioni dell'anno base |
+| Crediti simulati | Per anno: emissioni dello scenario di riferimento − emissioni dello scenario simulato (fattori della Metodologia), crediti lordi, buffer, crediti netti; totale del periodo |
+| Uscite | Tabella anno per anno, grafico, confronto tra scenari, PDF ed Excel |
+
+**Da confermare con la Fondazione**: il modello di stima semplificato (a
+livello di Comune: senza Banca Dati Utenze le emissioni dello scenario si
+stimano dalla composizione dei rifiuti) e chi può vedere gli scenari.
+
 ## Garanzie
 
 - Accesso solo agli Amministratori con verifica a due fattori.
