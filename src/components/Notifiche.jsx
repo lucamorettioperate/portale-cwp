@@ -31,6 +31,34 @@ export default function Notifiche() {
   const [notifiche, setNotifiche] = useState([]);
   const [aperta, setAperta] = useState(false);
   const box = useRef(null);
+  // Posizione della tendina sullo schermo ({ top, left, width } in pixel),
+  // calcolata dalla campanella così che resti sempre dentro la finestra
+  // anche quando la campanella è sul bordo sinistro (menu andato a capo).
+  const [pos, setPos] = useState(null);
+
+  // Calcola la posizione: allineata a destra della campanella se c'è
+  // spazio, altrimenti spostata quanto basta; margine di 16 px dai bordi.
+  function calcolaPosizione() {
+    if (!box.current) return;
+    const r = box.current.getBoundingClientRect();
+    const margine = 16;
+    const larghezza = Math.min(380, window.innerWidth - 2 * margine);
+    const sinistra = Math.max(margine, Math.min(r.right - larghezza, window.innerWidth - larghezza - margine));
+    setPos({ top: r.bottom + 8, left: sinistra, width: larghezza });
+  }
+
+  // Mentre la tendina è aperta la posizione segue ridimensionamento e
+  // scorrimento della pagina.
+  useEffect(() => {
+    if (!aperta) return undefined;
+    calcolaPosizione();
+    window.addEventListener("resize", calcolaPosizione);
+    window.addEventListener("scroll", calcolaPosizione, true);
+    return () => {
+      window.removeEventListener("resize", calcolaPosizione);
+      window.removeEventListener("scroll", calcolaPosizione, true);
+    };
+  }, [aperta]);
 
   // Legge le ultime 50 notifiche dell'utente (le RLS filtrano per utente).
   async function carica() {
@@ -121,16 +149,16 @@ export default function Notifiche() {
         )}
       </button>
 
-      {aperta && (
+      {aperta && pos && (
         <div
           role="dialog"
           aria-label="Notifiche"
           style={{
-            position: "absolute",
-            right: 0,
-            top: 42,
-            width: "min(380px, calc(100vw - 32px))",
-            maxHeight: 440,
+            position: "fixed",
+            top: pos.top,
+            left: pos.left,
+            width: pos.width,
+            maxHeight: `min(440px, calc(100vh - ${Math.round(pos.top) + 16}px))`,
             overflowY: "auto",
             background: C.white,
             border: `1px solid ${C.line}`,

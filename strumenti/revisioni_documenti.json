@@ -485,6 +485,12 @@
       "data": "19/10/2026",
       "descrizione": "Script 30 (eliminazione utenti mai attivi); regola: controllare sempre il risultato a schermo.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.6",
+      "data": "19/10/2026",
+      "descrizione": "Tendina delle notifiche sempre dentro lo schermo.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
