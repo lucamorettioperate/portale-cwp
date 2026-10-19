@@ -322,8 +322,8 @@ autenticazione, dal SQL Editor:
 
 | Funzione | Cosa fa | Protezione | Pubblicazione |
 |---|---|---|---|
-| `crea-utente` | L'Amministratore crea un utente con password temporanea e lo associa a tutte le sue organizzazioni (`admin_imposta_organizzazioni` con il token dell'Admin); se un passo fallisce l'account appena creato viene eliminato | Verifica che il chiamante sia Admin (`sono_admin`); password temporanea di almeno 10 caratteri con lettere e numeri; niente creazione di Admin | Dashboard Supabase (editor web); ripubblicata 18/10 (script 20); Verify JWT attivo |
-| `reimposta-password` | L'Amministratore assegna una password temporanea a un Cliente o Operatore; il flag obbliga al cambio al primo accesso; audit | Verifica `sono_admin`; esclusi amministratori e sé stessi | Dashboard Supabase (editor web), 18/10; Verify JWT attivo |
+| `crea-utente` | L'Amministratore crea un utente con password temporanea e lo associa a tutte le sue organizzazioni (`admin_imposta_organizzazioni` con il token dell'Admin); se un passo fallisce l'account appena creato viene eliminato | Verifica che il chiamante sia Admin (`sono_admin`); password temporanea di almeno 10 caratteri con lettere e numeri; niente creazione di Admin; dal 19/10 email all'utente con indirizzo del portale, email di accesso e password temporanea (Resend), esito `email_inviata`/`motivo_email` restituito al portale | Dashboard Supabase (editor web); ripubblicata 18/10 (script 20); Verify JWT attivo; **versione 19/10 con l'email da ripubblicare** |
+| `reimposta-password` | L'Amministratore assegna una password temporanea a un Cliente o Operatore; il flag obbliga al cambio al primo accesso; audit; dal 19/10 email all'utente con la nuova password temporanea (Resend), esito restituito al portale | Verifica `sono_admin`; esclusi amministratori e sé stessi | Dashboard Supabase (editor web), 18/10; Verify JWT attivo; **versione 19/10 con l'email da ripubblicare** |
 | `consultazione-pubblica` | Pagine pubbliche del feedback pubblico (data di «oggi» in ora italiana dal 18/10; numero delle osservazioni dallo script 21; dalla sera del 18/10 anche i Rapporti di Monitoraggio, ripubblicata; azioni `programma` e `file` per la pagina pubblica /programma, script 24, ripubblicata la sera del 18/10, Verify JWT spento): elenco, dettaglio (documento, errata corrige, osservazioni ammesse), invio di un'osservazione con allegato facoltativo ed email di conferma, conferma dell'email (l'osservazione diventa *Ricevuto*) | Verify JWT **disattivato** di proposito (pubblico senza account): nessun dato personale restituito, 3 invii/ora per indirizzo e 100/ora per consultazione, campo trappola anti-robot, allegati max 10 MB con controllo del contenuto, token monouso 48 ore salvato come SHA-256 | Dashboard Supabase (editor web), 18/10 |
 | `recupera-password` | «Password dimenticata?»: genera il collegamento di recupero (`auth.admin.generateLink`) e spedisce con Resend l'email in italiano «Portale Carbon WastePrint (CWP) — Richiesta di reimpostazione della password», al posto del modello email di Supabase | Verify JWT **disattivato** di proposito (la chiama chi non ha fatto l'accesso): risponde sempre `ok` senza rivelare se l'indirizzo esiste; niente email agli utenti disattivati; massimo una richiesta ogni 2 minuti per indirizzo; il collegamento porta solo al portale | Dashboard Supabase (editor web), 18/10 |
 | `invia-email-notifica` | Spedisce per email una notifica interna (pulsante "Apri nel portale") tramite Resend | Verify JWT **disattivato** di proposito: usa solo l'id ricevuto e rilegge tutto dal database; ogni notifica parte una volta sola | Dashboard Supabase; prima pubblicazione 17/10, aggiornata 17/10 (pulsante per tema scuro) |
@@ -470,6 +470,15 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 19 ottobre 2026
+- **Email con le credenziali al nuovo utente** (verifica richiesta da Luca:
+  prima non partiva nessuna email, l'Admin comunicava la password a mano) —
+  `crea-utente` e `reimposta-password` spediscono con Resend l'email
+  «Il tuo accesso al Portale CWP» / «Nuova password temporanea» con
+  indirizzo del portale, email di accesso, password temporanea, pulsante
+  «Accedi al portale» e l'avviso che al primo accesso va scelta una password
+  personale; la pagina Utenti mostra se l'email è partita o il motivo del
+  rifiuto. Provata con invio simulato (risposta 403 di Resend gestita).
+  Limite: senza dominio verificato arriva solo al titolare Resend.
 - **Più Amministratori e Amministratore principale protetto** (richiesta di
   Luca) — script `29_amministratori.sql` e pagina Utenti: un Amministratore
   crea o nomina altri Amministratori (nuovo utente creato come operatore
@@ -1252,7 +1261,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 113 file, 27.175 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 113 file, 27.444 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1277,7 +1286,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 113 file, 27.175 righe 
 | `src/pages/Cruscotto.jsx` | 268 | (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso, in scadenza, scadute, in attesa del Cliente, integrazioni da verificare, consultazioni attive) e tabella di tutte le pratiche, Progetti e Rapporti, con ricerca e… |
 | `src/pages/Documentazione.jsx` | 144 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
 | `src/pages/FormatoDati.jsx` | 136 | spiega lo standard dei dati da inviare per il calcolo dei crediti e permette di scaricare il tracciato Excel. Il link si può mandare a Comuni e gestori anche senza credenziali. Contiene: elenco dei fogli del tracciato,… |
-| `src/pages/GestioneUtenti.jsx` | 654 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
+| `src/pages/GestioneUtenti.jsx` | 683 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
 | `src/pages/Impostazioni.jsx` | 60 | parametri del Programma modificabili dagli Amministratori: - Durata delle fasi del Progetto e del Rapporto di Monitoraggio (script 13 e 21, componente DurateFasi); - Documenti richiesti per fase (script 21, componente… |
 | `src/pages/Login.jsx` | 259 | accesso con email e password; «Password dimenticata?» per farsi mandare il collegamento di reimpostazione; link alle pagine pubbliche (formato dei dati, consultazioni pubbliche, Manuale Utente in PDF). Dopo l'accesso riuscito… |
 | `src/pages/Profilo.jsx` | 66 | mostra i dati dell'account (nome, email di accesso, ruolo), il collegamento al cambio password («/password») e i documenti da scaricare per il proprio ruolo: Manuale Utente per tutti; Manuale Amministratore e Registro sviluppo e… |
@@ -1379,10 +1388,10 @@ Inventario generato da `strumenti/inventario_codice.py`: 113 file, 27.175 righe 
 | File | Righe | Cosa contiene |
 |---|---|---|
 | `supabase/functions/consultazione-pubblica/index.ts` | 432 | servizio della pagina pubblica delle consultazioni (requisiti §6, decisioni B e D del 18/10/2026). Chiunque, senza account, può: - "elenco": vedere le consultazioni aperte; - "dettaglio": leggere documento, errata corrige e… |
-| `supabase/functions/crea-utente/index.ts` | 156 | crea un nuovo utente con password temporanea e imposta ruolo + organizzazione. L'Admin comunica la password all'utente, che potrà cambiarla al primo accesso. |
+| `supabase/functions/crea-utente/index.ts` | 263 | crea un nuovo utente con password temporanea e imposta ruolo + organizzazione. All'utente parte un'email con indirizzo del portale, email di accesso e password temporanea (Resend, funzione inviaEmailAccesso in fondo al file); se… |
 | `supabase/functions/invia-email-notifica/index.ts` | 160 | invia per email ogni nuova notifica del portale (requisiti §9: "email + notifica interna"). |
 | `supabase/functions/recupera-password/index.ts` | 155 | «Password dimenticata?» — genera il collegamento di recupero di Supabase Auth e spedisce l'email in italiano con Resend (stessa grafica delle notifiche), invece del modello email di Supabase. |
-| `supabase/functions/reimposta-password/index.ts` | 109 | l'Amministratore assegna una nuova password temporanea a un utente (Cliente od Operatore) che l'ha dimenticata. Al primo accesso il portale obbliga l'utente a sceglierne una personale (script 15). |
+| `supabase/functions/reimposta-password/index.ts` | 218 | l'Amministratore assegna una nuova password temporanea a un utente (Cliente od Operatore) che l'ha dimenticata. Al primo accesso il portale obbliga l'utente a sceglierne una personale (script 15). |
 
 **Test (test)**
 
@@ -1405,7 +1414,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 113 file, 27.175 righe 
 | `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
 | `strumenti/impagina_pdf.py` | 429 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
-| `strumenti/revisioni_documenti.json` | 456 | — |
+| `strumenti/revisioni_documenti.json` | 480 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

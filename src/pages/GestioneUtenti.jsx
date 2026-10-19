@@ -205,10 +205,11 @@ function RigaUtente({ utente, organizzazioni, principale, sonoIo, ultimo, onSalv
   async function confermaReimposta() {
     setErrore("");
     setSalvataggio(true);
-    const { error } = await reimpostaPassword(utente.id, reimposta.password);
+    const { data, error } = await reimpostaPassword(utente.id, reimposta.password);
     setSalvataggio(false);
     if (error) setErrore("Reimpostazione non riuscita: " + error.message);
-    else setReimposta({ ...reimposta, fatta: true });
+    // esito dell'email con la nuova password (Edge Function, 19/10/2026)
+    else setReimposta({ ...reimposta, fatta: true, esitoEmail: data });
   }
 
   // Apre il pannello di modifica ripartendo dai valori salvati.
@@ -305,10 +306,7 @@ function RigaUtente({ utente, organizzazioni, principale, sonoIo, ultimo, onSalv
           {reimposta.fatta ? (
             <>
               <div style={{ color: C.green, fontWeight: 600, marginBottom: 6 }}>✓ Password reimpostata.</div>
-              <div style={{ marginBottom: 10 }}>
-                Comunica a {utente.email} la password temporanea <code style={{ fontSize: 14, fontWeight: 700 }}>{reimposta.password}</code> con un
-                canale sicuro (ad esempio per telefono). Al primo accesso il portale gli chiederà di sceglierne una personale.
-              </div>
+              <EsitoEmail esito={reimposta.esitoEmail} email={utente.email} password={reimposta.password} />
               <button onClick={() => setReimposta(null)} style={btnMini}>Chiudi</button>
             </>
           ) : (
@@ -472,6 +470,8 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
   const [errore, setErrore] = useState("");
   // Vero dopo la creazione riuscita: la finestra mostra l'esito.
   const [ok, setOk] = useState(false);
+  // Risposta della Edge Function (email_inviata, motivo_email).
+  const [esitoEmail, setEsitoEmail] = useState(null);
   const [inCorso, setInCorso] = useState(false);
 
   // Creazione in un solo passo: la Edge Function crea-utente crea l'account,
@@ -516,6 +516,7 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
         return;
       }
     }
+    setEsitoEmail(data);
     setInCorso(false);
     setOk(true);
   }
@@ -530,10 +531,9 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
         {ok ? (
           <div style={{ color: C.green, fontSize: 14, padding: "12px 0", lineHeight: 1.6 }}>
             ✓ Utente creato: <b>{email}</b>
-            <br />
-            Comunica all'utente la password temporanea: <b style={{ fontFamily: "monospace" }}>{password}</b>
-            <br />
-            Al primo accesso il portale gli chiederà di sceglierne una personale.
+            <div style={{ color: C.ink || "#1b2118", fontSize: 13.5, marginTop: 8 }}>
+              <EsitoEmail esito={esitoEmail} email={email} password={password} />
+            </div>
             <div style={{ marginTop: 14 }}>
               <button type="button" onClick={onInvitato} style={btnPrimario}>Chiudi</button>
             </div>
@@ -585,6 +585,35 @@ function FormInvito({ organizzazioni, onChiudi, onInvitato }) {
           </form>
         )}
       </div>
+    </div>
+  );
+}
+
+/* Esito dell'email con le credenziali (Edge Function crea-utente o
+   reimposta-password). Props: esito ({ email_inviata, motivo_email } o
+   null con una funzione non ancora aggiornata), email e password
+   temporanea. Se l'email è partita lo dice; altrimenti mostra il motivo
+   e la password da comunicare a mano. */
+function EsitoEmail({ esito, email, password }) {
+  const pwd = <code style={{ fontSize: 14, fontWeight: 700 }}>{password}</code>;
+  if (esito?.email_inviata) {
+    return (
+      <div style={{ marginBottom: 10, lineHeight: 1.6 }}>
+        ✉ Email con indirizzo del portale e password temporanea {pwd} inviata a <b>{email}</b>. Al primo accesso il
+        portale gli chiederà di sceglierne una personale. Se l'utente non la trova, controlli anche nella posta
+        indesiderata.
+      </div>
+    );
+  }
+  return (
+    <div style={{ marginBottom: 10, lineHeight: 1.6 }}>
+      {esito && esito.email_inviata === false && (
+        <div style={{ color: C.red, fontWeight: 600 }}>
+          ⚠ Email non inviata{esito.motivo_email ? ` (${esito.motivo_email})` : ""}.
+        </div>
+      )}
+      Comunica a <b>{email}</b> la password temporanea {pwd} con un canale sicuro (ad esempio per telefono). Al primo
+      accesso il portale gli chiederà di sceglierne una personale.
     </div>
   );
 }

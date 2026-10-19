@@ -393,7 +393,9 @@ La pagina **Utenti** elenca tutti gli utenti con nome, email, ruolo e organizzaz
 4. Scegliete il **Ruolo**: *Cliente (comune / azienda)*, *Operatore di back-office* oppure *Amministratore*. Scegliendo Amministratore compare un promemoria: avrà accesso completo a tutti i dati e alla gestione utenti; assegnate questo ruolo solo a persone della Fondazione.
 5. Per un Cliente spuntate le **Organizzazioni associate** (almeno una; la prima è la principale). Con più di 6 organizzazioni compare la ricerca.
 6. Premete **Crea utente**. Se qualcosa non va a buon fine (ad esempio un'organizzazione non salvata o che ha già un account attivo), l'utente non viene creato e compare il motivo: correggete e riprovate.
-7. Comunicate all'utente email e password temporanea con un canale sicuro, separato dall'email di benvenuto.
+7. Il portale **invia all'utente un'email** con l'indirizzo del portale, l'email di accesso e la password temporanea, ricordando che al primo accesso dovrà sceglierne una personale. La finestra dice se l'email è partita («✉ Email … inviata a …»). Se non è partita compare **⚠ Email non inviata** con il motivo: l'utente è comunque creato, e la password va comunicata a mano con un canale sicuro, ad esempio per telefono.
+
+**Limite attuale delle email.** Finché il dominio della Fondazione non è verificato su Resend, le email partono dal mittente di prova e arrivano **solo** all'indirizzo del titolare dell'account Resend: per tutti gli altri compare «Email non inviata (Resend 403 …)». Dopo la verifica del dominio e l'impostazione del segreto `EMAIL_MITTENTE` le email arrivano a tutti.
 
 **Cambiare il rappresentante di un'Organizzazione**
 
@@ -413,7 +415,7 @@ La pagina **Utenti** elenca tutti gli utenti con nome, email, ruolo e organizzaz
 1. Nella riga dell'utente premete **Reimposta password**.
 2. Il portale propone una password temporanea (**Genera un'altra** ne crea una diversa).
 3. Premete **Conferma**: la password precedente smette di funzionare.
-4. Comunicate la password temporanea all'utente con un canale sicuro, ad esempio per telefono. Al primo accesso dovrà sceglierne una personale.
+4. Il portale invia all'utente un'email con la nuova password temporanea e dice se è partita. Se compare **⚠ Email non inviata**, comunicate la password con un canale sicuro, ad esempio per telefono. Al primo accesso dovrà sceglierne una personale.
 
 La reimpostazione non è possibile per gli Amministratori né per sé stessi, e viene registrata nell'audit (senza la password).
 

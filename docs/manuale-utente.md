@@ -31,7 +31,7 @@ Nel portale potete:
 
 ## Primo accesso
 
-Le credenziali (email e password temporanea) vi vengono fornite da Fondazione Operate.
+Le credenziali vi arrivano per email da Fondazione Operate, con oggetto «Portale Carbon WastePrint (CWP) — Il tuo accesso al Portale CWP»: l'indirizzo del portale, l'email di accesso e la **password temporanea**, con il pulsante **Accedi al portale**. Se l'email non arriva, controllate la posta indesiderata oppure chiedete le credenziali a Fondazione Operate. Non inoltrate l'email e cancellatela dopo aver scelto la vostra password.
 
 1. Aprite [portale-cwp.vercel.app](https://portale-cwp.vercel.app).
 2. Inserite **Email** e **Password**.

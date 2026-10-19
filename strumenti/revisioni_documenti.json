@@ -83,6 +83,12 @@
       "data": "19/10/2026",
       "descrizione": "Simulazione dei crediti: anche stima economica con costi Caso 1 e Caso 2.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.4",
+      "data": "19/10/2026",
+      "descrizione": "Primo accesso: le credenziali arrivano per email.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -199,6 +205,12 @@
       "data": "19/10/2026",
       "descrizione": "Più Amministratori con accesso completo; Amministratore principale protetto (script 29).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.9",
+      "data": "19/10/2026",
+      "descrizione": "Email automatica con le credenziali al nuovo utente e alla reimpostazione della password.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -296,6 +308,12 @@
       "rev": "2.5",
       "data": "19/10/2026",
       "descrizione": "Prove 1.3a-1.3a3: nomina di un Amministratore e protezione del principale.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.6",
+      "data": "19/10/2026",
+      "descrizione": "Prove 1.3 e 1.3c: email con le credenziali.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -442,6 +460,12 @@
       "rev": "3.3",
       "data": "19/10/2026",
       "descrizione": "Script 29: più Amministratori e Amministratore principale; decisione sulla qualificazione ACN.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.4",
+      "data": "19/10/2026",
+      "descrizione": "Email con le credenziali nelle funzioni crea-utente e reimposta-password.",
       "autore": "Fondazione Operate"
     }
   ],

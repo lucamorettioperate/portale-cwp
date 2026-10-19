@@ -96,7 +96,8 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 1.2a | [A] + Nuovo progetto con l'organizzazione **esistente** «Comune di Prova» e territorio «12345» | Rifiutato: «Codice ISTAT non valido: ogni Comune ha un codice di 6 cifre…» |
 | 1.2b | [A] Ripetete con territorio **999001** | Rifiutato: «Il territorio con codice ISTAT 999001 è già nel Progetto CWP-… (un solo progetto per territorio…)»; nessuna nuova pratica |
 | 1.2c | [O] Anagrafiche → Organizzazioni: Modifica «Comune di Prova»: tipo «Ente locale (T.U.E.L.)», codice fiscale, PEC, Delegato 1 e Delegato 2 | Dati salvati; sotto l'organizzazione compare la pratica creata |
-| 1.3 | [A] Utenti → + Nuovo utente, ruolo Cliente, associato a «Comune di Prova» | L'utente compare in elenco; annotate la password temporanea |
+| 1.3 | [A] Utenti → + Nuovo utente, ruolo Cliente, associato a «Comune di Prova» | L'utente compare in elenco; la finestra dice se l'email con le credenziali è partita (finché il dominio non è verificato su Resend arriva solo all'indirizzo del titolare Resend, per gli altri «⚠ Email non inviata»); annotate la password temporanea |
+| 1.3c | [C] Aprite l'email «Il tuo accesso al Portale CWP» (se arrivata) e premete Accedi al portale | Si apre la pagina di accesso; con email e password temporanea dell'email il portale chiede subito la password personale |
 | 1.3a | [A] Utenti → + Nuovo utente, ruolo **Amministratore** (compare il promemoria sull'accesso completo) → Crea; poi entrate con il nuovo account | Il nuovo utente ha il segno Admin e vede tutto il menu dell'Amministratore |
 | 1.3a2 | [A] Nella riga di luca.moretti@operate.it | Segno «Principale», nessun pulsante Modifica, Reimposta password o Disattiva |
 | 1.3a3 | [A] Con Modifica riportate il nuovo Amministratore a Operatore, poi Disattiva e Riattiva | Ruolo cambiato; disattivazione e riattivazione riuscite; voci nell'audit |
