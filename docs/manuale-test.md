@@ -274,6 +274,7 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 10.8 | Senza accesso, /programma | Informazioni del Programma (soggetto promotore, email, sito), enti di validazione e verifica (RINA (prova)), registri (Registro (prova)), metodologie, la modulistica pubblica della prova 1.7 e come presentare un reclamo |
 | 10.9 | [A] Audit: cercate il codice della pratica di prova | Tutte le operazioni fatte, con autore, data e motivazione |
 | 10.10 | [A] Dashboard: provate riquadri, filtri e ricerca | La tabella si filtra di conseguenza |
+| 10.10c | [A] Dashboard: fate clic su «Organizzazione», poi di nuovo; in Pratiche e Utenti scegliete un campo in «Ordina per» e premete ▲/▼ | La tabella si ordina in modo crescente (▲) e poi decrescente (▼); gli elenchi a schede seguono il campo e il verso scelti; «ordine predefinito» torna all'ordine iniziale |
 | 10.10b | [A] Dashboard: guardate la colonna Avanzamento della pratica di prova e passate il mouse sulle luci | Tante luci accese (ambra) quante le fasi completate, le altre spente; la fase in corso ha il contorno ambra; a pratica chiusa la settima luce è verde; il conteggio «n/7» corrisponde |
 
 ## Limiti noti e funzioni in arrivo

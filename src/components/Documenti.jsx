@@ -40,6 +40,7 @@ import {
   aggiornaVisibilitaDocumento,
 } from "../lib/dati.js";
 import { ACCEPT, FORMATI_LEGGIBILI } from "../lib/file.js";
+import { useOrdinamento, SceltaOrdinamento } from "./Ordinamento.jsx";
 
 /* Gestione documentale: elenco versionato e upload.
    Props:
@@ -141,6 +142,12 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
 
   const titolo = fase ? "Documenti della fase" : "Documenti generali";
 
+  // Ordinamento dei documenti («Ordina per»).
+  const ord = useOrdinamento(documenti, {
+    nome: (d) => d.nome, data: (d) => d.creato_il, versione: (d) => d.versione, tipologia: (d) => d.tipologia,
+    corrente: (d) => (d.corrente ? "corrente" : "precedente"),
+  });
+
   return (
     <div
       style={
@@ -240,8 +247,9 @@ export default function Documenti({ praticaId, fase = null, compatto = false, co
 
       {documenti.length > 0 && (
         <div style={{ display: "grid", gap: 8 }}>
+          {documenti.length > 1 && <SceltaOrdinamento ord={ord} opzioni={[["nome", "Nome"], ["data", "Data di caricamento"], ["versione", "Versione"], ["tipologia", "Tipologia"], ["corrente", "Versione corrente o precedente"]]} style={{ flexWrap: "wrap" }} />}
           {/* Le versioni non correnti restano in elenco, attenuate. */}
-          {documenti.map((d) => (
+          {ord.ordinate.map((d) => (
             <div
               key={d.id}
               style={{

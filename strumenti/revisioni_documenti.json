@@ -89,6 +89,12 @@
       "data": "19/10/2026",
       "descrizione": "Primo accesso: le credenziali arrivano per email.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.5",
+      "data": "19/10/2026",
+      "descrizione": "Ordinamento degli elenchi e delle tabelle.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -229,6 +235,12 @@
       "data": "19/10/2026",
       "descrizione": "Simulatore: metodo di stima per utenza (solo utenze virtuose), buffer del Capitolo 7, taratura.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.3",
+      "data": "19/10/2026",
+      "descrizione": "Ordinamento di tutte le tabelle e degli elenchi.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -350,6 +362,12 @@
       "rev": "2.9",
       "data": "19/10/2026",
       "descrizione": "Prove 8b.3b e 8b.3c: metodo per utenza, buffer e taratura.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.0",
+      "data": "19/10/2026",
+      "descrizione": "Prova 10.10c: ordinamento.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -526,6 +544,12 @@
       "rev": "3.8",
       "data": "19/10/2026",
       "descrizione": "Simulatore allineato all'Allegato A EsaCom: metodo per utenza.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.9",
+      "data": "19/10/2026",
+      "descrizione": "Ordinamento di tabelle ed elenchi in tutto il portale.",
       "autore": "Fondazione Operate"
     }
   ],

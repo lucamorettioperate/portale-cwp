@@ -8,7 +8,8 @@
      Un clic su una riga apre la pratica in «/pratiche?id=…». Per ogni
      pratica la colonna «Avanzamento» mostra la barra a LED delle 7 fasi
      (componente BarraFasi: accese le completate, spente quelle da fare,
-     la settima verde).
+     la settima verde). Ogni colonna si ordina con un clic sull'intestazione
+     (componente Ordinamento).
    Chi la usa: Operatore e Amministratore.
    Dati: leggiCruscotto() di src/lib/dati.js = RPC staff_cruscotto
      (script 09): una riga per pratica con fase corrente, scadenza, giorni
@@ -29,6 +30,7 @@ import Header from "../components/Header.jsx";
 import Badge from "../components/Badge.jsx";
 import { leggiCruscotto, leggiFasiPratiche } from "../lib/dati.js";
 import BarraFasi from "../components/BarraFasi.jsx";
+import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
 import { formatoData } from "../lib/date.js";
 
 // Una pratica è "in scadenza" se la fase aperta scade entro questi giorni.
@@ -113,6 +115,18 @@ export default function Cruscotto() {
   }, [righe, riquadro, testo, stato, tipo, anno, fase]);
 
   const filtriAttivi = riquadro || testo || stato || tipo || anno || fase;
+
+  // Ordinamento per colonna (clic sulle intestazioni).
+  const completate = (p) => (fasiPerPratica[p.id] || []).filter((f) => f.stato === "completata").length;
+  const ord = useOrdinamento(filtrate, {
+    pratica: (p) => p.codice,
+    organizzazione: (p) => p.organizzazione,
+    avanzamento: (p) => completate(p),
+    stato: (p) => (STATI_PRATICA[p.stato] || {}).label || p.stato,
+    fase: (p) => p.fase_numero,
+    scadenza: (p) => p.fase_scadenza,
+    dafare: (p) => (p.integrazioni_da_verificare || 0) + (p.integrazioni_in_attesa || 0) + (p.consultazione_attiva ? 1 : 0),
+  });
   // Toglie tutti i filtri (pulsante «Azzera filtri»).
   function azzera() {
     setRiquadro(null);
@@ -201,20 +215,20 @@ export default function Cruscotto() {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 900 }}>
             <thead>
               <tr style={{ textAlign: "left", color: C.grafite, fontSize: 11.5, textTransform: "uppercase", letterSpacing: 0.3 }}>
-                <th style={th}>Pratica</th>
-                <th style={th}>Organizzazione</th>
-                <th style={th}>Avanzamento</th>
-                <th style={th}>Stato</th>
-                <th style={th}>Fase corrente</th>
-                <th style={th}>Scadenza</th>
-                <th style={th}>Da fare</th>
+                <ThOrdinabile ord={ord} chiave="pratica" style={th}>Pratica</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="organizzazione" style={th}>Organizzazione</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="avanzamento" style={th}>Avanzamento</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="stato" style={th}>Stato</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="fase" style={th}>Fase corrente</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="scadenza" style={th}>Scadenza</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="dafare" style={th}>Da fare</ThOrdinabile>
               </tr>
             </thead>
             <tbody>
               {!caricamento && filtrate.length === 0 && (
                 <tr><td colSpan={7} style={{ ...td, color: C.grafite, textAlign: "center", padding: 24 }}>Nessuna pratica corrisponde ai filtri.</td></tr>
               )}
-              {filtrate.map((p) => {
+              {ord.ordinate.map((p) => {
                 const sp = STATI_PRATICA[p.stato] || STATI_PRATICA.attiva;
                 const sf = p.fase_stato ? STATI_FASE[p.fase_stato] : null;
                 const g = p.giorni_scadenza;

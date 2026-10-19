@@ -61,6 +61,7 @@ import { calcolaCrediti, coefficientePrimoAnno } from "../lib/crediti/calcolo.js
 import { BENI_RIUSO, TIPOLOGIE_RIFIUTO } from "../lib/crediti/parametri.js";
 import { csvInOggetti, scriviCsv, scaricaTesto } from "../lib/csv.js";
 import { formatoData } from "../lib/date.js";
+import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
 
 // Numero in formato italiano con `d` decimali fissi; "—" se manca o non è un numero.
 const fmt = (v, d = 2) =>
@@ -953,6 +954,11 @@ function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso,
     });
     return { perTipologia: m, utenze: utenze.size };
   }, [conferimenti]);
+  // Riepilogo per tipologia ordinabile per colonna.
+  const ordTip = useOrdinamento(Object.entries(riepilogo.perTipologia).map(([tp, v]) => ({ tp, ...v })), {
+    tipologia: (x) => tipologie.find((y) => y.valore === x.tp)?.etichetta || x.tp,
+    righe: (x) => x.righe, litri: (x) => x.litri, kg: (x) => x.kg,
+  });
 
   return (
     <Passo
@@ -982,14 +988,14 @@ function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso,
         <table style={tabella}>
           <thead>
             <tr style={{ background: C.paper }}>
-              <th style={thS}>Tipologia</th>
-              <th style={{ ...thS, textAlign: "right" }}>Righe</th>
-              <th style={{ ...thS, textAlign: "right" }}>Volume (L)</th>
-              <th style={{ ...thS, textAlign: "right" }}>Peso misurato (kg)</th>
+              <ThOrdinabile ord={ordTip} chiave="tipologia" style={thS}>Tipologia</ThOrdinabile>
+              <ThOrdinabile ord={ordTip} chiave="righe" style={{ ...thS, textAlign: "right" }}>Righe</ThOrdinabile>
+              <ThOrdinabile ord={ordTip} chiave="litri" style={{ ...thS, textAlign: "right" }}>Volume (L)</ThOrdinabile>
+              <ThOrdinabile ord={ordTip} chiave="kg" style={{ ...thS, textAlign: "right" }}>Peso misurato (kg)</ThOrdinabile>
             </tr>
           </thead>
           <tbody>
-            {Object.entries(riepilogo.perTipologia).map(([t, v]) => (
+            {ordTip.ordinate.map(({ tp: t, ...v }) => (
               <tr key={t} style={{ borderTop: `1px solid ${C.line}` }}>
                 <td style={tdS}>{tipologie.find((x) => x.valore === t)?.etichetta || t}</td>
                 <td style={tdN}>{v.righe.toLocaleString("it-IT")}</td>
@@ -1151,6 +1157,20 @@ function Buffer({ opzioni, aggiorna, sola, conferimenti, riuso }) {
    salvato. Il CSV per utenza richiede un «Calcola» nella sessione. */
 function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermato }) {
   const r = risultato || salvato;
+  // Tabelle dei risultati ordinabili per colonna (prima del ritorno
+  // anticipato: le regole di React vogliono gli hook sempre chiamati).
+  const nomeTip = (tp) => TIPOLOGIE_RIFIUTO.find((x) => x.id === tp)?.nome || tp;
+  const nomeClasse = (c) => `${c.macro === "UD" ? "Dom." : "Non dom."} ${c.classe}`;
+  const ordAttesa = useOrdinamento(r?.attesa?.tipologie || [], {
+    tipologia: (x) => nomeTip(x.tipologia), qtot: (x) => x.qtot, qud: (x) => x.qud, qund: (x) => x.qund,
+    fe: (x) => x.fe, ea: (x) => x.ea, misurata: (x) => (r?.tipologieMisurate || []).includes(x.tipologia),
+  });
+  const colonneClassi = { classe: nomeClasse, n: (c) => c.n, quota: (c) => c.quota };
+  (r?.attesa?.tipologie || []).forEach((x) => { colonneClassi[`t_${x.tipologia}`] = (c) => c.atteso?.[x.tipologia]; });
+  const ordClassi = useOrdinamento(r?.attesa?.classi || [], colonneClassi);
+  const ordPerClasse = useOrdinamento(r?.utenze?.perClasse || [], {
+    classe: nomeClasse, utenze: (c) => c.utenze, virtuose: (c) => c.virtuose, deltaI: (c) => c.deltaI,
+  });
   if (!r) {
     return (
       <Passo titolo="Risultati" nota="Compila i passi precedenti e premi «Calcola».">
@@ -1255,17 +1275,17 @@ function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermat
         <table style={tabella}>
           <thead>
             <tr style={{ background: C.paper }}>
-              <th style={thS}>Tipologia</th>
-              <th style={{ ...thS, textAlign: "right" }}>Qtot (t)</th>
-              <th style={{ ...thS, textAlign: "right" }}>QUD (t)</th>
-              <th style={{ ...thS, textAlign: "right" }}>QUnD (t)</th>
-              <th style={{ ...thS, textAlign: "right" }}>FE (kgCO₂eq/kg)</th>
-              <th style={{ ...thS, textAlign: "right" }}>EA (tCO₂eq)</th>
-              <th style={thS}>Misurata</th>
+              <ThOrdinabile ord={ordAttesa} chiave="tipologia" style={thS}>Tipologia</ThOrdinabile>
+              <ThOrdinabile ord={ordAttesa} chiave="qtot" style={{ ...thS, textAlign: "right" }}>Qtot (t)</ThOrdinabile>
+              <ThOrdinabile ord={ordAttesa} chiave="qud" style={{ ...thS, textAlign: "right" }}>QUD (t)</ThOrdinabile>
+              <ThOrdinabile ord={ordAttesa} chiave="qund" style={{ ...thS, textAlign: "right" }}>QUnD (t)</ThOrdinabile>
+              <ThOrdinabile ord={ordAttesa} chiave="fe" style={{ ...thS, textAlign: "right" }}>FE (kgCO₂eq/kg)</ThOrdinabile>
+              <ThOrdinabile ord={ordAttesa} chiave="ea" style={{ ...thS, textAlign: "right" }}>EA (tCO₂eq)</ThOrdinabile>
+              <ThOrdinabile ord={ordAttesa} chiave="misurata" style={thS}>Misurata</ThOrdinabile>
             </tr>
           </thead>
           <tbody>
-            {r.attesa.tipologie.map((t) => (
+            {ordAttesa.ordinate.map((t) => (
               <tr key={t.tipologia} style={{ borderTop: `1px solid ${C.line}` }}>
                 <td style={tdS}>{tipNome(t.tipologia)}{t.soloDomestiche ? " (solo domestiche)" : ""}</td>
                 <td style={tdN}>{fmt(t.qtot, 2)}</td>
@@ -1291,14 +1311,14 @@ function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermat
         <table style={tabella}>
           <thead>
             <tr style={{ background: C.paper }}>
-              <th style={thS}>Classe</th>
-              <th style={{ ...thS, textAlign: "right" }}>Utenze</th>
-              <th style={{ ...thS, textAlign: "right" }}>Quota</th>
-              {r.attesa.tipologie.map((t) => <th key={t.tipologia} style={{ ...thS, textAlign: "right" }}>{tipNome(t.tipologia)}</th>)}
+              <ThOrdinabile ord={ordClassi} chiave="classe" style={thS}>Classe</ThOrdinabile>
+              <ThOrdinabile ord={ordClassi} chiave="n" style={{ ...thS, textAlign: "right" }}>Utenze</ThOrdinabile>
+              <ThOrdinabile ord={ordClassi} chiave="quota" style={{ ...thS, textAlign: "right" }}>Quota</ThOrdinabile>
+              {r.attesa.tipologie.map((t) => <ThOrdinabile key={t.tipologia} ord={ordClassi} chiave={`t_${t.tipologia}`} style={{ ...thS, textAlign: "right" }}>{tipNome(t.tipologia)}</ThOrdinabile>)}
             </tr>
           </thead>
           <tbody>
-            {r.attesa.classi.map((c) => (
+            {ordClassi.ordinate.map((c) => (
               <tr key={`${c.macro}|${c.classe}`} style={{ borderTop: `1px solid ${C.line}` }}>
                 <td style={tdS}>{c.macro === "UD" ? "Dom." : "Non dom."} {c.classe}</td>
                 <td style={tdN}>{c.n.toLocaleString("it-IT")}</td>
@@ -1316,14 +1336,14 @@ function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermat
           <table style={tabella}>
             <thead>
               <tr style={{ background: C.paper }}>
-                <th style={thS}>Classe</th>
-                <th style={{ ...thS, textAlign: "right" }}>Utenze</th>
-                <th style={{ ...thS, textAlign: "right" }}>Che riducono</th>
-                <th style={{ ...thS, textAlign: "right" }}>ΔI (kgCO₂eq)</th>
+                <ThOrdinabile ord={ordPerClasse} chiave="classe" style={thS}>Classe</ThOrdinabile>
+                <ThOrdinabile ord={ordPerClasse} chiave="utenze" style={{ ...thS, textAlign: "right" }}>Utenze</ThOrdinabile>
+                <ThOrdinabile ord={ordPerClasse} chiave="virtuose" style={{ ...thS, textAlign: "right" }}>Che riducono</ThOrdinabile>
+                <ThOrdinabile ord={ordPerClasse} chiave="deltaI" style={{ ...thS, textAlign: "right" }}>ΔI (kgCO₂eq)</ThOrdinabile>
               </tr>
             </thead>
             <tbody>
-              {r.utenze.perClasse.map((c) => (
+              {ordPerClasse.ordinate.map((c) => (
                 <tr key={`${c.macro}|${c.classe}`} style={{ borderTop: `1px solid ${C.line}` }}>
                   <td style={tdS}>{c.macro === "UD" ? "Dom." : "Non dom."} {c.classe}</td>
                   <td style={tdN}>{c.utenze.toLocaleString("it-IT")}</td>
@@ -1404,6 +1424,11 @@ const tdN = { padding: "6px 9px", textAlign: "right", fontVariantNumeric: "tabul
    motivazione si salvano nei dati del calcolo (dati.qualita).
    Props: qualita (da qualitaDati), aggiorna(parziale), sola. */
 function QualitaDati({ qualita, aggiorna, sola }) {
+  // Scostamenti dalla Tabella 3 ordinabili per colonna.
+  const ordScost = useOrdinamento(qualita?.scostamenti || [], {
+    tipologia: (s) => TIPOLOGIE_RIFIUTO.find((x) => x.id === s.tipologia)?.nome || s.tipologia,
+    procapite: (s) => s.procapite, riferimento: (s) => s.riferimento, scostamento: (s) => s.scostamento,
+  });
   if (!qualita) return null;
   const set = (k) => (e) => aggiorna({ qualita: { popolazione: qualita.popolazione || "", cluster: qualita.cluster || "", motivazione: qualita.motivazione || "", [k]: e.target.value } });
   const oltre = qualita.scostamenti.filter((s) => s.oltre);
@@ -1426,9 +1451,14 @@ function QualitaDati({ qualita, aggiorna, sola }) {
       </div>
       {qualita.scostamenti.length > 0 && (
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, margin: "6px 0 10px" }}>
-          <thead><tr style={{ textAlign: "left", color: C.grafite }}><th>Tipologia</th><th style={{ textAlign: "right" }}>kg/ab/anno</th><th style={{ textAlign: "right" }}>Tabella 3</th><th style={{ textAlign: "right" }}>Scostamento</th></tr></thead>
+          <thead><tr style={{ textAlign: "left", color: C.grafite }}>
+            <ThOrdinabile ord={ordScost} chiave="tipologia">Tipologia</ThOrdinabile>
+            <ThOrdinabile ord={ordScost} chiave="procapite" style={{ textAlign: "right" }}>kg/ab/anno</ThOrdinabile>
+            <ThOrdinabile ord={ordScost} chiave="riferimento" style={{ textAlign: "right" }}>Tabella 3</ThOrdinabile>
+            <ThOrdinabile ord={ordScost} chiave="scostamento" style={{ textAlign: "right" }}>Scostamento</ThOrdinabile>
+          </tr></thead>
           <tbody>
-            {qualita.scostamenti.map((s) => (
+            {ordScost.ordinate.map((s) => (
               <tr key={s.tipologia} style={{ color: s.oltre ? C.red : C.ink }}>
                 <td>{TIPOLOGIE_RIFIUTO.find((t) => t.id === s.tipologia)?.nome || s.tipologia}</td>
                 <td style={{ textAlign: "right" }}>{fmt(s.procapite, 1)}</td>

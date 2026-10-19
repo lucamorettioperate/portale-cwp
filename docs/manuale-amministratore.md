@@ -51,6 +51,8 @@ Si accede da [portale-cwp.vercel.app](https://portale-cwp.vercel.app) con **Emai
 | Operatore | Dashboard, Pratiche, Anagrafiche, Crediti emessi, Reclami, Manuale |
 | Amministratore | Dashboard, Pratiche, Utenti, Audit, Anagrafiche, Calcolo crediti, Crediti emessi, Reclami, Impostazioni, Documentazione |
 
+**Ordinare tabelle ed elenchi.** Ogni tabella del portale si ordina per qualsiasi colonna: fate clic sull'intestazione per l'ordine crescente (freccia ▲) e di nuovo per il decrescente (▼); le colonne non ordinate mostrano ↕. Vale per Dashboard, Audit, Calcolo crediti, Registro dei crediti, Simulatore (scenari, risultati, costi e parte economica) e per le tabelle del calcolo. Gli elenchi a schede (Pratiche, Utenti, Organizzazioni, Enti di Validazione, Registri, Reclami, Crediti emessi, documenti, pagamenti e Rapporti di una pratica) hanno in alto il menu **Ordina per** con il pulsante ▲/▼ del verso; «ordine predefinito» torna all'ordine iniziale. I valori vuoti restano sempre in fondo. Le tabelle in cui si inseriscono i dati anno per anno restano in ordine di anno.
+
 **Il mio profilo.** Facendo clic sulla propria email si apre la pagina con i dati dell'account, il pulsante **Cambia password** e i documenti da scaricare (per l'Amministratore: Manuale Utente, Manuale Amministratore e Registro sviluppo e deploy).
 
 **Password.** Al primo accesso il portale chiede di sostituire la password temporanea. La password si cambia da **Il mio profilo → Cambia password**; se è stata dimenticata si usa **Password dimenticata?** nella pagina di accesso: arriva un'email «Portale Carbon WastePrint (CWP) — Richiesta di reimpostazione della password» con il pulsante **Scegli una nuova password →**.

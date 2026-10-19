@@ -25,6 +25,7 @@ import Badge from "../components/Badge.jsx";
 import DettaglioPratica from "../components/DettaglioPratica.jsx";
 import NuovoProgetto from "../components/NuovoProgetto.jsx";
 import { elencaProgetti } from "../lib/dati.js";
+import { useOrdinamento, SceltaOrdinamento } from "../components/Ordinamento.jsx";
 
 /* Pagina del back-office. Nessuna prop.
    Stato principale: elenco progetti, pratica selezionata (nell'indirizzo),
@@ -65,6 +66,17 @@ export default function BackOffice() {
   const staff = ruolo === "operatore" || ruolo === "admin";
   // Solo interfaccia: un cliente viene rimandato alla propria area. Finché
   // il ruolo non è noto (null) la pagina resta visibile.
+  // Elenco filtrato dalla ricerca e ordinabile («Ordina per»); senza
+  // scelta resta dal più recente.
+  const filtrati = progetti.filter((p) => !cerca.trim() || [p.codice, p.titolo, p.organizzazione?.denominazione].some((v) => (v || "").toLowerCase().includes(cerca.trim().toLowerCase())));
+  const ord = useOrdinamento(filtrati, {
+    organizzazione: (p) => p.organizzazione?.denominazione,
+    codice: (p) => p.codice,
+    titolo: (p) => p.titolo,
+    stato: (p) => (STATI_PRATICA[p.stato] || {}).label || p.stato,
+    creato: (p) => p.creato_il,
+  });
+
   if (ruolo && !staff) return <Navigate to="/" replace />;
 
   return (
@@ -146,11 +158,18 @@ export default function BackOffice() {
             />
           )}
 
+          {progetti.length > 1 && (
+            <SceltaOrdinamento
+              ord={ord}
+              opzioni={[["organizzazione", "Organizzazione"], ["codice", "Codice"], ["titolo", "Titolo"], ["stato", "Stato"], ["creato", "Data di creazione"]]}
+              style={{ marginBottom: 10, flexWrap: "wrap" }}
+            />
+          )}
+
           {/* Filtro nel browser su codice, titolo e denominazione
-              dell'organizzazione (senza distinzione di maiuscole). */}
-          {progetti
-            .filter((p) => !cerca.trim() || [p.codice, p.titolo, p.organizzazione?.denominazione].some((v) => (v || "").toLowerCase().includes(cerca.trim().toLowerCase())))
-            .map((p) => {
+              dell'organizzazione (senza distinzione di maiuscole), poi
+              ordinamento scelto. */}
+          {ord.ordinate.map((p) => {
             const st = STATI_PRATICA[p.stato] || STATI_PRATICA.attiva;
             const attivo = p.id === selId;
             return (

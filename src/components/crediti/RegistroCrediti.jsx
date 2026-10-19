@@ -28,6 +28,7 @@ import Badge from "../Badge.jsx";
 import { supabase } from "../../lib/supabase.js";
 import { scriviCsv, scaricaTesto } from "../../lib/csv.js";
 import { formatoData, oggiItalia } from "../../lib/date.js";
+import { useOrdinamento, ThOrdinabile } from "../Ordinamento.jsx";
 
 // Numero in formato italiano con d decimali (crediti in tCO2eq: 3 decimali).
 const fmt = (v, d = 3) => (v == null ? "—" : Number(v).toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d }));
@@ -68,6 +69,18 @@ export default function RegistroCrediti() {
     return [...m.values()].sort((a, b) => a.ente.localeCompare(b.ente) || a.anno - b.anno);
   }, [righe]);
   const totaleNetti = totali.reduce((s, t) => s + t.netti, 0);
+
+  // Ordinamento della tabella per colonna (clic sulle intestazioni).
+  const ord = useOrdinamento(visibili, {
+    numero: (r) => r.numero_registro,
+    pratica: (r) => r.pratica_codice,
+    anno: (r) => r.anno,
+    lordi: (r) => Number(r.crediti_lordi),
+    buffer: (r) => Number(r.buffer_pct),
+    netti: (r) => Number(r.crediti_netti),
+    confermato: (r) => r.confermato_il,
+    stato: (r) => (r.valido ? "Valido" : `Sostituito ${r.sostituito_da || ""}`),
+  });
 
   // Scarica l'intero registro in CSV (tutte le righe, anche le sostituite,
   // a prescindere dal filtro). Nome file con la data di oggi (ora italiana).
@@ -121,21 +134,21 @@ export default function RegistroCrediti() {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 820 }}>
           <thead>
             <tr style={{ textAlign: "left", color: C.grafite, fontSize: 11.5, textTransform: "uppercase", letterSpacing: 0.3 }}>
-              <th style={th}>N. registro</th>
-              <th style={th}>Pratica</th>
-              <th style={th}>Anno</th>
-              <th style={{ ...th, textAlign: "right" }}>Lordi</th>
-              <th style={{ ...th, textAlign: "right" }}>Buffer</th>
-              <th style={{ ...th, textAlign: "right" }}>Netti (tCO₂eq)</th>
-              <th style={th}>Confermato</th>
-              <th style={th}>Stato</th>
+              <ThOrdinabile ord={ord} chiave="numero" style={th}>N. registro</ThOrdinabile>
+              <ThOrdinabile ord={ord} chiave="pratica" style={th}>Pratica</ThOrdinabile>
+              <ThOrdinabile ord={ord} chiave="anno" style={th}>Anno</ThOrdinabile>
+              <ThOrdinabile ord={ord} chiave="lordi" style={{ ...th, textAlign: "right" }}>Lordi</ThOrdinabile>
+              <ThOrdinabile ord={ord} chiave="buffer" style={{ ...th, textAlign: "right" }}>Buffer</ThOrdinabile>
+              <ThOrdinabile ord={ord} chiave="netti" style={{ ...th, textAlign: "right" }}>Netti (tCO₂eq)</ThOrdinabile>
+              <ThOrdinabile ord={ord} chiave="confermato" style={th}>Confermato</ThOrdinabile>
+              <ThOrdinabile ord={ord} chiave="stato" style={th}>Stato</ThOrdinabile>
             </tr>
           </thead>
           <tbody>
             {righe === null && <tr><td colSpan={8} style={{ ...td, color: C.grafite }}>Caricamento…</td></tr>}
             {righe && visibili.length === 0 && <tr><td colSpan={8} style={{ ...td, color: C.grafite }}>Nessun calcolo registrato: il registro si popola alla conferma dei calcoli ex post.</td></tr>}
             {/* Clic sulla riga: apre il calcolo (/crediti/:id). */}
-            {visibili.map((r) => (
+            {ord.ordinate.map((r) => (
               <tr key={r.numero_registro} onClick={() => navigate(`/crediti/${r.calcolo_id}`)} style={{ borderTop: `1px solid ${C.line}`, cursor: "pointer", opacity: r.valido ? 1 : 0.6 }}>
                 <td style={{ ...td, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{r.numero_registro}</td>
                 <td style={td}>{r.pratica_codice}<div style={{ fontSize: 11.5, color: C.grafite }}>{r.ente}</div></td>

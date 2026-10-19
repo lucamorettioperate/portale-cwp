@@ -2,7 +2,8 @@
    Audit trail — indirizzo «/audit»
    Scopo: tabella degli eventi registrati (data, utente, operazione, pratica,
      passaggio di stato, motivazione), con ricerca testuale e pulsante per
-     caricare eventi meno recenti (requisiti §10).
+     caricare eventi meno recenti (requisiti §10). Ogni colonna si ordina
+     con un clic sull'intestazione (componente Ordinamento).
    Chi la usa: solo Amministratori (gli altri vedono un messaggio di accesso
      riservato).
    Dati: elencaAudit() (tabella "audit_event"), elencaUtenti() (RPC
@@ -21,6 +22,7 @@ import { COLORI as C } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
 import { elencaAudit, elencaUtenti, leggiCruscotto } from "../lib/dati.js";
+import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
 
 /* Pagina dell'audit. Nessuna prop.
    Carica gli ultimi `limite` eventi (200 all'inizio, +500 a ogni clic su
@@ -63,6 +65,16 @@ export default function Audit() {
     );
   }, [eventi, testo, utenti, pratiche]);
 
+  // Ordinamento per colonna; senza scelta resta dal più recente.
+  const ord = useOrdinamento(filtrati, {
+    data: (e) => e.avvenuto_il,
+    utente: (e) => utenti[e.utente_id] || (e.utente_id ? "utente" : "sistema"),
+    operazione: (e) => e.operazione,
+    pratica: (e) => pratiche[e.pratica_id],
+    stati: (e) => [e.stato_precedente, e.stato_successivo].filter(Boolean).join(" → "),
+    motivazione: (e) => e.motivazione,
+  });
+
   if (ruolo !== "admin") {
     return (
       <div style={{ background: C.paper, minHeight: "100vh" }}>
@@ -94,18 +106,18 @@ export default function Audit() {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 820 }}>
             <thead>
               <tr style={{ textAlign: "left", color: C.grafite, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>
-                <th style={th}>Data e ora</th>
-                <th style={th}>Utente</th>
-                <th style={th}>Operazione</th>
-                <th style={th}>Pratica</th>
-                <th style={th}>Da → A</th>
-                <th style={th}>Motivazione</th>
+                <ThOrdinabile ord={ord} chiave="data" style={th}>Data e ora</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="utente" style={th}>Utente</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="operazione" style={th}>Operazione</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="pratica" style={th}>Pratica</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="stati" style={th}>Da → A</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="motivazione" style={th}>Motivazione</ThOrdinabile>
               </tr>
             </thead>
             <tbody>
               {caricamento && <tr><td colSpan={6} style={{ ...td, color: C.grafite }}>Caricamento…</td></tr>}
               {!caricamento && filtrati.length === 0 && <tr><td colSpan={6} style={{ ...td, color: C.grafite }}>Nessun evento.</td></tr>}
-              {filtrati.map((e) => (
+              {ord.ordinate.map((e) => (
                 <tr key={e.id} style={{ borderTop: `1px solid ${C.line}` }}>
                   <td style={{ ...td, whiteSpace: "nowrap" }}>{new Date(e.avvenuto_il).toLocaleString("it-IT")}</td>
                   <td style={td}>

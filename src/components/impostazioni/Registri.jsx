@@ -21,6 +21,7 @@ import Badge from "../Badge.jsx";
 import { elencaRegistri, salvaRegistro } from "../../lib/dati.js";
 import { formatoData } from "../../lib/date.js";
 import { riquadro, campo, etichetta, btnPrimario, btnMini } from "../stili.js";
+import { useOrdinamento, SceltaOrdinamento } from "../Ordinamento.jsx";
 
 /* Sezione «Registri». Nessuna prop. */
 export default function Registri() {
@@ -52,6 +53,12 @@ export default function Registri() {
     carica();
   }
   const set = (k) => (e) => setModulo({ ...modulo, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value });
+
+  // Ordinamento dell'elenco («Ordina per»).
+  const ord = useOrdinamento(voci, {
+    denominazione: (r) => r.denominazione, approvato: (r) => r.approvato_il,
+    blockchain: (r) => !!r.blockchain, stato: (r) => (r.attivo ? "attivo" : "disattivato"),
+  });
 
   return (
     <section style={{ ...riquadro, marginTop: 18 }}>
@@ -87,8 +94,9 @@ export default function Registri() {
         </div>
       )}
       {voci.length === 0 && !modulo && <div style={{ fontSize: 13, color: C.grafite }}>Nessun registro.</div>}
+      {voci.length > 1 && <SceltaOrdinamento ord={ord} opzioni={[["denominazione", "Denominazione"], ["approvato", "Data di approvazione"], ["blockchain", "Blockchain"], ["stato", "Stato"]]} style={{ marginBottom: 10, flexWrap: "wrap" }} />}
       <div style={{ display: "grid", gap: 6 }}>
-        {voci.map((r) => (
+        {ord.ordinate.map((r) => (
           <div key={r.id} style={{ border: `1px solid ${C.line}`, borderRadius: 9, padding: "9px 12px", display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", opacity: r.attivo ? 1 : 0.6 }}>
             <div style={{ fontSize: 13 }}>
               <b>{r.denominazione}</b>

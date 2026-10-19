@@ -25,6 +25,7 @@ import { COLORI as C } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
 import EntiValidazione from "../components/impostazioni/EntiValidazione.jsx";
+import { useOrdinamento, SceltaOrdinamento } from "../components/Ordinamento.jsx";
 import Registri from "../components/impostazioni/Registri.jsx";
 import { elencaOrganizzazioni, salvaOrganizzazione, elencaPraticheAnagrafiche } from "../lib/dati.js";
 import { riquadro, campo, etichetta, btnPrimario, btnMini } from "../components/stili.js";
@@ -106,7 +107,13 @@ function Organizzazioni({ pratiche }) {
   }, [pratiche]);
 
   const q = cerca.trim().toLowerCase();
-  const visibili = org.filter((o) => !q || [o.denominazione, o.codice_fiscale, o.partita_iva, o.pec].some((v) => (v || "").toLowerCase().includes(q)));
+  const filtrate = org.filter((o) => !q || [o.denominazione, o.codice_fiscale, o.partita_iva, o.pec].some((v) => (v || "").toLowerCase().includes(q)));
+  // Ordinamento («Ordina per»).
+  const ord = useOrdinamento(filtrate, {
+    denominazione: (o) => o.denominazione, tipo: (o) => o.tipo, cf: (o) => o.codice_fiscale,
+    pec: (o) => o.pec, pratiche: (o) => (perOrg[o.id] || []).length,
+  });
+  const visibili = ord.ordinate;
 
   async function salva() {
     setErrore("");
@@ -142,6 +149,7 @@ function Organizzazioni({ pratiche }) {
 
       {modulo && <ModuloOrganizzazione modulo={modulo} setModulo={setModulo} onSalva={salva} inCorso={inCorso} errore={errore} />}
 
+      {org.length > 1 && <SceltaOrdinamento ord={ord} opzioni={[["denominazione", "Denominazione"], ["tipo", "Tipo"], ["cf", "Codice fiscale"], ["pec", "PEC"], ["pratiche", "Numero di pratiche"]]} style={{ marginBottom: 10, flexWrap: "wrap" }} />}
       {visibili.length === 0 && <div style={{ fontSize: 13, color: C.grafite }}>Nessuna organizzazione.</div>}
       <div style={{ display: "grid", gap: 6 }}>
         {visibili.map((o) => {

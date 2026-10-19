@@ -23,6 +23,7 @@ import Header from "../components/Header.jsx";
 import Badge from "../components/Badge.jsx";
 import DettaglioPratica from "../components/DettaglioPratica.jsx";
 import { elencaProgetti } from "../lib/dati.js";
+import { useOrdinamento, SceltaOrdinamento } from "../components/Ordinamento.jsx";
 
 /* Pagina principale del cliente.
    Nessuna prop. Legge i progetti una volta all'apertura e, se l'indirizzo
@@ -48,6 +49,12 @@ export default function AreaCliente() {
       setCaricamento(false);
     });
   }, []);
+
+  // Ordinamento delle pratiche («Ordina per»).
+  const ord = useOrdinamento(progetti, {
+    titolo: (p) => p.titolo, codice: (p) => p.codice, organizzazione: (p) => p.organizzazione?.denominazione,
+    stato: (p) => (STATI_PRATICA[p.stato] || {}).label || p.stato, creato: (p) => p.creato_il,
+  });
 
   return (
     <div style={{ background: C.paper, minHeight: "100vh" }}>
@@ -92,9 +99,12 @@ export default function AreaCliente() {
 
         {progetti.length > 0 && (
           <div style={{ display: "grid", gap: 20 }}>
-            {/* Riepilogo pratiche (card compatte) */}
+            {/* Riepilogo pratiche (card compatte), ordinabili */}
             <div style={{ display: "grid", gap: 10 }}>
-              {progetti.map((p) => {
+              {progetti.length > 1 && (
+                <SceltaOrdinamento ord={ord} opzioni={[["titolo", "Titolo"], ["codice", "Codice"], ["organizzazione", "Organizzazione"], ["stato", "Stato"], ["creato", "Data di creazione"]]} style={{ flexWrap: "wrap" }} />
+              )}
+              {ord.ordinate.map((p) => {
                 const st = STATI_PRATICA[p.stato] || STATI_PRATICA.attiva;
                 const attivo = p.id === selId;
                 return (

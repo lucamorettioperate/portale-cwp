@@ -57,6 +57,7 @@ import {
   eliminaUtente,
 } from "../lib/dati.js";
 import { generaPasswordTemporanea } from "../lib/password.js";
+import { useOrdinamento, SceltaOrdinamento } from "../components/Ordinamento.jsx";
 
 // Organizzazioni associate a un utente (elenco completo, con fallback
 // sul vecchio campo singolo).
@@ -116,6 +117,16 @@ export default function GestioneUtenti() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Ordinamento dell'elenco («Ordina per»); senza scelta dal più recente.
+  const ord = useOrdinamento(utenti, {
+    nome: (u) => u.nome_completo || u.email,
+    email: (u) => u.email,
+    ruolo: (u) => (RUOLI[u.ruolo] || {}).label || u.ruolo,
+    stato: (u) => (u.attivo ? "Attivo" : "Disattivato"),
+    organizzazione: (u) => orgNomiUtente(u).join(", "),
+    creato: (u) => u.creato_il,
+  });
+
   if (ruolo !== "admin") {
     return (
       <div style={{ background: C.paper, minHeight: "100vh" }}>
@@ -153,6 +164,13 @@ export default function GestioneUtenti() {
         {errore && <div style={{ color: C.red, fontSize: 13, marginBottom: 12 }}>{errore}</div>}
         {caricamento && <div style={{ color: C.grafite, fontSize: 13 }}>Caricamento…</div>}
 
+        {!caricamento && utenti.length > 1 && (
+          <SceltaOrdinamento
+            ord={ord}
+            opzioni={[["nome", "Nome"], ["email", "Email"], ["ruolo", "Ruolo"], ["stato", "Stato"], ["organizzazione", "Organizzazione"], ["creato", "Data di creazione"]]}
+            style={{ marginBottom: 10, flexWrap: "wrap" }}
+          />
+        )}
         {!caricamento && (
           <div
             style={{
@@ -162,7 +180,7 @@ export default function GestioneUtenti() {
               overflow: "hidden",
             }}
           >
-            {utenti.map((u, i) => (
+            {ord.ordinate.map((u, i) => (
               <RigaUtente
                 key={u.id}
                 utente={u}
@@ -170,7 +188,7 @@ export default function GestioneUtenti() {
                 principale={u.id === principaleId}
                 eliminabile={eliminabili.includes(u.id)}
                 sonoIo={u.id === io?.id}
-                ultimo={i === utenti.length - 1}
+                ultimo={i === ord.ordinate.length - 1}
                 onSalvato={carica}
               />
             ))}

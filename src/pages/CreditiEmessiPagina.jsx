@@ -20,6 +20,7 @@ import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
 import { Lotto, riepilogoLotto } from "../components/CreditiEmessi.jsx";
 import { elencaLotti } from "../lib/dati.js";
+import { useOrdinamento, SceltaOrdinamento } from "../components/Ordinamento.jsx";
 
 /* Pagina dei crediti emessi. Nessuna prop. */
 export default function CreditiEmessiPagina() {
@@ -40,6 +41,13 @@ export default function CreditiEmessiPagina() {
     return { emessi: t.emessi + l.quantita, attivi: t.attivi + r.attivi, ritirati: t.ritirati + r.ritirati };
   }, { emessi: 0, attivi: 0, ritirati: 0 });
   const n = (x) => x.toLocaleString("it-IT");
+  // Ordinamento dei lotti («Ordina per»); senza scelta dal più vecchio.
+  const ord = useOrdinamento(lotti, {
+    codice: (l) => l.codice, emissione: (l) => l.data_emissione, quantita: (l) => l.quantita,
+    rapporto: (l) => l.rapporto?.codice, organizzazione: (l) => l.rapporto?.organizzazione?.denominazione,
+    registro: (l) => l.registro?.denominazione, attivi: (l) => riepilogoLotto(l).attivi,
+    ritirati: (l) => riepilogoLotto(l).ritirati, daVendere: (l) => riepilogoLotto(l).daVendere,
+  });
 
   return (
     <div style={{ background: C.paper, minHeight: "100vh" }}>
@@ -57,8 +65,15 @@ export default function CreditiEmessiPagina() {
             </p>
             {caricamento && <div style={{ color: C.grafite }}>Caricamento…</div>}
             {!caricamento && lotti.length === 0 && <div style={{ color: C.grafite }}>Nessun credito emesso.</div>}
+            {lotti.length > 1 && (
+              <SceltaOrdinamento
+                ord={ord}
+                opzioni={[["codice", "Codice del lotto"], ["emissione", "Data di emissione"], ["quantita", "Quantità"], ["rapporto", "Rapporto"], ["organizzazione", "Organizzazione"], ["registro", "Registro"], ["attivi", "Crediti attivi"], ["ritirati", "Crediti ritirati"], ["daVendere", "Da vendere"]]}
+                style={{ marginBottom: 10, flexWrap: "wrap" }}
+              />
+            )}
             <div style={{ display: "grid", gap: 8 }}>
-              {lotti.map((l) => <Lotto key={l.id} lotto={l} staff={staff} onCambio={carica} mostraRapporto />)}
+              {ord.ordinate.map((l) => <Lotto key={l.id} lotto={l} staff={staff} onCambio={carica} mostraRapporto />)}
             </div>
           </>
         )}

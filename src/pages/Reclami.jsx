@@ -28,6 +28,7 @@ import Badge from "../components/Badge.jsx";
 import { elencaReclami, mieiReclami, inviaReclamo, salvaReclamo, elencaStaff, elencaProgetti } from "../lib/dati.js";
 import { formatoData, oggiItalia } from "../lib/date.js";
 import { riquadro, campo, etichetta, btnPrimario, btnMini } from "../components/stili.js";
+import { useOrdinamento, SceltaOrdinamento } from "../components/Ordinamento.jsx";
 
 const STATI = ["ricevuto", "in esame", "risposto", "chiuso"];
 const RUOLI_MITTENTE = ["promotore del progetto", "ente di validazione e verifica", "sviluppatore di metodologia", "registro", "stakeholder"];
@@ -68,6 +69,10 @@ function VistaUtente() {
     setProgetti(p || []);
   }
   useEffect(() => { carica(); }, []);
+  // Ordinamento dei propri invii («Ordina per»).
+  const ordMiei = useOrdinamento(elenco, {
+    codice: (r) => r.codice, oggetto: (r) => r.oggetto, ricevuto: (r) => r.ricevuto_il, stato: (r) => r.stato,
+  });
 
   async function invia() {
     setErrore("");
@@ -120,7 +125,8 @@ function VistaUtente() {
       <section style={riquadro}>
         <h2 style={h2}>I miei invii</h2>
         {elenco.length === 0 && <div style={{ fontSize: 13, color: C.grafite }}>Nessun invio.</div>}
-        {elenco.map((r) => (
+        {elenco.length > 1 && <SceltaOrdinamento ord={ordMiei} opzioni={[["codice", "Codice"], ["oggetto", "Oggetto"], ["ricevuto", "Data"], ["stato", "Stato"]]} style={{ marginBottom: 10, flexWrap: "wrap" }} />}
+        {ordMiei.ordinate.map((r) => (
           <div key={r.codice} style={riga}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
               <span style={{ fontSize: 13 }}><b>{r.codice}</b> · {r.oggetto} <span style={{ color: C.grafite }}>· {formatoData(r.ricevuto_il)}</span></span>
@@ -169,9 +175,17 @@ function VistaStaff() {
     carica();
   }
 
-  const visibili = elenco.filter((r) => filtro === "tutti" || (filtro === "aperti" ? !["risposto", "chiuso"].includes(r.stato) : r.stato === filtro));
+  const filtrati = elenco.filter((r) => filtro === "tutti" || (filtro === "aperti" ? !["risposto", "chiuso"].includes(r.stato) : r.stato === filtro));
   const set = (k) => (e) => setModulo({ ...modulo, [k]: e.target.value });
   const nomeStaff = (id) => staff.find((s) => s.id === id)?.nome_completo || "—";
+  // Ordinamento dell'elenco («Ordina per»).
+  const ord = useOrdinamento(filtrati, {
+    codice: (r) => r.codice, oggetto: (r) => r.oggetto, mittente: (r) => r.mittente_nome,
+    organizzazione: (r) => r.mittente_organizzazione, canale: (r) => r.canale, ricevuto: (r) => r.ricevuto_il,
+    progetto: (r) => r.pratica?.codice, stato: (r) => r.stato, gestore: (r) => nomeStaff(r.gestore_id),
+    risposta: (r) => r.risposto_il,
+  });
+  const visibili = ord.ordinate;
 
   return (
     <section style={riquadro}>
@@ -215,6 +229,13 @@ function VistaStaff() {
         </div>
       )}
 
+      {elenco.length > 1 && (
+        <SceltaOrdinamento
+          ord={ord}
+          opzioni={[["codice", "Codice"], ["oggetto", "Oggetto"], ["mittente", "Mittente"], ["organizzazione", "Organizzazione"], ["canale", "Canale"], ["ricevuto", "Data di ricezione"], ["progetto", "Progetto"], ["stato", "Stato"], ["gestore", "Gestito da"], ["risposta", "Data della risposta"]]}
+          style={{ marginTop: 12, flexWrap: "wrap" }}
+        />
+      )}
       <div style={{ display: "grid", gap: 6, marginTop: 12 }}>
         {visibili.length === 0 && <div style={{ fontSize: 13, color: C.grafite }}>Nessun reclamo.</div>}
         {visibili.map((r) => (

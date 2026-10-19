@@ -76,6 +76,8 @@ Il collegamento vale una sola volta e per un tempo limitato; se è scaduto compa
 
 La pagina elenca i Progetti della vostra organizzazione (o delle organizzazioni che seguite), dal più recente. I Rapporti di Monitoraggio annuali si trovano dentro ciascun Progetto (capitolo 9).
 
+**Ordinare gli elenchi.** Con più pratiche o documenti, in alto compare **Ordina per**: scegliete il campo (titolo, codice, stato, data…) e con il pulsante ▲/▼ l'ordine crescente o decrescente. Nelle tabelle basta fare clic sull'intestazione della colonna.
+
 Ogni riquadro mostra il titolo del progetto, lo stato e il codice della pratica con il nome dell'ente.
 
 | Stato | Significato |

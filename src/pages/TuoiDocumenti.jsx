@@ -27,6 +27,7 @@ import Badge from "../components/Badge.jsx";
 import { elencaDocumentiOrganizzazione, urlDocumento, elencaModelli, urlModello } from "../lib/dati.js";
 import { formatoData } from "../lib/date.js";
 import { ElencoDocumenti } from "./Documentazione.jsx";
+import { useOrdinamento, SceltaOrdinamento, ordina } from "../components/Ordinamento.jsx";
 
 /* Pagina «I tuoi documenti». Nessuna prop, nessun caricamento di file:
    solo consultazione e download. */
@@ -65,6 +66,12 @@ export default function TuoiDocumenti() {
       .map((t) => [t, mappa[t]]);
   }, [documenti, storico]);
 
+  // Ordinamento dei documenti dentro ogni tipologia («Ordina per»).
+  const colonneDoc = {
+    nome: (d) => d.nome, data: (d) => d.creato_il, versione: (d) => d.versione, pratica: (d) => d.pratica?.codice,
+  };
+  const ord = useOrdinamento([], colonneDoc);
+
   // Apre il documento in una nuova scheda con un indirizzo firmato
   // temporaneo. Se l'indirizzo non arriva non succede nulla.
   async function scarica(d) {
@@ -97,12 +104,15 @@ export default function TuoiDocumenti() {
           </div>
         )}
 
+        {documenti.length > 1 && (
+          <SceltaOrdinamento ord={ord} opzioni={[["nome", "Nome"], ["data", "Data"], ["versione", "Versione"], ["pratica", "Pratica"]]} style={{ marginBottom: 10, flexWrap: "wrap" }} />
+        )}
         <div style={{ display: "grid", gap: 16 }}>
           {gruppi.map(([tipologia, docs]) => (
             <section key={tipologia} style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, padding: "16px 18px" }}>
               <h2 style={{ fontFamily: "'Archivo'", fontSize: 15, margin: "0 0 10px" }}>{tipologia}</h2>
               <div style={{ display: "grid", gap: 8 }}>
-                {docs.map((d) => (
+                {ordina(docs, colonneDoc, ord).map((d) => (
                   <div key={d.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", border: `1px solid ${C.line}`, borderRadius: 9, padding: "9px 12px", opacity: d.corrente ? 1 : 0.75 }}>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>

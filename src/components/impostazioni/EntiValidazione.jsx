@@ -24,6 +24,7 @@ import { COLORI as C } from "../../lib/cwpProgram.js";
 import Badge from "../Badge.jsx";
 import { elencaEnti, salvaEnte } from "../../lib/dati.js";
 import { riquadro, campo, etichetta, btnPrimario, btnMini } from "../stili.js";
+import { useOrdinamento, SceltaOrdinamento } from "../Ordinamento.jsx";
 
 /* Sezione «Enti di Validazione» delle Anagrafiche.
    Props: pratiche (elenco sintetico di tutte le pratiche, per mostrare i
@@ -72,6 +73,12 @@ export default function EntiValidazione({ pratiche = [] }) {
   // Valori iniziali del modulo; in modifica vengono sovrascritti da quelli dell'ente.
   const nuovo = { denominazione: "", identificativo: "", accreditamento: "", referente: "", email: "", telefono: "", note: "", attivo: true };
 
+  // Ordinamento dell'elenco («Ordina per»).
+  const ord = useOrdinamento(enti, {
+    denominazione: (e) => e.denominazione, identificativo: (e) => e.identificativo, referente: (e) => e.referente,
+    stato: (e) => (e.attivo ? "attivo" : "disattivato"), pratiche: (e) => pratiche.filter((p) => p.ente_validazione_id === e.id).length,
+  });
+
   return (
     <section style={{ ...riquadro, marginTop: 18 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -84,8 +91,9 @@ export default function EntiValidazione({ pratiche = [] }) {
       </p>
 
       {enti.length === 0 && !modulo && <div style={{ fontSize: 13, color: C.grafite }}>Nessun ente censito.</div>}
+      {enti.length > 1 && <SceltaOrdinamento ord={ord} opzioni={[["denominazione", "Denominazione"], ["identificativo", "Identificativo"], ["referente", "Referente"], ["stato", "Stato"], ["pratiche", "Pratiche assegnate"]]} style={{ marginBottom: 10, flexWrap: "wrap" }} />}
       <div style={{ display: "grid", gap: 6 }}>
-        {enti.map((e) => (
+        {ord.ordinate.map((e) => (
           <div key={e.id} style={{ border: `1px solid ${C.line}`, borderRadius: 9, padding: "9px 12px", display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", opacity: e.attivo ? 1 : 0.65 }}>
             <div style={{ fontSize: 13 }}>
               <b>{e.denominazione}</b>

@@ -53,6 +53,7 @@ import {
   METODI_STIMA, RIFIUTI_MISURATI, UTENZE_MONITORATE, STIMA_PREDEFINITA, bufferMetodologia, taraVariabilita,
 } from "../lib/crediti/simulatore.js";
 import { elencaScenari, leggiScenario, creaScenario, salvaScenario, duplicaScenario, eliminaScenario } from "../lib/crediti/scenari.js";
+import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
 
 // Numero in formato italiano; "—" se manca.
 const fmt = (v, d = 1) => (v == null || !Number.isFinite(Number(v)) ? "—" : Number(v).toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d }));
@@ -119,6 +120,15 @@ export default function Simulatore() {
     setModificato(false);
   }
 
+  // Ordinamento degli scenari per colonna: vale per tutti i Comuni insieme.
+  const ordScenari = useOrdinamento(scenari, {
+    nome: (s) => s.nome,
+    periodo: (s) => s.anno_inizio * 100 + s.durata,
+    rd: (s) => (s.rd_finale == null ? null : Number(s.rd_finale)),
+    crediti: (s) => (s.crediti_netti_totali == null ? null : Number(s.crediti_netti_totali)),
+    aggiornato: (s) => s.aggiornato_il,
+  });
+
   if (!staff) {
     return (
       <div style={{ background: C.paper, minHeight: "100vh" }}>
@@ -130,7 +140,7 @@ export default function Simulatore() {
 
   // Scenari raggruppati per Comune (per l'elenco e il confronto).
   const perComune = {};
-  scenari.forEach((s) => {
+  ordScenari.ordinate.forEach((s) => {
     (perComune[s.comune] = perComune[s.comune] || []).push(s);
   });
   const annoCorrente = new Date().getFullYear();
@@ -270,11 +280,11 @@ export default function Simulatore() {
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                   <thead>
                     <tr style={{ textAlign: "left", color: C.grafite, fontSize: 12 }}>
-                      <th style={th}>Scenario</th>
-                      <th style={th}>Periodo</th>
-                      <th style={{ ...th, textAlign: "right" }}>% differenziata a fine periodo</th>
-                      <th style={{ ...th, textAlign: "right" }}>Crediti netti stimati (tCO₂eq)</th>
-                      <th style={th}>Aggiornato</th>
+                      <ThOrdinabile ord={ordScenari} chiave="nome" style={th}>Scenario</ThOrdinabile>
+                      <ThOrdinabile ord={ordScenari} chiave="periodo" style={th}>Periodo</ThOrdinabile>
+                      <ThOrdinabile ord={ordScenari} chiave="rd" style={{ ...th, textAlign: "right" }}>% differenziata a fine periodo</ThOrdinabile>
+                      <ThOrdinabile ord={ordScenari} chiave="crediti" style={{ ...th, textAlign: "right" }}>Crediti netti stimati (tCO₂eq)</ThOrdinabile>
+                      <ThOrdinabile ord={ordScenari} chiave="aggiornato" style={th}>Aggiornato</ThOrdinabile>
                     </tr>
                   </thead>
                   <tbody>
@@ -363,6 +373,21 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
   const su = { ...STIMA_PREDEFINITA, ...(dati.stimaUtenze || {}) };
   const cambiaStima = (campi) => cambiaDati({ stimaUtenze: { ...su, ...campi } });
   const bufferCap7 = bufferMetodologia({ ...su, soloVirtuose: metodoStima === "utenze" });
+  // Ordinamento per colonna delle tabelle dei risultati, dei costi e della
+  // parte economica (le tabelle di inserimento restano in ordine di anno).
+  const ordRis = useOrdinamento(risultato.righe, {
+    anno: (r) => r.anno, totale: (r) => r.totale, riferimento: (r) => r.riferimento, riduzione: (r) => r.riduzione,
+    rd: (r) => r.rd, oltre: (r) => r.rdOltreSoglia, territorio: (r) => r.lordiTerritorio, lordi: (r) => r.lordi,
+    buffer: (r) => r.buffer, netti: (r) => (r.debito > 0 ? -r.debito : r.netti), cumulati: (r) => r.cumulatoNetti,
+  });
+  const ordCosti = useOrdinamento(costiPerCaso(listinoDi(economia), popEconomia), {
+    voce: (c) => c.nome, unitario: (c) => c.unitario, importo: (c) => c.importo, contratto: (c) => c.tipo,
+  });
+  const ordEco = useOrdinamento(eco?.righe || [], {
+    anno: (r) => r.anno, crediti: (r) => r.crediti, valore: (r) => r.prezzo, ricavi: (r) => r.ricavi,
+    partecipazione: (r) => r.partecipazione, consulenza: (r) => r.consulenza, ente: (r) => r.costiEnte,
+    altri: (r) => r.altriCosti, costi: (r) => r.costi, margine: (r) => r.margine, cumulato: (r) => r.cumulato,
+  });
   const popMedia = risultato.righe.length ? risultato.righe.reduce((s, r) => s + r.popolazione, 0) / risultato.righe.length : 0;
   const perAbitante = t && popMedia ? t.mediaAnnuaNetti / popMedia : null;
 
@@ -723,21 +748,21 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 860 }}>
                 <thead>
                   <tr style={{ textAlign: "right", color: C.grafite, fontSize: 11.5 }}>
-                    <th style={{ ...th, textAlign: "left" }}>Anno</th>
-                    <th style={th}>Totale (t)</th>
-                    <th style={th}>Riferimento (t)</th>
-                    <th style={th}>Rifiuti evitati (t)</th>
-                    <th style={th}>% differenziata</th>
-                    <th style={th}>Punti oltre il {RD_SOGLIA}%</th>
-                    {metodoStima === "utenze" && <th style={th} title="Crediti lordi con il bilancio del Comune, per confronto">Bilancio del Comune</th>}
-                    <th style={th}>Crediti lordi</th>
-                    <th style={th}>Buffer</th>
-                    <th style={th}>Crediti netti</th>
-                    <th style={th}>Netti cumulati</th>
+                    <ThOrdinabile ord={ordRis} chiave="anno" style={{ ...th, textAlign: "left" }}>Anno</ThOrdinabile>
+                    <ThOrdinabile ord={ordRis} chiave="totale" style={th}>Totale (t)</ThOrdinabile>
+                    <ThOrdinabile ord={ordRis} chiave="riferimento" style={th}>Riferimento (t)</ThOrdinabile>
+                    <ThOrdinabile ord={ordRis} chiave="riduzione" style={th}>Rifiuti evitati (t)</ThOrdinabile>
+                    <ThOrdinabile ord={ordRis} chiave="rd" style={th}>% differenziata</ThOrdinabile>
+                    <ThOrdinabile ord={ordRis} chiave="oltre" style={th}>Punti oltre il {RD_SOGLIA}%</ThOrdinabile>
+                    {metodoStima === "utenze" && <ThOrdinabile ord={ordRis} chiave="territorio" style={th} title="Crediti lordi con il bilancio del Comune, per confronto">Bilancio del Comune</ThOrdinabile>}
+                    <ThOrdinabile ord={ordRis} chiave="lordi" style={th}>Crediti lordi</ThOrdinabile>
+                    <ThOrdinabile ord={ordRis} chiave="buffer" style={th}>Buffer</ThOrdinabile>
+                    <ThOrdinabile ord={ordRis} chiave="netti" style={th}>Crediti netti</ThOrdinabile>
+                    <ThOrdinabile ord={ordRis} chiave="cumulati" style={th}>Netti cumulati</ThOrdinabile>
                   </tr>
                 </thead>
                 <tbody>
-                  {risultato.righe.map((r) => (
+                  {ordRis.ordinate.map((r) => (
                     <tr key={r.anno} style={{ borderTop: `1px solid ${C.line}` }}>
                       <td style={{ ...td, fontWeight: 700 }}>{r.anno}</td>
                       <td style={tdN}>{fmt(r.totale)}</td>
@@ -843,14 +868,14 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 620 }}>
               <thead>
                 <tr style={{ textAlign: "right", color: C.grafite, fontSize: 11.5 }}>
-                  <th style={{ ...th, textAlign: "left" }}>{CASI_COSTI[listinoDi(economia)]} · {popEconomia ? popEconomia.toLocaleString("it-IT") : "—"} abitanti</th>
-                  <th style={th}>€ per abitante all'anno</th>
-                  <th style={th}>€ all'anno</th>
-                  <th style={{ ...th, textAlign: "left" }}>Contratto</th>
+                  <ThOrdinabile ord={ordCosti} chiave="voce" style={{ ...th, textAlign: "left" }}>{CASI_COSTI[listinoDi(economia)]} · {popEconomia ? popEconomia.toLocaleString("it-IT") : "—"} abitanti</ThOrdinabile>
+                  <ThOrdinabile ord={ordCosti} chiave="unitario" style={th}>€ per abitante all'anno</ThOrdinabile>
+                  <ThOrdinabile ord={ordCosti} chiave="importo" style={th}>€ all'anno</ThOrdinabile>
+                  <ThOrdinabile ord={ordCosti} chiave="contratto" style={{ ...th, textAlign: "left" }}>Contratto</ThOrdinabile>
                 </tr>
               </thead>
               <tbody>
-                {costiPerCaso(listinoDi(economia), popEconomia).map((c) => (
+                {ordCosti.ordinate.map((c) => (
                   <tr key={c.voce} style={{ borderTop: `1px solid ${C.line}` }}>
                     <td style={td}>{c.nome}{c.limite && <span style={{ color: C.grafite, fontSize: 11.5 }}> · {c.limite === "minimo" ? "costo minimo" : "costo massimo"}</span>}</td>
                     <td style={tdN}>{fmt(c.unitario, 2)}</td>
@@ -907,21 +932,21 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 980 }}>
                 <thead>
                   <tr style={{ textAlign: "right", color: C.grafite, fontSize: 11.5 }}>
-                    <th style={{ ...th, textAlign: "left" }}>Anno</th>
-                    <th style={th}>Crediti</th>
-                    <th style={th}>Valore (€)</th>
-                    <th style={th}>Ricavi (€)</th>
-                    <th style={th}>Partecipazione al Programma (€)</th>
-                    <th style={th}>Consulenza (€)</th>
-                    <th style={th}>Ente (€)</th>
-                    <th style={th}>Altri (€)</th>
-                    <th style={th}>Costi totali (€)</th>
-                    <th style={th}>Margine (€)</th>
-                    <th style={th}>Cumulato (€)</th>
+                    <ThOrdinabile ord={ordEco} chiave="anno" style={{ ...th, textAlign: "left" }}>Anno</ThOrdinabile>
+                    <ThOrdinabile ord={ordEco} chiave="crediti" style={th}>Crediti</ThOrdinabile>
+                    <ThOrdinabile ord={ordEco} chiave="valore" style={th}>Valore (€)</ThOrdinabile>
+                    <ThOrdinabile ord={ordEco} chiave="ricavi" style={th}>Ricavi (€)</ThOrdinabile>
+                    <ThOrdinabile ord={ordEco} chiave="partecipazione" style={th}>Partecipazione al Programma (€)</ThOrdinabile>
+                    <ThOrdinabile ord={ordEco} chiave="consulenza" style={th}>Consulenza (€)</ThOrdinabile>
+                    <ThOrdinabile ord={ordEco} chiave="ente" style={th}>Ente (€)</ThOrdinabile>
+                    <ThOrdinabile ord={ordEco} chiave="altri" style={th}>Altri (€)</ThOrdinabile>
+                    <ThOrdinabile ord={ordEco} chiave="costi" style={th}>Costi totali (€)</ThOrdinabile>
+                    <ThOrdinabile ord={ordEco} chiave="margine" style={th}>Margine (€)</ThOrdinabile>
+                    <ThOrdinabile ord={ordEco} chiave="cumulato" style={th}>Cumulato (€)</ThOrdinabile>
                   </tr>
                 </thead>
                 <tbody>
-                  {eco.righe.map((r) => (
+                  {ordEco.ordinate.map((r) => (
                     <tr key={r.anno} style={{ borderTop: `1px solid ${C.line}` }}>
                       <td style={{ ...td, fontWeight: 700 }}>{r.anno}</td>
                       <td style={tdN}>{fmt(r.crediti, 0)}</td>

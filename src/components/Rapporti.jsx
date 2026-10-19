@@ -22,6 +22,7 @@ import React, { useEffect, useState } from "react";
 import { COLORI as C, STATI_PRATICA, PERIODI_RIFERIMENTO } from "../lib/cwpProgram.js";
 import Badge from "./Badge.jsx";
 import { elencaRapporti, creaRapporto } from "../lib/dati.js";
+import { useOrdinamento, SceltaOrdinamento } from "./Ordinamento.jsx";
 
 /* Rapporti di Monitoraggio annuali di un Progetto (requisiti §2):
    uno per anno, in sequenza, fino al massimo del periodo di riferimento.
@@ -64,6 +65,11 @@ export default function Rapporti({ progetto, staff, onApri, onCreato }) {
   // Massimo dal periodo di riferimento del Progetto (10 o 21).
   const massimo = (PERIODI_RIFERIMENTO[progetto.periodo_riferimento] || PERIODI_RIFERIMENTO["10 anni"]).rapporti;
 
+  // Ordinamento dei Rapporti («Ordina per»); senza scelta per anno.
+  const ord = useOrdinamento(rapporti, {
+    anno: (r) => r.anno_monitoraggio, codice: (r) => r.codice, stato: (r) => (STATI_PRATICA[r.stato] || {}).label || r.stato,
+  });
+
   return (
     <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, padding: "18px 20px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
@@ -81,8 +87,9 @@ export default function Rapporti({ progetto, staff, onApri, onCreato }) {
       {rapporti.length === 0 && (
         <div style={{ fontSize: 13, color: C.grafite }}>Nessun Rapporto di Monitoraggio ancora.</div>
       )}
+      {rapporti.length > 1 && <SceltaOrdinamento ord={ord} opzioni={[["anno", "Anno"], ["codice", "Codice"], ["stato", "Stato"]]} style={{ marginBottom: 8, flexWrap: "wrap" }} />}
       <div style={{ display: "grid", gap: 6 }}>
-        {rapporti.map((r) => {
+        {ord.ordinate.map((r) => {
           const st = STATI_PRATICA[r.stato] || STATI_PRATICA.attiva;
           return (
             <button key={r.id} onClick={() => onApri && onApri(r.id)} style={riga}>

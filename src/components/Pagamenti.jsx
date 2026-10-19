@@ -29,6 +29,7 @@ import { proposteTariffe } from "../lib/tariffe.js";
 import Badge from "./Badge.jsx";
 import { elencaPagamenti, salvaPagamento, nomiUtenti } from "../lib/dati.js";
 import { formatoData, giorniA, oggiIso, oggiItalia, aggiungiGiorni } from "../lib/date.js";
+import { useOrdinamento, SceltaOrdinamento } from "./Ordinamento.jsx";
 
 /* Riquadro dei pagamenti di una pratica.
    Props: praticaId (id della pratica), pratica (riga della pratica, per le
@@ -116,6 +117,12 @@ export default function Pagamenti({ praticaId, pratica = null, solaLettura = fal
   const incassato = voci.filter((v) => v.pagato).reduce((s, v) => s + (Number(v.importo) || 0), 0);
   const euro = (n) => (n == null ? "—" : Number(n).toLocaleString("it-IT", { style: "currency", currency: "EUR" }));
 
+  // Ordinamento delle voci («Ordina per»).
+  const ord = useOrdinamento(voci, {
+    descrizione: (v) => v.descrizione, importo: (v) => Number(v.importo), scadenza: (v) => v.scadenza,
+    stato: (v) => (v.pagato ? "Pagato" : giorniA(v.scadenza) < 0 ? "Scaduto" : "Da pagare"), pagamento: (v) => v.data_pagamento,
+  });
+
   return (
     <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, padding: "18px 20px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
@@ -168,8 +175,9 @@ export default function Pagamenti({ praticaId, pratica = null, solaLettura = fal
       )}
       {voci.length === 0 && !modulo && <div style={{ fontSize: 13, color: C.grafite }}>Nessuna voce registrata.</div>}
 
+      {voci.length > 1 && <SceltaOrdinamento ord={ord} opzioni={[["descrizione", "Descrizione"], ["importo", "Importo"], ["scadenza", "Scadenza"], ["stato", "Stato"], ["pagamento", "Data di pagamento"]]} style={{ marginBottom: 8, flexWrap: "wrap" }} />}
       <div style={{ display: "grid", gap: 6 }}>
-        {voci.map((v) => {
+        {ord.ordinate.map((v) => {
           // «Scaduto» solo se non pagato e con scadenza già passata.
           const g = !v.pagato ? giorniA(v.scadenza) : null;
           const scaduto = g != null && g < 0;

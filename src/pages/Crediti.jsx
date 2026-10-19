@@ -30,6 +30,7 @@ import { leggiCruscotto } from "../lib/dati.js";
 import { elencaCalcoli, creaCalcolo } from "../lib/crediti/archivio.js";
 import { formatoData } from "../lib/date.js";
 import RegistroCrediti from "../components/crediti/RegistroCrediti.jsx";
+import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
 
 // Numero in formato italiano con `d` decimali fissi; "—" se manca il valore.
 const fmt = (v, d = 2) => (v == null ? "—" : Number(v).toLocaleString("it-IT", { minimumFractionDigits: d, maximumFractionDigits: d }));
@@ -79,6 +80,15 @@ export default function Crediti() {
     if (error) setErrore(error.message);
     else navigate(`/crediti/${data.id}`);
   }
+
+  // Ordinamento della tabella dei calcoli per colonna.
+  const ord = useOrdinamento(calcoli, {
+    calcolo: (c) => c.titolo,
+    pratica: (c) => c.pratica?.codice,
+    anno: (c) => c.anno,
+    netti: (c) => (c.crediti_netti == null ? null : Number(c.crediti_netti)),
+    stato: (c) => (c.stato === "confermato" ? `Confermato ${c.numero_registro || ""}` : "Bozza"),
+  });
 
   if (ruolo !== "admin") {
     return (
@@ -176,11 +186,11 @@ export default function Crediti() {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 720 }}>
             <thead>
               <tr style={{ textAlign: "left", color: C.grafite, fontSize: 11.5, textTransform: "uppercase", letterSpacing: 0.3 }}>
-                <th style={th}>Calcolo</th>
-                <th style={th}>Pratica</th>
-                <th style={th}>Anno / tipo</th>
-                <th style={{ ...th, textAlign: "right" }}>Crediti netti (tCO₂eq)</th>
-                <th style={th}>Stato</th>
+                <ThOrdinabile ord={ord} chiave="calcolo" style={th}>Calcolo</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="pratica" style={th}>Pratica</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="anno" style={th}>Anno / tipo</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="netti" style={{ ...th, textAlign: "right" }}>Crediti netti (tCO₂eq)</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="stato" style={th}>Stato</ThOrdinabile>
               </tr>
             </thead>
             <tbody>
@@ -188,7 +198,7 @@ export default function Crediti() {
               {!caricamento && calcoli.length === 0 && (
                 <tr><td colSpan={5} style={{ ...td, color: C.grafite }}>Nessun calcolo ancora. Crea il primo con «+ Nuovo calcolo».</td></tr>
               )}
-              {calcoli.map((c) => (
+              {ord.ordinate.map((c) => (
                 <tr key={c.id} onClick={() => navigate(`/crediti/${c.id}`)} style={{ borderTop: `1px solid ${C.line}`, cursor: "pointer" }}>
                   <td style={td}>
                     <a href={`/crediti/${c.id}`} onClick={(e) => { e.preventDefault(); navigate(`/crediti/${c.id}`); }} style={{ color: C.ink, fontWeight: 700, textDecoration: "none" }}>
