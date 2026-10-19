@@ -152,26 +152,44 @@ prova("avvisi: dati mancanti e secco oltre il totale", () => {
 prova("simulazione economica: ricavi, tariffe dello Schema tariffario, costi e margine", () => {
   const righe = [{ anno: 2027, netti: 1500.7 }, { anno: 2028, netti: 2000.2 }];
   assert.equal(simulaEconomia(righe, { prezzo: "" }, 10000), null);
-  const e = simulaEconomia(righe, { prezzo: 20, crescitaPrezzo: 10, includiTariffe: true, costoValidazione: 5000, costoVerificaAnnua: 3000, altriCostiAnnui: 1000 }, 16735);
+  const e = simulaEconomia(righe, { prezzo: 20, crescitaPrezzo: 10, listino: "schema", costoValidazione: 5000, costoVerificaAnnua: 3000, altriCostiAnnui: 1000 }, 16735);
   const [a, b] = e.righe;
   assert.equal(a.crediti, 1500);
   assert.equal(a.ricavi, 30000);
   vicino(b.prezzo, 22);
   vicino(b.ricavi, 44000);
   // Progetto (solo il 1° anno): 3.000 + 4.000 (fascia fino a 30.000 ab) + 0,15 × 3.500 crediti del periodo.
-  vicino(a.progetto, 3000 + 4000 + 0.15 * 3500);
-  assert.equal(b.progetto, 0);
+  vicino(a.voci.progetto, 3000 + 4000 + 0.15 * 3500);
+  assert.equal(b.voci.progetto, 0);
   // Rapporto: 1.000 + 2.000 + 0,20 × crediti; emissione a scaglioni; vendita 20% del valore.
-  vicino(a.rapporto, 1000 + 2000 + 0.2 * 1500);
-  vicino(a.emissione, 1000 * 1 + 500 * 0.5);
-  vicino(a.vendita, 6000);
+  vicino(a.voci.rapporto, 1000 + 2000 + 0.2 * 1500);
+  vicino(a.voci.emissione, 1000 * 1 + 500 * 0.5);
+  vicino(a.voci.vendita, 6000);
   vicino(a.costiEnte, 8000);
   vicino(b.costiEnte, 3000);
   vicino(a.margine, a.ricavi - a.costi);
   vicino(e.totali.margine, a.margine + b.margine);
-  // Senza tariffe restano solo i costi indicati.
+  // Senza tariffe restano solo i costi indicati (anche per gli scenari salvati con includiTariffe).
   const s2 = simulaEconomia(righe, { prezzo: 20, includiTariffe: false }, 16735);
   vicino(s2.totali.margine, 30000 + 40000);
+});
+
+prova("costi dai contratti tipo (EsaCom): 154.247 abitanti come nelle bozze del 15/10/2026", () => {
+  const righe = Array.from({ length: 10 }, (_, i) => ({ anno: 2027 + i, netti: 32000 }));
+  const e = simulaEconomia(righe, { prezzo: 8, prezzoMin: 6, prezzoMax: 10, listino: "contratto" }, 154247);
+  const a = e.righe[0];
+  vicino(a.voci.regCreditiRapporto, 15424.7, 0.01); // contratto: 15.425 €
+  vicino(a.voci.redProgetto, 12339.76, 0.01); // contratto: 12.340 €
+  vicino(a.voci.redRapporto, 30849.4, 0.01); // contratto: 30.849 €
+  vicino(a.partecipazione, 3000 + 6000 + 15000 + 15424.7, 0.01);
+  vicino(a.consulenza, 12339.76 + 30849.4, 0.01);
+  vicino(e.totali.costi, 10 * (a.partecipazione + a.consulenza), 0.1);
+  vicino(e.totali.ricavi, 10 * 32000 * 8);
+  vicino(e.totali.ricavoProCapiteMin, (10 * 32000 * 6) / 154247, 1e-9);
+  vicino(e.totali.costoProCapite, e.totali.costi / 154247, 1e-9);
+  // Voci modificabili.
+  const e2 = simulaEconomia(righe, { prezzo: 8, listino: "contratto", contratto: { regRapporto: 10000 } }, 154247);
+  vicino(e.righe[0].costi - e2.righe[0].costi, 5000, 1e-6);
 });
 
 prova("export CSV con separatore punto e virgola", () => {

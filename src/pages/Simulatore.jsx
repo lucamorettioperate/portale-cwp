@@ -17,7 +17,11 @@
        3. Obiettivi anno per anno: popolazione, produzione totale (t) o pro
           capite, secco residuo pro capite; traiettoria lineare automatica;
        4. Risultati: % di differenziata e crediti stimati per anno e sul
-          periodo, grafici, tabella, avvisi, export CSV e stampa.
+          periodo, grafici, tabella, avvisi, export CSV e stampa;
+       5. Simulazione economica: valore unitario del credito (digitato),
+          variazione annua, tariffe del Programma (Schema tariffario v1.2,
+          src/lib/tariffe.js) e costi dell'ente e di gestione; ricavi,
+          costi e margine per anno, anno di rientro dei costi.
      I risultati si ricalcolano a ogni modifica (motore nel browser,
      src/lib/crediti/simulatore.js); «Salva» li conserva nel database.
    Chi la usa: Operatori e Amministratori (il Comune non vede gli scenari:
@@ -671,36 +675,77 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
         </div>
       </div>
 
-      {/* 5. Simulazione economica */}
+      {/* 5. Simulazione economica: ricavi e costi a carico del Comune o del gestore */}
       <div style={riquadro}>
-        <h2 style={h2}>5. Simulazione economica</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(185px, 1fr))", gap: 12 }}>
+        <h2 style={h2}>5. Simulazione economica: ricavi e costi per il Comune</h2>
+        <h3 style={h3}>Ricavi dalla vendita dei crediti</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(175px, 1fr))", gap: 12 }}>
           <label style={lbl}>
-            Valore unitario del credito (€ per credito)
-            <input style={{ ...campo, fontWeight: 700, borderColor: economia.prezzo ? C.line : C.ocra }} inputMode="decimal" placeholder="es. 25" value={economia.prezzo ?? ""} onChange={(e) => cambiaEconomia({ prezzo: e.target.value })} />
+            Valore unitario del credito (€)
+            <input style={{ ...campo, fontWeight: 700, borderColor: economia.prezzo ? C.line : C.ocra }} inputMode="decimal" placeholder="es. 8" value={economia.prezzo ?? ""} onChange={(e) => cambiaEconomia({ prezzo: e.target.value })} />
+          </label>
+          <label style={lbl}>
+            Valore minimo, scenario peggiore (€)
+            <input style={campo} inputMode="decimal" placeholder="facoltativo, es. 6" value={economia.prezzoMin ?? ""} onChange={(e) => cambiaEconomia({ prezzoMin: e.target.value })} />
+          </label>
+          <label style={lbl}>
+            Valore massimo, scenario migliore (€)
+            <input style={campo} inputMode="decimal" placeholder="facoltativo, es. 10" value={economia.prezzoMax ?? ""} onChange={(e) => cambiaEconomia({ prezzoMax: e.target.value })} />
           </label>
           <label style={lbl}>
             Variazione annua del valore (%)
             <input style={campo} inputMode="decimal" value={economia.crescitaPrezzo ?? 0} onChange={(e) => cambiaEconomia({ crescitaPrezzo: e.target.value })} />
           </label>
+        </div>
+
+        <h3 style={h3}>Costi a carico del Comune o del gestore (IVA esclusa)</h3>
+        <div className="no-stampa" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+          {[["contratto", "Contratti tipo della Fondazione"], ["schema", "Schema tariffario (tariffe massime)"], ["nessuno", "Solo i costi indicati sotto"]].map(([v, l]) => (
+            <button key={v} onClick={() => cambiaEconomia({ listino: v })} style={{ ...btnMini, ...((economia.listino || "contratto") === v ? { background: C.green, color: C.white, borderColor: C.green } : {}) }}>
+              {l}
+            </button>
+          ))}
+        </div>
+        {(economia.listino || "contratto") === "contratto" && (
+          <>
+            <p style={{ ...nota, margin: "0 0 8px" }}>
+              Voci dei contratti tipo di Fondazione Operate (bozze EsaCom del 15/10/2026), per ogni anno del periodo; modificabili. Le voci «per
+              abitante» si moltiplicano per la popolazione ({popEconomia ? popEconomia.toLocaleString("it-IT") : "—"} abitanti).
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 10 }}>
+              {[
+                ["regProgetto", "Registrazione Progetto (€/anno)"],
+                ["regCreditiProgetto", "Registrazione crediti Progetto (€/anno)"],
+                ["regRapporto", "Registrazione Rapporto di Monitoraggio (€/anno)"],
+                ["regCreditiRapportoAb", "Registrazione crediti Rapporto (€ per abitante)"],
+                ["redProgettoAb", "Consulenza: redazione Progetto (€ per abitante)"],
+                ["redRapportoAb", "Consulenza: redazione Rapporto (€ per abitante)"],
+              ].map(([c, l]) => (
+                <label key={c} style={lbl}>
+                  {l}
+                  <input style={campo} inputMode="decimal" value={(economia.contratto || {})[c] ?? ""} onChange={(e) => cambiaEconomia({ contratto: { ...(economia.contratto || {}), [c]: e.target.value } })} />
+                </label>
+              ))}
+            </div>
+          </>
+        )}
+        {economia.listino === "schema" && (
+          <p style={nota}>Tariffe massime dello Schema tariffario v1.2: registrazione del Progetto nel primo anno, registrazione di ogni Rapporto annuale, emissione dei crediti a scaglioni e vendita (20% del valore, con il minimo a scaglioni).</p>
+        )}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 10, marginTop: 6 }}>
           <label style={lbl}>
-            Validazione dell'ente, una tantum (€)
+            Ente di validazione, una tantum (€)
             <input style={campo} inputMode="decimal" value={economia.costoValidazione ?? ""} onChange={(e) => cambiaEconomia({ costoValidazione: e.target.value })} />
           </label>
           <label style={lbl}>
-            Verifica annuale dell'ente (€/anno)
+            Ente di verifica, ogni anno (€)
             <input style={campo} inputMode="decimal" value={economia.costoVerificaAnnua ?? ""} onChange={(e) => cambiaEconomia({ costoVerificaAnnua: e.target.value })} />
           </label>
           <label style={lbl}>
-            Altri costi annui: gestione, monitoraggio (€/anno)
+            Altri costi annui: registro, gestione (€)
             <input style={campo} inputMode="decimal" value={economia.altriCostiAnnui ?? ""} onChange={(e) => cambiaEconomia({ altriCostiAnnui: e.target.value })} />
           </label>
         </div>
-        <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 13, margin: "4px 0 6px" }}>
-          <input type="checkbox" checked={economia.includiTariffe !== false} onChange={(e) => cambiaEconomia({ includiTariffe: e.target.checked })} />
-          Includi le tariffe del Programma (Schema tariffario v1.2: registrazione del Progetto e dei Rapporti, emissione e vendita dei crediti)
-        </label>
-        <p style={nota}>Un credito corrisponde a una tonnellata di CO₂eq; si contano i crediti netti interi. Tariffe massime dello Schema tariffario, IVA esclusa; fasce calcolate sulla popolazione {popEconomia ? popEconomia.toLocaleString("it-IT") : "—"}.</p>
 
         {!eco && <div style={{ marginTop: 12, fontSize: 13, color: C.grafite }}>Inserite il <strong>valore unitario del credito</strong> per vedere ricavi, costi e margine anno per anno.</div>}
         {eco && (
@@ -711,25 +756,27 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
               </ul>
             )}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 10, margin: "14px 0" }}>
-              <Tile etichetta={`Ricavi in ${eco.righe.length} anni`} valore={`€ ${fmt(eco.totali.ricavi, 0)}`} unita={`${fmt(eco.totali.crediti, 0)} crediti × ${fmt(eco.totali.prezzoMedio, 2)} € in media`} />
-              <Tile etichetta="Costi nel periodo" valore={`€ ${fmt(eco.totali.costi, 0)}`} unita={`di cui tariffe del Programma € ${fmt(eco.totali.tariffeProgramma, 0)}`} />
-              <Tile etichetta="Margine netto" valore={`€ ${fmt(eco.totali.margine, 0)}`} unita={popEconomia ? `${fmt(eco.totali.margine / popEconomia / eco.righe.length, 2)} € per abitante all'anno` : ""} principale />
-              <Tile etichetta="Margine cumulato positivo dal" valore={eco.totali.primoAnnoPositivo ? String(eco.totali.primoAnnoPositivo) : "—"} unita={eco.totali.primoAnnoPositivo ? "anno di rientro dei costi" : "i costi non rientrano nel periodo"} />
+              <Tile etichetta={`Ricavi in ${eco.righe.length} anni`} valore={`€ ${fmt(eco.totali.ricavi, 0)}`} unita={eco.totali.ricaviMin != null || eco.totali.ricaviMax != null ? `da € ${fmt(eco.totali.ricaviMin ?? eco.totali.ricavi, 0)} a € ${fmt(eco.totali.ricaviMax ?? eco.totali.ricavi, 0)}` : `${fmt(eco.totali.crediti, 0)} crediti × ${fmt(eco.totali.prezzoMedio, 2)} € in media`} />
+              <Tile etichetta="Costi per il Comune nel periodo" valore={`€ ${fmt(eco.totali.costi, 0)}`} unita={`€ ${fmt(eco.totali.costoAnnuoMedio, 0)} all'anno in media`} />
+              <Tile etichetta="Margine netto" valore={`€ ${fmt(eco.totali.margine, 0)}`} unita={eco.totali.primoAnnoPositivo ? `costi rientrati nel ${eco.totali.primoAnnoPositivo}` : "i costi non rientrano nel periodo"} principale />
+              <Tile etichetta="Per abitante nel periodo" valore={eco.totali.costoProCapite != null ? `€ ${fmt(eco.totali.costoProCapite, 2)}` : "—"} unita={eco.totali.ricavoProCapite != null ? `di costo; ricavo € ${fmt(eco.totali.ricavoProCapite, 2)}${eco.totali.ricavoProCapiteMin != null || eco.totali.ricavoProCapiteMax != null ? ` (da ${fmt(eco.totali.ricavoProCapiteMin ?? eco.totali.ricavoProCapite, 2)} a ${fmt(eco.totali.ricavoProCapiteMax ?? eco.totali.ricavoProCapite, 2)})` : ""}` : ""} />
             </div>
             <div style={{ marginBottom: 14, maxWidth: 640 }}>
               <GraficoBarre titolo="Margine netto per anno (€)" righe={eco.righe} valore={(r) => r.margine} formato={(v) => fmt(v, 0)} />
             </div>
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 900 }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 980 }}>
                 <thead>
                   <tr style={{ textAlign: "right", color: C.grafite, fontSize: 11.5 }}>
                     <th style={{ ...th, textAlign: "left" }}>Anno</th>
                     <th style={th}>Crediti</th>
                     <th style={th}>Valore (€)</th>
                     <th style={th}>Ricavi (€)</th>
-                    <th style={th}>Tariffe Programma (€)</th>
+                    <th style={th}>Partecipazione al Programma (€)</th>
+                    <th style={th}>Consulenza (€)</th>
                     <th style={th}>Ente (€)</th>
-                    <th style={th}>Altri costi (€)</th>
+                    <th style={th}>Altri (€)</th>
+                    <th style={th}>Costi totali (€)</th>
                     <th style={th}>Margine (€)</th>
                     <th style={th}>Cumulato (€)</th>
                   </tr>
@@ -741,9 +788,11 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
                       <td style={tdN}>{fmt(r.crediti, 0)}</td>
                       <td style={tdN}>{fmt(r.prezzo, 2)}</td>
                       <td style={tdN}>{fmt(r.ricavi, 0)}</td>
-                      <td style={{ ...tdN, color: C.grafite }} title={`Progetto ${fmt(r.progetto, 0)} · Rapporto ${fmt(r.rapporto, 0)} · Emissione ${fmt(r.emissione, 0)} · Vendita ${fmt(r.vendita, 0)}`}>{fmt(r.tariffeProgramma, 0)}</td>
+                      <td style={{ ...tdN, color: C.grafite }} title={Object.entries(r.voci).map(([k, v]) => `${k}: ${fmt(v, 0)}`).join(" · ")}>{fmt(r.partecipazione, 0)}</td>
+                      <td style={{ ...tdN, color: C.grafite }}>{fmt(r.consulenza, 0)}</td>
                       <td style={{ ...tdN, color: C.grafite }}>{fmt(r.costiEnte, 0)}</td>
                       <td style={{ ...tdN, color: C.grafite }}>{fmt(r.altriCosti, 0)}</td>
+                      <td style={tdN}>{fmt(r.costi, 0)}</td>
                       <td style={{ ...tdN, fontWeight: 700, color: r.margine < 0 ? C.red : C.ink }}>{fmt(r.margine, 0)}</td>
                       <td style={{ ...tdN, color: r.cumulato < 0 ? C.red : C.ink }}>{fmt(r.cumulato, 0)}</td>
                     </tr>
@@ -753,16 +802,18 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
                     <td style={tdN}>{fmt(eco.totali.crediti, 0)}</td>
                     <td style={tdN}></td>
                     <td style={tdN}>{fmt(eco.totali.ricavi, 0)}</td>
-                    <td style={tdN}>{fmt(eco.totali.tariffeProgramma, 0)}</td>
+                    <td style={tdN}>{fmt(eco.totali.partecipazione, 0)}</td>
+                    <td style={tdN}>{fmt(eco.totali.consulenza, 0)}</td>
                     <td style={tdN}>{fmt(eco.totali.costiEnte, 0)}</td>
                     <td style={tdN}>{fmt(eco.totali.altriCosti, 0)}</td>
+                    <td style={tdN}>{fmt(eco.totali.costi, 0)}</td>
                     <td style={tdN}>{fmt(eco.totali.margine, 0)}</td>
                     <td style={tdN}></td>
                   </tr>
                 </tbody>
               </table>
             </div>
-            <p style={nota}>Stima indicativa, non un piano finanziario: il valore del credito dipende dal mercato volontario e dal registro scelto; le tariffe sono quelle massime dello Schema tariffario (IVA esclusa).</p>
+            <p style={nota}>Stima indicativa, non un piano finanziario né una garanzia: il valore del credito dipende dal mercato volontario e dal registro scelto; i costi sono IVA esclusa.</p>
           </>
         )}
       </div>
@@ -899,6 +950,7 @@ function traduci(error) {
 
 // Stili della pagina.
 const riquadro = { background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, padding: "16px 18px" };
+const h3 = { fontSize: 13.5, fontWeight: 700, margin: "14px 0 8px", color: C.green };
 const h2 = { fontFamily: "'Archivo'", fontSize: 16, margin: "0 0 12px" };
 const lbl = { display: "grid", gap: 4, fontSize: 12, color: C.grafite, fontWeight: 600, marginBottom: 8 };
 const campo = { width: "100%", boxSizing: "border-box", padding: "8px 10px", border: `1px solid ${C.line}`, borderRadius: 8, fontSize: 13, fontFamily: "'Inter', sans-serif", background: C.white };

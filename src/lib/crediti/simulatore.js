@@ -377,75 +377,140 @@ export function righeCsv(scenario, risultato, economia = null) {
   const righe = risultato.righe.map((r) => [r.anno, Math.round(r.popolazione), f(r.totale), f(r.proCapite), f(r.secco), f(r.seccoProCapite), f(r.differenziata), f(r.rd), f(r.rdOltreSoglia), f(r.riferimento), f(r.riduzione), f(r.lordi), f(r.buffer), f(r.netti), f(r.cumulatoNetti)]);
   const testa = [[`Scenario: ${scenario.nome}`], [`Comune: ${scenario.comune}`], [`Durata: ${scenario.durata} anni dal ${scenario.anno_inizio}`], ["Stima ex ante non certificabile (Metodologia CWP v1.2, modello semplificato)"], []];
   const eco = economia
-    ? [[], ["Simulazione economica (Schema tariffario v1.2: tariffe massime, IVA esclusa)"], ["Anno", "Crediti", "Valore unitario (€)", "Ricavi (€)", "Tariffe del Programma (€)", "Costi ente (€)", "Altri costi (€)", "Margine (€)", "Margine cumulato (€)"],
-       ...economia.righe.map((r) => [r.anno, r.crediti, f(r.prezzo, 2), f(r.ricavi, 0), f(r.tariffeProgramma, 0), f(r.costiEnte, 0), f(r.altriCosti, 0), f(r.margine, 0), f(r.cumulato, 0)])]
+    ? [[], ["Simulazione economica (importi IVA esclusa)"], ["Anno", "Crediti", "Valore unitario (€)", "Ricavi (€)", "Partecipazione al Programma (€)", "Consulenza (€)", "Ente di validazione e verifica (€)", "Altri costi (€)", "Costi totali (€)", "Margine (€)", "Margine cumulato (€)"],
+       ...economia.righe.map((r) => [r.anno, r.crediti, f(r.prezzo, 2), f(r.ricavi, 0), f(r.partecipazione, 0), f(r.consulenza, 0), f(r.costiEnte, 0), f(r.altriCosti, 0), f(r.costi, 0), f(r.margine, 0), f(r.cumulato, 0)])]
     : [];
   return [...testa, intest, ...righe, ...eco].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\r\n");
 }
 
 /* =========================================================================
-   Simulazione economica (richiesta di Luca del 19/10/2026).
+   Simulazione economica (richieste di Luca del 19/10/2026).
    Dai crediti netti stimati anno per anno e dal valore unitario del credito
-   (€ per credito = € per tCO₂eq, digitato dall'utente) stima ricavi, costi
-   e margine. Costi considerati:
-   - tariffe del Programma dallo Schema tariffario v1.2 (tariffe MASSIME,
-     IVA esclusa, src/lib/tariffe.js): registrazione del Progetto nel primo
-     anno (3.000 € + saldo per popolazione + 0,15 € per credito previsto nel
-     periodo); per ogni anno Rapporto (1.000 € + saldo per popolazione +
-     0,20 € per credito dell'anno), emissione a scaglioni e vendita (20% del
-     valore, con il minimo a scaglioni);
-   - costi indicati dall'utente: validazione (una tantum, primo anno),
-     verifica annuale dell'ente, altri costi annui (gestione, monitoraggio).
-   I crediti si contano interi (1 credito = 1 tCO₂eq, parte intera dei
-   crediti netti). È una stima indicativa, non un piano finanziario.
+   (€ per credito = € per tCO₂eq, digitato dall'utente; facoltativi un
+   valore minimo e uno massimo per lo scenario peggiore e migliore, come
+   nell'Allegato A del contratto tipo) stima ricavi, costi a carico del
+   Comune o del gestore e margine. Tre listini dei costi del Programma:
+   - "contratto" (predefinito): voci dei contratti tipo di Fondazione
+     Operate (bozze EsaCom del 15/10/2026), modificabili, IVA esclusa, ogni
+     anno del periodo:
+       contratto di partecipazione al Programma: registrazione del Progetto
+       3.000 €, registrazione dei crediti del Progetto 6.000 €,
+       registrazione del Rapporto di Monitoraggio 15.000 €, registrazione dei
+       crediti del Rapporto 0,10 € per abitante;
+       contratto di consulenza: redazione del Progetto 0,08 € per abitante,
+       redazione del Rapporto 0,20 € per abitante
+     (nei contratti EsaCom, 154.247 abitanti: 6.000 €, 15.425 €, 12.340 €,
+     30.849 €; i valori per abitante ne sono ricavati);
+   - "schema": tariffe MASSIME dello Schema tariffario v1.2
+     (src/lib/tariffe.js): Progetto nel primo anno (3.000 € + saldo per
+     popolazione + 0,15 € per credito previsto nel periodo); ogni anno
+     Rapporto (1.000 € + saldo per popolazione + 0,20 € per credito),
+     emissione a scaglioni, vendita (20% del valore, con il minimo);
+   - "nessuno": solo i costi indicati dall'utente.
+   In tutti i casi si aggiungono: validazione dell'ente (una tantum, primo
+   anno), verifica annuale dell'ente e altri costi annui.
+   I crediti si contano interi (parte intera dei crediti netti). È una
+   stima indicativa, non un piano finanziario.
    ========================================================================= */
+
+// Voci predefinite del listino «contratto» (bozze EsaCom del 15/10/2026).
+export const CONTRATTO_PREDEFINITO = {
+  regProgetto: 3000, // € all'anno – contratto di partecipazione, art. 6.2
+  regCreditiProgetto: 6000, // € all'anno
+  regRapporto: 15000, // € per Rapporto annuale
+  regCreditiRapportoAb: 0.1, // € per abitante per Rapporto
+  redProgettoAb: 0.08, // € per abitante all'anno – contratto di consulenza, art. 6
+  redRapportoAb: 0.2, // € per abitante per Rapporto
+};
 
 // Valori iniziali della parte economica di uno scenario.
 export function economiaIniziale() {
-  return { prezzo: "", crescitaPrezzo: 0, includiTariffe: true, costoValidazione: "", costoVerificaAnnua: "", altriCostiAnnui: "" };
+  return {
+    prezzo: "", prezzoMin: "", prezzoMax: "", crescitaPrezzo: 0, listino: "contratto",
+    contratto: { ...CONTRATTO_PREDEFINITO },
+    costoValidazione: "", costoVerificaAnnua: "", altriCostiAnnui: "",
+  };
 }
 
-/* Parametri: righe della simulazione (simula().righe), economia { prezzo,
-   crescitaPrezzo (%/anno), includiTariffe, costoValidazione,
-   costoVerificaAnnua, altriCostiAnnui }, popolazione (per le fasce dello
+// Listino effettivo (compatibilità con gli scenari salvati con includiTariffe).
+function listinoDi(economia) {
+  if (economia.listino) return economia.listino;
+  return economia.includiTariffe === false ? "nessuno" : "schema";
+}
+
+/* Parametri: righe della simulazione (simula().righe), economia (vedi
+   economiaIniziale), popolazione (per le voci per abitante e le fasce dello
    Schema tariffario). Restituisce { righe, totali, avvisi } oppure null se
-   manca il valore unitario. */
+   manca il valore unitario. Ogni riga: anno, crediti, prezzo, ricavi,
+   partecipazione (contratto di partecipazione o Schema tariffario),
+   consulenza, costiEnte, altriCosti, costi, margine, cumulato e il
+   dettaglio delle voci. */
 export function simulaEconomia(righe, economia = {}, popolazione) {
   const prezzo0 = num(economia.prezzo);
   if (!prezzo0 || !righe?.length) return null;
   const avvisi = [];
+  const pop = num(popolazione);
   const crescita = num(economia.crescitaPrezzo) / 100;
-  const tariffe = economia.includiTariffe !== false;
+  const listino = listinoDi(economia);
+  const k = { ...CONTRATTO_PREDEFINITO, ...(economia.contratto || {}) };
+  Object.keys(k).forEach((c) => { k[c] = num(k[c]); });
   const validazione = num(economia.costoValidazione);
   const verifica = num(economia.costoVerificaAnnua);
   const altri = num(economia.altriCostiAnnui);
   const creditiPeriodo = Math.floor(somma(righe, (r) => r.netti));
-  const saldoProgetto = saldoPerPopolazione(popolazione, SALDO_PROGETTO) ?? 0;
-  const saldoRapporto = saldoPerPopolazione(popolazione, SALDO_RAPPORTO) ?? 0;
-  if (tariffe && !popolazione) avvisi.push("Senza popolazione le quote dello Schema tariffario per fascia non si possono calcolare.");
+  const saldoProgetto = saldoPerPopolazione(pop || null, SALDO_PROGETTO) ?? 0;
+  const saldoRapporto = saldoPerPopolazione(pop || null, SALDO_RAPPORTO) ?? 0;
+  if (listino !== "nessuno" && !pop) avvisi.push("Senza popolazione le voci per abitante (o per fascia) non si possono calcolare.");
   let cumulato = 0;
   const out = righe.map((r, i) => {
     const crediti = Math.floor(r.netti);
-    const prezzo = prezzo0 * Math.pow(1 + crescita, i);
+    const fattore = Math.pow(1 + crescita, i);
+    const prezzo = prezzo0 * fattore;
     const ricavi = crediti * prezzo;
-    const progetto = tariffe && i === 0 ? ISCRIZIONE_PROGETTO + saldoProgetto + VARIABILE_PROGETTO * creditiPeriodo : 0;
-    const rapporto = tariffe ? ISCRIZIONE_RAPPORTO + saldoRapporto + VARIABILE_RAPPORTO * crediti : 0;
-    const emissione = tariffe ? tariffaEmissione(crediti) : 0;
-    const vendita = tariffe && crediti > 0 ? tariffaVendita(crediti, ricavi) : 0;
-    const tariffeProgramma = progetto + rapporto + emissione + vendita;
+    const voci = {};
+    if (listino === "contratto") {
+      voci.regProgetto = k.regProgetto;
+      voci.regCreditiProgetto = k.regCreditiProgetto;
+      voci.regRapporto = k.regRapporto;
+      voci.regCreditiRapporto = k.regCreditiRapportoAb * pop;
+      voci.redProgetto = k.redProgettoAb * pop;
+      voci.redRapporto = k.redRapportoAb * pop;
+    } else if (listino === "schema") {
+      voci.progetto = i === 0 ? ISCRIZIONE_PROGETTO + saldoProgetto + VARIABILE_PROGETTO * creditiPeriodo : 0;
+      voci.rapporto = ISCRIZIONE_RAPPORTO + saldoRapporto + VARIABILE_RAPPORTO * crediti;
+      voci.emissione = tariffaEmissione(crediti);
+      voci.vendita = crediti > 0 ? tariffaVendita(crediti, ricavi) : 0;
+    }
+    const partecipazione = listino === "contratto"
+      ? voci.regProgetto + voci.regCreditiProgetto + voci.regRapporto + voci.regCreditiRapporto
+      : listino === "schema" ? voci.progetto + voci.rapporto + voci.emissione + voci.vendita : 0;
+    const consulenza = listino === "contratto" ? voci.redProgetto + voci.redRapporto : 0;
     const costiEnte = (i === 0 ? validazione : 0) + verifica;
-    const costi = tariffeProgramma + costiEnte + altri;
+    const costi = partecipazione + consulenza + costiEnte + altri;
     const margine = ricavi - costi;
     cumulato += margine;
-    return { anno: r.anno, crediti, prezzo, ricavi, progetto, rapporto, emissione, vendita, tariffeProgramma, costiEnte, altriCosti: altri, costi, margine, cumulato };
+    return {
+      anno: r.anno, crediti, prezzo, ricavi,
+      ricaviMin: num(economia.prezzoMin) ? crediti * num(economia.prezzoMin) * fattore : null,
+      ricaviMax: num(economia.prezzoMax) ? crediti * num(economia.prezzoMax) * fattore : null,
+      voci, partecipazione, consulenza, tariffeProgramma: partecipazione + consulenza,
+      costiEnte, altriCosti: altri, costi, margine, cumulato,
+    };
   });
   if (out.some((r) => r.margine < 0)) avvisi.push("In alcuni anni i costi superano i ricavi (margine negativo).");
-  const tot = (k) => somma(out, (r) => r[k]);
+  const tot = (c) => somma(out, (r) => r[c] || 0);
+  const anni = out.length;
+  const perAb = (v) => (pop ? v / pop : null);
   return {
+    listino,
     righe: out,
     totali: {
       crediti: tot("crediti"),
       ricavi: tot("ricavi"),
+      ricaviMin: num(economia.prezzoMin) ? tot("ricaviMin") : null,
+      ricaviMax: num(economia.prezzoMax) ? tot("ricaviMax") : null,
+      partecipazione: tot("partecipazione"),
+      consulenza: tot("consulenza"),
       tariffeProgramma: tot("tariffeProgramma"),
       costiEnte: tot("costiEnte"),
       altriCosti: tot("altriCosti"),
@@ -453,6 +518,12 @@ export function simulaEconomia(righe, economia = {}, popolazione) {
       margine: tot("margine"),
       prezzoMedio: tot("crediti") ? tot("ricavi") / tot("crediti") : prezzo0,
       primoAnnoPositivo: (out.find((r) => r.cumulato > 0) || {}).anno || null,
+      // Indicatori per abitante sull'intero periodo (come nell'Allegato A).
+      costoProCapite: perAb(tot("costi")),
+      ricavoProCapite: perAb(tot("ricavi")),
+      ricavoProCapiteMin: num(economia.prezzoMin) ? perAb(tot("ricaviMin")) : null,
+      ricavoProCapiteMax: num(economia.prezzoMax) ? perAb(tot("ricaviMax")) : null,
+      costoAnnuoMedio: tot("costi") / anni,
     },
     avvisi,
   };

@@ -89,6 +89,18 @@ Stima ex ante, non certificabile.
 - ΔI(a) = EP(a) − EA(a); crediti lordi = −ΔI se negativa, altrimenti debito;
   netti = lordi × (1 − buffer).
 
+**Simulazione economica (19/10/2026).** Ricavi = crediti netti interi × valore unitario digitato (con variazione annua facoltativa; valori minimo e massimo facoltativi per gli scenari peggiore e migliore, come nell'Allegato A del contratto tipo). Costi a carico del Comune o del gestore, IVA esclusa, con tre listini:
+
+| Listino | Voci per ogni anno del periodo |
+|---|---|
+| Contratti tipo della Fondazione (predefinito; bozze EsaCom del 15/10/2026) | Partecipazione al Programma: registrazione Progetto 3.000 €, registrazione crediti Progetto 6.000 €, registrazione Rapporto 15.000 €, registrazione crediti Rapporto 0,10 €/abitante. Consulenza: redazione Progetto 0,08 €/abitante, redazione Rapporto 0,20 €/abitante. Valori modificabili; quelli per abitante ricavati dai contratti EsaCom (154.247 abitanti: 15.425 €, 12.340 €, 30.849 €) |
+| Schema tariffario v1.2 (tariffe massime, `src/lib/tariffe.js`) | Progetto nel primo anno (3.000 € + saldo per fascia di popolazione + 0,15 € per credito previsto); Rapporto (1.000 € + saldo per fascia + 0,20 € per credito); emissione a scaglioni; vendita 20% del valore con minimo a scaglioni |
+| Solo costi indicati | Nessuna tariffa |
+
+In tutti i casi si aggiungono ente di validazione (una tantum), ente di verifica (ogni anno) e altri costi annui. Uscite: ricavi (con intervallo), costi, margine e cumulato per anno, anno di rientro, costo e ricavo per abitante nel periodo (come gli indicatori dell'Allegato A). Funzione `simulaEconomia` di `simulatore.js`.
+
+**Attenzione al confronto con le stime dei contratti.** L'Allegato A del contratto EsaCom stima circa 0,19-0,23 crediti per abitante all'anno (29.000-35.000 crediti per 154.247 abitanti, contabilizzando secco e organico per utenza con tariffazione puntuale). Il simulatore, che lavora sui totali del Comune e conta solo i rifiuti evitati, dà valori molto più bassi (Bovisio-Masciago: circa 0,04 crediti per abitante all'anno): il calcolo per utenza della Metodologia somma solo le utenze virtuose (formula 32), che a livello di Comune si compensano con le altre. Il metodo di stima va allineato con quello usato per l'Allegato A.
+
 **Conformità al modello CWP (verifica del 19/10/2026).**
 
 | Punto | Documento CWP | Nel simulatore |

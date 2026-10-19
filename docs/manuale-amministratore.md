@@ -765,6 +765,16 @@ A destra il riepilogo: produzione totale e pro capite, secco pro capite, **% di 
 
 Premete **Salva** per conservare lo scenario: nell'elenco *Scenari per Comune* compaiono, per confrontarli, la % di differenziata finale e i crediti netti stimati di ogni scenario. **Esporta CSV** scarica la tabella (si apre con Excel), **Stampa** produce una versione da stampare o salvare in PDF.
 
+**5. Simulazione economica: ricavi e costi per il Comune.** Digitate il **valore unitario del credito** (€ per credito; un credito è una tonnellata di CO₂eq) e, se volete, un valore minimo e uno massimo (scenario peggiore e migliore, come nell'Allegato A del contratto tipo) e la variazione annua del valore. Poi scegliete i **costi a carico del Comune o del gestore** (IVA esclusa):
+
+- **Contratti tipo della Fondazione** (predefinito): le voci del contratto di partecipazione al Programma (registrazione del Progetto, dei crediti del Progetto, del Rapporto di Monitoraggio e dei crediti del Rapporto) e del contratto di consulenza (redazione del Progetto e del Rapporto), per ogni anno del periodo, con i valori delle bozze EsaCom del 15/10/2026; le voci «per abitante» si moltiplicano per la popolazione del Comune e tutte si possono modificare;
+- **Schema tariffario**: le tariffe massime pubblicate (registrazione, emissione e vendita dei crediti);
+- **Solo i costi indicati sotto**.
+
+In tutti i casi potete aggiungere il costo dell'ente di validazione (una tantum), della verifica annuale e altri costi annui. Per ogni anno compaiono crediti, valore, ricavi, partecipazione al Programma, consulenza, ente, altri costi, costi totali, margine e cumulato; in alto ricavi (con l'intervallo minimo-massimo), costi, margine netto con l'anno di rientro e **costo e ricavo per abitante** nel periodo. È una stima indicativa, non un piano finanziario.
+
+> **Da sapere.** Per un Comune piccolo le voci fisse dei contratti (registrazioni del Progetto e del Rapporto) pesano molto: nei contratti EsaCom i Comuni sono aggregati in un unico progetto (154.247 abitanti). Inoltre il simulatore stima meno crediti per abitante dell'Allegato A del contratto EsaCom, perché lavora sui totali del Comune e non per singola utenza: il metodo di stima va allineato.
+
 **Come stima i crediti.** Il simulatore usa le formule della Metodologia CWP v1.2 a livello di Comune:
 
 | Grandezza | Come si calcola |
