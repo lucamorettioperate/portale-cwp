@@ -458,6 +458,20 @@ export async function idAmministratorePrincipale() {
   return await supabase.rpc("amministratore_principale_id");
 }
 
+// Utenti che si possono cancellare: mai comparsi come autori nell'audit
+// trail, esclusi sé stessi e l'Amministratore principale. RPC
+// admin_utenti_eliminabili (30_elimina_utente.sql); solo Amministratori.
+// Restituisce { data: [{ admin_utenti_eliminabili: uuid }] | [uuid] }.
+export async function elencaUtentiEliminabili() {
+  return await supabase.rpc("admin_utenti_eliminabili");
+}
+
+// Cancella definitivamente un utente mai attivo (RPC admin_elimina_utente,
+// che ricontrolla tutte le regole e lascia la voce nell'audit).
+export async function eliminaUtente(utenteId) {
+  return await supabase.rpc("admin_elimina_utente", { p_utente: utenteId });
+}
+
 // Aggiorna ruolo e organizzazioni di un utente.
 // - organizzazioniIds: elenco delle organizzazioni (comuni/aziende) associate;
 //   la prima resta anche come "organizzazione principale" sul profilo.

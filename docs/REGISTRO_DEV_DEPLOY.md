@@ -15,7 +15,10 @@
 > 2. si aggiornano le sezioni interessate (architettura, servizi, database,
 >    funzionalità, backlog);
 > 3. si aggiornano i **manuali** Utente e Amministratore se cambia qualcosa
->    che gli utenti vedono o fanno.
+>    che gli utenti vedono o fanno;
+> 4. (richiesta di Luca del 19/10) si **controlla sempre il risultato a
+>    schermo** prima di pubblicare: immagine della pagina su computer e su
+>    telefono (pagina di prova con dati finti o portale vero).
 >
 > Copia di questo registro: documento di progetto `claude/registro-dev-deploy.md`
 > nel Progetto claude.ai "CARBON WASTE PRINT".
@@ -242,7 +245,8 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `26_pec_programma.sql` | PEC del Programma `operate@pec.it` (comunicata da Luca), mostrata sulla pagina pubblica nelle informazioni del Programma e per i reclami; modificabile poi da Impostazioni | 19/10/2026 (verificato sulla pagina /programma) |
 | `27_soggetto_promotore.sql` | Soggetto promotore del programma: Fondazione Operate, in esclusiva da Wastelab (gestione commerciale e tecnologica), testo sulla pagina pubblica | 19/10/2026 (verificato) |
 | `28_simulatore.sql` | Simulatore di scenari: tabella `scenario_simulazione` (Comune, nome, durata 7/10/21, primo anno, dati in jsonb, riepilogo), RLS solo staff (`scenario_staff`), data di modifica dal database, audit | 19/10/2026 — provato sul banco locale (`t28.sql`); eseguito in produzione da Luca il 19/10 (testo senza commenti, stesso contenuto) |
-| `29_amministratori.sql` | Più Amministratori: `admin_aggiorna_utente` accetta il ruolo `admin` e cambia il ruolo di un altro Admin (mai il proprio); colonna `profilo.amministratore_principale` (indice unico) assegnata a luca.moretti@operate.it; trigger `trg_profilo_principale` (dal portale non si cambia ruolo o stato del principale, non se ne cancella il profilo, non si sposta il segno) e `trg_account_principale` su `auth.users` (l'account non si cancella nemmeno dal pannello); `admin_imposta_attivo` con messaggio dedicato; `amministratore_principale_id()` per la pagina Utenti | 19/10/2026 — provato sul banco locale (`t29.sql`: 12 controlli); **da eseguire in produzione** |
+| `29_amministratori.sql` | Più Amministratori: `admin_aggiorna_utente` accetta il ruolo `admin` e cambia il ruolo di un altro Admin (mai il proprio); colonna `profilo.amministratore_principale` (indice unico) assegnata a luca.moretti@operate.it; trigger `trg_profilo_principale` (dal portale non si cambia ruolo o stato del principale, non se ne cancella il profilo, non si sposta il segno) e `trg_account_principale` su `auth.users` (l'account non si cancella nemmeno dal pannello); `admin_imposta_attivo` con messaggio dedicato; `amministratore_principale_id()` per la pagina Utenti | 19/10/2026 — provato sul banco locale (`t29.sql`: 12 controlli); eseguito in produzione da Luca il 19/10 (verificato: riga «Principale» nella pagina Utenti) |
+| `30_elimina_utente.sql` | Cancellazione di un utente mai attivo: `utente_mai_attivo` (nessuna voce di audit come autore, nessun reclamo assegnato; uso interno), `admin_utenti_eliminabili()` per la pagina Utenti, `admin_elimina_utente(id)` (solo Admin, mai sé stessi né il principale; cancella da `auth.users`, a cascata profilo, associazioni e notifiche; voce «cancellazione profilo» nell'audit) | 19/10/2026 — provato sul banco locale (`t30b.sql`); **da eseguire in produzione** |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
 script successivi.
@@ -470,6 +474,12 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 19 ottobre 2026
+- **Utenti: pulsante «Elimina» e impaginazione** (richieste di Luca) —
+  script `30_elimina_utente.sql`: si cancella solo chi non ha mai operato
+  (audit trail), con conferma; pulsante «+ Nuovo utente» sulla riga del
+  titolo (prima era schiacciato accanto alla descrizione); azioni delle
+  righe che vanno a capo sul telefono. Controllato a schermo a 820 e 390
+  px con una pagina di prova a dati finti; script provato sul banco locale.
 - **Email con le credenziali al nuovo utente** (verifica richiesta da Luca:
   prima non partiva nessuna email, l'Admin comunicava la password a mano) —
   `crea-utente` e `reimposta-password` spediscono con Resend l'email
@@ -1261,7 +1271,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 113 file, 27.444 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 114 file, 27.613 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1286,7 +1296,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 113 file, 27.444 righe 
 | `src/pages/Cruscotto.jsx` | 268 | (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso, in scadenza, scadute, in attesa del Cliente, integrazioni da verificare, consultazioni attive) e tabella di tutte le pratiche, Progetti e Rapporti, con ricerca e… |
 | `src/pages/Documentazione.jsx` | 144 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
 | `src/pages/FormatoDati.jsx` | 136 | spiega lo standard dei dati da inviare per il calcolo dei crediti e permette di scaricare il tracciato Excel. Il link si può mandare a Comuni e gestori anche senza credenziali. Contiene: elenco dei fogli del tracciato,… |
-| `src/pages/GestioneUtenti.jsx` | 683 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
+| `src/pages/GestioneUtenti.jsx` | 745 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
 | `src/pages/Impostazioni.jsx` | 60 | parametri del Programma modificabili dagli Amministratori: - Durata delle fasi del Progetto e del Rapporto di Monitoraggio (script 13 e 21, componente DurateFasi); - Documenti richiesti per fase (script 21, componente… |
 | `src/pages/Login.jsx` | 259 | accesso con email e password; «Password dimenticata?» per farsi mandare il collegamento di reimpostazione; link alle pagine pubbliche (formato dei dati, consultazioni pubbliche, Manuale Utente in PDF). Dopo l'accesso riuscito… |
 | `src/pages/Profilo.jsx` | 66 | mostra i dati dell'account (nome, email di accesso, ruolo), il collegamento al cambio password («/password») e i documenti da scaricare per il proprio ruolo: Manuale Utente per tutti; Manuale Amministratore e Registro sviluppo e… |
@@ -1340,7 +1350,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 113 file, 27.444 righe 
 | `src/lib/csv.js` | 157 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
 | `src/lib/cwpProgram.js` | 185 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
 | `src/lib/date.js` | 68 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO (anche la data italiana, indipendente dal fuso del computer). |
-| `src/lib/dati.js` | 1031 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
+| `src/lib/dati.js` | 1045 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
 | `src/lib/fascicolo.js` | 354 | ZIP con: riepilogo PDF (Riepilogo.pdf, src/lib/fascicoloPdf.js), dati della pratica con l'Ente di Validazione, fasi, tutti i documenti in tutte le versioni (cartella Validazione per il rapporto dell'Ente; per i Rapporti anche il… |
 | `src/lib/fascicoloPdf.js` | 129 | un documento leggibile da stampare o archiviare insieme ai file del fascicolo: dati della pratica e dell'Ente di Validazione, fasi, elenco dei documenti (con l'impronta SHA-256), integrazioni, consultazioni pubbliche, pagamenti… |
 | `src/lib/file.js` | 158 | prima di inviare un file all'archivio controlla formato ammesso, dimensione, contenuto reale (primi byte, "firma" del formato) e prepara un nome sicuro per il percorso nell'archivio. Traduce anche gli errori dello Storage di… |
@@ -1381,6 +1391,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 113 file, 27.444 righe 
 | `supabase/27_soggetto_promotore.sql` | 28 | SOGGETTO PROMOTORE DEL PROGRAMMA (19/10/2026) |
 | `supabase/28_simulatore.sql` | 75 | salva gli scenari del simulatore dei crediti (Registro, backlog punto 37). Uno scenario è una stima ex ante, non certificabile, di quanti crediti un Comune potrebbe generare in 7, 10 o 21 anni (Standard 4.3.8), a partire dai… |
 | `supabase/29_amministratori.sql` | 168 | 1. Gli Amministratori possono nominare altri Amministratori dalla pagina «Gestione utenti» (prima la nomina si faceva solo da Supabase). Un Amministratore ha accesso completo a tutti i dati, come quello principale. 2.… |
+| `supabase/30_elimina_utente.sql` | 75 | un Amministratore può cancellare un utente che non ha mai operato nel portale, cioè che non compare come autore di nessuna voce dell'audit trail (nessun documento, messaggio, modifica, cambio della password…). Serve, ad esempio,… |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
@@ -1414,7 +1425,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 113 file, 27.444 righe 
 | `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
 | `strumenti/impagina_pdf.py` | 429 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
-| `strumenti/revisioni_documenti.json` | 480 | — |
+| `strumenti/revisioni_documenti.json` | 498 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

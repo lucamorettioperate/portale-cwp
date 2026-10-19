@@ -406,6 +406,13 @@ La pagina **Utenti** elenca tutti gli utenti con nome, email, ruolo e organizzaz
 
 **Modificare un utente.** **Modifica** permette di cambiare ruolo e organizzazioni. Passando a Operatore o ad Amministratore le associazioni alle organizzazioni si azzerano. Con **Modifica** si nomina Amministratore un utente esistente, o si riporta un Amministratore a Operatore.
 
+**Eliminare un utente mai attivo.** Il pulsante **Elimina** compare solo sugli utenti che **non hanno mai operato nel portale**, cioè che non compaiono come autori di nessuna voce dell'audit trail. Basta anche il cambio della password al primo accesso perché l'utente risulti attivo. Serve, ad esempio, per un account creato per errore o con l'email sbagliata.
+
+1. Premete **Elimina** nella riga dell'utente.
+2. Leggete l'avviso e premete **Elimina definitivamente**. Con **Annulla** non succede nulla.
+
+Si cancellano l'account, il profilo e le associazioni alle organizzazioni; nell'audit resta la voce «cancellazione profilo» con il vostro nome. L'operazione non si può annullare. Non si possono eliminare sé stessi né l'Amministratore principale. Chi ha già operato si può solo **disattivare**, così la sua storia resta nell'audit.
+
 **Disattivare o riattivare.** Un utente **Disattivato** non vede più alcun dato ma resta nello storico. Non si può disattivare sé stessi. Si può disattivare anche un altro Amministratore. Un Cliente si riattiva solo se la sua Organizzazione non ha nel frattempo un altro account attivo.
 
 **Password temporanea e primo accesso.** Ogni nuovo utente entra con la password temporanea: al primo accesso il portale gli chiede di sceglierne una personale e non lo lascia proseguire finché non lo fa. Finché non l'ha cambiata non vede né modifica alcun dato del portale.

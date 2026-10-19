@@ -8,7 +8,9 @@
      accesso completo a tutti i dati e possono nominare altri
      Amministratori (script 29). L'Amministratore principale
      (luca.moretti@operate.it, segno «Principale») non si modifica, non si
-     disattiva e non si cancella. Un utente cliente può essere associato a più
+     disattiva e non si cancella. Pulsante «Elimina» solo per gli utenti
+     che non hanno mai operato nel portale (nessuna voce nell'audit trail
+     come autore, script 30), con conferma; gli altri si disattivano. Un utente cliente può essere associato a più
      organizzazioni (es. più comuni); la prima scelta è la principale.
      Ogni Organizzazione ha al massimo un account cliente attivo, quello
      del rappresentante autorizzato (Guida 7.2): lo impone il database
@@ -22,7 +24,9 @@
      organizzazioni in un'unica operazione), impostaUtenteAttivo (RPC
      admin_imposta_attivo), reimpostaPassword (Edge Function
      "reimposta-password"), idAmministratorePrincipale (RPC
-     amministratore_principale_id, script 29). Password generate con
+     amministratore_principale_id, script 29), elencaUtentiEliminabili ed
+     eliminaUtente (RPC admin_utenti_eliminabili e admin_elimina_utente,
+     script 30). Password generate con
      generaPasswordTemporanea di src/lib/password.js.
    Sicurezza: ogni funzione del database e ogni Edge Function verifica da
      sé che il chiamante sia Amministratore con verifica a due fattori
@@ -49,6 +53,8 @@ import {
   impostaUtenteAttivo,
   reimpostaPassword,
   idAmministratorePrincipale,
+  elencaUtentiEliminabili,
+  eliminaUtente,
 } from "../lib/dati.js";
 import { generaPasswordTemporanea } from "../lib/password.js";
 
@@ -75,6 +81,8 @@ export default function GestioneUtenti() {
   const [utenti, setUtenti] = useState([]);
   // Id dell'Amministratore principale (protetto), null se non impostato.
   const [principaleId, setPrincipaleId] = useState(null);
+  // Id degli utenti cancellabili (mai attivi), per il pulsante «Elimina».
+  const [eliminabili, setEliminabili] = useState([]);
   const [organizzazioni, setOrganizzazioni] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState("");
@@ -86,12 +94,20 @@ export default function GestioneUtenti() {
   // mostra l'elenco).
   async function carica() {
     setCaricamento(true);
-    const [u, o, p] = await Promise.all([elencaUtenti(), elencaOrganizzazioni(), idAmministratorePrincipale()]);
+    const [u, o, p, e] = await Promise.all([
+      elencaUtenti(),
+      elencaOrganizzazioni(),
+      idAmministratorePrincipale(),
+      elencaUtentiEliminabili(),
+    ]);
     if (u.error) setErrore(u.error.message);
     else setUtenti(u.data || []);
     setOrganizzazioni(o.data || []);
     // Se lo script 29 non è ancora eseguito la funzione non esiste: nessun principale.
     setPrincipaleId(p.error ? null : p.data || null);
+    // La RPC restituisce un elenco di id (o di oggetti con l'id, a seconda
+    // della versione di supabase-js); senza lo script 30 nessuno è cancellabile.
+    setEliminabili(e.error ? [] : (e.data || []).map((r) => (typeof r === "string" ? r : r.admin_utenti_eliminabili)));
     setCaricamento(false);
   }
 
@@ -115,18 +131,23 @@ export default function GestioneUtenti() {
     <div style={{ background: C.paper, minHeight: "100vh" }}>
       <Header />
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: "24px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+        {/* Titolo e pulsante sulla stessa riga, descrizione sotto a tutta
+            larghezza: il pulsante non si schiaccia accanto al testo. */}
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 6 }}>
+            <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: 0 }}>Gestione utenti</h1>
+            <button onClick={() => setInvito(true)} style={{ ...btnPrimario, whiteSpace: "nowrap" }}>
+              + Nuovo utente
+            </button>
+          </div>
           <div>
-            <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 4px" }}>Gestione utenti</h1>
             <p style={{ fontSize: 13.5, color: C.grafite, margin: 0 }}>
               Invita clienti, operatori e amministratori, assegna ruolo e organizzazioni. Ogni Organizzazione ha un solo
               account cliente attivo, quello del rappresentante autorizzato (Guida al Programma, cap. 7.2). Gli
-              amministratori vedono tutti i dati; l'amministratore principale non si può modificare né disattivare.
+              amministratori vedono tutti i dati; l'amministratore principale non si può modificare né disattivare. Si può
+              eliminare solo un utente che non ha mai operato nel portale; gli altri si disattivano.
             </p>
           </div>
-          <button onClick={() => setInvito(true)} style={btnPrimario}>
-            + Nuovo utente
-          </button>
         </div>
 
         {errore && <div style={{ color: C.red, fontSize: 13, marginBottom: 12 }}>{errore}</div>}
@@ -147,6 +168,7 @@ export default function GestioneUtenti() {
                 utente={u}
                 organizzazioni={organizzazioni}
                 principale={u.id === principaleId}
+                eliminabile={eliminabili.includes(u.id)}
                 sonoIo={u.id === io?.id}
                 ultimo={i === utenti.length - 1}
                 onSalvato={carica}
@@ -176,13 +198,14 @@ export default function GestioneUtenti() {
      attivo, organizzazioni…)
    - organizzazioni: tutte le organizzazioni, per la scelta
    - principale: vero per l'Amministratore principale (nessuna azione)
+   - eliminabile: vero se l'utente non ha mai operato (pulsante «Elimina»)
    - sonoIo: vero per la riga dell'utente collegato (non si cambia il
      proprio ruolo e non ci si disattiva)
    - ultimo: vero per l'ultima riga (niente bordo inferiore)
    - onSalvato: richiamata dopo un salvataggio riuscito (rilettura elenco).
    Tre pannelli alternativi: nessuno, «modifica» (ruolo e organizzazioni),
    «reimposta» (nuova password temporanea). */
-function RigaUtente({ utente, organizzazioni, principale, sonoIo, ultimo, onSalvato }) {
+function RigaUtente({ utente, organizzazioni, principale, eliminabile, sonoIo, ultimo, onSalvato }) {
   const [modifica, setModifica] = useState(false);
   // Valori in modifica (ruolo e organizzazioni scelte), copiati dall'utente.
   const [ruolo, setRuolo] = useState(utente.ruolo);
@@ -198,6 +221,21 @@ function RigaUtente({ utente, organizzazioni, principale, sonoIo, ultimo, onSalv
   const passwordReimpostabile = modificabile && utente.ruolo !== "admin";
   // Reimpostazione password: null = chiuso; { password } = conferma; { fatta } = esito.
   const [reimposta, setReimposta] = useState(null);
+  // Vero mentre è aperta la richiesta di conferma dell'eliminazione.
+  const [elimina, setElimina] = useState(false);
+
+  // Cancella l'utente (il database ricontrolla che non abbia mai operato).
+  async function confermaElimina() {
+    setErrore("");
+    setSalvataggio(true);
+    const { error } = await eliminaUtente(utente.id);
+    setSalvataggio(false);
+    if (error) setErrore("Eliminazione non riuscita: " + error.message);
+    else {
+      setElimina(false);
+      onSalvato();
+    }
+  }
 
   // Assegna la password temporanea proposta (Edge Function). In caso di
   // successo la password resta a schermo per comunicarla all'utente; al
@@ -268,9 +306,10 @@ function RigaUtente({ utente, organizzazioni, principale, sonoIo, ultimo, onSalv
           flexWrap: "wrap",
         }}
       >
-        <div style={{ minWidth: 0, flex: 1 }}>
+        {/* Nome ed email: almeno 200 px, altrimenti le azioni vanno sotto. */}
+        <div style={{ minWidth: 0, flex: "1 1 200px" }}>
           <div style={{ fontWeight: 600, fontSize: 14 }}>{utente.nome_completo || utente.email}</div>
-          <div style={{ fontSize: 12.5, color: C.grafite }}>{utente.email}</div>
+          <div style={{ fontSize: 12.5, color: C.grafite, overflowWrap: "anywhere" }}>{utente.email}</div>
           {nomiOrg.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
               {nomiOrg.map((n) => (
@@ -281,7 +320,8 @@ function RigaUtente({ utente, organizzazioni, principale, sonoIo, ultimo, onSalv
         </div>
 
         {!modifica && (
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          // Le azioni vanno a capo sugli schermi stretti (telefono).
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             {!utente.attivo && <Badge bg="#f6dcd6" fg={C.red}>Disattivato</Badge>}
             {principale && <Badge bg="#e3eadf" fg={C.green}>Principale</Badge>}
             {r && <Badge bg={r.soft} fg={r.color}>{r.short}</Badge>}
@@ -295,6 +335,11 @@ function RigaUtente({ utente, organizzazioni, principale, sonoIo, ultimo, onSalv
             {modificabile && (
               <button onClick={commutaAttivo} disabled={salvataggio} style={{ ...btnMini, color: utente.attivo ? C.red : C.green }}>
                 {utente.attivo ? "Disattiva" : "Riattiva"}
+              </button>
+            )}
+            {modificabile && eliminabile && (
+              <button onClick={() => { setErrore(""); setReimposta(null); setElimina(true); }} disabled={salvataggio} style={{ ...btnMini, color: C.red }}>
+                Elimina
               </button>
             )}
           </div>
@@ -329,7 +374,24 @@ function RigaUtente({ utente, organizzazioni, principale, sonoIo, ultimo, onSalv
         </div>
       )}
 
-      {!modifica && !reimposta && errore && <div style={{ color: C.red, fontSize: 12.5, marginTop: 8 }}>{errore}</div>}
+      {elimina && !modifica && (
+        <div style={{ marginTop: 12, padding: 14, background: "#fbeeea", border: `1px solid #efc9bf`, borderRadius: 10, fontSize: 13 }}>
+          <div style={{ marginBottom: 10, lineHeight: 1.6 }}>
+            Eliminare definitivamente <b>{utente.email}</b>? L'utente non ha mai operato nel portale: si cancellano l'account,
+            il profilo e le associazioni alle organizzazioni. Nell'audit resta la voce della cancellazione. L'operazione non si
+            può annullare.
+          </div>
+          {errore && <div style={{ color: C.red, marginBottom: 8 }}>{errore}</div>}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button onClick={confermaElimina} disabled={salvataggio} style={{ ...btnMiniPrimario, background: C.red }}>
+              {salvataggio ? "Eliminazione…" : "Elimina definitivamente"}
+            </button>
+            <button onClick={() => { setElimina(false); setErrore(""); }} disabled={salvataggio} style={btnMini}>Annulla</button>
+          </div>
+        </div>
+      )}
+
+      {!modifica && !reimposta && !elimina && errore && <div style={{ color: C.red, fontSize: 12.5, marginTop: 8 }}>{errore}</div>}
       {modifica && (
         <div
           style={{
@@ -675,7 +737,7 @@ const btnSecondario = {
 };
 const btnMini = {
   background: C.white, color: C.grafite, border: `1px solid ${C.line}`, borderRadius: 7,
-  padding: "6px 12px", fontSize: 12.5, fontWeight: 600, cursor: "pointer",
+  padding: "6px 12px", fontSize: 12.5, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
 };
 const btnMiniPrimario = {
   background: C.green, color: C.white, border: "none", borderRadius: 7,

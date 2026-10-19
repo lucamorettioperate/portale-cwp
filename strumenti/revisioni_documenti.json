@@ -211,6 +211,12 @@
       "data": "19/10/2026",
       "descrizione": "Email automatica con le credenziali al nuovo utente e alla reimpostazione della password.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.0",
+      "data": "19/10/2026",
+      "descrizione": "Eliminazione degli utenti che non hanno mai operato (script 30).",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -314,6 +320,12 @@
       "rev": "2.6",
       "data": "19/10/2026",
       "descrizione": "Prove 1.3 e 1.3c: email con le credenziali.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.7",
+      "data": "19/10/2026",
+      "descrizione": "Prova 1.3d: eliminazione di un utente mai attivo.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -466,6 +478,12 @@
       "rev": "3.4",
       "data": "19/10/2026",
       "descrizione": "Email con le credenziali nelle funzioni crea-utente e reimposta-password.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.5",
+      "data": "19/10/2026",
+      "descrizione": "Script 30 (eliminazione utenti mai attivi); regola: controllare sempre il risultato a schermo.",
       "autore": "Fondazione Operate"
     }
   ],
