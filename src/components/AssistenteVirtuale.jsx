@@ -165,9 +165,17 @@ function TestoRisposta({ testo }) {
   );
 }
 
-// **testo** in grassetto; il resto come testo semplice.
+// **testo** in grassetto e *testo* in corsivo (Claude a volte usa il
+// corsivo per i nomi dei ruoli o dei pulsanti); il resto come testo
+// semplice. Un asterisco isolato (per esempio «2 * 3») resta com'è.
 function grassetto(s) {
-  return String(s).split(/(\*\*[^*]+\*\*)/g).map((p, i) => (p.startsWith("**") && p.endsWith("**") ? <strong key={i}>{p.slice(2, -2)}</strong> : <React.Fragment key={i}>{p}</React.Fragment>));
+  return String(s)
+    .split(/(\*\*[^*]+\*\*|\*[^*\s][^*]*?\*)/g)
+    .map((p, i) => {
+      if (p.length > 4 && p.startsWith("**") && p.endsWith("**")) return <strong key={i}>{p.slice(2, -2)}</strong>;
+      if (p.length > 2 && p.startsWith("*") && p.endsWith("*") && !p.startsWith("**")) return <em key={i}>{p.slice(1, -1)}</em>;
+      return <React.Fragment key={i}>{p}</React.Fragment>;
+    });
 }
 
 // Stili.

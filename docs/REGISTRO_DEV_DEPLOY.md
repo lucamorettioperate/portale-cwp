@@ -192,6 +192,7 @@ minuti per 6 ore.
 | GitHub | Codice sorgente, storico | Free (repo pubblico) | github.com/lucamorettioperate/portale-cwp | — |
 | Vercel | Pubblicazione del portale; deploy automatico a ogni push su `main` | Hobby (gratuito) | Dashboard Vercel → progetto portale-cwp | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` |
 | Supabase | Database, autenticazione, archivio file, funzioni, cron | Free | supabase.com → organizzazione Fondazione Operate → progetto `ajxrnofgunynkynozmrn`; Auth: Site URL `https://portale-cwp.vercel.app`, Redirect URL `https://portale-cwp.vercel.app/**` | Edge Functions → Secrets: `RESEND_API_KEY` (impostata 17/10), `EMAIL_MITTENTE` (da impostare dopo verifica dominio), `PORTALE_URL` (facoltativo) |
+| Claude Console (Anthropic) | Assistente virtuale: chiamate a Claude dalla funzione `assistente` | A consumo: crediti mensili del piano Max di Luca (200 $, collegati il 19/10, primo accredito in elaborazione) e 100 $ acquistati il 19/10 | platform.claude.com → «Luca's Individual Org» (account di Luca); collegamento crediti in claude.ai → Impostazioni → Fatturazione → API credits | `ANTHROPIC_API_KEY` (legata a un solo spazio di lavoro) → Secrets di Supabase; facoltativi `ASSISTENTE_MODELLO`, `ASSISTENTE_LIMITE_GIORNO` |
 | Resend | Invio email delle notifiche (Edge Function) e delle email di autenticazione (SMTP di Supabase Auth) | Free (3.000 email/mese, 100/giorno) | resend.com (account di Luca) | Chiave API → Secrets di Supabase e password SMTP in Authentication → Emails |
 
 **Note sui servizi**
@@ -246,7 +247,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `27_soggetto_promotore.sql` | Soggetto promotore del programma: Fondazione Operate, in esclusiva da Wastelab (gestione commerciale e tecnologica), testo sulla pagina pubblica | 19/10/2026 (verificato) |
 | `28_simulatore.sql` | Simulatore di scenari: tabella `scenario_simulazione` (Comune, nome, durata 7/10/21, primo anno, dati in jsonb, riepilogo), RLS solo staff (`scenario_staff`), data di modifica dal database, audit | 19/10/2026 — provato sul banco locale (`t28.sql`); eseguito in produzione da Luca il 19/10 (testo senza commenti, stesso contenuto) |
 | `29_amministratori.sql` | Più Amministratori: `admin_aggiorna_utente` accetta il ruolo `admin` e cambia il ruolo di un altro Admin (mai il proprio); colonna `profilo.amministratore_principale` (indice unico) assegnata a luca.moretti@operate.it; trigger `trg_profilo_principale` (dal portale non si cambia ruolo o stato del principale, non se ne cancella il profilo, non si sposta il segno) e `trg_account_principale` su `auth.users` (l'account non si cancella nemmeno dal pannello); `admin_imposta_attivo` con messaggio dedicato; `amministratore_principale_id()` per la pagina Utenti | 19/10/2026 — provato sul banco locale (`t29.sql`: 12 controlli); eseguito in produzione da Luca il 19/10 (verificato: riga «Principale» nella pagina Utenti) |
-| `31_assistente.sql` | Assistente virtuale: tabella `assistente_uso` (utente, giorno in ora italiana, domande, token in entrata e in uscita; nessun testo), RLS «solo le proprie righe»; `assistente_registra_uso` e `assistente_domande_oggi` solo per la funzione del server (esecuzione tolta agli utenti); `assistente_riepilogo_uso()` per mese, solo Amministratori | 19/10/2026 — provato sul banco locale; **da eseguire in produzione** |
+| `31_assistente.sql` | Assistente virtuale: tabella `assistente_uso` (utente, giorno in ora italiana, domande, token in entrata e in uscita; nessun testo), RLS «solo le proprie righe»; `assistente_registra_uso` e `assistente_domande_oggi` solo per la funzione del server (esecuzione tolta agli utenti); `assistente_riepilogo_uso()` per mese, solo Amministratori | 19/10/2026 — provato sul banco locale; **eseguito in produzione** da Luca il 19/10 |
 | `30_elimina_utente.sql` | Cancellazione di un utente mai attivo: `utente_mai_attivo` (nessuna voce di audit come autore e nessuna riga che lo indichi come autore o responsabile in qualunque tabella con chiave esterna verso `auth.users` o `profilo` non a cascata: documenti, messaggi, note, pagamenti, calcoli, scenari, reclami…; uso interno), `admin_utenti_eliminabili()` per la pagina Utenti, `admin_elimina_utente(id)` (solo Admin, mai sé stessi né il principale; cancella da `auth.users`, a cascata profilo, associazioni e notifiche; voce «cancellazione profilo» nell'audit) | 19/10/2026 — provato sul banco locale (`t30b.sql`); eseguito in produzione da Luca il 19/10 (pulsante «Elimina» verificato sul portale); controllo esteso alle colonne «autore» lo stesso giorno: da rieseguire la sola `utente_mai_attivo` |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
@@ -328,7 +329,7 @@ autenticazione, dal SQL Editor:
 | Funzione | Cosa fa | Protezione | Pubblicazione |
 |---|---|---|---|
 | `crea-utente` | L'Amministratore crea un utente con password temporanea e lo associa a tutte le sue organizzazioni (`admin_imposta_organizzazioni` con il token dell'Admin); se un passo fallisce l'account appena creato viene eliminato | Verifica che il chiamante sia Admin (`sono_admin`); password temporanea di almeno 10 caratteri con lettere e numeri; niente creazione di Admin; dal 19/10 email all'utente con indirizzo del portale, email di accesso e password temporanea (Resend), esito `email_inviata`/`motivo_email` restituito al portale | Dashboard Supabase (editor web); ripubblicata 18/10 (script 20); Verify JWT attivo; **versione 19/10 con l'email da ripubblicare** |
-| `assistente` | Assistente virtuale (Claude, Anthropic Messages API): risponde dalla base di conoscenza `public/assistente/kb-amministratore.md` (Admin) o `kb-comune.md` (utenti degli enti), letta dal portale e tenuta in memoria 10 minuti; base di conoscenza nella cache dei prompt per 1 ora; modello predefinito `claude-haiku-5-5` (`ASSISTENTE_MODELLO`); conta domande e token con `assistente_registra_uso` | Ruolo letto dal server (solo admin e cliente, profilo attivo, senza password temporanea); limite di domande al giorno (`ASSISTENTE_LIMITE_GIORNO`, predefinito 40); massimo 12 messaggi da 2.000 caratteri; chiave `ANTHROPIC_API_KEY` solo nei segreti; nessun testo salvato; non legge le pratiche | **Da pubblicare** (dashboard Supabase, Verify JWT attivo) dopo lo script 31 e l'inserimento della chiave da parte di Luca |
+| `assistente` | Assistente virtuale (Claude, Anthropic Messages API): risponde dalla base di conoscenza `public/assistente/kb-amministratore.md` (Admin) o `kb-comune.md` (utenti degli enti), letta dal portale e tenuta in memoria 10 minuti; base di conoscenza nella cache dei prompt per 1 ora; modello predefinito `claude-haiku-5-5` (`ASSISTENTE_MODELLO`); conta domande e token con `assistente_registra_uso` | Ruolo letto dal server (solo admin e cliente, profilo attivo, senza password temporanea); limite di domande al giorno (`ASSISTENTE_LIMITE_GIORNO`, predefinito 40); massimo 12 messaggi da 2.000 caratteri; chiave `ANTHROPIC_API_KEY` solo nei segreti; nessun testo salvato; non legge le pratiche | **Pubblicata il 19/10** (dashboard Supabase, Verify JWT attivo); chiave `ANTHROPIC_API_KEY` legata a un solo spazio di lavoro inserita da Luca; provata dal vivo |
 | `reimposta-password` | L'Amministratore assegna una password temporanea a un Cliente o Operatore; il flag obbliga al cambio al primo accesso; audit; dal 19/10 email all'utente con la nuova password temporanea (Resend), esito restituito al portale | Verifica `sono_admin`; esclusi amministratori e sé stessi | Dashboard Supabase (editor web), 18/10; Verify JWT attivo; **versione 19/10 con l'email da ripubblicare** |
 | `consultazione-pubblica` | Pagine pubbliche del feedback pubblico (data di «oggi» in ora italiana dal 18/10; numero delle osservazioni dallo script 21; dalla sera del 18/10 anche i Rapporti di Monitoraggio, ripubblicata; azioni `programma` e `file` per la pagina pubblica /programma, script 24, ripubblicata la sera del 18/10, Verify JWT spento): elenco, dettaglio (documento, errata corrige, osservazioni ammesse), invio di un'osservazione con allegato facoltativo ed email di conferma, conferma dell'email (l'osservazione diventa *Ricevuto*) | Verify JWT **disattivato** di proposito (pubblico senza account): nessun dato personale restituito, 3 invii/ora per indirizzo e 100/ora per consultazione, campo trappola anti-robot, allegati max 10 MB con controllo del contenuto, token monouso 48 ore salvato come SHA-256 | Dashboard Supabase (editor web), 18/10 |
 | `recupera-password` | «Password dimenticata?»: genera il collegamento di recupero (`auth.admin.generateLink`) e spedisce con Resend l'email in italiano «Portale Carbon WastePrint (CWP) — Richiesta di reimpostazione della password», al posto del modello email di Supabase | Verify JWT **disattivato** di proposito (la chiama chi non ha fatto l'accesso): risponde sempre `ok` senza rivelare se l'indirizzo esiste; niente email agli utenti disattivati; massimo una richiesta ogni 2 minuti per indirizzo; il collegamento porta solo al portale | Dashboard Supabase (editor web), 18/10 |
@@ -491,6 +492,17 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 19 ottobre 2026
+- **Assistente virtuale attivato** — Luca ha eseguito lo script 31,
+  pubblicato la funzione `assistente` (Verify JWT attivo), creato nella
+  Claude Console una chiave legata a un solo spazio di lavoro e acquistato
+  100 $ di crediti; collegati anche i crediti mensili del piano Max (200 $,
+  primo accredito ancora in elaborazione). Provato dal vivo come
+  Amministratore: risposte corrette sulla creazione degli utenti e sui costi
+  del Caso 1 per 20.000 abitanti (17.600 €, 0,88 €/ab). Corretto il
+  componente `AssistenteVirtuale.jsx`: il corsivo `*testo*` delle risposte
+  ora si vede formattato invece che con gli asterischi. Aggiornati Manuale
+  Amministratore 3.6, Manuale Test 3.2, Istruzioni di ripristino 1.1,
+  Registro 4.2 e Presentazione 2.2.
 - **Assistente virtuale, prima versione** (richiesta di Luca: aiuto ad
   Amministratori ed enti su una base di conoscenza del portale) — funzione
   del server `assistente` con Claude Haiku 5.5 e cache dei prompt; base di
@@ -1191,7 +1203,7 @@ completato (va barrato qui e annotato in Cronologia).
 
 - ~~**35.** Allineamento ai documenti ufficiali del Programma~~ — fatto la sera del 18/10 (script 22-24, portale, funzione `consultazione-pubblica`): vedi Decisioni e Cronologia. Resta SPID/CIE/CNS (punto 36).
 - **36.** Accesso degli stakeholders con SPID, CIE o CNS (Guida 3.9): adesione come fornitore di servizi (AgID o aggregatore), poi integrazione nella pagina del feedback pubblico.
-- **21.** **Assistente virtuale (Claude)** integrato nel portale — richiesto da Luca il 18/10, confermato tra i punti aperti il 19/10. **Prima versione fatta il 19/10** (Amministratori ed enti, risposte dalla base di conoscenza su portale e tariffe: script 31, funzione `assistente`, componente `AssistenteVirtuale`); da attivare con la chiave Anthropic. Restano i passi successivi descritti qui sotto (Operatori, aiuto sulla singola pratica). Funziona con i modelli Claude di Anthropic tramite API (lo sviluppo del portale si fa con Claude Code). Ambito da definire; usi possibili: assistente per gli utenti dei Comuni (come compilare, cosa manca nella pratica), supporto agli Operatori (controllo completezza dei documenti, bozze di richieste di integrazione e di risposte ai commenti), verifica del tracciato dati prima dell'import, spiegazione dei risultati del calcolo crediti. Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che faccia da tramite, regole su quali dati l'agente può leggere (privacy) e registrazione delle sue azioni nell'audit.
+- **21.** **Assistente virtuale (Claude)** integrato nel portale — richiesto da Luca il 18/10, confermato tra i punti aperti il 19/10. **Prima versione fatta il 19/10** (Amministratori ed enti, risposte dalla base di conoscenza su portale e tariffe: script 31, funzione `assistente`, componente `AssistenteVirtuale`); **attivo dal 19/10** (chiave e crediti della Claude Console di Luca). Restano i passi successivi descritti qui sotto (Operatori, aiuto sulla singola pratica). Funziona con i modelli Claude di Anthropic tramite API (lo sviluppo del portale si fa con Claude Code). Ambito da definire; usi possibili: assistente per gli utenti dei Comuni (come compilare, cosa manca nella pratica), supporto agli Operatori (controllo completezza dei documenti, bozze di richieste di integrazione e di risposte ai commenti), verifica del tracciato dati prima dell'import, spiegazione dei risultati del calcolo crediti. Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che faccia da tramite, regole su quali dati l'agente può leggere (privacy) e registrazione delle sue azioni nell'audit.
 
 ---
 
@@ -1206,6 +1218,9 @@ completato (va barrato qui e annotato in Cronologia).
 | Email con pulsante invisibile nel tema scuro dei client di posta | Pulsante "a prova di tema scuro" e link testuale di riserva |
 | Mittente di prova Resend consegna solo al titolare | Verifica del dominio da completare |
 | Site URL di Supabase Auth ancora `http://localhost:3000` e nessun Redirect URL: i link delle email di Supabase (recupero password) non funzionavano | Impostati il 18/10 (autorizzazione di Luca): Site URL `https://portale-cwp.vercel.app`, Redirect URL `https://portale-cwp.vercel.app/**` |
+| Il codice della funzione `assistente` incollato nell'editor di Supabase si era interrotto a metà (72 righe su 180) e il deploy dava errore; inoltre i file `.ts` inviati in chat sembravano vuoti (alcuni programmi li scambiano per video) | Codice caricato nell'editor direttamente dal repository e nome corretto (`assistente`); per incollare a mano si usa la copia `.txt` |
+| Anthropic rifiutava le richieste: «API key is not scoped to a workspace» | La chiave era valida per tutti gli spazi di lavoro e richiede l'intestazione `anthropic-workspace-id`; creata una nuova chiave legata a un solo spazio di lavoro e sostituito il segreto (senza cambiare il codice) |
+| Anthropic rispondeva «credit balance is too low» dopo il collegamento dei crediti del piano Max | Il primo accredito mensile era ancora in elaborazione; Luca ha acquistato 100 $ di crediti nella Console (Fatturazione) |
 | Il servizio email predefinito di Supabase Auth consegna solo ai membri del progetto | SMTP personalizzato con Resend attivato il 18/10 (Authentication → Emails → SMTP Settings); limite 30 email di autenticazione all'ora, modificabile in Rate Limits |
 
 ---
@@ -1362,7 +1377,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 123 file, 29.821 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 123 file, 29.861 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1401,7 +1416,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 123 file, 29.821 righe 
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `src/components/AssistenteVirtuale.jsx` | 188 | pulsante «Assistente» in basso a destra che apre una finestra di conversazione. Le domande vanno alla funzione del server «assistente» (supabase/functions/assistente), che risponde con Claude usando solo la base di conoscenza… |
+| `src/components/AssistenteVirtuale.jsx` | 196 | pulsante «Assistente» in basso a destra che apre una finestra di conversazione. Le domande vanno alla funzione del server «assistente» (supabase/functions/assistente), che risponde con Claude usando solo la base di conoscenza… |
 | `src/components/Badge.jsx` | 37 | etichetta colorata compatta per mostrare uno stato (pratica, fase, documento, pagamento, calcolo…). Solo grafica. |
 | `src/components/BarraFasi.jsx` | 72 | barra orizzontale di 7 «luci», una per fase (richiesta di Luca del 19/10/2026). Le fasi completate sono accese, quelle ancora da fare spente. Le luci accese delle fasi 1-6 sono ambra; la settima (Chiusura) è verde. La fase in… |
 | `src/components/Consultazione.jsx` | 435 | riquadro «Feedback pubblico» (il termine della Guida al Programma, cap. 3.9) di un Progetto o di un Rapporto di Monitoraggio (fase 3, requisiti §6; per i Rapporti Guida 6.3.1, script 23). Lo staff apre il feedback pubblicando un… |
@@ -1487,7 +1502,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 123 file, 29.821 righe 
 | `supabase/28_simulatore.sql` | 75 | salva gli scenari del simulatore dei crediti (Registro, backlog punto 37). Uno scenario è una stima ex ante, non certificabile, di quanti crediti un Comune potrebbe generare in 7, 10 o 21 anni (Standard 4.3.8), a partire dai… |
 | `supabase/29_amministratori.sql` | 168 | 1. Gli Amministratori possono nominare altri Amministratori dalla pagina «Gestione utenti» (prima la nomina si faceva solo da Supabase). Un Amministratore ha accesso completo a tutti i dati, come quello principale. 2.… |
 | `supabase/30_elimina_utente.sql` | 104 | un Amministratore può cancellare un utente che non ha mai operato nel portale, cioè che non compare come autore di nessuna voce dell'audit trail (nessun documento, messaggio, modifica, cambio della password…). Serve, ad esempio,… |
-| `supabase/31_assistente.sql` | 79 | la funzione del server «assistente» (Claude di Anthropic) registra quante domande fa ogni utente al giorno e i token usati, per applicare un limite giornaliero e controllare la spesa. Nessun testo delle domande o delle risposte… |
+| `supabase/31_assistente.sql` | 81 | la funzione del server «assistente» (Claude di Anthropic) registra quante domande fa ogni utente al giorno e i token usati, per applicare un limite giornaliero e controllare la spesa. Nessun testo delle domande o delle risposte… |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
@@ -1525,7 +1540,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 123 file, 29.821 righe 
 | `strumenti/impagina_pdf.py` | 429 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 620 | — |
+| `strumenti/revisioni_documenti.json` | 650 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

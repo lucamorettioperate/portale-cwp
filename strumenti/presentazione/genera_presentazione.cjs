@@ -385,7 +385,7 @@ async function icona(Comp, colore) {
   const novita = [
     ["Utenti", "più amministratori con accesso completo; luca.moretti@operate.it è il principale e non si modifica né si cancella; si eliminano solo gli utenti mai attivi"],
     ["Credenziali per email", "al nuovo utente arrivano indirizzo, email e password temporanea (a tutti dopo la verifica del dominio)"],
-    ["Assistente virtuale", "«✦ Assistente» con Claude per enti e Amministratori, risponde dai manuali e dalle tariffe (da attivare)"],
+    ["Assistente virtuale", "«✦ Assistente» con Claude per enti e Amministratori, risponde dai manuali e dalle tariffe (attivo dal 19/10)"],
     ["Simulatore", "secondo metodo «per utenza, solo utenze virtuose», come nell'Allegato A EsaCom, con buffer del Capitolo 7"],
     ["Documentazione", "gli 8 documenti ufficiali del Programma v1.2 e questa presentazione, per gli Amministratori"],
     ["Decisione", "qualificazione ACN non necessaria (parere legale da confermare)"],
@@ -420,7 +420,7 @@ async function icona(Comp, colore) {
       "Conferma delle scelte interpretative del calcolo con l'ente",
       "Privacy: DPIA, registro dei trattamenti; accessibilità WCAG 2.1 AA",
       "Collaudo con i dati reali di un Comune",
-      "Nuovi moduli: simulatore (online, due metodi), assistente virtuale (pronto, da attivare con la chiave); utenti online per l'amministratore principale (in sviluppo)",
+      "Nuovi moduli: simulatore (online, due metodi), assistente virtuale (attivo dal 19/10, poi Operatori e aiuto sulla pratica); utenti online per l'amministratore principale (in sviluppo)",
     ] },
   ];
   const cw = (12.1 - 0.6) / 3;
@@ -468,19 +468,19 @@ async function icona(Comp, colore) {
   card(s, 8.6, 1.35, 4.1, 5.5, C.accent3, "Riquadro assistente");
   cerchio(s, 8.85, 1.55, 0.6, C.text2, ic.robot, "Assistente");
   s.addText("Assistente virtuale Claude", { x: 9.6, y: 1.5, w: 3.0, h: 0.75, fontSize: 18, bold: true, color: C.text2, valign: "middle", margin: 0, isTextBox: true });
-  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 9.6, y: 2.22, w: 2.4, h: 0.28, rectRadius: 0.14, fill: { color: C.background1 }, line: { color: C.text2, width: 0.75 }, objectName: "Badge pronto" });
-  s.addText("PRONTO · DA ATTIVARE", { x: 9.6, y: 2.22, w: 2.4, h: 0.28, fontSize: 9.5, bold: true, charSpacing: 1, color: C.text2, align: "center", valign: "middle", margin: 0, isTextBox: true });
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 9.6, y: 2.22, w: 2.4, h: 0.28, rectRadius: 0.14, fill: { color: C.background1 }, line: { color: C.text2, width: 0.75 }, objectName: "Badge attivo" });
+  s.addText("ATTIVO DAL 19/10", { x: 9.6, y: 2.22, w: 2.4, h: 0.28, fontSize: 9.5, bold: true, charSpacing: 1, color: C.text2, align: "center", valign: "middle", margin: 0, isTextBox: true });
   const asst = [
     ["Per enti e Amministratori", "pulsante «✦ Assistente»: come si fa un'operazione, fasi, costi; risponde dai manuali e dalle tariffe"],
     ["Garanzie", "non vede le pratiche e non decide; nessun testo salvato; limite di domande al giorno"],
     ["Come funziona", "Claude Haiku 5.5 tramite una funzione sul server; la chiave resta in Supabase; meno di un centesimo a domanda"],
-    ["Prossimi passi", "chiave della Console (crediti API mensili di un piano Max o Team); poi Operatori e aiuto sulla pratica"],
+    ["Prossimi passi", "estensione agli Operatori e aiuto sulla singola pratica, con regole sulla privacy"],
   ];
   s.addText(asst.flatMap(([t, d], j) => [
     { text: t, options: { bold: true, color: C.text2, breakLine: true } },
     { text: d, options: { color: C.text1, breakLine: j < asst.length - 1 } },
   ]), { x: 8.85, y: 2.65, w: 3.65, h: 4.05, fontSize: 12.5, valign: "top", margin: 0, paraSpaceAfter: 6, isTextBox: true });
-  s.addNotes("Due nuovi moduli entrano nel progetto e in tutti i documenti (Registro, backlog punti 37 e 21). Simulatore di scenari, richiesto da Luca il 19/10: per ogni Comune si creano più scenari; la durata si sceglie da un menu a tendina tra 7, 10 e 21 anni (Standard 4.3.8: periodo di 10 anni oppure 7 rinnovabili fino a 21); si acquisiscono i dati dell'anno base (popolazione, produzione totale e pro capite, raccolta differenziata, ripartizione per frazione, parametri del calcolo); per ogni anno si inseriscono gli obiettivi di produzione totale e pro capite e di secco residuo pro capite; il simulatore ricalcola la percentuale di differenziata e stima anno per anno i crediti che il Comune potrebbe generare, con due metodi: il bilancio del Comune (tutte le utenze insieme, il più prudente) e il metodo per utenza con le sole utenze virtuose e il buffer del Capitolo 7, lo stesso delle stime dell'Allegato A dei contratti EsaCom. È una stima ex ante utile a presentare il Programma ai Comuni: il modello semplificato va confermato dalla Fondazione. Assistente virtuale (prima versione del 19/10, da attivare): pulsante «✦ Assistente» per Amministratori e utenti degli enti; risponde in italiano solo dalla base di conoscenza (Manuale Utente e tariffe per gli enti, in più Manuale Amministratore e note sul calcolo per gli Amministratori), non vede le pratiche, non salva i testi, limite di 40 domande al giorno per utente. Funziona con Claude Haiku 5.5 tramite la funzione del server «assistente»; la base di conoscenza resta nella cache dei prompt, quindi una domanda costa di solito meno di un centesimo di dollaro. Per attivarlo serve una chiave della Claude Console inserita da Luca nei segreti di Supabase: l'uso API è fatturato a parte rispetto ai piani claude.ai, ma con un piano Max o Team si possono collegare i crediti API mensili del piano all'organizzazione della Console. Passi successivi: Operatori e aiuto sulla singola pratica.");
+  s.addNotes("Due nuovi moduli entrano nel progetto e in tutti i documenti (Registro, backlog punti 37 e 21). Simulatore di scenari, richiesto da Luca il 19/10: per ogni Comune si creano più scenari; la durata si sceglie da un menu a tendina tra 7, 10 e 21 anni (Standard 4.3.8: periodo di 10 anni oppure 7 rinnovabili fino a 21); si acquisiscono i dati dell'anno base (popolazione, produzione totale e pro capite, raccolta differenziata, ripartizione per frazione, parametri del calcolo); per ogni anno si inseriscono gli obiettivi di produzione totale e pro capite e di secco residuo pro capite; il simulatore ricalcola la percentuale di differenziata e stima anno per anno i crediti che il Comune potrebbe generare, con due metodi: il bilancio del Comune (tutte le utenze insieme, il più prudente) e il metodo per utenza con le sole utenze virtuose e il buffer del Capitolo 7, lo stesso delle stime dell'Allegato A dei contratti EsaCom. È una stima ex ante utile a presentare il Programma ai Comuni: il modello semplificato va confermato dalla Fondazione. Assistente virtuale (prima versione del 19/10, attiva dallo stesso giorno): pulsante «✦ Assistente» per Amministratori e utenti degli enti; risponde in italiano solo dalla base di conoscenza (Manuale Utente e tariffe per gli enti, in più Manuale Amministratore e note sul calcolo per gli Amministratori), non vede le pratiche, non salva i testi, limite di 40 domande al giorno per utente. Funziona con Claude Haiku 5.5 tramite la funzione del server «assistente»; la base di conoscenza resta nella cache dei prompt, quindi una domanda costa di solito meno di un centesimo di dollaro. Funziona con una chiave della Claude Console, legata a un solo spazio di lavoro, inserita da Luca nei segreti di Supabase: l'uso API è fatturato a parte rispetto ai piani claude.ai; Luca ha collegato i crediti API mensili del piano Max e acquistato 100 dollari di crediti. Prova dal vivo del 19/10: risposte corrette su creazione utenti e costi del Caso 1. Passi successivi: Operatori e aiuto sulla singola pratica.");
 
   // ---------------------------------------------------------------- 4a-bis. Il simulatore in pratica
   s = pres.addSlide({ masterName: "CONTENUTO", sectionTitle: "Punti aperti" });

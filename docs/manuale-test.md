@@ -274,7 +274,7 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 10.8 | Senza accesso, /programma | Informazioni del Programma (soggetto promotore, email, sito), enti di validazione e verifica (RINA (prova)), registri (Registro (prova)), metodologie, la modulistica pubblica della prova 1.7 e come presentare un reclamo |
 | 10.9 | [A] Audit: cercate il codice della pratica di prova | Tutte le operazioni fatte, con autore, data e motivazione |
 | 10.10 | [A] Dashboard: provate riquadri, filtri e ricerca | La tabella si filtra di conseguenza |
-| 10.11 | [A] Premete ✦ Assistente (in basso a destra) e chiedete «Come creo un nuovo utente amministratore?» | Risposta in italiano con i passi del Manuale Amministratore e il capitolo citato; in fondo «Domande di oggi: 1/40». Se la chiave di Anthropic non è ancora inserita: «L'assistente non è ancora attivo…» |
+| 10.11 | [A] Premete ✦ Assistente (in basso a destra) e chiedete «Come creo un nuovo utente amministratore?» | Risposta in italiano con i passi del Manuale Amministratore e il capitolo citato; in fondo «Domande di oggi: n/40»; grassetto e corsivo si vedono come testo formattato, senza asterischi. Se compare «non ha potuto rispondere (…credit balance is too low…)» manca credito nella Claude Console; «…not scoped to a workspace…» la chiave non è legata a uno spazio di lavoro |
 | 10.11b | [C] Con l'utente del Comune chiedete «Quanto costa la registrazione di un progetto?» e poi «In che fase è la mia pratica?» | Cifre dello Schema tariffario (IVA esclusa, da confermare con la Fondazione); alla seconda domanda spiega dove vederlo nel portale perché non vede i dati delle pratiche |
 | 10.11c | [A] Documentazione: in fondo alla pagina gli 8 documenti ufficiali del Programma; premete Apri PDF sulla Metodologia | Si apre il PDF della Metodologia CWP v1.2 in una nuova scheda |
 | 10.10c | [A] Dashboard: fate clic su «Organizzazione», poi di nuovo; in Pratiche e Utenti scegliete un campo in «Ordina per» e premete ▲/▼ | La tabella si ordina in modo crescente (▲) e poi decrescente (▼); gli elenchi a schede seguono il campo e il verso scelti; «ordine predefinito» torna all'ordine iniziale |
@@ -289,4 +289,4 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 - La verifica in due passaggi per lo staff è pronta ma spenta.
 - Non c'è ancora l'antivirus sui file caricati.
 
-**In sviluppo** (saranno aggiunti al percorso di prova quando disponibili): accesso con SPID, CIE o CNS; registro di sicurezza; antivirus; **assistente virtuale (Claude)** nel portale.
+**In sviluppo** (saranno aggiunti al percorso di prova quando disponibili): accesso con SPID, CIE o CNS; registro di sicurezza; antivirus; assistente virtuale per gli Operatori e aiuto sulla singola pratica.

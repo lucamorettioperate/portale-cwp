@@ -34,14 +34,15 @@ Sono scritte per due lettori:
 
 ## Dove stanno il lavoro e i dati
 
-Il portale non ha un server proprio: è distribuito su cinque servizi. Sapere che cosa sta dove dice che cosa si perde e che cosa si recupera.
+Il portale non ha un server proprio: è distribuito su sei servizi. Sapere che cosa sta dove dice che cosa si perde e che cosa si recupera.
 
 | Servizio | Che cosa contiene | Se si perde |
 | --- | --- | --- |
-| **GitHub** (lucamorettioperate/portale-cwp) | Tutto il codice, gli script del database (01-27), le funzioni del server, i manuali e la loro storia | Si recupera dal ramo `snapshot-…` o dal file `.bundle` dell'archivio di backup |
+| **GitHub** (lucamorettioperate/portale-cwp) | Tutto il codice, gli script del database (01-31), le funzioni del server, i manuali e la loro storia | Si recupera dal ramo `snapshot-…` o dal file `.bundle` dell'archivio di backup |
 | **Vercel** (progetto portale-cwp) | Solo la pubblicazione del portale; nessun dato | Si ricrea in 10 minuti collegando di nuovo GitHub |
 | **Supabase** (organizzazione Fondazione Operate, progetto portale-cwp) | Database (pratiche, utenti, audit, impostazioni), file caricati, funzioni del server, lavori pianificati, chiavi | La struttura si ricrea dagli script; **i dati e i file solo da una copia** (capitolo «Copie di sicurezza») |
 | **Resend** | Invio delle email; chiave API e verifica del dominio | Nuovo account o nuova chiave, poi aggiornare Supabase |
+| **Claude Console** di Anthropic (organizzazione «Luca's Individual Org», spazio di lavoro dedicato) | Chiave API e crediti dell'assistente virtuale; nessun dato del portale | Nuova chiave legata a un solo spazio di lavoro, poi aggiornare `ANTHROPIC_API_KEY` in Supabase |
 | **Claude** (progetto «CWP PORTAL CARBON WASTE PRINT») | Documenti del progetto, memoria, artefatti, conversazioni | Si ricrea dall'archivio di backup (cartelle 5 e 6) |
 
 **L'archivio di backup.** Claude prepara su richiesta un file `Portale_CWP_backup_completo_<data>.zip` con:
@@ -232,12 +233,13 @@ Senza una copia dei dati il portale riparte vuoto: struttura, impostazioni e pag
 
 ### 4. Funzioni del server (Edge Functions)
 
-Create le cinque funzioni con lo **stesso nome**, incollate il codice da `supabase/functions/<nome>/index.ts` e premete *Deploy*. Dopo la pubblicazione controllate l'impostazione **Verify JWT**:
+Create le sei funzioni con lo **stesso nome**, incollate il codice da `supabase/functions/<nome>/index.ts` e premete *Deploy*. Dopo la pubblicazione controllate l'impostazione **Verify JWT**:
 
 | Funzione | Verify JWT |
 | --- | --- |
 | `crea-utente` | Attivo |
 | `reimposta-password` | Attivo |
+| `assistente` | Attivo |
 | `consultazione-pubblica` | **Disattivato** (pagina pubblica senza accesso) |
 | `recupera-password` | **Disattivato** (chi l'ha dimenticata non è entrato) |
 | `invia-email-notifica` | **Disattivato** (la chiama il database) |
@@ -248,7 +250,8 @@ Create le cinque funzioni con lo **stesso nome**, incollate il codice da `supaba
 
 - `RESEND_API_KEY`: chiave API di Resend;
 - `EMAIL_MITTENTE`: il mittente sul dominio verificato (dopo la verifica del dominio);
-- `PORTALE_URL`: l'indirizzo del portale, se diverso da portale-cwp.vercel.app.
+- `PORTALE_URL`: l'indirizzo del portale, se diverso da portale-cwp.vercel.app;
+- `ANTHROPIC_API_KEY`: chiave della Claude Console per l'assistente virtuale. Deve essere legata a **un solo spazio di lavoro** (workspace): una chiave «per tutti gli spazi di lavoro» viene rifiutata. L'organizzazione della Console deve avere credito (crediti mensili del piano Max collegato oppure crediti acquistati).
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` le fornisce Supabase da solo.
 
@@ -312,6 +315,8 @@ Solo i nomi e dove si trovano. I valori stanno nel gestore di password della Fon
 | Vercel › Environment Variables | `VITE_SUPABASE_ANON_KEY` | Chiave pubblica di Supabase (protetta dalle regole RLS) |
 | Supabase › Edge Functions › Secrets | `RESEND_API_KEY` | Invio delle email |
 | Supabase › Edge Functions › Secrets | `EMAIL_MITTENTE` | Mittente sul dominio verificato |
+| Supabase › Edge Functions › Secrets | `ANTHROPIC_API_KEY` | Assistente virtuale (chiave della Claude Console legata a un solo spazio di lavoro) |
+| Supabase › Edge Functions › Secrets | `ASSISTENTE_LIMITE_GIORNO`, `ASSISTENTE_MODELLO` | Facoltativi: domande al giorno per utente (40) e modello (Claude Haiku 5.5) |
 | Supabase › Edge Functions › Secrets | `PORTALE_URL` | Indirizzo del portale nei link delle email (facoltativo) |
 | Supabase › Authentication › Emails | Password SMTP | La chiave API di Resend |
 | Supabase › Authentication › URL Configuration | Site URL e Redirect URL | Ritorno al portale dai link delle email |

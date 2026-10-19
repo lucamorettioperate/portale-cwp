@@ -259,6 +259,12 @@
       "data": "19/10/2026",
       "descrizione": "Assistente virtuale; documenti ufficiali del Programma nella Documentazione.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.6",
+      "data": "19/10/2026",
+      "descrizione": "Assistente virtuale attivo: chiave legata a uno spazio di lavoro, crediti e consumi.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -392,6 +398,12 @@
       "rev": "3.1",
       "data": "19/10/2026",
       "descrizione": "Prove 10.11-10.11c: assistente virtuale e documenti ufficiali.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.2",
+      "data": "19/10/2026",
+      "descrizione": "Prova 10.11 aggiornata con l'assistente attivo e i messaggi d'errore della Console.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -587,6 +599,12 @@
       "data": "19/10/2026",
       "descrizione": "Assistente virtuale (script 31, funzione assistente, base di conoscenza); documenti ufficiali; barra a LED più fine.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.2",
+      "data": "19/10/2026",
+      "descrizione": "Assistente virtuale attivato e provato dal vivo; Claude Console tra i servizi; problemi risolti; corsivo nelle risposte.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -594,6 +612,12 @@
       "rev": "1.0",
       "data": "19/10/2026",
       "descrizione": "Prima emissione: dove stanno codice e dati, copie di sicurezza, ripristino di GitHub, Vercel, Supabase, Resend e del progetto Claude, elenco di chiavi e impostazioni.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.1",
+      "data": "19/10/2026",
+      "descrizione": "Funzione assistente e chiave ANTHROPIC_API_KEY; Claude Console tra i servizi; script 01-31.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -614,6 +638,12 @@
       "rev": "2.1",
       "data": "19/10/2026",
       "descrizione": "Assistente virtuale pronto e da attivare; documenti ufficiali nella Documentazione; barra a LED più fine.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.2",
+      "data": "19/10/2026",
+      "descrizione": "Assistente virtuale attivo dal 19/10.",
       "autore": "Fondazione Operate"
     }
   ]
