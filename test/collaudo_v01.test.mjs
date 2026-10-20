@@ -49,13 +49,19 @@ const conferimentiC = [
   { utenza: "S001", macro: "UD", classe: "UD1", tipologia: "indifferenziato", pesoCdr: 75, nUtenze: 1 },
 ];
 
-prova("caso ordinario C invariato: netto 0,2928 tCO₂eq, buffer 20%", () => {
+prova("caso ordinario C invariato: netto 0,2928 tCO₂eq (buffer 20% calcolato e manuale)", () => {
   const r = calcolaCrediti({ ...datiC, conferimenti: conferimentiC, riuso: [] });
   assert.equal(r.bloccato, false);
   assert.deepEqual(r.errori, []);
   vicino(r.deltaI, -366, 1e-6);
   vicino(r.buffer.totale, 20);
-  vicino(r.crediti.netti, 0.2928, 1e-9);
+  vicino(r.crediti.lordi, 0.366, 1e-12);
+  vicino(r.crediti.netti, 0.2928, 1e-12);
+  const m = calcolaCrediti({ ...datiC, opzioni: { ...datiC.opzioni, bufferManuale: "20" }, conferimenti: conferimentiC, riuso: [] });
+  vicino(m.crediti.netti, 0.2928, 1e-12);
+  // Variante del rapporto: RUR 90 kg → netto 0,24888
+  const v = calcolaCrediti({ ...datiC, conferimenti: [conferimentiC[0], { ...conferimentiC[1], pesoCdr: 90 }], riuso: [] });
+  vicino(v.crediti.netti, 0.24888, 1e-12);
 });
 
 /* ---------------- D07 — pesi negativi nella Banca Dati ---------------- */
@@ -157,16 +163,20 @@ prova("D04: lettura con data inesistente scartata con il motivo (ZIP del rapport
 });
 
 /* ---------------- D02 — buffer oltre l'80% ---------------- */
-// Scenario S del simulatore: riferimento 400 t (260 organico + 140 RUR,
-// RD 65%) per 1.000 abitanti; 2027 produzione 300 t con il secco al 35%
-// (105 kg/ab). Atteso 1.464, progetto 1.098, lordi 366, netto 292,8.
+// Scenario S del simulatore (rapporto, punto 4.1): riferimento 400 t (260
+// organico + 140 RUR, RD 65%) per 1.000 abitanti; 2027 produzione 300 t
+// (300 kg/ab) con secco 75 kg/ab. Atteso 1.464, progetto 1.098, lordi 366,
+// buffer 73,2, netto 292,8.
 const baseS = { metodo: "anno", anno: 2024, popolazione: 1000, rifiuti: { organico: 260, indifferenziato: 140 } };
-const anniS = [{ anno: 2027, popolazione: "", totale: 300, seccoProCapite: 105 }];
-prova("caso ordinario S invariato: netto 292,8 tCO₂eq nell'anno", () => {
+const anniS = [{ anno: 2027, popolazione: "", totale: 300, seccoProCapite: 75 }];
+prova("caso ordinario S invariato: netto 292,8 tCO₂eq/anno, 2.928 in dieci anni", () => {
   const r = simula({ annoBase: baseS, anni: anniS, bufferPct: 20 });
   assert.deepEqual(r.errori, []);
   vicino(r.righe[0].lordi, 366, 1e-9);
+  vicino(r.righe[0].buffer, 73.2, 1e-9);
   vicino(r.righe[0].netti, 292.8, 1e-9);
+  const dieci = Array.from({ length: 10 }, (_, i) => ({ ...anniS[0], anno: 2027 + i }));
+  vicino(simula({ annoBase: baseS, anni: dieci, bufferPct: 20 }).totali.netti, 2928, 1e-6);
 });
 prova("D02: buffer 90 nel simulatore = errore e nessun risultato", () => {
   const r = simula({ annoBase: baseS, anni: anniS, bufferPct: 90 });
@@ -192,11 +202,11 @@ prova("D02: buffer indicato a mano nel calcolatore oltre 80 = errore bloccante",
 /* ---------------- D01 — valori fisicamente impossibili ---------------- */
 prova("D01: produzione −10 (pro capite), secco −10, popolazione −1000: nessun risultato", () => {
   for (const anno of [
-    { anno: 2027, popolazione: "", totale: -10, seccoProCapite: 105 },
+    { anno: 2027, popolazione: "", totale: -10, seccoProCapite: 75 },
     { anno: 2027, popolazione: "", totale: 300, seccoProCapite: -10 },
-    { anno: 2027, popolazione: -1000, totale: 300, seccoProCapite: 105 },
-    { anno: 2027, popolazione: 0, totale: 300, seccoProCapite: 105 },
-    { anno: 2027, popolazione: "", totale: 0, seccoProCapite: 105 },
+    { anno: 2027, popolazione: -1000, totale: 300, seccoProCapite: 75 },
+    { anno: 2027, popolazione: 0, totale: 300, seccoProCapite: 75 },
+    { anno: 2027, popolazione: "", totale: 0, seccoProCapite: 75 },
   ]) {
     const r = simula({ annoBase: baseS, anni: [anno], bufferPct: 20 });
     assert.equal(r.righe.length, 0, JSON.stringify(anno));
