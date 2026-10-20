@@ -458,6 +458,26 @@ export async function idAmministratorePrincipale() {
   return await supabase.rpc("amministratore_principale_id");
 }
 
+// ---- Utenti online (script 32, backlog 38) ----
+
+// Segnala che l'utente collegato ha il portale aperto, con l'indirizzo
+// della pagina (RPC segnala_presenza). Chiamata da SegnalaPresenza
+// (src/components/UtentiOnline.jsx) all'apertura di ogni pagina, quando la
+// scheda torna visibile e una volta al minuto. Gli errori si ignorano: la
+// presenza non deve mai bloccare il lavoro.
+export async function segnalaPresenza(pagina) {
+  return await supabase.rpc("segnala_presenza", { p_pagina: pagina });
+}
+
+// Utenti visti nelle ultime 24 ore con il campo «online» (ultima
+// segnalazione da meno di 2 minuti). Solo Amministratore principale
+// (RPC utenti_online); per gli altri il database restituisce un errore.
+// Restituisce { data: [{ id, email, nome_completo, ruolo, organizzazione,
+// pagina, visto_il, collegato_dal, online }] }.
+export async function elencaUtentiOnline() {
+  return await supabase.rpc("utenti_online");
+}
+
 // Utenti che si possono cancellare: mai comparsi come autori nell'audit
 // trail, esclusi sé stessi e l'Amministratore principale. RPC
 // admin_utenti_eliminabili (30_elimina_utente.sql); solo Amministratori.

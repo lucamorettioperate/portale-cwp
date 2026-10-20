@@ -20,7 +20,9 @@
 //   - limite di domande al giorno per utente (ASSISTENTE_LIMITE_GIORNO,
 //     predefinito 40) e lunghezza massima di domande e conversazione;
 //   - si conta l'uso (domande e token) in assistente_uso (script 31); il
-//     testo di domande e risposte non viene salvato.
+//     testo di domande e risposte non viene salvato;
+//   - gli errori arrivano all'utente in italiano semplice; il dettaglio
+//     tecnico resta nei log (dal 20/10, backlog 39).
 //
 //  Costi: modello predefinito Claude Haiku 5.5 (ASSISTENTE_MODELLO per
 //  cambiarlo); la base di conoscenza va nella cache dei prompt per 1 ora,
@@ -59,6 +61,29 @@ async function baseConoscenza(portale: string, nome: string): Promise<string> {
   const testo = await r.text();
   cache[nome] = { testo, letto: Date.now() };
   return testo;
+}
+
+// Messaggi d'errore in italiano semplice (richiesta di Luca del 19/10,
+// backlog 39). Il dettaglio tecnico (in inglese) resta solo nei log della
+// funzione (dashboard Supabase → Edge Functions → assistente → Logs).
+// Agli utenti degli enti si dice solo di riprovare; agli Amministratori si
+// aggiunge la causa, per sapere cosa sistemare.
+const NON_DISPONIBILE = "L'assistente non è disponibile in questo momento. Riprova più tardi; se serve subito, scrivi a Fondazione Operate con i Messaggi della pratica.";
+function messaggioErrore(stato: number, tipo: string, testo: string, ruolo: "admin" | "cliente"): string {
+  const t = (testo || "").toLowerCase();
+  // Errori passeggeri: uguali per tutti.
+  if (stato === 429 || tipo === "rate_limit_error") return "In questo momento arrivano troppe domande. Riprova tra un minuto.";
+  if (stato === 529 || stato >= 500 || tipo === "overloaded_error" || tipo === "api_error") return "L'assistente è momentaneamente sovraccarico. Riprova tra qualche istante.";
+  if (ruolo !== "admin") return NON_DISPONIBILE;
+  // Per gli Amministratori: la causa, in parole semplici.
+  let causa = "errore del servizio Claude (codice " + stato + ")";
+  if (t.includes("credit balance")) causa = "il credito della Claude Console è esaurito: aggiungi crediti in platform.claude.com → Fatturazione";
+  else if (t.includes("workspace")) causa = "la chiave non è legata a uno spazio di lavoro: creane una nuova legata a un solo spazio di lavoro e aggiorna ANTHROPIC_API_KEY";
+  else if (stato === 401 || tipo === "authentication_error") causa = "la chiave ANTHROPIC_API_KEY non è valida o è stata disattivata";
+  else if (stato === 403 || tipo === "permission_error") causa = "la chiave non ha il permesso di usare questo modello o questo spazio di lavoro";
+  else if (stato === 404 || tipo === "not_found_error") causa = "modello o spazio di lavoro non trovato (controlla ASSISTENTE_MODELLO)";
+  else if (stato === 413 || tipo === "request_too_large") causa = "la base di conoscenza è troppo grande per il modello";
+  return NON_DISPONIBILE + " (Per gli Amministratori: " + causa + ".)";
 }
 
 // Istruzioni per Claude, diverse per Amministratori e utenti degli enti.
@@ -132,7 +157,13 @@ Deno.serve(async (req) => {
     while (messaggi.length && messaggi[0].role !== "user") messaggi.shift();
     if (!messaggi.length || messaggi[messaggi.length - 1].role !== "user") return json({ error: "Scrivi una domanda." }, 400);
 
-    const kb = await baseConoscenza(PORTALE, ruolo === "admin" ? "kb-amministratore.md" : "kb-comune.md");
+    let kb: string;
+    try {
+      kb = await baseConoscenza(PORTALE, ruolo === "admin" ? "kb-amministratore.md" : "kb-comune.md");
+    } catch (e) {
+      console.error("Base di conoscenza", e);
+      return json({ error: ruolo === "admin" ? NON_DISPONIBILE + " (Per gli Amministratori: la base di conoscenza non si legge dal portale; controlla PORTALE_URL e i file public/assistente.)" : NON_DISPONIBILE }, 502);
+    }
 
     // Chiamata a Claude (Messages API). La base di conoscenza è l'ultimo
     // blocco del system con cache di 1 ora: le domande successive la
@@ -152,9 +183,9 @@ Deno.serve(async (req) => {
     });
     const risposta = await r.json().catch(() => ({}));
     if (!r.ok) {
+      // Il dettaglio tecnico va solo nei log; all'utente un messaggio semplice.
       console.error("Anthropic", r.status, JSON.stringify(risposta));
-      const motivo = risposta?.error?.message || `errore ${r.status}`;
-      return json({ error: `L'assistente non ha potuto rispondere (${motivo}). Riprova tra poco.` }, 502);
+      return json({ error: messaggioErrore(r.status, risposta?.error?.type || "", risposta?.error?.message || "", ruolo) }, 502);
     }
     const testo = (risposta.content || [])
       .filter((b: { type: string }) => b.type === "text")
@@ -170,7 +201,7 @@ Deno.serve(async (req) => {
     return json({ testo: testo || "Non ho una risposta: prova a riformulare la domanda.", domande_oggi: domandeOggi ?? null, limite: LIMITE });
   } catch (e) {
     console.error(e);
-    return json({ error: "Errore dell'assistente: " + String(e) }, 500);
+    return json({ error: NON_DISPONIBILE }, 500);
   }
 });
 

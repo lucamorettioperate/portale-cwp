@@ -1,4 +1,4 @@
-# Base di conoscenza del Portale Carbon WastePrint — Amministratori (generata il 19/10/2026)
+# Base di conoscenza del Portale Carbon WastePrint — Amministratori (generata il 20/10/2026)
 
 === DOCUMENTO: Manuale Utente ===
 
@@ -402,6 +402,10 @@ In basso a destra di ogni pagina trovate il pulsante **✦ Assistente**: apre un
 3. Con **Nuova** ricominciate da capo; con **✕** chiudete la finestra.
 
 L'assistente risponde solo con le informazioni di questo manuale e delle tariffe del Programma; **non vede le vostre pratiche** e non fa operazioni al posto vostro. Le risposte possono contenere errori: in caso di dubbio vale il manuale, oppure scrivete a Fondazione Operate con i Messaggi della pratica. Le domande e le risposte non vengono salvate; c'è un limite di domande al giorno.
+
+## Collegamento al portale
+
+Mentre avete il portale aperto, il portale registra **quando** siete collegati e **quale pagina** state guardando. Si conserva solo l'ultimo collegamento di ciascun utente (nessuno storico e nessun indirizzo di rete) e lo vede soltanto l'Amministratore principale della Fondazione, per sapere chi è collegato in quel momento. Con **Esci** risultate subito non collegati.
 
 ## Domande frequenti
 
@@ -851,6 +855,13 @@ La reimpostazione non è possibile per gli Amministratori né per sé stessi, e 
 
 **Amministratore principale.** La riga di luca.moretti@operate.it ha il segno **Principale** e nessun pulsante: nessun Amministratore la può modificare, declassare, disattivare o cancellare. Lo impedisce il database (script 29), non solo la pagina: nemmeno dal pannello *Authentication* di Supabase si può cancellare l'account. In caso di reale necessità la protezione si toglie solo dal *SQL Editor* di Supabase, con le istruzioni in fondo allo script 29.
 
+**Utenti online (solo Amministratore principale).** Nell'intestazione, accanto alla campanella, l'Amministratore principale vede il pulsante **● n online** con il numero degli utenti collegati in quel momento. Premendolo si apre l'elenco:
+
+- **online adesso**: nome o email, ruolo, organizzazione, pagina aperta e da quanto tempo è collegato;
+- **visti nelle ultime 24 ore**: chi è stato collegato di recente, con l'ora dell'ultimo accesso.
+
+Un utente risulta online se ha una pagina del portale aperta e visibile nell'ultimo paio di minuti: il portale lo segnala da solo a ogni cambio di pagina e una volta al minuto. Con **Esci** non risulta più online; chiudendo la finestra senza uscire sparisce dopo circa 2 minuti. L'elenco si aggiorna ogni 30 secondi. Si conserva solo l'ultimo collegamento di ciascun utente (nessuno storico, nessun indirizzo IP) e gli altri Amministratori non vedono né il pulsante né i dati: lo controlla il database (script 32). Gli utenti ne sono informati nel Manuale Utente.
+
 **Limiti.** Nessuno può cambiare il proprio ruolo né disattivare sé stesso. La password di un Amministratore non si reimposta dalla pagina Utenti: si gestisce con **Password dimenticata?** oppure da Supabase (*Authentication → Users*).
 
 ## Audit trail
@@ -1209,7 +1220,13 @@ A destra il riepilogo: produzione totale e pro capite, secco pro capite, **% di 
 - tabella anno per anno: produzione, scenario di riferimento, rifiuti evitati, crediti lordi, buffer, crediti netti e cumulati; con il metodo per utenza anche la colonna **Bilancio del Comune**, per confronto;
 - eventuali avvisi (dati mancanti, secco superiore al totale).
 
-Premete **Salva** per conservare lo scenario: nell'elenco *Scenari per Comune* compaiono, per confrontarli, la % di differenziata finale e i crediti netti stimati di ogni scenario. **Esporta CSV** scarica la tabella (si apre con Excel), **Stampa** produce una versione da stampare o salvare in PDF.
+Premete **Salva** per conservare lo scenario: nell'elenco *Scenari per Comune* compaiono, per confrontarli, la % di differenziata finale e i crediti netti stimati di ogni scenario. Per consegnare o presentare lo scenario al Comune:
+
+- **Scarica PDF**: un rapporto impaginato in A4 orizzontale con i loghi, la scheda dello scenario, l'avvertenza «stima ex ante», gli indicatori di sintesi, i crediti anno per anno, la parte economica, i costi del Caso 1 o 2, le note e gli avvisi, con i numeri di pagina;
+- **Esporta Excel**: un file .xlsx con i fogli **Sintesi**, **Anni**, **Economia** e **Costi**; i numeri restano numeri, quindi si possono sommare, ordinare e usare nei grafici;
+- **CSV**: la tabella in formato testo, per altri programmi.
+
+PDF ed Excel contengono le stesse tabelle. Prima di scaricarli salvate lo scenario, così file e portale coincidono.
 
 **5. Simulazione economica: ricavi e costi per il Comune.** Il **valore del credito** (€ per credito; un credito è una tonnellata di CO₂eq) si digita **anno per anno** nella colonna «Valore» della tabella. Il portale propone **32 €**: per compilare tutti gli anni insieme indicate il valore proposto e, se volete, una variazione annua, poi premete **Applica a tutti gli anni**; correggete poi i singoli anni. Poi il simulatore chiede: **«Simulare i costi in base al Caso 1 o al Caso 2?»**. Sono le tabelle «Costi per il Soggetto Promotore» di Fondazione Operate (28/07/2026), IVA esclusa, per progetti di 10 anni:
 
@@ -1355,6 +1372,8 @@ In basso a destra di ogni pagina c'è il pulsante **✦ Assistente**: apre una c
 
 **Attivazione e costi.** L'assistente è **attivo dal 19/10/2026**. Funziona con una chiave della **Claude Console** di Anthropic, che solo Luca inserisce nei segreti di Supabase (`ANTHROPIC_API_KEY`). La chiave va creata **legata a un solo spazio di lavoro** (workspace): una chiave valida per tutti gli spazi di lavoro viene rifiutata da Anthropic. L'uso si paga con i crediti dell'organizzazione della Console a cui appartiene la chiave: con un piano Claude **Max o Team** si possono collegare i **crediti API mensili** del piano a quell'organizzazione (Impostazioni → Fatturazione su claude.ai); il primo accredito può arrivare dopo qualche giorno, e nel frattempo si usano i crediti acquistati nella Console (Fatturazione), che scadono dopo un anno. I crediti mensili si consumano per primi. Se il credito finisce, l'assistente risponde con un messaggio d'errore e nulla viene addebitato al piano. Saldo e consumi si vedono nella Console. Il modello predefinito è **Claude Haiku 5.5**, il più economico: la base di conoscenza si rilegge dalla cache, quindi una domanda costa di solito meno di un centesimo di dollaro.
 
+**Quando qualcosa non va.** Se Claude non può rispondere, l'utente vede un messaggio in italiano semplice: «L'assistente non è disponibile in questo momento. Riprova più tardi…», oppure «arrivano troppe domande» o «momentaneamente sovraccarico» quando il problema è passeggero. Gli Amministratori leggono anche la causa tra parentesi, per esempio «il credito della Claude Console è esaurito» o «la chiave non è legata a uno spazio di lavoro». Il dettaglio tecnico, in inglese, resta nei log della funzione: Supabase → Edge Functions → assistente → Logs.
+
 **Aggiornare le conoscenze.** Quando cambiano i manuali o le tariffe si rigenera la base di conoscenza (`node strumenti/genera_base_conoscenza.cjs`) e si pubblica: l'assistente la rilegge entro 10 minuti.
 
 ## Manutenzione ed emergenze
@@ -1402,7 +1421,7 @@ Questo manuale descrive il portale alla data della revisione indicata in coperti
 - **Accesso degli stakeholder con SPID, CIE o CNS** (Guida 3.9): serve l'adesione della Fondazione come fornitore di servizi (con AgID o con un aggregatore accreditato) e il relativo contratto. Intanto chi partecipa al feedback pubblico si identifica con l'email confermata.
 - **Sicurezza:** registro di sicurezza (accessi e tentativi falliti), verifica in due passaggi attiva, antivirus sui file caricati, piano di protezione dagli attacchi informatici.
 - **Email:** verifica del dominio, per far arrivare le notifiche a tutti gli utenti.
-- **Simulatore di scenari:** la prima versione è disponibile (capitolo «Simulatore di scenari»). In arrivo: stampa in PDF impaginata e, se la Fondazione lo decide, la visione dello scenario da parte del Comune.
+- **Simulatore di scenari:** disponibile con PDF impaginato ed export Excel (capitolo «Simulatore di scenari»). In arrivo, se la Fondazione lo decide, la visione dello scenario da parte del Comune.
 - **Assistente virtuale, passi successivi:** la prima versione risponde sul funzionamento del portale (capitolo «Assistente virtuale»). In arrivo: estensione agli Operatori e, con regole sulla privacy, l'aiuto sulla singola pratica (cosa manca, bozze di richieste di integrazione e di risposte, spiegazione dei risultati del calcolo). Resta un supporto: le decisioni restano alla Fondazione.
 
 

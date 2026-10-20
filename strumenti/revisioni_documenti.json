@@ -107,6 +107,12 @@
       "data": "19/10/2026",
       "descrizione": "Assistente virtuale: messaggio «Un attimo…» durante l'attesa.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.8",
+      "data": "20/10/2026",
+      "descrizione": "Nuovo capitolo «Collegamento al portale» (presenza visibile all'Amministratore principale).",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -277,6 +283,12 @@
       "data": "19/10/2026",
       "descrizione": "Assistente virtuale: messaggio «Un attimo…» durante l'attesa.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.8",
+      "data": "20/10/2026",
+      "descrizione": "Utenti online; PDF ed Excel del simulatore; messaggi d'errore dell'assistente.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -422,6 +434,12 @@
       "rev": "3.3",
       "data": "19/10/2026",
       "descrizione": "Prova 10.11: messaggio d'attesa «Un attimo…».",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.4",
+      "data": "20/10/2026",
+      "descrizione": "Prove 8b.7-8b.7e (PDF, Excel, telefono), 10.12 (utenti online), 10.11d.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -629,6 +647,12 @@
       "data": "19/10/2026",
       "descrizione": "Riepilogo «Da fare subito» in testa al backlog; punti 38 (utenti online) e 39 (errori dell'assistente in italiano); messaggio d'attesa «Un attimo…».",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.4",
+      "data": "20/10/2026",
+      "descrizione": "Script 32 utenti online; errori dell'assistente in italiano; PDF ed Excel del simulatore; backlog 37-39 aggiornati.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -642,6 +666,12 @@
       "rev": "1.1",
       "data": "19/10/2026",
       "descrizione": "Funzione assistente e chiave ANTHROPIC_API_KEY; Claude Console tra i servizi; script 01-31.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.2",
+      "data": "20/10/2026",
+      "descrizione": "Script 01-32.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -674,6 +704,12 @@
       "rev": "2.3",
       "data": "19/10/2026",
       "descrizione": "Punti aperti aggiornati al 19/10 sera.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.4",
+      "data": "20/10/2026",
+      "descrizione": "Novità del 20 ottobre: utenti online, PDF ed Excel del simulatore, errori dell'assistente in italiano.",
       "autore": "Fondazione Operate"
     }
   ]

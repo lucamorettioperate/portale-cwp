@@ -365,7 +365,7 @@ async function icona(Comp, colore) {
   // ---------------------------------------------------------------- Novità del 19 ottobre
   pres.addSection({ title: "Novità" });
   s = pres.addSlide({ masterName: "CONTENUTO", sectionTitle: "Novità" });
-  s.addText("Novità del 19 ottobre", { placeholder: "title" });
+  s.addText("Novità del 19 e 20 ottobre", { placeholder: "title" });
   s.addImage({ path: IMMAGINI + "dashboard_led.png", x: 0.6, y: 1.3, w: 7.6, h: 7.6 * 1000 / 2400, altText: "Dashboard con la barra a LED delle 7 fasi per ogni pratica (dati di prova)", objectName: "Schermata Dashboard" });
   s.addText("Dashboard con dati di prova", { x: 0.6, y: 4.5, w: 7.6, h: 0.25, fontSize: 10, italic: true, color: C.accent6, margin: 0, isTextBox: true });
   [
@@ -383,10 +383,10 @@ async function icona(Comp, colore) {
     { x: 0.8, y: 5.9, w: 7.2, h: 0.95, fontSize: 13, color: C.text1, valign: "middle", margin: 0, isTextBox: true });
   card(s, 8.45, 1.3, 4.25, 5.55, C.background2, "Elenco novità");
   const novita = [
-    ["Utenti", "più amministratori con accesso completo; luca.moretti@operate.it è il principale e non si modifica né si cancella; si eliminano solo gli utenti mai attivi"],
+    ["Utenti", "più amministratori; luca.moretti@operate.it è il principale, non si modifica né si cancella, e vede chi è online, su quale pagina e da quanto (20/10)"],
     ["Credenziali per email", "al nuovo utente arrivano indirizzo, email e password temporanea (a tutti dopo la verifica del dominio)"],
-    ["Assistente virtuale", "«✦ Assistente» con Claude per enti e Amministratori, risponde dai manuali e dalle tariffe (attivo dal 19/10)"],
-    ["Simulatore", "secondo metodo «per utenza, solo utenze virtuose», come nell'Allegato A EsaCom, con buffer del Capitolo 7"],
+    ["Assistente virtuale", "«✦ Assistente» con Claude per enti e Amministratori, dai manuali e dalle tariffe; attivo dal 19/10, errori in italiano dal 20/10"],
+    ["Simulatore", "metodo «per utenza, solo utenze virtuose» come nell'Allegato A EsaCom; dal 20/10 PDF impaginato ed export Excel"],
     ["Documentazione", "gli 8 documenti ufficiali del Programma v1.2 e questa presentazione, per gli Amministratori"],
     ["Decisione", "qualificazione ACN non necessaria (parere legale da confermare)"],
   ];
@@ -394,7 +394,7 @@ async function icona(Comp, colore) {
     { text: t, options: { bold: true, color: C.text2, breakLine: true } },
     { text: d, options: { color: C.text1, fontSize: 12, breakLine: j < novita.length - 1 } },
   ]), { x: 8.65, y: 1.45, w: 3.9, h: 5.3, fontSize: 13.5, valign: "top", margin: 0, paraSpaceAfter: 5, isTextBox: true });
-  s.addNotes("Novità pubblicate il 19 ottobre pomeriggio, su richiesta di Luca. Dashboard (prima «Cruscotto»): per ogni pratica una barra di 7 luci, una per fase, accese le fasi completate e spente quelle da fare, la settima verde; la fase in corso ha il contorno. Ordinamento: ogni tabella del portale si ordina per qualsiasi colonna e gli elenchi a schede hanno il menu «Ordina per». Utenti: un Amministratore può nominare altri Amministratori, tutti con accesso completo; l'Amministratore principale luca.moretti@operate.it è protetto dal database (non si declassa, non si disattiva, non si cancella, nemmeno dal pannello di Supabase); si possono eliminare solo gli utenti che non hanno mai operato (nessuna voce nell'audit e nessun dato a loro nome). Email: il nuovo utente riceve indirizzo del portale, email e password temporanea, con l'obbligo di sceglierne una personale al primo accesso; finché il dominio operate.it non è verificato su Resend le email arrivano solo al titolare dell'account. Simulatore: oltre al bilancio del Comune c'è il metodo per utenza con le sole utenze virtuose (formula 32 con buffer), lo stesso delle stime dell'Allegato A dei contratti EsaCom; il buffer si calcola dalle Tabelle 15-16. Decisione: il portale non va qualificato ACN come servizio cloud per la PA, perché serve a qualificare il modello e il Comune vi riversa dati senza acquistare un servizio; restano GDPR, dati in UE e sicurezza; da confermare con un parere legale.");
+  s.addNotes("Novità pubblicate il 19 ottobre pomeriggio, su richiesta di Luca. Dashboard (prima «Cruscotto»): per ogni pratica una barra di 7 luci, una per fase, accese le fasi completate e spente quelle da fare, la settima verde; la fase in corso ha il contorno. Ordinamento: ogni tabella del portale si ordina per qualsiasi colonna e gli elenchi a schede hanno il menu «Ordina per». Utenti: un Amministratore può nominare altri Amministratori, tutti con accesso completo; l'Amministratore principale luca.moretti@operate.it è protetto dal database (non si declassa, non si disattiva, non si cancella, nemmeno dal pannello di Supabase); si possono eliminare solo gli utenti che non hanno mai operato (nessuna voce nell'audit e nessun dato a loro nome). Email: il nuovo utente riceve indirizzo del portale, email e password temporanea, con l'obbligo di sceglierne una personale al primo accesso; finché il dominio operate.it non è verificato su Resend le email arrivano solo al titolare dell'account. Simulatore: oltre al bilancio del Comune c'è il metodo per utenza con le sole utenze virtuose (formula 32 con buffer), lo stesso delle stime dell'Allegato A dei contratti EsaCom; il buffer si calcola dalle Tabelle 15-16. Decisione: il portale non va qualificato ACN come servizio cloud per la PA, perché serve a qualificare il modello e il Comune vi riversa dati senza acquistare un servizio; restano GDPR, dati in UE e sicurezza; da confermare con un parere legale. Il 20 ottobre: utenti online per l'Amministratore principale (chi è collegato adesso, pagina aperta, da quanto, e chi è stato visto nelle ultime 24 ore; si conserva solo l'ultimo collegamento, gli utenti ne sono informati nel Manuale Utente); messaggi d'errore dell'assistente in italiano semplice, con la causa per gli Amministratori; simulatore con PDF impaginato in A4 orizzontale ed export Excel con i fogli Sintesi, Anni, Economia e Costi.");
 
   // ---------------------------------------------------------------- 4. Punti aperti
   pres.addSection({ title: "Punti aperti" });

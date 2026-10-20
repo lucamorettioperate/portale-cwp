@@ -116,7 +116,17 @@ export function AuthProvider({ children }) {
 
   // Chiude la sessione e azzera profilo e stato di recupero.
   async function esci() {
-    if (supabase) await supabase.auth.signOut();
+    // Prima di uscire si cancella la presenza (script 32), così l'utente
+    // non risulta più online; un errore (script non ancora eseguito) non
+    // blocca l'uscita.
+    if (supabase) {
+      try {
+        await supabase.rpc("presenza_uscita");
+      } catch {
+        /* nessun effetto sull'uscita */
+      }
+      await supabase.auth.signOut();
+    }
     setProfilo(null);
     setRecupero(false);
   }

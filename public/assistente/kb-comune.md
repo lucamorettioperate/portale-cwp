@@ -1,4 +1,4 @@
-# Base di conoscenza del Portale Carbon WastePrint — utenti degli enti (generata il 19/10/2026)
+# Base di conoscenza del Portale Carbon WastePrint — utenti degli enti (generata il 20/10/2026)
 
 === DOCUMENTO: Manuale Utente ===
 
@@ -402,6 +402,10 @@ In basso a destra di ogni pagina trovate il pulsante **✦ Assistente**: apre un
 3. Con **Nuova** ricominciate da capo; con **✕** chiudete la finestra.
 
 L'assistente risponde solo con le informazioni di questo manuale e delle tariffe del Programma; **non vede le vostre pratiche** e non fa operazioni al posto vostro. Le risposte possono contenere errori: in caso di dubbio vale il manuale, oppure scrivete a Fondazione Operate con i Messaggi della pratica. Le domande e le risposte non vengono salvate; c'è un limite di domande al giorno.
+
+## Collegamento al portale
+
+Mentre avete il portale aperto, il portale registra **quando** siete collegati e **quale pagina** state guardando. Si conserva solo l'ultimo collegamento di ciascun utente (nessuno storico e nessun indirizzo di rete) e lo vede soltanto l'Amministratore principale della Fondazione, per sapere chi è collegato in quel momento. Con **Esci** risultate subito non collegati.
 
 ## Domande frequenti
 

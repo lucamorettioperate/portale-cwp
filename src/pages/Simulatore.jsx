@@ -20,7 +20,8 @@
        3. Obiettivi anno per anno: popolazione, produzione totale (t) o pro
           capite, secco residuo pro capite; traiettoria lineare automatica;
        4. Risultati: % di differenziata e crediti stimati per anno e sul
-          periodo, grafici, tabella, avvisi, export CSV e stampa;
+          periodo, grafici, tabella, avvisi, PDF impaginato, Excel e CSV
+          (dal 20/10: src/lib/crediti/simulatoreExport.js e simulatorePdf.js);
        5. Simulazione economica: valore del credito digitato anno per anno
           (proposto 32 €, «Applica a tutti gli anni» con variazione annua);
           costi a carico del Comune: la pagina chiede se simulare in base al
@@ -357,6 +358,37 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
     cambiaBase({ anno: data.anno, rifiuti: rifiutiDaCalcolo(data.dati) });
   }
 
+  // Scarica un file creato nel browser (link temporaneo, poi liberato).
+  function scarica(blob, nomeFile) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = nomeFile;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+  // Stessi contenuti per PDF ed Excel (src/lib/crediti/simulatoreExport.js).
+  // Le librerie si caricano solo quando servono (import dinamico).
+  const [esportazione, setEsportazione] = useState("");
+  async function esporta(formato) {
+    setEsportazione(formato === "pdf" ? "Preparazione del PDF…" : "Preparazione del file Excel…");
+    try {
+      const { contenutoSimulazione, creaXlsxSimulazione, nomeFileSimulazione } = await import("../lib/crediti/simulatoreExport.js");
+      const contenuto = contenutoSimulazione({ scenario, risultato, eco, economia, popolazione: popEconomia });
+      if (formato === "pdf") {
+        const { generaPdfSimulazione } = await import("../lib/crediti/simulatorePdf.js");
+        const { blob, nomeFile } = await generaPdfSimulazione(contenuto, nomeFileSimulazione(scenario, "pdf"));
+        scarica(blob, nomeFile);
+      } else {
+        scarica(await creaXlsxSimulazione(contenuto), nomeFileSimulazione(scenario, "xlsx"));
+      }
+      setEsportazione("");
+    } catch (e) {
+      console.error(e);
+      setEsportazione("Non è stato possibile creare il file: riprova.");
+    }
+  }
+
   function esportaCsv() {
     const blob = new Blob(["﻿" + righeCsv(scenario, risultato, eco)], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
@@ -403,7 +435,9 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
   }
 
   return (
-    <section style={{ display: "grid", gap: 14 }}>
+    // minmax(0, 1fr): le tabelle larghe scorrono dentro il loro riquadro
+    // invece di allargare tutta la pagina sul telefono.
+    <section style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 14 }}>
       {/* Barra dello scenario aperto */}
       <div style={{ ...riquadro, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", background: C.white, position: "sticky", top: 0, zIndex: 5 }}>
         <div>
@@ -415,8 +449,10 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
           {modificato && <span style={{ fontSize: 12.5, color: C.ocra, fontWeight: 600 }}>Modifiche non salvate</span>}
           <button style={btnPrimario} onClick={() => onSalva(risultato)}>Salva</button>
           <button style={btnMini} onClick={onDuplica}>Duplica</button>
-          <button style={btnMini} onClick={esportaCsv} disabled={!risultato.righe.length}>Esporta CSV</button>
-          <button style={btnMini} onClick={() => window.print()}>Stampa</button>
+          {esportazione && <span style={{ fontSize: 12.5, color: C.grafite }}>{esportazione}</span>}
+          <button style={btnMini} onClick={() => esporta("pdf")} disabled={!risultato.righe.length} title="Rapporto impaginato in A4 orizzontale">Scarica PDF</button>
+          <button style={btnMini} onClick={() => esporta("xlsx")} disabled={!risultato.righe.length} title="File Excel con fogli Sintesi, Anni, Economia e Costi">Esporta Excel</button>
+          <button style={btnMini} onClick={esportaCsv} disabled={!risultato.righe.length}>CSV</button>
           <button style={btnMini} onClick={onElimina}>Cancella</button>
           <button style={btnMini} onClick={onChiudi}>Chiudi</button>
         </div>

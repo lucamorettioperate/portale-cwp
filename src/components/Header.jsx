@@ -14,7 +14,9 @@
      RUOLI e COLORI da src/lib/cwpProgram.js. Le notifiche le legge il
      componente Notifiche. Per Amministratori e utenti degli enti mostra
      anche il pulsante dell'assistente virtuale (AssistenteVirtuale), fisso
-     in basso a destra.
+     in basso a destra. Per tutti segnala la presenza (SegnalaPresenza) e,
+     solo all'Amministratore principale, mostra «n online»
+     (IndicatoreOnline, src/components/UtentiOnline.jsx).
    Sicurezza: il menu per ruolo è solo interfaccia (nasconde le voci che
      non servono). Il vero controllo è in App.jsx (rotte protette), nelle
      pagine e soprattutto nel database (RLS e funzioni): un utente che
@@ -27,6 +29,7 @@ import { COLORI as C, RUOLI } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Notifiche from "./Notifiche.jsx";
 import AssistenteVirtuale from "./AssistenteVirtuale.jsx";
+import { IndicatoreOnline, SegnalaPresenza } from "./UtentiOnline.jsx";
 
 // Voci di menu per ruolo: elenco di coppie [indirizzo, etichetta].
 // Qualunque ruolo diverso da admin e operatore (compreso un profilo
@@ -131,6 +134,7 @@ export default function Header() {
               );
             })}
           </nav>
+          <IndicatoreOnline />
           <Notifiche />
           {r && (
             <span style={{ fontSize: 11, fontWeight: 600, color: r.color, background: r.soft, padding: "4px 10px", borderRadius: 999 }}>
@@ -162,6 +166,8 @@ export default function Header() {
           </button>
         </div>
       )}
+      {/* Presenza per «Utenti online» (script 32): tutti gli utenti attivi. */}
+      {backendPronto && utente && <SegnalaPresenza pagina={location.pathname} />}
       {/* Assistente virtuale (Claude): per ora Amministratori ed enti. */}
       {backendPronto && utente && !passwordDaCambiare && (ruolo === "admin" || ruolo === "cliente") && <AssistenteVirtuale ruolo={ruolo} />}
     </header>
