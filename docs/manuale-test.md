@@ -211,6 +211,13 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 7.14 | [A] Scarica il rapporto (PDF), poi Archivia il rapporto nella pratica | PDF senza BOZZA, con numero di registro e impronta, e nella sezione 6 indicatori, confronto e motivazione; nella pratica compare il documento «Rapporto di calcolo dei crediti», non visibile al Comune |
 | 7.15 | [A] Calcolo crediti → Registro dei crediti | Il calcolo compare come Valido; totali per ente e anno; CSV scaricabile |
 | 7.16 | [A] Nuova versione, poi Calcola e conferma la nuova versione | Nasce una bozza «(rev.)»; alla conferma riceve un nuovo numero e nel registro la riga precedente diventa «Sostituito da …» |
+| 7.17 | [A] Collaudo V01, D07. Passo 5 → Importa CSV conferimenti con le righe `S001;UD;UD1;organico;-225` e `S001;UD;UD1;indifferenziato;75` (colonna «Peso centri di raccolta (kg)») | «File non importato: 1 riga da correggere (Riga 2: «-225» non è ammesso … negativo)»; la Banca Dati di prima resta invariata; nessun risultato nuovo |
+| 7.17b | [A] Ripetete con un negativo in ciascuna colonna (svuotamenti, volume, pesi, volumi, N. utenze) e nel CSV dei beni a riuso | Sempre «File non importato»; con 0 o cella vuota il file si importa |
+| 7.18 | [A] Collaudo V01, D04. Importate uno ZIP con `6_Letture` contenente una lettura in data 31/02/2025 e una in data 01/06/2025 | Anteprima: 1 lettura usata; tra gli scarti «data «31/02/2025» non valida: giorno inesistente…»; con 29/02/2028 la lettura vale |
+| 7.19 | [A] Collaudo V01, D02. Passo 6: buffer indicato a mano **90** → Calcola | Riquadro rosso «Calcolo bloccato: dati non ammessi» (buffer tra 0 e 80%); crediti 0; «Conferma calcolo» assente; con 80 il calcolo riprende |
+| 7.20 | [A] Collaudo V01, R05. Su una bozza senza Banca Dati Utenze: Calcola → Conferma calcolo | Nel riquadro l'elenco degli errori di coerenza (fra cui «Manca la Banca Dati Utenze») e **Conferma definitivamente** disattivato |
+| 7.21 | [A] Scarica il riepilogo (CSV) | Le voci «P%UD (%)» e «P%UnD (%)» sono in percentuale (100 e 0), come nella pagina e nel PDF |
+| 7.22 | [A] Collaudo V01, D06. In una bozza di prova importate un conferimento con codice utenza `=1+1`, premete Calcola, scaricate il dettaglio per utenza (CSV) e apritelo con Excel | La cella mostra il testo `'=1+1` (o `=1+1` come testo), non il risultato 2; i numeri negativi (es. ΔI) restano numeri |
 
 **File di esempio.** I tre file usati sopra si scaricano da `portale-cwp.vercel.app/documentazione/esempi/` (Tracciato_esempio_compilato.xlsx, Tracciato_esempio_letture.zip, Tracciato_esempio_dati_personali.xlsx) e contengono solo dati inventati, con anno 2025. Per prove proprie usate sempre codici anonimi (U0001, U0002…), mai dati reali di persone.
 
@@ -241,7 +248,11 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 8b.3b | Impostazioni: metodo «Per utenza: solo utenze virtuose», rifiuti misurati «Indifferenziato e organico», spuntate Tariffa puntuale | Buffer secondo il Capitolo 7: 30% (20% + 10%); se il buffer impostato è più basso compare l'avviso; con «Usa questo buffer» diventa 30; nei Risultati crediti più alti e colonna «Bilancio del Comune» per confronto |
 | 8b.3c | Taratura: scrivete 0,19 e premete Trova la variabilità | La variabilità cambia e il riquadro «Per abitante all'anno» mostra circa 0,190 (oppure il messaggio «Valore non raggiungibile» se con questi dati non si può) |
 | 8b.4 | Cambiate la durata a **21 anni**, poi a **7 anni** | Le righe diventano 21 e poi 7; i valori già inseriti per gli stessi anni restano |
-| 8b.5 | In un anno portate il secco pro capite oltre il pro capite totale | Avviso «il secco previsto supera la produzione totale» |
+| 8b.5 | In un anno portate il secco pro capite oltre il pro capite totale | Riquadro rosso «Dati non ammessi»: «il secco previsto … supera la produzione totale»; nessun risultato; **Salva** disattivato (dal 20/10/2026: prima era solo un avviso) |
+| 8b.5b | Collaudo V01, D01. Nella prima riga: produzione pro capite **−10**; poi secco pro capite **−10**; poi popolazione **−1000** e **0** (ripristinate ogni volta) | Ogni volta: nessun risultato, riquadro rosso con l'anno e il campo, «Da correggere prima di salvare», Salva disattivato |
+| 8b.5c | Collaudo V01, D02. Buffer previsto **90**, poi **80,01**, **100**, **−1** e campo vuoto; poi **0** e **80** | Con i primi valori errore «Buffer (%) … al massimo 80» e Salva disattivato; con 0 e 80 risultati normali |
+| 8b.5d | Collaudo V01, D03. Valore proposto 32 €, Applica a tutti gli anni; poi valore del 2027 **0** | Ricavi del 2027 = 0 €; cancellando il valore il 2027 torna a 32 €; con −5 compare «Valori economici non ammessi» |
+| 8b.5e | Collaudo V01, R04. Con crediti e costi che si pareggiano esattamente | Riquadro «Margine netto»: «pareggio esatto nel …, nessun saldo positivo nel periodo» invece di «i costi non rientrano» |
 | 8b.6 | Salva → Duplica con nome «Ambizioso», cambiate il secco finale a 40 → Salva | Nell'elenco del Comune due scenari con % finale e crediti a confronto |
 | 8b.7 | Salvate e premete **Scarica PDF**, poi **Esporta Excel** e **CSV** | PDF in A4 orizzontale con loghi, avvertenza «stima ex ante», scheda e sintesi, tabella anno per anno, parte economica e costi, «Pagina n di n»; il file Excel si apre senza avvisi con i fogli Sintesi, Anni, Economia e Costi e i numeri sommabili; il CSV ha una riga per anno |
 | 8b.7e | Sul telefono aprite uno scenario | I pulsanti vanno a capo e la pagina non scorre di lato; le tabelle larghe scorrono dentro il loro riquadro |
@@ -249,7 +260,8 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 8b.7c | Alla domanda «Simulare i costi in base al Caso 1 o al Caso 2?» scegliete Caso 1, poi Caso 2, con 16.735 abitanti | Tabella delle sei voci con € per abitante interpolati (Caso 1: Progetto 0,13 €/ab, totale annuo circa 16.233 €); con il Caso 2 i costi salgono; nella tabella annuale partecipazione al Programma e consulenza, margine e anno di rientro |
 | 8b.7d | Cambiate la durata a 7 anni | Avviso: le tabelle valgono per progetti di 10 anni, i costi si computano a parte |
 | 8b.8 | [C] Provate ad aprire /simulatore | «Questa sezione è riservata alla Fondazione» |
-| 8b.9 | [A] Audit | Voci di creazione, modifica e cancellazione degli scenari |
+| 8b.9 | [A] Audit | Voci di creazione, modifica e cancellazione degli scenari, con nome e codice dello scenario nella colonna «Oggetto e modifiche» |
+| 8b.9b | [A] Collaudo V01, D05. Modificate due scenari diversi (buffer in uno, produzione 2027 nell'altro) e salvate; aprite Audit e premete «n modifiche» | Ogni riga indica lo scenario giusto («Scenario del simulatore «nome» (codice)») e i cambi «Buffer (%): 20 → 25», «Anno 2027 › produzione totale (t): 300 → 290», «Crediti netti stimati …», «Ultimo ricalcolo …» |
 
 ### 9. Reclami e richieste di chiarimento
 

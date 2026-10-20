@@ -19,11 +19,24 @@
    Registro sviluppo e deploy: capitolo 6 «Portale (frontend)».
    ========================================================================= */
 
+// true se "aaaa-mm-gg" è un giorno che esiste nel calendario (il 29/02 solo
+// negli anni bisestili). new Date("2025-02-31") darebbe il 3 marzo: questo
+// controllo lo impedisce (collaudo V01, D04). Usata da formatoData e giorniA.
+export function dataIsoEsiste(s) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s ?? ""));
+  if (!m) return false;
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  return d.getUTCFullYear() === +m[1] && d.getUTCMonth() === +m[2] - 1 && d.getUTCDate() === +m[3];
+}
+
 // "2026-10-17" o un timestamp → "17/10/2026"
 // Parametro: data ISO (aaaa-mm-gg), timestamp o oggetto Date.
 // Restituisce il testo formattato oppure "—" se il valore manca o non è valido.
 export function formatoData(valore) {
   if (!valore) return "—";
+  // Una data aaaa-mm-gg inesistente (es. 2025-02-31) non si «sposta» al
+  // mese dopo: si mostra «—» (collaudo V01, D04).
+  if (typeof valore === "string" && valore.length === 10 && !dataIsoEsiste(valore)) return "—";
   // Stringa di 10 caratteri = data senza ora: si legge in ora locale.
   const d = typeof valore === "string" && valore.length === 10 ? new Date(valore + "T00:00:00") : new Date(valore);
   if (isNaN(d)) return "—";
@@ -35,7 +48,7 @@ export function formatoData(valore) {
 // Si confrontano due mezzanotti locali; Math.round assorbe l'ora in più o
 // in meno dei giorni di cambio dell'ora legale.
 export function giorniA(dataIso) {
-  if (!dataIso) return null;
+  if (!dataIso || !dataIsoEsiste(dataIso)) return null;
   const oggi = new Date();
   oggi.setHours(0, 0, 0, 0);
   const d = new Date(dataIso + "T00:00:00");

@@ -337,6 +337,12 @@
       "data": "20/10/2026",
       "descrizione": "Nuovo capitolo «Sicurezza»: inattività, avvisi, protezioni del sito e del database.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.3",
+      "data": "20/10/2026",
+      "descrizione": "Correzioni del collaudo V01: import CSV della Banca Dati «tutto o niente» senza valori negativi, calcolo bloccato con dati non ammessi, buffer manuale 0-80%, conferma definitiva solo senza errori di coerenza, dati non ammessi nel simulatore e zero esplicito nei prezzi, colonna «Oggetto e modifiche» nell'Audit.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -512,6 +518,12 @@
       "rev": "3.8",
       "data": "20/10/2026",
       "descrizione": "Prove 10.14-10.14d (sicurezza).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.9",
+      "data": "20/10/2026",
+      "descrizione": "Prove del collaudo V01: 7.17-7.22 (negativi, date inesistenti, buffer, conferma senza Banca Dati, percentuali nel CSV, formule nei CSV) e 8b.5-8b.5e, 8b.9b (simulatore e audit degli scenari).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -766,6 +778,12 @@
       "rev": "5.1",
       "data": "20/10/2026",
       "descrizione": "Collaudo in corso con cinque Amministratori collaudatori (backlog 19).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.2",
+      "data": "20/10/2026",
+      "descrizione": "Correzioni del collaudo V01 sul ramo correzioni-collaudo-v01, script 35_controlli_collaudo.sql (da eseguire), domande metodologiche aperte, azioni per Luca.",
       "autore": "Fondazione Operate"
     }
   ],

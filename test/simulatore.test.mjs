@@ -145,11 +145,13 @@ prova("frazioni senza fattore (metallo): nessun credito fittizio a parità di to
   vicino(r.righe[0].lordi, 0, 1e-6);
 });
 
-prova("avvisi: dati mancanti e secco oltre il totale", () => {
+prova("avvisi: dati mancanti; secco oltre il totale è un errore (collaudo V01, D01)", () => {
   assert.ok(simula({ annoBase: { popolazione: "", rifiuti: {} }, anni: [] }).avvisi.length >= 2);
+  // Prima il secco oltre il totale si «tagliava» al totale con un avviso;
+  // dal 20/10/2026 è un dato impossibile: nessun risultato e un errore.
   const r = simula({ annoBase, anni: [{ anno: 2027, popolazione: 10000, totale: 500, seccoProCapite: 120 }], bufferPct: 0 });
-  assert.equal(r.righe[0].secco, 500);
-  assert.ok(r.avvisi.some((x) => x.includes("supera")));
+  assert.equal(r.righe.length, 0);
+  assert.ok(r.errori.some((x) => x.includes("supera")));
 });
 
 prova("simulazione economica: ricavi, tariffe dello Schema tariffario, costi e margine", () => {

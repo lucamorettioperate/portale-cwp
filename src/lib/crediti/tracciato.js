@@ -43,6 +43,7 @@
 import JSZip from "jszip";
 import { leggiCsv } from "../csv.js";
 import { TIPOLOGIE_RIFIUTO, BENI_RIUSO } from "./parametri.js";
+import { valoriNonAmmessiBdu } from "./calcolo.js";
 
 // Nomi dei fogli del tracciato, nell'ordine del modello Excel.
 export const FOGLI_TRACCIATO = ["1_Anagrafica", "2_Rifiuti", "3_Classi_domestiche", "4_Classi_non_domestiche", "5_Conferimenti", "6_Letture", "7_Riuso"];
@@ -243,15 +244,26 @@ const siNo = (v) => v === true || /^(si|sì|s|true|1|x|vero|yes)$/i.test(String(
 // Data da cella: numero seriale di Excel o testo gg/mm/aaaa (o aaaa-mm-gg).
 // Restituisce una Date in UTC (usare getUTCFullYear ecc.) oppure null.
 // Seriale Excel: giorni dal 30/12/1899 (questa base compensa il finto
-// 29/02/1900 di Excel per tutte le date dal 1° marzo 1900 in poi).
-// Non controlla che giorno e mese esistano (31/02 diventa 3 marzo).
+// 29/02/1900 di Excel per tutte le date dal 1° marzo 1900 in poi); si
+// accettano i seriali da 1 (1/1/1900) a 2958465 (31/12/9999).
+// Giorno e mese devono esistere (collaudo V01, D04): 31/02/2025 o 13/13/2025
+// danno null, cioè «data non valida» (la riga si scarta con il motivo);
+// il 29/02 vale solo negli anni bisestili. Prima 31/02 diventava 3 marzo.
 export function data(v) {
-  if (typeof v === "number") return new Date(Date.UTC(1899, 11, 30) + Math.round(v) * 86400000);
+  if (typeof v === "number") {
+    if (!Number.isFinite(v) || v < 1 || v > 2958465) return null;
+    return new Date(Date.UTC(1899, 11, 30) + Math.round(v) * 86400000);
+  }
   const s = String(v ?? "").trim();
+  // Costruisce la data solo se esiste davvero nel calendario.
+  const vera = (a, m, g) => {
+    const d = new Date(Date.UTC(a, m - 1, g));
+    return d.getUTCFullYear() === a && d.getUTCMonth() === m - 1 && d.getUTCDate() === g ? d : null;
+  };
   let m = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/.exec(s);
-  if (m) return new Date(Date.UTC(+m[3], +m[2] - 1, +m[1]));
+  if (m) return vera(+m[3], +m[2], +m[1]);
   m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
-  if (m) return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  if (m) return vera(+m[1], +m[2], +m[3]);
   return null;
 }
 
@@ -462,7 +474,7 @@ export function interpretaTracciato(fogli, annoCalcolo) {
       const punto = normalizza(r.punto);
       if (!m) { scarta("6_Letture", r._riga, `macrocategoria «${r.macro}»`); continue; }
       if (!t) { scarta("6_Letture", r._riga, `tipologia «${r.tipologia}» sconosciuta`); continue; }
-      if (!d) { scarta("6_Letture", r._riga, `data «${r.data}» non valida (gg/mm/aaaa)`); continue; }
+      if (!d) { scarta("6_Letture", r._riga, `data «${r.data}» non valida: giorno inesistente o formato diverso da gg/mm/aaaa`); continue; }
       if (!["domiciliare", "struttura", "centroraccolta"].includes(punto)) { scarta("6_Letture", r._riga, `punto di conferimento «${r.punto}» sconosciuto`); continue; }
       if (!numeri(r, ["volume", "peso"], "6_Letture")) continue;
       if (annoCalcolo && d.getUTCFullYear() !== Number(annoCalcolo)) { lettureFuoriAnno++; continue; }
@@ -582,6 +594,13 @@ export function controllaCoerenza({ anno, anagrafica = {}, rifiuti = [], pefUd, 
   if (!conferimenti.length) {
     errore("Manca la Banca Dati Utenze (fogli 5_Conferimenti o 6_Letture).");
     return esiti;
+  }
+
+  // Valori negativi o non numerici (collaudo V01, D07): stesso controllo
+  // del motore e del salvataggio (valoriNonAmmessiBdu, calcolo.js).
+  const nonAmmessi = valoriNonAmmessiBdu({ conferimenti, riuso });
+  if (nonAmmessi.righe) {
+    errore(`Banca Dati Utenze con ${nonAmmessi.righe} righe con valori negativi o non numerici: ${nonAmmessi.messaggi.slice(0, 3).join("; ")}${nonAmmessi.righe > 3 ? "…" : ""}.`);
   }
 
   // Classi della Banca Dati non presenti in delibera

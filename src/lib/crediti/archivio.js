@@ -26,6 +26,7 @@
    ========================================================================= */
 import { supabase } from "../supabase.js";
 import { TIPOLOGIE_RIFIUTO, BENI_RIUSO, BUFFER_SOLO_VIRTUOSE } from "./parametri.js";
+import { valoriNonAmmessiBdu } from "./calcolo.js";
 
 // Righe per invio / lettura: 1000 è anche il massimo che l'API di Supabase
 // restituisce per richiesta (impostazione predefinita).
@@ -220,7 +221,18 @@ export async function leggiConferimenti(calcoloId) {
   return { data: data ? data.map(daDbConferimento) : null, error };
 }
 // Sostituisce tutti i conferimenti di un calcolo in bozza. Restituisce { error }.
+// Prima di scrivere si controllano i valori (collaudo V01, D07): con un
+// valore negativo o non numerico non si cancella né si scrive nulla e la
+// Banca Dati salvata resta quella di prima. Lo stesso controllo è nei
+// vincoli del database (script 35).
+function erroreValori(conferimenti, riuso) {
+  const v = valoriNonAmmessiBdu({ conferimenti, riuso });
+  if (!v.righe) return null;
+  return { message: `${v.righe} righe con valori negativi o non numerici (es. ${v.messaggi.slice(0, 3).join("; ")}): nessuna riga salvata, la Banca Dati Utenze resta quella di prima.` };
+}
 export async function salvaConferimenti(calcoloId, righe, onAvanzamento) {
+  const errore = erroreValori(righe, []);
+  if (errore) return { error: errore };
   return await sostituisci("calcolo_conferimento", calcoloId, righe.map(aDbConferimento), onAvanzamento);
 }
 // Beni a riuso della Banca Dati Utenze di un calcolo (tabella calcolo_riuso).
@@ -230,6 +242,8 @@ export async function leggiRiuso(calcoloId) {
 }
 // Sostituisce tutte le righe di riuso di un calcolo in bozza. Restituisce { error }.
 export async function salvaRiuso(calcoloId, righe, onAvanzamento) {
+  const errore = erroreValori([], righe);
+  if (errore) return { error: errore };
   return await sostituisci("calcolo_riuso", calcoloId, righe.map(aDbRiuso), onAvanzamento);
 }
 

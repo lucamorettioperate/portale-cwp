@@ -70,13 +70,17 @@ const normalizza = (s) =>
     .replace(/[^a-z0-9]+/g, "");
 
 /* Converte il CSV in oggetti secondo uno schema di colonne:
-   schema = [{ chiave, titoli: ["Utenza", "codice utenza"], tipo: "numero"|"testo"|"si_no", obbligatorio }]
-   Restituisce { righe, errori, erroriTotali, colonneMancanti }.
+   schema = [{ chiave, titoli: ["Utenza", "codice utenza"], tipo: "numero"|"testo"|"si_no", obbligatorio, min }]
+   Restituisce { righe, errori, erroriTotali, righeScartate, colonneMancanti }.
    - La prima riga è l'intestazione; ogni colonna si cerca fra i "titoli"
      ammessi (in qualsiasi ordine e maiuscolo/minuscolo).
    - Se manca una colonna obbligatoria non si legge nessuna riga.
+   - min (solo numeri, facoltativo): valore minimo ammesso, es. 0 per pesi,
+     volumi e svuotamenti (collaudo V01, D07: un peso negativo è un errore
+     della riga, non un dato).
    - Una riga con errori viene scartata; errori contiene al massimo i primi
-     20 messaggi, erroriTotali il numero complessivo.
+     20 messaggi, erroriTotali il numero complessivo, righeScartate il
+     numero di righe scartate.
    - I numeri di riga nei messaggi sono quelli di Excel (intestazione = 1). */
 export function csvInOggetti(testo, schema) {
   const righe = leggiCsv(testo);
@@ -93,6 +97,7 @@ export function csvInOggetti(testo, schema) {
 
   const errori = [];
   const oggetti = [];
+  let scartate = 0;
   righe.slice(1).forEach((r, n) => {
     const o = {};
     let valida = true;
@@ -107,6 +112,9 @@ export function csvInOggetti(testo, schema) {
           const v = Number(s);
           if (!Number.isFinite(v)) {
             errori.push(`Riga ${n + 2}: «${grezzo}» non è un numero (${col.titoli[0]}).`);
+            valida = false;
+          } else if (col.min != null && v < col.min) {
+            errori.push(`Riga ${n + 2}: «${grezzo}» non è ammesso (${col.titoli[0]}: il valore non può essere ${col.min === 0 ? "negativo" : `minore di ${col.min}`}).`);
             valida = false;
           }
           o[col.chiave] = v;
@@ -123,18 +131,37 @@ export function csvInOggetti(testo, schema) {
       }
     });
     if (valida) oggetti.push(o);
+    else scartate++;
   });
-  return { righe: oggetti, errori: errori.slice(0, 20), erroriTotali: errori.length, colonneMancanti: [] };
+  return { righe: oggetti, errori: errori.slice(0, 20), erroriTotali: errori.length, righeScartate: scartate, colonneMancanti: [] };
+}
+
+/* Protezione dalle formule nei fogli di calcolo (collaudo V01, D06;
+   OWASP «CSV injection»). Un testo che inizia con = + - @ (o con
+   tabulazione / a capo) verrebbe letto da Excel, LibreOffice o Google
+   Sheets come una formula. Si antepone un apostrofo, che lo fa trattare
+   come testo. Restano invariati i numeri veri (tipo number) e i testi che
+   sono soltanto un numero, anche negativo («-3,66», «+5»): un foglio di
+   calcolo li legge come numeri, non come formule, e il dato resta fedele.
+   Parametro: valore già convertito in testo. Restituisce il testo sicuro.
+   Usata da scriviCsv e dai CSV del fascicolo (src/lib/fascicolo.js) e del
+   simulatore (src/lib/crediti/simulatore.js, righeCsv). */
+export function testoSicuroCsv(s) {
+  const t = String(s);
+  if (!/^[=+\-@\t\r\n]/.test(t)) return t;
+  if (/^[+-]?\d+([.,]\d+)?$/.test(t)) return t;
+  return "'" + t;
 }
 
 // Crea un CSV (separatore ";") da intestazioni e righe.
 // Parametri: intestazioni (array di testi), righe (array di array di valori).
 // Restituisce il testo del file con BOM iniziale; i numeri usano la virgola
-// decimale; le celle con ; " o a capo vanno tra virgolette.
+// decimale; le celle con ; " o a capo vanno tra virgolette; i testi che
+// sembrano formule sono resi innocui (testoSicuroCsv).
 export function scriviCsv(intestazioni, righe) {
   const cella = (v) => {
     if (v == null) return "";
-    const s = typeof v === "number" ? String(v).replace(".", ",") : String(v);
+    const s = typeof v === "number" ? String(v).replace(".", ",") : testoSicuroCsv(v);
     return /[";\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   return "﻿" + [intestazioni.map(cella).join(";"), ...righe.map((r) => r.map(cella).join(";"))].join("\r\n");

@@ -71,6 +71,7 @@
    Registro sviluppo e deploy: capitolo 15 «Calcolo crediti», backlog 37.
    ========================================================================= */
 import { TIPOLOGIE_RIFIUTO } from "./parametri.js";
+import { testoSicuroCsv } from "../csv.js";
 import { fattoreIndifferenziato } from "./calcolo.js";
 import { TABELLA3_CLUSTER, scostamentiTabella3 } from "./qualita.js";
 import {
@@ -343,6 +344,109 @@ export function traiettoriaLineare({ anni, base, proCapiteFinale, seccoProCapite
   });
 }
 
+/* =========================================================================
+   Controllo dei dati dello scenario (collaudo V01, D01 e D02, 20/10/2026).
+   Un valore fisicamente impossibile non deve dare un risultato salvabile:
+   popolazione negativa o zero, produzione negativa o zero, secco negativo
+   o maggiore della produzione (differenziata oltre il 100%), rifiuti
+   negativi, buffer fuori da 0-80% (Capitolo 7) o non numerico.
+   Regola sui campi vuoti: vuoto = «non indicato» (un anno senza valore
+   prende il punto di partenza, come prima); zero è un valore vero.
+   Usato da simula() (con errori nessun risultato), dalla pagina (pulsante
+   Salva) e da scenari.js (salvataggio). Nel database lo ripete il
+   controllo dello script 35.
+   Parametri: dati dello scenario e, facoltativo, gli anni già allineati al
+   periodo (anniDelPeriodo); senza, si usano dati.anni.
+   Restituisce un array di messaggi (vuoto = dati ammessi).
+   ========================================================================= */
+const vuoto = (v) => v === null || v === undefined || String(v).trim() === "";
+// Numero da testo (virgola decimale ammessa); NaN se non è un numero.
+const numeroRigoroso = (v) => (typeof v === "number" ? v : Number(String(v).replace(/\s/g, "").replace(",", ".")));
+const virgola = (v) => String(v).replace(".", ",");
+
+export function erroriScenario(dati = {}, anniAllineati = null) {
+  const errori = [];
+  // Controlla un campo: deve essere un numero finito ≥ min (o > min se
+  // strettamente = true) e ≤ max. Vuoto ammesso se vuotoOk.
+  const campo = (v, nome, { min = 0, max = Infinity, strettamente = false, vuotoOk = true } = {}) => {
+    if (vuoto(v)) {
+      if (!vuotoOk) errori.push(`${nome}: manca il valore.`);
+      return;
+    }
+    const n = numeroRigoroso(v);
+    if (!Number.isFinite(n)) errori.push(`${nome}: «${v}» non è un numero.`);
+    else if (strettamente ? n <= min : n < min) errori.push(`${nome}: ${virgola(n)} non è ammesso (deve essere ${strettamente ? "maggiore di" : "almeno"} ${virgola(min)}).`);
+    else if (n > max) errori.push(`${nome}: ${virgola(n)} non è ammesso (al massimo ${virgola(max)}).`);
+  };
+
+  // Buffer: assente (scenari vecchi) = predefinito; vuoto o fuori 0-80 = errore.
+  if (dati.bufferPct !== undefined) campo(dati.bufferPct, "Buffer (%)", { max: BUFFER_MASSIMO, vuotoOk: false });
+
+  // Scenario di riferimento.
+  const ab = dati.annoBase || {};
+  campo(ab.popolazione, "Popolazione dello scenario di riferimento", { strettamente: true });
+  Object.entries(ab.rifiuti || {}).forEach(([t, q]) => campo(q, `Rifiuti di riferimento «${t}» (t)`));
+
+  // Situazione attuale (facoltativa).
+  const at = dati.attuale || {};
+  campo(at.popolazione, "Popolazione attuale", { strettamente: true });
+  campo(at.proCapite, "Produzione pro capite attuale (kg/ab)", { strettamente: true });
+  campo(at.seccoProCapite, "Secco pro capite attuale (kg/ab)");
+  if (!vuoto(at.proCapite) && !vuoto(at.seccoProCapite) && numeroRigoroso(at.seccoProCapite) > numeroRigoroso(at.proCapite)) {
+    errori.push("Situazione attuale: il secco pro capite supera la produzione pro capite (differenziata oltre il 100%).");
+  }
+
+  // Ipotesi della stima per utenza: variabilità tra 0 e 150%.
+  if (dati.stimaUtenze && dati.stimaUtenze.variabilita !== undefined) {
+    campo(dati.stimaUtenze.variabilita, "Variabilità tra utenze (%)", { max: 150 });
+  }
+
+  // Obiettivi anno per anno.
+  (anniAllineati || dati.anni || []).forEach((a) => {
+    const anno = `Anno ${a.anno}`;
+    campo(a.popolazione, `${anno}: popolazione`, { strettamente: true });
+    campo(a.totale, `${anno}: produzione totale (t)`, { strettamente: true });
+    campo(a.seccoProCapite, `${anno}: secco pro capite (kg/ab)`);
+    // Secco (kg/ab × popolazione) oltre la produzione totale = differenziata
+    // negativa o oltre il 100%: impossibile.
+    const pop = vuoto(a.popolazione) ? numeroRigoroso(ab.popolazione) : numeroRigoroso(a.popolazione);
+    const tot = numeroRigoroso(a.totale);
+    const sc = numeroRigoroso(a.seccoProCapite);
+    if (!vuoto(a.totale) && !vuoto(a.seccoProCapite) && pop > 0 && tot > 0 && sc >= 0 && (sc * pop) / 1000 > tot + 1e-9) {
+      errori.push(`${anno}: il secco previsto (${virgola(Math.round(((sc * pop) / 1000) * 10) / 10)} t) supera la produzione totale (${virgola(tot)} t).`);
+    }
+  });
+
+  return [...new Set([...errori, ...erroriEconomia(dati.economia)])];
+}
+
+/* Controllo dei dati economici (collaudo V01, D03): valore del credito
+   (generale, per anno, minimo e massimo) e costi non negativi; variazione
+   annua del valore non sotto −100%. Vuoto = non indicato; zero è un valore
+   vero (a prezzo 0 i ricavi sono 0). Restituisce un array di messaggi. */
+export function erroriEconomia(economia) {
+  if (!economia) return [];
+  const errori = [];
+  const controlla = (v, nome, min = 0) => {
+    if (vuoto(v)) return;
+    const n = numeroRigoroso(v);
+    if (!Number.isFinite(n)) errori.push(`${nome}: «${v}» non è un numero.`);
+    else if (n < min) errori.push(`${nome}: ${virgola(n)} non è ammesso (${min === 0 ? "non può essere negativo" : `almeno ${virgola(min)}`}).`);
+  };
+  controlla(economia.prezzo, "Valore del credito (€)");
+  Object.entries(economia.prezzi || {}).forEach(([anno, v]) => controlla(v, `Valore del credito ${anno} (€)`));
+  controlla(economia.prezzoMin, "Valore minimo del credito (€)");
+  controlla(economia.prezzoMax, "Valore massimo del credito (€)");
+  controlla(economia.crescitaPrezzo, "Variazione annua del valore (%)", -100);
+  controlla(economia.costoValidazione, "Costo della validazione (€)");
+  controlla(economia.costoVerificaAnnua, "Costo della verifica annuale (€)");
+  controlla(economia.altriCostiAnnui, "Altri costi annui (€)");
+  if (!vuoto(economia.prezzoMin) && !vuoto(economia.prezzoMax) && numeroRigoroso(economia.prezzoMin) > numeroRigoroso(economia.prezzoMax)) {
+    errori.push("Il valore minimo del credito supera il valore massimo.");
+  }
+  return errori;
+}
+
 /* Simulazione. Parametro dati { annoBase, anni, bufferPct, fattori? }.
    Restituisce { base, righe: [per anno], totali, avvisi }.
    Ogni riga: anno, popolazione, totale (t), proCapite (kg/ab), secco (t),
@@ -353,7 +457,15 @@ export function simula(dati) {
   const avvisi = [];
   const fattori = { ...fattoriPredefiniti(), ...(dati.fattori || {}) };
   const base = riepilogoAnnoBase(dati.annoBase, fattori);
-  const bufferPct = Math.min(Math.max(num(dati.bufferPct), 0), 100);
+  // Dati impossibili (collaudo V01, D01/D02): nessun risultato, solo gli
+  // errori da correggere. Gli errori economici non fermano la stima dei
+  // crediti (li segnala simulaEconomia).
+  const errori = erroriScenario({ ...dati, economia: null });
+  // Buffer: assente = predefinito (scenari salvati prima); sempre 0-80%.
+  const bufferPct = dati.bufferPct === undefined ? BUFFER_PREDEFINITO : Math.min(Math.max(num(dati.bufferPct), 0), BUFFER_MASSIMO);
+  if (errori.length) {
+    return { base, bufferPct, metodoStima: dati.metodoStima === "utenze" ? "utenze" : "territorio", righe: [], totali: null, avvisi: [], errori };
+  }
   if (!base.popolazione) avvisi.push("Manca la popolazione dello scenario di riferimento.");
   if (!base.totale) avvisi.push("Mancano i rifiuti dello scenario di riferimento.");
   if (base.totale && !base.secco) avvisi.push("Nello scenario di riferimento manca il secco residuo (indifferenziato).");
@@ -378,7 +490,7 @@ export function simula(dati) {
   }
   if (base.feSecco == null && base.totale) avvisi.push("Non è possibile ricavare il fattore del secco: servono frazioni a recupero con fattore di emissione.");
   if (!base.popolazione || !base.totale || base.feSecco == null) {
-    return { base, righe: [], totali: null, avvisi };
+    return { base, bufferPct, righe: [], totali: null, avvisi, errori: [] };
   }
 
   // Fattore di una tipologia: secco = media pesata (formule 16-17);
@@ -505,7 +617,7 @@ export function simula(dati) {
         mediaAnnuaNetti: cumNetti / righe.length,
       }
     : null;
-  return { base, bufferPct, metodoStima, righe, totali, avvisi: [...new Set(avvisi)] };
+  return { base, bufferPct, metodoStima, righe, totali, avvisi: [...new Set(avvisi)], errori: [] };
 }
 
 // Variabilità tra utenze (%) che porta i crediti netti medi per abitante
@@ -543,7 +655,9 @@ export function righeCsv(scenario, risultato, economia = null) {
     ? [[], ["Simulazione economica (importi IVA esclusa)"], ["Anno", "Crediti", "Valore unitario (€)", "Ricavi (€)", "Partecipazione al Programma (€)", "Consulenza (€)", "Ente di validazione e verifica (€)", "Altri costi (€)", "Costi totali (€)", "Margine (€)", "Margine cumulato (€)"],
        ...economia.righe.map((r) => [r.anno, r.crediti, f(r.prezzo, 2), f(r.ricavi, 0), f(r.partecipazione, 0), f(r.consulenza, 0), f(r.costiEnte, 0), f(r.altriCosti, 0), f(r.costi, 0), f(r.margine, 0), f(r.cumulato, 0)])]
     : [];
-  return [...testa, intest, ...righe, ...eco].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\r\n");
+  // Ogni cella tra virgolette; nome dello scenario e del Comune resi
+  // innocui se sembrano formule (collaudo V01, D06).
+  return [...testa, intest, ...righe, ...eco].map((r) => r.map((c) => `"${testoSicuroCsv(c).replace(/"/g, '""')}"`).join(";")).join("\r\n");
 }
 
 /* =========================================================================
@@ -670,8 +784,11 @@ export function listinoDi(economia) {
    consulenza, costiEnte, altriCosti, costi, margine, cumulato e il
    dettaglio delle voci. */
 export function simulaEconomia(righe, economia = {}, popolazione) {
+  // Valore generale: vuoto = parte economica non compilata; 0 è un valore
+  // vero (ricavi zero). Con dati non ammessi nessun risultato economico
+  // (gli errori li mostra la pagina con erroriEconomia).
+  if (vuoto(economia.prezzo) || !righe?.length || erroriEconomia(economia).length) return null;
   const prezzo0 = num(economia.prezzo);
-  if (!prezzo0 || !righe?.length) return null;
   const avvisi = [];
   const pop = num(popolazione);
   const crescita = num(economia.crescitaPrezzo) / 100;
@@ -691,9 +808,12 @@ export function simulaEconomia(righe, economia = {}, popolazione) {
   const out = righe.map((r, i) => {
     const crediti = Math.floor(r.netti);
     const fattore = Math.pow(1 + crescita, i);
-    // Valore digitato per l'anno; se manca, il valore proposto con la variazione annua.
-    const proprio = num((economia.prezzi || {})[r.anno]);
-    const prezzo = proprio || prezzo0 * fattore;
+    // Valore digitato per l'anno; se manca (vuoto), il valore proposto con
+    // la variazione annua. Lo zero digitato vale zero (collaudo V01, D03:
+    // prima «0 || prezzo» ripiegava sul prezzo generale).
+    const grezzo = (economia.prezzi || {})[r.anno];
+    const proprio = vuoto(grezzo) ? null : num(grezzo);
+    const prezzo = proprio !== null ? proprio : prezzo0 * fattore;
     const ricavi = crediti * prezzo;
     const voci = {};
     if (costiCaso.length) {
@@ -713,9 +833,10 @@ export function simulaEconomia(righe, economia = {}, popolazione) {
     const margine = ricavi - costi;
     cumulato += margine;
     return {
-      anno: r.anno, crediti, prezzo, prezzoDigitato: !!proprio, ricavi,
-      ricaviMin: num(economia.prezzoMin) ? crediti * num(economia.prezzoMin) * fattore : null,
-      ricaviMax: num(economia.prezzoMax) ? crediti * num(economia.prezzoMax) * fattore : null,
+      anno: r.anno, crediti, prezzo, prezzoDigitato: proprio !== null, ricavi,
+      // Minimo e massimo: vuoto = non indicato; 0 è un valore vero.
+      ricaviMin: !vuoto(economia.prezzoMin) ? crediti * num(economia.prezzoMin) * fattore : null,
+      ricaviMax: !vuoto(economia.prezzoMax) ? crediti * num(economia.prezzoMax) * fattore : null,
       voci, partecipazione, consulenza, tariffeProgramma: partecipazione + consulenza,
       costiEnte, altriCosti: altri, costi, margine, cumulato,
     };
@@ -731,8 +852,8 @@ export function simulaEconomia(righe, economia = {}, popolazione) {
     totali: {
       crediti: tot("crediti"),
       ricavi: tot("ricavi"),
-      ricaviMin: num(economia.prezzoMin) ? tot("ricaviMin") : null,
-      ricaviMax: num(economia.prezzoMax) ? tot("ricaviMax") : null,
+      ricaviMin: !vuoto(economia.prezzoMin) ? tot("ricaviMin") : null,
+      ricaviMax: !vuoto(economia.prezzoMax) ? tot("ricaviMax") : null,
       partecipazione: tot("partecipazione"),
       consulenza: tot("consulenza"),
       tariffeProgramma: tot("tariffeProgramma"),
@@ -741,12 +862,17 @@ export function simulaEconomia(righe, economia = {}, popolazione) {
       costi: tot("costi"),
       margine: tot("margine"),
       prezzoMedio: tot("crediti") ? tot("ricavi") / tot("crediti") : prezzo0,
-      primoAnnoPositivo: (out.find((r) => r.cumulato > 0) || {}).anno || null,
+      // Primo anno con margine cumulato strettamente positivo (convenzione
+      // invariata). Il pareggio esatto (cumulato zero al centesimo) si
+      // indica a parte, per non confonderlo con una perdita (collaudo V01,
+      // R04: solo chiarezza del messaggio, la regola resta da confermare).
+      primoAnnoPositivo: (out.find((r) => r.cumulato > 0.005) || {}).anno || null,
+      primoAnnoPareggio: (out.find((r) => Math.abs(r.cumulato) <= 0.005) || {}).anno || null,
       // Indicatori per abitante sull'intero periodo (come nell'Allegato A).
       costoProCapite: perAb(tot("costi")),
       ricavoProCapite: perAb(tot("ricavi")),
-      ricavoProCapiteMin: num(economia.prezzoMin) ? perAb(tot("ricaviMin")) : null,
-      ricavoProCapiteMax: num(economia.prezzoMax) ? perAb(tot("ricaviMax")) : null,
+      ricavoProCapiteMin: !vuoto(economia.prezzoMin) ? perAb(tot("ricaviMin")) : null,
+      ricavoProCapiteMax: !vuoto(economia.prezzoMax) ? perAb(tot("ricaviMax")) : null,
       costoAnnuoMedio: tot("costi") / anni,
     },
     avvisi,

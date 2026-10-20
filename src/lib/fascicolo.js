@@ -27,6 +27,7 @@
    Registro sviluppo e deploy: capitolo 6 «Portale (frontend)»; capitolo 7
    «Funzionalità per area» (Export fascicolo).
    ========================================================================= */
+import { testoSicuroCsv } from "./csv.js";
 import { supabase } from "./supabase.js";
 import { oggiItalia } from "./date.js";
 import {
@@ -54,7 +55,9 @@ const TIPI_CONTRATTO = ["Contratto con l'ente di validazione e verifica", "Contr
 function csv(righe, colonne) {
   const cella = (v) => {
     if (v == null) return "";
-    const s = typeof v === "object" ? JSON.stringify(v) : String(v);
+    // Testi che sembrano formule resi innocui (collaudo V01, D06): nomi di
+    // file, commenti e motivazioni possono essere scritti da chiunque.
+    const s = typeof v === "object" ? JSON.stringify(v) : typeof v === "number" ? String(v) : testoSicuroCsv(v);
     return /[";\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const testa = colonne.map(([, titolo]) => cella(titolo)).join(";");

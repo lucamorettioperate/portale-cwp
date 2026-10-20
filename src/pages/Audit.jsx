@@ -9,7 +9,11 @@
    Dati: elencaAudit() (tabella "audit_event"), elencaUtenti() (RPC
      admin_elenco_utenti, per mostrare nomi al posto degli id) e
      leggiCruscotto() (RPC staff_cruscotto, per mostrare codice e
-     organizzazione della pratica). Tutto da src/lib/dati.js.
+     organizzazione della pratica). Tutto da src/lib/dati.js. Per gli
+     scenari del simulatore anche elencaScenari() (nomi attuali).
+   Colonna «Oggetto e modifiche» (collaudo V01, D05, 20/10/2026): tipo,
+     nome e codice breve dell'oggetto e, per le modifiche, i campi cambiati
+     «da → a» letti dal dettaglio registrato (src/lib/auditDettaglio.js).
    Sicurezza: il registro è scritto solo dal database (trigger
      audit_registra, script 07) e non ha policy di modifica o cancellazione:
      è immutabile. La lettura è consentita dal database a tutto lo staff
@@ -23,6 +27,9 @@ import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
 import { elencaAudit, elencaUtenti, leggiCruscotto } from "../lib/dati.js";
 import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
+import { elencaScenari } from "../lib/crediti/scenari.js";
+import { etichettaOggetto } from "../lib/auditDettaglio.js";
+import OggettoEModifiche from "../components/OggettoEModifiche.jsx";
 
 /* Pagina dell'audit. Nessuna prop.
    Carica gli ultimi `limite` eventi (200 all'inizio, +500 a ogni clic su
@@ -32,6 +39,7 @@ export default function Audit() {
   const [eventi, setEventi] = useState([]);
   const [utenti, setUtenti] = useState({});
   const [pratiche, setPratiche] = useState({});
+  const [nomiOggetti, setNomiOggetti] = useState({});
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState("");
   const [testo, setTesto] = useState("");
@@ -43,7 +51,8 @@ export default function Audit() {
     if (ruolo !== "admin") return;
     (async () => {
       setCaricamento(true);
-      const [a, u, p] = await Promise.all([elencaAudit({ limite }), elencaUtenti(), leggiCruscotto()]);
+      const [a, u, p, sc] = await Promise.all([elencaAudit({ limite }), elencaUtenti(), leggiCruscotto(), elencaScenari()]);
+      setNomiOggetti(Object.fromEntries((sc.data || []).map((x) => [x.id, x.nome])));
       if (a.error) setErrore(a.error.message);
       setEventi(a.data || []);
       // Dizionari id → testo leggibile, usati nella tabella e nella ricerca.
@@ -60,10 +69,10 @@ export default function Audit() {
     const q = testo.trim().toLowerCase();
     if (!q) return eventi;
     return eventi.filter((e) =>
-      [e.operazione, e.oggetto_tipo, e.stato_precedente, e.stato_successivo, e.motivazione, utenti[e.utente_id], pratiche[e.pratica_id]]
+      [e.operazione, e.oggetto_tipo, e.stato_precedente, e.stato_successivo, e.motivazione, utenti[e.utente_id], pratiche[e.pratica_id], etichettaOggetto(e, nomiOggetti), e.oggetto_id]
         .some((v) => (v || "").toLowerCase().includes(q))
     );
-  }, [eventi, testo, utenti, pratiche]);
+  }, [eventi, testo, utenti, pratiche, nomiOggetti]);
 
   // Ordinamento per colonna; senza scelta resta dal più recente.
   const ord = useOrdinamento(filtrati, {
@@ -71,6 +80,7 @@ export default function Audit() {
     utente: (e) => utenti[e.utente_id] || (e.utente_id ? "utente" : "sistema"),
     operazione: (e) => e.operazione,
     pratica: (e) => pratiche[e.pratica_id],
+    oggetto: (e) => etichettaOggetto(e, nomiOggetti),
     stati: (e) => [e.stato_precedente, e.stato_successivo].filter(Boolean).join(" → "),
     motivazione: (e) => e.motivazione,
   });
@@ -97,26 +107,27 @@ export default function Audit() {
         <input
           value={testo}
           onChange={(e) => setTesto(e.target.value)}
-          placeholder="Cerca per operazione, utente, pratica, motivazione…"
+          placeholder="Cerca per operazione, utente, pratica, oggetto, motivazione…"
           aria-label="Cerca nell'audit"
           style={{ width: "100%", maxWidth: 480, boxSizing: "border-box", padding: "8px 10px", border: `1px solid ${C.line}`, borderRadius: 8, fontSize: 13, marginBottom: 12 }}
         />
         {errore && <div style={{ color: C.red, fontSize: 13 }}>{errore}</div>}
         <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 820 }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 980 }}>
             <thead>
               <tr style={{ textAlign: "left", color: C.grafite, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>
                 <ThOrdinabile ord={ord} chiave="data" style={th}>Data e ora</ThOrdinabile>
                 <ThOrdinabile ord={ord} chiave="utente" style={th}>Utente</ThOrdinabile>
                 <ThOrdinabile ord={ord} chiave="operazione" style={th}>Operazione</ThOrdinabile>
                 <ThOrdinabile ord={ord} chiave="pratica" style={th}>Pratica</ThOrdinabile>
+                <ThOrdinabile ord={ord} chiave="oggetto" style={th}>Oggetto e modifiche</ThOrdinabile>
                 <ThOrdinabile ord={ord} chiave="stati" style={th}>Da → A</ThOrdinabile>
                 <ThOrdinabile ord={ord} chiave="motivazione" style={th}>Motivazione</ThOrdinabile>
               </tr>
             </thead>
             <tbody>
-              {caricamento && <tr><td colSpan={6} style={{ ...td, color: C.grafite }}>Caricamento…</td></tr>}
-              {!caricamento && filtrati.length === 0 && <tr><td colSpan={6} style={{ ...td, color: C.grafite }}>Nessun evento.</td></tr>}
+              {caricamento && <tr><td colSpan={7} style={{ ...td, color: C.grafite }}>Caricamento…</td></tr>}
+              {!caricamento && filtrati.length === 0 && <tr><td colSpan={7} style={{ ...td, color: C.grafite }}>Nessun evento.</td></tr>}
               {ord.ordinate.map((e) => (
                 <tr key={e.id} style={{ borderTop: `1px solid ${C.line}` }}>
                   <td style={{ ...td, whiteSpace: "nowrap" }}>{new Date(e.avvenuto_il).toLocaleString("it-IT")}</td>
@@ -128,6 +139,7 @@ export default function Audit() {
                   </td>
                   <td style={td}>{e.operazione}</td>
                   <td style={td}>{pratiche[e.pratica_id] || "—"}</td>
+                  <td style={td}><OggettoEModifiche evento={e} nomi={nomiOggetti} /></td>
                   <td style={td}>
                     {e.stato_precedente || e.stato_successivo ? (
                       <>{e.stato_precedente || "—"} → {e.stato_successivo || "—"}</>

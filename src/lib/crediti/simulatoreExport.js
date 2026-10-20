@@ -83,6 +83,7 @@ export function contenutoSimulazione({ scenario, risultato, eco = null, economia
       ["Costo per abitante nel periodo", e.costoProCapite, "€/ab"],
       ["Ricavo per abitante nel periodo", e.ricavoProCapite, "€/ab"],
       ["Primo anno con margine cumulato positivo", e.primoAnnoPositivo, ""],
+      ["Primo anno di pareggio esatto (margine cumulato zero)", e.primoAnnoPareggio, ""],
     );
   }
 

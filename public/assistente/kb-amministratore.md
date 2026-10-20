@@ -888,8 +888,9 @@ La voce di menu **Audit User** compare solo all'Amministratore principale (luca.
 
 La pagina **Audit** mostra il registro automatico e non modificabile di tutte le operazioni rilevanti, dalla più recente.
 
-- Colonne: **Data e ora**, **Utente** (con il ruolo), **Operazione**, **Pratica**, **Da → A** (stato prima e dopo), **Motivazione**.
-- Il campo di ricerca filtra per operazione, utente, pratica o motivazione.
+- Colonne: **Data e ora**, **Utente** (con il ruolo), **Operazione**, **Pratica**, **Oggetto e modifiche**, **Da → A** (stato prima e dopo), **Motivazione**.
+- **Oggetto e modifiche** (dal 20/10/2026, collaudo V01): tipo e nome dell'oggetto con il codice breve (le prime 8 cifre del suo identificativo), per esempio *Scenario del simulatore «Obiettivo» (5c3a9e10)*. Per le modifiche, **n modifiche** si apre con un clic e mostra ogni campo cambiato «da → a»: per gli scenari buffer, popolazione e produzione anno per anno, valore del credito, crediti stimati e ora del ricalcolo. Le stesse informazioni sono nella scheda Operazioni di **Audit User** e nel suo CSV (colonne «Id oggetto» e «Modifiche»). Gli eventi registrati non cambiano: la pagina li legge e basta.
+- Il campo di ricerca filtra per operazione, utente, pratica, oggetto (anche per nome o codice dello scenario) o motivazione.
 - Si vedono gli ultimi 200 eventi; **Carica eventi meno recenti** ne aggiunge altri 500.
 
 Sono registrati, tra gli altri: apertura e chiusura delle fasi, modifiche di scadenza, verifiche sull'accuratezza e accertamenti, cambi di stato della pratica (compresi ritiro e rientro), modifiche dei dati del Progetto, caricamenti di documenti con la versione, modifiche di visibilità, apertura e chiusura del feedback pubblico, moderazione delle osservazioni, richieste e chiusure di integrazione, incassi, emissioni, caricamenti sul registro, vendite e cancellazioni dei crediti, reclami, anagrafiche (organizzazioni, enti, registri), metodologie e informazioni del Programma, creazione e modifica di utenti, cambi e reimpostazioni di password, modifiche della durata delle fasi e operazioni sui calcoli dei crediti.
@@ -1109,6 +1110,8 @@ Ogni tabella ha **+ Riga**, **Importa CSV** e **Scarica il modello**; una riga s
 
 **Attenzione.** **Importa CSV (sostituisce i dati)** cancella le righe già presenti nella tabella e salva subito il nuovo contenuto. Importate sempre il file completo.
 
+**Tutto o niente (dal 20/10/2026, collaudo V01).** Prima di salvare il portale controlla ogni riga del file. Basta una riga con un errore perché il file **non venga importato** e la Banca Dati salvata resti quella di prima. Sono errori: un **valore negativo** (svuotamenti, volumi, pesi, pezzi, N. utenze), un testo al posto di un numero, un dato obbligatorio mancante, una macrocategoria o una tipologia non riconosciute. Il messaggio «File non importato: n righe da correggere» indica le prime righe con il motivo. Zero e celle vuote restano ammessi. Le stesse regole valgono nel salvataggio e nel database (script 35).
+
 L'opzione **Calcola il peso specifico a consuntivo (formula 18), invece dei valori della Tabella 8** si usa quando il gestore ha sia pesi sia volumi misurati.
 
 **Passo 6 — Buffer (Analisi del rischio).** Il buffer è la somma di più voci e non supera l'80%; ogni voce dipende da come il Comune misura utenze e conferimenti (per i rifiuti misurati si va dal 30% con il solo indifferenziato al 3% con tutte le frazioni principali):
@@ -1119,7 +1122,11 @@ L'opzione **Calcola il peso specifico a consuntivo (formula 18), invece dei valo
 - **Tariffa puntuale attiva nell'anno (buffer dimezzato)**;
 - **Solo le utenze che riducono la CO₂eq (le altre non pesano sul territorio)**: la scelta «utenze virtuose».
 
+Il **buffer indicato a mano** deve essere un numero tra 0 e 80%: fuori da questo intervallo il calcolo si blocca con un messaggio (prima il valore veniva tagliato a 80 senza avviso).
+
 **Passo 7 — Risultati.** Premete **Calcola**.
+
+**Calcolo bloccato.** Con dati impossibili (valori negativi nella Banca Dati, quantità negative dei rifiuti, data di avvio inesistente come 31/02, buffer fuori da 0-80%) compare il riquadro rosso **«Calcolo bloccato: dati non ammessi»** con l'elenco degli errori. Crediti e debito valgono zero, il risultato non si salva e, se ce n'era uno salvato, viene tolto: il calcolo non si può confermare finché non si correggono i dati e si preme di nuovo **Calcola**.
 
 ### Leggere i risultati
 
@@ -1159,7 +1166,7 @@ Popolazione, cluster e motivazione si salvano nei dati del calcolo: se li cambia
 
 1. Salvate e premete **Calcola**.
 2. Premete **Conferma calcolo**: compare il riquadro «Confermare il calcolo?» con i crediti netti.
-3. Premete **Conferma definitivamente** (attivo solo se gli scostamenti oltre il 30% sono motivati).
+3. Premete **Conferma definitivamente**. Il pulsante è attivo solo se gli scostamenti oltre il 30% sono motivati **e** se i controlli di coerenza non segnalano errori (per esempio Banca Dati Utenze mancante, PEF che non fa 100%, classi assenti nella delibera, valori negativi): gli errori sono elencati nel riquadro. Gli avvisi («Da verificare») non bloccano. Il database rifiuta comunque la conferma di un calcolo senza Banca Dati Utenze o con un risultato bloccato (script 35). Questa regola è stata introdotta dopo il collaudo V01 (riserva R05) ed è da confermare con la Fondazione.
 
 **Il risultato vale solo per i dati con cui è stato calcolato.** Se dopo «Calcola» cambiate un dato, salvate o reimportate la Banca Dati Utenze, il risultato salvato si azzera e **Conferma calcolo** scompare: premete di nuovo **Calcola**. Se alla conferma compare il messaggio che la Banca Dati salvata non corrisponde a quella usata nel calcolo, ricaricate la pagina e premete **Calcola**. I calcoli in bozza calcolati prima del 18/10/2026 vanno ricalcolati prima della conferma.
 
@@ -1209,6 +1216,16 @@ Il **Simulatore** (menu *Simulatore*, per Operatori e Amministratori) stima in a
 3. Date un nome allo scenario (per esempio «prudente», «obiettivo», «ambizioso»), scegliete la **durata** dal menu a tendina (7, 10 o 21 anni) e il primo anno → **Crea scenario**.
 
 Per ogni Comune si possono creare più scenari; con **Duplica** si parte da uno esistente e si cambia solo qualche obiettivo.
+
+**Dati non ammessi (dal 20/10/2026, collaudo V01).** Il simulatore non dà risultati e non salva lo scenario se un dato è fisicamente impossibile. Sono errori:
+- popolazione o produzione totale negative o zero;
+- secco negativo, oppure secco maggiore della produzione (differenziata oltre il 100%);
+- rifiuti di riferimento negativi;
+- buffer fuori da 0-80%, oppure campo del buffer vuoto;
+- valori del credito o costi negativi o non numerici;
+- valore minimo del credito più alto del massimo.
+
+In questi casi il riquadro rosso nei Risultati elenca gli errori e accanto a **Salva**, che resta disattivato, compare «Da correggere prima di salvare: n». Un campo lasciato **vuoto** vuol dire «non indicato» (per esempio l'anno prende il punto di partenza). Lo **zero** invece è un valore vero: un valore del credito 0 in un anno dà ricavi 0 in quell'anno, e un valore minimo 0 dà lo scenario peggiore con ricavi 0. Il database ripete gli stessi controlli (script 35).
 
 **1. Impostazioni.** Nome, durata (menu a tendina 7 / 10 / 21 anni, Standard 4.3.8), primo anno, **metodo di stima dei crediti**, **buffer previsto** (quota trattenuta dai crediti lordi, Capitolo 7 della Metodologia) e note sulle ipotesi.
 
@@ -1624,6 +1641,26 @@ modello da scaricare.
    Metodologia consente; si usano i fattori della Tabella 3 che la includono.
 7. **Residenti / non residenti**: la distinzione serve solo al buffer
    (Tabella 15); le classi domestiche sono quelle della delibera.
+
+**Domande aperte dal collaudo V01 (20/10/2026)** — nessuna è stata decisa
+dallo sviluppo; il portale resta com'è finché la Fondazione non indica la
+regola (risposte da scrivere in `docs/collaudo/Collaudo_V01_risposte.md`):
+
+8. **R01 — Tariffa puntuale e buffer.** Con le stesse opzioni (solo utenze
+   virtuose 20%, tutte le utenze monitorate, indifferenziato e organico
+   misurati, tariffa puntuale) il calcolatore dimezza tutto il buffer
+   ((20 + 20) / 2 = 20%), il simulatore solo la parte della Tabella 16
+   (20 + 20 / 2 = 30%). Quale lettura del Capitolo 7 vale?
+9. **R02 — Distribuzione delle utenze nel simulatore** (metodo «per
+   utenza»): la normale non troncata ammette produzioni negative e, con
+   media zero, quote evitate fino al 122,7% dell'atteso. Dominio e
+   distribuzione da approvare (troncamento, lognormale, dati individuali).
+10. **R03 — Crediti interi.** La parte economica conta i crediti interi di
+    ogni anno (292 invece di 292,8): conferma della convenzione e del
+    trattamento delle frazioni residue (anno per anno o sul periodo).
+11. **Riuso**: vedi punto 3 (segno dell'effetto del riuso).
+12. **R06 — Documenti obbligatori e fasi**: oggi un documento mancante è un
+    promemoria non bloccante; serve la matrice documenti/stati che blocca.
 
 ## Simulatore di scenari (prima versione 19/10/2026)
 

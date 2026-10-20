@@ -26,6 +26,9 @@ import { auditOperazioniUtente, auditRegistroAccessi, auditUtentiStato } from ".
 import { durata, nomePagina } from "../lib/presenza.js";
 import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
 import { scaricaTesto, scriviCsv } from "../lib/csv.js";
+import { elencaScenari } from "../lib/crediti/scenari.js";
+import { etichettaOggetto, modificheEvento, valoreBreve } from "../lib/auditDettaglio.js";
+import OggettoEModifiche from "../components/OggettoEModifiche.jsx";
 
 // Nomi leggibili degli eventi di accesso.
 const EVENTI = {
@@ -362,6 +365,11 @@ function SchedaOperazioni({ utente, dal, al }) {
   const [testo, setTesto] = useState("");
   const [limite, setLimite] = useState(500);
   const [errore, setErrore] = useState("");
+  // Nomi attuali degli scenari del simulatore (collaudo V01, D05).
+  const [nomiScenari, setNomiScenari] = useState({});
+  useEffect(() => {
+    elencaScenari().then(({ data }) => setNomiScenari(Object.fromEntries((data || []).map((x) => [x.id, x.nome]))));
+  }, []);
   useEffect(() => {
     setRighe(null);
     auditOperazioniUtente({ utente: utente || null, dal: inizioGiorno(dal), al: dopoGiorno(al), limite }).then(({ data, error }) => {
@@ -374,19 +382,24 @@ function SchedaOperazioni({ utente, dal, al }) {
     const q = testo.trim().toLowerCase();
     const r = righe || [];
     if (!q) return r;
-    return r.filter((e) => [e.operazione, e.oggetto_tipo, e.pratica, e.stato_precedente, e.stato_successivo, e.motivazione, e.nome_completo, e.email, e.dettaglio?.nome].some((v) => (v || "").toLowerCase().includes(q)));
-  }, [righe, testo]);
+    return r.filter((e) => [e.operazione, e.oggetto_tipo, e.pratica, e.stato_precedente, e.stato_successivo, e.motivazione, e.nome_completo, e.email, etichettaOggetto(e, nomiScenari), e.oggetto_id].some((v) => (v || "").toLowerCase().includes(q)));
+  }, [righe, testo, nomiScenari]);
   const ord = useOrdinamento(filtrate, {
     data: (e) => e.avvenuto_il, utente: (e) => e.nome_completo || e.email || "sistema", operazione: (e) => e.operazione,
-    oggetto: (e) => e.oggetto_tipo, pratica: (e) => e.pratica, stati: (e) => [e.stato_precedente, e.stato_successivo].filter(Boolean).join(" → "), motivazione: (e) => e.motivazione,
+    oggetto: (e) => etichettaOggetto(e, nomiScenari), pratica: (e) => e.pratica, stati: (e) => [e.stato_precedente, e.stato_successivo].filter(Boolean).join(" → "), motivazione: (e) => e.motivazione,
   });
 
   function esporta() {
     scaricaTesto(
       `Audit_trail_user_operazioni_${dal}_${al}.csv`,
       scriviCsv(
-        ["Data e ora", "Nome", "Email", "Ruolo", "Operazione", "Oggetto", "Pratica", "Da", "A", "Motivazione"],
-        ord.ordinate.map((e) => [dataOra(e.avvenuto_il), e.nome_completo || "", e.email || (e.utente_id ? "" : "sistema"), e.ruolo || "", e.operazione, descrizioneOggetto(e), e.pratica || "", e.stato_precedente || "", e.stato_successivo || "", e.motivazione || ""])
+        ["Data e ora", "Nome", "Email", "Ruolo", "Operazione", "Oggetto", "Id oggetto", "Modifiche", "Pratica", "Da", "A", "Motivazione"],
+        ord.ordinate.map((e) => [
+          dataOra(e.avvenuto_il), e.nome_completo || "", e.email || (e.utente_id ? "" : "sistema"), e.ruolo || "", e.operazione,
+          etichettaOggetto(e, nomiScenari), e.oggetto_id || "",
+          modificheEvento(e).map((m) => `${m.campo}: ${valoreBreve(m.da)} → ${valoreBreve(m.a)}`).join(" | "),
+          e.pratica || "", e.stato_precedente || "", e.stato_successivo || "", e.motivazione || "",
+        ])
       )
     );
   }
@@ -423,7 +436,7 @@ function SchedaOperazioni({ utente, dal, al }) {
                   {e.ruolo && <div style={{ fontSize: 11.5, color: C.grafite }}>{RUOLI[e.ruolo]?.short || e.ruolo}</div>}
                 </td>
                 <td style={{ ...td, fontWeight: 600 }}>{e.operazione}</td>
-                <td style={td}>{descrizioneOggetto(e)}</td>
+                <td style={td}><OggettoEModifiche evento={e} nomi={nomiScenari} /></td>
                 <td style={{ ...td, whiteSpace: "nowrap" }}>{e.pratica || "—"}</td>
                 <td style={td}>{e.stato_precedente || e.stato_successivo ? <>{e.stato_precedente || "—"} → {e.stato_successivo || "—"}</> : "—"}</td>
                 <td style={td}>{e.motivazione || "—"}</td>
@@ -435,13 +448,6 @@ function SchedaOperazioni({ utente, dal, al }) {
       {righe?.length >= limite && <button onClick={() => setLimite((l) => l + 1000)} style={{ ...btnMini, justifySelf: "start" }}>Carica operazioni meno recenti</button>}
     </section>
   );
-}
-
-// Oggetto dell'operazione: tipo e, per i documenti, nome del file.
-function descrizioneOggetto(e) {
-  const nome = e.dettaglio?.nome;
-  const tipo = (e.oggetto_tipo || "—").replace(/_/g, " ");
-  return nome && typeof nome === "string" ? `${tipo}: ${nome}` : tipo;
 }
 
 /* Riquadro numerico. Props: titolo, valore, colore. */

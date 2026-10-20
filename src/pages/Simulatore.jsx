@@ -51,7 +51,7 @@ import { formatoData } from "../lib/date.js";
 import {
   DURATE, TIPOLOGIE, datiIniziali, riepilogoAnnoBase, rifiutiDaCluster, rifiutiDaCalcolo,
   anniDelPeriodo, traiettoriaLineare, simula, righeCsv, puntoDiPartenza, RD_SOGLIA, simulaEconomia, economiaIniziale, prezziPerAnni, PREZZO_PROPOSTO, costiPerCaso, listinoDi, CASI_COSTI,
-  METODI_STIMA, RIFIUTI_MISURATI, UTENZE_MONITORATE, STIMA_PREDEFINITA, bufferMetodologia, taraVariabilita,
+  METODI_STIMA, RIFIUTI_MISURATI, UTENZE_MONITORATE, STIMA_PREDEFINITA, bufferMetodologia, taraVariabilita, erroriScenario, erroriEconomia,
 } from "../lib/crediti/simulatore.js";
 import { elencaScenari, leggiScenario, creaScenario, salvaScenario, duplicaScenario, eliminaScenario } from "../lib/crediti/scenari.js";
 import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
@@ -335,6 +335,10 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
     [scenario.durata, scenario.anno_inizio, dati.anni, partenza]
   );
   const risultato = useMemo(() => simula({ ...dati, anni }), [dati, anni]);
+  // Dati non ammessi (collaudo V01, D01/D02/D03): bloccano risultati e
+  // salvataggio; l'elenco compare sopra i risultati e accanto a «Salva».
+  const errori = useMemo(() => erroriScenario({ ...dati, anni }, anni), [dati, anni]);
+  const erroriEco = useMemo(() => erroriEconomia(dati.economia), [dati.economia]);
   // Parte economica: valore unitario del credito, tariffe del Programma e costi.
   const economia = { ...economiaIniziale(), ...(dati.economia || {}) };
   const popEconomia = num(attuale.popolazione) || base.popolazione;
@@ -447,7 +451,8 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
         <div className="no-stampa" style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           {messaggio && <span style={{ fontSize: 12.5, color: C.green, fontWeight: 600 }}>{messaggio}</span>}
           {modificato && <span style={{ fontSize: 12.5, color: C.ocra, fontWeight: 600 }}>Modifiche non salvate</span>}
-          <button style={btnPrimario} onClick={() => onSalva(risultato)}>Salva</button>
+          {errori.length > 0 && <span style={{ fontSize: 12.5, color: C.red, fontWeight: 600 }}>Da correggere prima di salvare: {errori.length}</span>}
+          <button style={{ ...btnPrimario, opacity: errori.length ? 0.5 : 1 }} disabled={errori.length > 0} title={errori.length ? "Ci sono dati non ammessi: correggili (elenco nel riquadro «Risultati»)" : undefined} onClick={() => onSalva(risultato)}>Salva</button>
           <button style={btnMini} onClick={onDuplica}>Duplica</button>
           {esportazione && <span style={{ fontSize: 12.5, color: C.grafite }}>{esportazione}</span>}
           <button style={btnMini} onClick={() => esporta("pdf")} disabled={!risultato.righe.length} title="Rapporto impaginato in A4 orizzontale">Scarica PDF</button>
@@ -760,6 +765,15 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
       {/* 4. Risultati */}
       <div style={riquadro}>
         <h2 style={h2}>4. Risultati: crediti stimati</h2>
+        {/* Dati impossibili: nessun risultato finché non si correggono. */}
+        {errori.length > 0 && (
+          <div role="alert" style={{ margin: "0 0 12px", padding: "10px 14px", background: "#FBE9E7", border: `1px solid ${C.red}`, borderRadius: 10, fontSize: 12.5, color: C.ink }}>
+            <strong style={{ color: C.red }}>Dati non ammessi: nessun risultato e scenario non salvabile.</strong>
+            <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+              {errori.map((a) => <li key={a}>{a}</li>)}
+            </ul>
+          </div>
+        )}
         {risultato.avvisi.length > 0 && (
           <ul style={{ margin: "0 0 12px", padding: "10px 14px 10px 30px", background: C.ocraSoft, borderRadius: 10, fontSize: 12.5, color: C.ink }}>
             {risultato.avvisi.map((a) => (
@@ -947,7 +961,13 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
           </label>
         </div>
 
-        {!eco && <div style={{ marginTop: 12, fontSize: 13, color: C.grafite }}>Indicate il <strong>valore del credito</strong> (proposto {PREZZO_PROPOSTO} €) per vedere ricavi, costi e margine anno per anno.</div>}
+        {erroriEco.length > 0 && (
+          <div role="alert" style={{ marginTop: 12, padding: "10px 14px", background: "#FBE9E7", border: `1px solid ${C.red}`, borderRadius: 10, fontSize: 12.5 }}>
+            <strong style={{ color: C.red }}>Valori economici non ammessi:</strong>
+            <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>{erroriEco.map((a) => <li key={a}>{a}</li>)}</ul>
+          </div>
+        )}
+        {!eco && !erroriEco.length && <div style={{ marginTop: 12, fontSize: 13, color: C.grafite }}>Indicate il <strong>valore del credito</strong> (proposto {PREZZO_PROPOSTO} €) per vedere ricavi, costi e margine anno per anno.</div>}
         {eco && (
           <>
             {eco.avvisi.length > 0 && (
@@ -958,7 +978,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 10, margin: "14px 0" }}>
               <Tile etichetta={`Ricavi in ${eco.righe.length} anni`} valore={`€ ${fmt(eco.totali.ricavi, 0)}`} unita={`${fmt(eco.totali.crediti, 0)} crediti × ${fmt(eco.totali.prezzoMedio, 2)} € in media`} />
               <Tile etichetta="Costi per il Comune nel periodo" valore={`€ ${fmt(eco.totali.costi, 0)}`} unita={`€ ${fmt(eco.totali.costoAnnuoMedio, 0)} all'anno in media`} />
-              <Tile etichetta="Margine netto" valore={`€ ${fmt(eco.totali.margine, 0)}`} unita={eco.totali.primoAnnoPositivo ? `costi rientrati nel ${eco.totali.primoAnnoPositivo}` : "i costi non rientrano nel periodo"} principale />
+              <Tile etichetta="Margine netto" valore={`€ ${fmt(eco.totali.margine, 0)}`} unita={eco.totali.primoAnnoPositivo ? `costi rientrati nel ${eco.totali.primoAnnoPositivo} (primo saldo cumulato positivo)` : eco.totali.primoAnnoPareggio ? `pareggio esatto nel ${eco.totali.primoAnnoPareggio}, nessun saldo positivo nel periodo` : "i costi non rientrano nel periodo"} principale />
               <Tile etichetta="Per abitante nel periodo" valore={eco.totali.costoProCapite != null ? `€ ${fmt(eco.totali.costoProCapite, 2)}` : "—"} unita={eco.totali.ricavoProCapite != null ? `di costo; ricavo € ${fmt(eco.totali.ricavoProCapite, 2)}` : ""} />
             </div>
             <div style={{ marginBottom: 14, maxWidth: 640 }}>

@@ -233,6 +233,22 @@ export default function CalcoloCrediti() {
     });
     setRisultato(r);
     setPasso("risultati");
+    // Dati impossibili (valori negativi, data inesistente, buffer fuori da
+    // 0-80%: collaudo V01, D02/D04/D07): il motore non dà crediti e il
+    // risultato NON si salva. Se c'era un risultato salvato si cancella,
+    // così il calcolo non si può confermare né usare per il rapporto.
+    if (r.bloccato) {
+      setMessaggio({ errore: true, testo: "Calcolo bloccato: " + r.errori.join(" ") });
+      if (confermato || !calcolo?.risultato) return;
+      const { error } = await salvaCalcolo(id, {
+        risultato: null, delta_i_kg: null, buffer_pct: null, crediti_lordi: null, crediti_netti: null, calcolato_il: null,
+      });
+      if (!error) {
+        const { data } = await leggiCalcolo(id);
+        if (data) setCalcolo(data);
+      }
+      return;
+    }
     // Riepilogo salvato nel database (senza il dettaglio di ogni utenza).
     // Il dettaglio può avere centinaia di migliaia di righe: si salvano solo
     // i totali per classe (chiave "macro|classe"). Un'utenza è «virtuosa»
@@ -447,7 +463,7 @@ export default function CalcoloCrediti() {
   // psTipologie: peso specifico (kg/m³) per tipologia, dai fattori del
   // passo 4; accetta la virgola decimale, valore assente = 0.
   const psTipologie = Object.fromEntries(dati.fattori.map((f) => [f.id, Number(String(f.ps ?? "").replace(",", ".")) || 0]));
-  const coerenza = ["utenze", "risultati"].includes(passo)
+  const coerenza = ["utenze", "risultati"].includes(passo) || conferma
     ? controllaCoerenza({ anno: testa.anno, rifiuti: dati.rifiuti, pefUd: dati.pefUd, pefUnd: dati.pefUnd, classiUd: dati.classiUd, classiUnd: dati.classiUnd, conferimenti, riuso, ps: psTipologie })
     : null;
 
@@ -464,6 +480,13 @@ export default function CalcoloCrediti() {
   }
   const qualita = passo === "risultati" || conferma ? qualitaDati() : null;
   const manca = qualita && qualita.scostamenti.some((s) => s.oltre) && !(dati.qualita?.motivazione || "").trim();
+  // Errori dei controlli di coerenza (livello «errore», non gli avvisi):
+  // con anche uno solo la conferma definitiva non è disponibile (collaudo
+  // V01, R05: prima si poteva confermare un calcolo senza Banca Dati
+  // Utenze). Il database rifiuta comunque la conferma senza Banca Dati o
+  // con un risultato bloccato (script 35).
+  const erroriConferma = conferma ? (coerenza || []).filter((e) => e.livello === "errore") : [];
+  const nonConfermabile = manca || erroriConferma.length > 0;
 
   // Tipologie di rifiuto ammesse (dai fattori), per le tendine e gli import CSV.
   const tipologieOpzioni = dati.fattori.map((f) => ({ valore: f.id, etichetta: f.nome }));
@@ -514,14 +537,20 @@ export default function CalcoloCrediti() {
               Un calcolo confermato diventa definitivo: dati e risultato non si possono più modificare né cancellare.
               Per eventuali correzioni si creerà una nuova versione. Crediti netti: <b>{fmt(calcolo.crediti_netti, 3)} tCO₂eq</b>.
             </p>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {/* Gestione qualità dati 3.1.2: scostamento oltre il 30% → motivazione obbligatoria */}
               {manca && (
                 <div style={{ color: C.red, fontSize: 12.5, width: "100%" }}>
                   Ci sono scostamenti oltre il {SOGLIA_SCOSTAMENTO}% dalla Tabella 3 dello Standard: scrivi la motivazione nel passo «Risultati» e ricalcola.
                 </div>
               )}
-              <button onClick={confermaCalcolo} disabled={manca} style={{ ...btnPrimario, opacity: manca ? 0.5 : 1 }}>Conferma definitivamente</button>
+              {erroriConferma.length > 0 && (
+                <div style={{ color: C.red, fontSize: 12.5, width: "100%" }}>
+                  Non si può confermare finché i controlli di coerenza segnalano errori:
+                  <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>{erroriConferma.map((e) => <li key={e.testo}>{e.testo}</li>)}</ul>
+                </div>
+              )}
+              <button onClick={confermaCalcolo} disabled={nonConfermabile} style={{ ...btnPrimario, opacity: nonConfermabile ? 0.5 : 1 }}>Conferma definitivamente</button>
               <button onClick={() => setConferma(false)} style={btnMini}>Annulla</button>
             </div>
           </div>
@@ -802,7 +831,8 @@ function Fattori({ dati, aggiorna, sola }) {
 // - chiave: nome del campo nell'oggetto riga
 // - titoli: intestazioni accettate nel file (il primo è quello del modello)
 // - obbligatorio: colonna che deve esserci
-// - tipo "numero": valore convertito in numero.
+// - tipo "numero": valore convertito in numero; min: 0 = negativo non
+//   ammesso (collaudo V01, D07).
 // Conferimenti: S = svuotamenti, VC = volume contenitore, StIn = strutture
 // informatizzate, CdR = centri di raccolta; «N. utenze» > 1 quando una riga
 // rappresenta più utenze con valori medi (stima ex ante).
@@ -811,22 +841,22 @@ const SCHEMA_CONFERIMENTI = [
   { chiave: "macro", titoli: ["Macrocategoria", "tipo utenza", "macro"], obbligatorio: true },
   { chiave: "classe", titoli: ["Classe", "categoria"], obbligatorio: true },
   { chiave: "tipologia", titoli: ["Tipologia rifiuto", "rifiuto", "tipologia"], obbligatorio: true },
-  { chiave: "svuotamenti", titoli: ["Svuotamenti", "S"], tipo: "numero" },
-  { chiave: "volume", titoli: ["Volume contenitore (L)", "volume", "VC"], tipo: "numero" },
-  { chiave: "pesoStrutture", titoli: ["Peso strutture informatizzate (kg)", "PStIn"], tipo: "numero" },
-  { chiave: "volumeStrutture", titoli: ["Volume strutture informatizzate (L)", "VStIn"], tipo: "numero" },
-  { chiave: "pesoCdr", titoli: ["Peso centri di raccolta (kg)", "PCdR"], tipo: "numero" },
-  { chiave: "volumeCdr", titoli: ["Volume centri di raccolta (L)", "VCdR"], tipo: "numero" },
-  { chiave: "nUtenze", titoli: ["N. utenze (valori medi)", "n utenze", "numero utenze"], tipo: "numero" },
+  { chiave: "svuotamenti", titoli: ["Svuotamenti", "S"], tipo: "numero", min: 0 },
+  { chiave: "volume", titoli: ["Volume contenitore (L)", "volume", "VC"], tipo: "numero", min: 0 },
+  { chiave: "pesoStrutture", titoli: ["Peso strutture informatizzate (kg)", "PStIn"], tipo: "numero", min: 0 },
+  { chiave: "volumeStrutture", titoli: ["Volume strutture informatizzate (L)", "VStIn"], tipo: "numero", min: 0 },
+  { chiave: "pesoCdr", titoli: ["Peso centri di raccolta (kg)", "PCdR"], tipo: "numero", min: 0 },
+  { chiave: "volumeCdr", titoli: ["Volume centri di raccolta (L)", "VCdR"], tipo: "numero", min: 0 },
+  { chiave: "nUtenze", titoli: ["N. utenze (valori medi)", "n utenze", "numero utenze"], tipo: "numero", min: 0 },
 ];
 const SCHEMA_RIUSO = [
   { chiave: "utenza", titoli: ["Utenza", "codice utenza"], obbligatorio: true },
   { chiave: "macro", titoli: ["Macrocategoria", "tipo utenza", "macro"], obbligatorio: true },
   { chiave: "classe", titoli: ["Classe", "categoria"], obbligatorio: true },
   { chiave: "bene", titoli: ["Bene", "codice bene"], obbligatorio: true },
-  { chiave: "pezzi", titoli: ["Pezzi", "numero pezzi"], tipo: "numero" },
-  { chiave: "peso", titoli: ["Peso (kg)", "peso"], tipo: "numero" },
-  { chiave: "nUtenze", titoli: ["N. utenze (valori medi)", "n utenze"], tipo: "numero" },
+  { chiave: "pezzi", titoli: ["Pezzi", "numero pezzi"], tipo: "numero", min: 0 },
+  { chiave: "peso", titoli: ["Peso (kg)", "peso"], tipo: "numero", min: 0 },
+  { chiave: "nUtenze", titoli: ["N. utenze (valori medi)", "n utenze"], tipo: "numero", min: 0 },
 ];
 
 // Riporta la macrocategoria scritta nel file a "UD" (domestica) o "UnD"
@@ -847,10 +877,12 @@ function normalizzaMacro(v) {
      lo stato della pagina dopo un import
    - tipologie: [{ valore, etichetta }] ammesse.
    ATTENZIONE: l'import CSV salva SUBITO nel database e sostituisce tutte
-   le righe esistenti (cancella e reinserisce a blocchi di 1000, senza
-   transazione: un errore a metà lascia la tabella incompleta, ma il
-   calcolo non si può confermare finché non si ripete il salvataggio e non
-   si ripreme «Calcola», script 20). */
+   le righe esistenti (cancella e reinserisce a blocchi di 1000). I dati
+   si controllano tutti PRIMA di cancellare (collaudo V01, D07): un file con
+   errori non tocca la Banca Dati salvata. Resta senza transazione unica il
+   caso di un guasto di rete a metà salvataggio: la tabella può restare
+   incompleta, ma il calcolo non si può confermare finché non si ripete il
+   salvataggio e non si ripreme «Calcola» (script 20). */
 function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso, onConferimenti, onRiuso, tipologie }) {
   // Esito dell'ultima operazione: { testo, errore? } oppure null.
   const [stato, setStato] = useState(null);
@@ -865,8 +897,12 @@ function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso,
   };
 
   // Import di un file CSV. quale: "conferimenti" oppure "riuso".
-  // Righe con macrocategoria o tipologia non riconosciute sono scartate e
-  // segnalate (al massimo le prime 3 nel messaggio); le altre si salvano.
+  // TUTTO O NIENTE (collaudo V01, D07, 20/10/2026): se anche una sola riga
+  // ha un errore (valore negativo o non numerico, dato obbligatorio
+  // mancante, macrocategoria o tipologia non riconosciute) il file NON si
+  // importa e la Banca Dati salvata resta quella di prima; il messaggio
+  // elenca le prime righe da correggere. Così un import parziale non può
+  // sembrare un insieme di dati completo.
   async function importa(e, quale) {
     const file = e.target.files?.[0];
     // Svuota il campo: così si può reimportare lo stesso file.
@@ -899,6 +935,22 @@ function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso,
         return { ...r, macro, nUtenze: r.nUtenze || 1 };
       })
       .filter(Boolean);
+    // I numeri di riga degli scarti contano solo le righe lette senza
+    // errori: se ci sono anche errori di lettura si mostrano solo quelli
+    // (con il numero di riga esatto); il conteggio comprende tutto.
+    const errori = esito.righeScartate ? esito.errori || [] : scarti;
+    const daCorreggere = (esito.righeScartate || 0) + scarti.length;
+    if (daCorreggere > 0) {
+      setStato({
+        errore: true,
+        testo: `File non importato: ${daCorreggere} ${daCorreggere === 1 ? "riga da correggere" : "righe da correggere"} (${errori.slice(0, 3).join("; ")}${errori.length > 3 ? "…" : ""}). Nessuna riga salvata: la Banca Dati Utenze resta quella di prima.`,
+      });
+      return;
+    }
+    if (!righe.length) {
+      setStato({ errore: true, testo: "Il file non contiene righe di dati: nessuna modifica." });
+      return;
+    }
     setStato({ testo: `Salvataggio di ${righe.length} righe…` });
     const salva = quale === "conferimenti" ? salvaConferimenti : salvaRiuso;
     const { error } = await salva(calcoloId, righe, (fatte, tot) => setStato({ testo: `Salvataggio ${fatte} di ${tot} righe…` }));
@@ -908,11 +960,7 @@ function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso,
     }
     if (quale === "conferimenti") onConferimenti(righe);
     else onRiuso(righe);
-    const errori = [...(esito.errori || []), ...scarti];
-    setStato({
-      errore: errori.length > 0,
-      testo: `Importate ${righe.length} righe.` + (errori.length ? ` Scartate ${(esito.erroriTotali || 0) + scarti.length}: ${errori.slice(0, 3).join("; ")}` : ""),
-    });
+    setStato({ testo: `Importate ${righe.length} righe, tutte valide.` });
   }
 
   // Scarica un CSV di esempio con le intestazioni giuste e qualche riga tipo.
@@ -1203,8 +1251,10 @@ function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermat
       ["Anno", r.periodo.anno],
       ["Coefficiente primo anno", r.periodo.coefficiente],
       ["Qtot (t)", r.attesa.Qtot],
-      ["P%UD", r.attesa.pUd],
-      ["P%UnD", r.attesa.pUnD],
+      // Quote PEF in percentuale (0-100), come nella pagina e nel PDF
+      // (collaudo V01, R07: prima erano frazioni 0-1 con etichetta «%»).
+      ["P%UD (%)", r.attesa.pUd * 100],
+      ["P%UnD (%)", r.attesa.pUnD * 100],
       ["EA territorio (tCO2eq)", r.attesa.EAterritorio],
       ["FE indifferenziato (kgCO2eq/kg)", r.indifferenziato?.fe ?? ""],
       ["Utenze", r.utenze.totale],
@@ -1222,6 +1272,13 @@ function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermat
 
   return (
     <Passo titolo="Risultati" nota={`Calcolato il ${new Date(r.calcolatoIl).toLocaleString("it-IT")} con la Metodologia v${r.versioneMetodologia}.`}>
+      {/* Errori bloccanti (collaudo V01): nessun credito, risultato non salvato. */}
+      {r.errori?.length > 0 && (
+        <div role="alert" style={{ background: "#FBE9E7", border: `1px solid ${C.red}`, borderRadius: 9, padding: "10px 12px", marginBottom: 14, fontSize: 12.5, color: C.ink }}>
+          <b style={{ color: C.red }}>Calcolo bloccato: dati non ammessi.</b> Nessun credito calcolato e nessun risultato salvato. Correggi e premi di nuovo «Calcola».
+          <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>{r.errori.map((a) => <li key={a}>{a}</li>)}</ul>
+        </div>
+      )}
       {r.avvisi?.length > 0 && (
         <div style={{ background: C.ocraSoft, borderRadius: 9, padding: "10px 12px", marginBottom: 14, fontSize: 12.5 }}>
           <b>Da verificare:</b>

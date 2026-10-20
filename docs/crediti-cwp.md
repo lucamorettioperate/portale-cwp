@@ -59,6 +59,26 @@ modello da scaricare.
 7. **Residenti / non residenti**: la distinzione serve solo al buffer
    (Tabella 15); le classi domestiche sono quelle della delibera.
 
+**Domande aperte dal collaudo V01 (20/10/2026)** — nessuna è stata decisa
+dallo sviluppo; il portale resta com'è finché la Fondazione non indica la
+regola (risposte da scrivere in `docs/collaudo/Collaudo_V01_risposte.md`):
+
+8. **R01 — Tariffa puntuale e buffer.** Con le stesse opzioni (solo utenze
+   virtuose 20%, tutte le utenze monitorate, indifferenziato e organico
+   misurati, tariffa puntuale) il calcolatore dimezza tutto il buffer
+   ((20 + 20) / 2 = 20%), il simulatore solo la parte della Tabella 16
+   (20 + 20 / 2 = 30%). Quale lettura del Capitolo 7 vale?
+9. **R02 — Distribuzione delle utenze nel simulatore** (metodo «per
+   utenza»): la normale non troncata ammette produzioni negative e, con
+   media zero, quote evitate fino al 122,7% dell'atteso. Dominio e
+   distribuzione da approvare (troncamento, lognormale, dati individuali).
+10. **R03 — Crediti interi.** La parte economica conta i crediti interi di
+    ogni anno (292 invece di 292,8): conferma della convenzione e del
+    trattamento delle frazioni residue (anno per anno o sul periodo).
+11. **Riuso**: vedi punto 3 (segno dell'effetto del riuso).
+12. **R06 — Documenti obbligatori e fasi**: oggi un documento mancante è un
+    promemoria non bloccante; serve la matrice documenti/stati che blocca.
+
 ## Simulatore di scenari (prima versione 19/10/2026)
 
 Richiesto da Luca il 19/10/2026 (Registro, backlog punto 37). Pagina

@@ -11,6 +11,17 @@
    Registro sviluppo e deploy: capitolo 15 «Calcolo crediti», backlog 37.
    ========================================================================= */
 import { supabase } from "../supabase.js";
+import { erroriScenario } from "./simulatore.js";
+
+// Secondo strato del controllo dei dati (collaudo V01, D01/D02/D03): anche
+// se la pagina lasciasse passare un dato impossibile, qui non si scrive.
+// Il terzo strato è nel database (script 35). Restituisce { error } o null.
+function rifiutaSeNonAmmessi(dati) {
+  if (!dati) return null;
+  const errori = erroriScenario(dati);
+  if (!errori.length) return null;
+  return { data: null, error: { message: `Scenario non salvato, dati non ammessi: ${errori.slice(0, 3).join(" ")}${errori.length > 3 ? " …" : ""}` } };
+}
 
 const CAMPI_ELENCO = "id, organizzazione_id, comune, nome, durata, anno_inizio, crediti_netti_totali, rd_finale, simulato_il, aggiornato_il";
 
@@ -27,6 +38,8 @@ export async function leggiScenario(id) {
 // Nuovo scenario. Parametri: comune (testo), organizzazioneId (facoltativo),
 // nome, durata (7, 10 o 21), annoInizio, dati iniziali.
 export async function creaScenario({ comune, organizzazioneId = null, nome, durata, annoInizio, note = null, dati }) {
+  const rifiuto = rifiutaSeNonAmmessi(dati);
+  if (rifiuto) return rifiuto;
   return await supabase
     .from("scenario_simulazione")
     .insert({ comune, organizzazione_id: organizzazioneId, nome, durata, anno_inizio: annoInizio, note, dati })
@@ -38,6 +51,8 @@ export async function creaScenario({ comune, organizzazioneId = null, nome, dura
 // aggiornare (nome, note, durata, anno_inizio, dati, crediti_netti_totali,
 // rd_finale, simulato_il).
 export async function salvaScenario(id, campi) {
+  const rifiuto = rifiutaSeNonAmmessi(campi.dati);
+  if (rifiuto) return rifiuto;
   return await supabase.from("scenario_simulazione").update(campi).eq("id", id).select().single();
 }
 

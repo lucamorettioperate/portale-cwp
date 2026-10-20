@@ -33,6 +33,8 @@ import {
   BUFFER_MASSIMO,
   GIORNI_ANNO,
 } from "./parametri.js";
+// Controllo delle date inesistenti (collaudo V01, D04).
+import { dataIsoEsiste } from "../date.js";
 
 // Converte un valore in numero: accetta numeri, testi con virgola decimale
 // e spazi ("1 234,5"). Vuoto o non valido → 0 (mai NaN nei calcoli).
@@ -47,15 +49,72 @@ const num = (v) => {
 const somma = (arr, f) => arr.reduce((s, x) => s + f(x), 0);
 
 /* ---------------------------------------------------------------------
+   Controllo dei valori impossibili nella Banca Dati Utenze (collaudo V01,
+   D07, 20/10/2026). Svuotamenti, volumi, pesi, pezzi e numero di utenze
+   non possono essere negativi né testi non numerici: un peso negativo
+   ridurrebbe le emissioni di progetto e gonfierebbe i crediti.
+   Il controllo è lo stesso in tutti gli strati: import CSV della pagina,
+   salvataggio (archivio.js), controlli di coerenza (tracciato.js) e motore
+   (calcolaCrediti, che con valori impossibili non dà crediti). Nel
+   database lo ripetono i vincoli dello script 35.
+   Parametri: conferimenti e riuso nel formato del motore.
+   Restituisce { righe: numero di righe con valori non ammessi, messaggi:
+   i primi 10 esempi leggibili }. Vuoto (null, "") = valore assente, ammesso.
+   --------------------------------------------------------------------- */
+export const CAMPI_CONFERIMENTO = {
+  svuotamenti: "svuotamenti",
+  volume: "volume contenitore",
+  pesoStrutture: "peso strutture informatizzate",
+  volumeStrutture: "volume strutture informatizzate",
+  pesoCdr: "peso centri di raccolta",
+  volumeCdr: "volume centri di raccolta",
+  nUtenze: "N. utenze",
+};
+export const CAMPI_RIUSO = { pezzi: "pezzi", peso: "peso", nUtenze: "N. utenze" };
+
+// true se v è vuoto (null, "") oppure un numero finito non negativo
+// (anche testo con la virgola decimale, come num()).
+export function numeroAmmesso(v) {
+  if (v === null || v === undefined || v === "") return true;
+  const n = typeof v === "number" ? v : Number(String(v).replace(/\s/g, "").replace(",", "."));
+  return Number.isFinite(n) && n >= 0;
+}
+
+export function valoriNonAmmessiBdu({ conferimenti = [], riuso = [] }) {
+  const messaggi = [];
+  let righe = 0;
+  const controlla = (elenco, campi, nome) => {
+    elenco.forEach((r, i) => {
+      const errati = Object.entries(campi).filter(([k]) => !numeroAmmesso(r[k]));
+      if (!errati.length) return;
+      righe++;
+      if (messaggi.length < 10) {
+        messaggi.push(`${nome} ${i + 1} (utenza ${r.utenza || "?"}${r.tipologia ? ", " + r.tipologia : r.bene ? ", " + r.bene : ""}): ${errati.map(([k, t]) => `${t} ${r[k]}`).join(", ")}`);
+      }
+    });
+  };
+  controlla(conferimenti, CAMPI_CONFERIMENTO, "conferimento");
+  controlla(riuso, CAMPI_RIUSO, "riuso");
+  return { righe, messaggi };
+}
+
+
+/* ---------------------------------------------------------------------
    Capitolo 2 — Periodo di riferimento (formula 1)
    Coefficiente GGe/GG per un primo anno parziale (dall'avvio al 31/12).
    Parametri: dataAvvio (aaaa-mm-gg o vuota), anno di riferimento.
    Restituisce { coefficiente (0-1), giorni effettivi GGe }. Se l'avvio
    manca o cade in un altro anno vale 1 (anno intero). GG è fisso a 365
    anche negli anni bisestili; il tetto a 1 evita 366/365.
+   Una data che non esiste (es. 2025-02-31) o scritta male NON vale come
+   anno intero: restituisce { coefficiente: null, giorni: null, errore }
+   e calcolaCrediti non produce crediti (collaudo V01, D04).
    --------------------------------------------------------------------- */
 export function coefficientePrimoAnno(dataAvvio, anno) {
   if (!dataAvvio) return { coefficiente: 1, giorni: GIORNI_ANNO };
+  if (!dataIsoEsiste(dataAvvio)) {
+    return { coefficiente: null, giorni: null, errore: `La data di avvio «${dataAvvio}» non esiste nel calendario: correggila.` };
+  }
   const avvio = new Date(dataAvvio + "T00:00:00");
   if (isNaN(avvio) || avvio.getFullYear() !== Number(anno)) return { coefficiente: 1, giorni: GIORNI_ANNO };
   const fine = new Date(avvio.getFullYear(), 11, 31);
@@ -236,8 +295,9 @@ export function conferimentiInPeso({ conferimenti, riuso = [], ps, beni }) {
    domestiche non monitorate (Tab. 15), rifiuti misurati (Tab. 16, con le
    riduzioni per misure nei centri); poi la tariffa puntuale dimezza il
    totale e si applica il tetto dell'80%.
-   bufferManuale (se indicato) sostituisce il valore calcolato, sempre entro 0-80.
-   Restituisce { voci: [{ voce, valore }], calcolato, totale, manuale }.
+   bufferManuale (se indicato) sostituisce il valore calcolato, sempre entro 0-80;
+   un valore fuori da 0-80 o non numerico dà erroreManuale (bloccante).
+   Restituisce { voci: [{ voce, valore }], calcolato, totale, manuale, erroreManuale? }.
    --------------------------------------------------------------------- */
 export function calcolaBuffer({
   soloVirtuose,
@@ -290,7 +350,13 @@ export function calcolaBuffer({
   totale = Math.min(BUFFER_MASSIMO, totale);
 
   if (bufferManuale !== null && bufferManuale !== undefined && bufferManuale !== "") {
-    return { voci, calcolato: totale, totale: Math.min(BUFFER_MASSIMO, Math.max(0, num(bufferManuale))), manuale: true };
+    // Fuori da 0-80% o non numerico: errore esplicito (collaudo V01, D02),
+    // non più un taglio silenzioso; calcolaCrediti non dà crediti.
+    const v = typeof bufferManuale === "number" ? bufferManuale : Number(String(bufferManuale).replace(",", "."));
+    const erroreManuale = !Number.isFinite(v) || v < 0 || v > BUFFER_MASSIMO
+      ? `Buffer indicato a mano «${bufferManuale}»: deve essere un numero tra 0 e ${BUFFER_MASSIMO}% (Capitolo 7).`
+      : null;
+    return { voci, calcolato: totale, totale: Math.min(BUFFER_MASSIMO, Math.max(0, num(bufferManuale))), manuale: true, erroreManuale };
   }
   return { voci, calcolato: totale, totale, manuale: false };
 }
@@ -306,12 +372,28 @@ export function calcolaBuffer({
    Restituisce il risultato completo (la pagina ne salva un riepilogo senza
    il dettaglio per utenza in calcolo_crediti.risultato; lo usa anche il
    rapporto PDF): periodo, attesi, pesi specifici, dettaglio per
-   utenza, ΔI, buffer, crediti { lordi, buffer, netti, debito } in tCO₂eq e
-   avvisi (dati mancanti o incoerenti, senza duplicati).
+   utenza, ΔI, buffer, crediti { lordi, buffer, netti, debito } in tCO₂eq,
+   avvisi (dati mancanti o incoerenti, senza duplicati), errori (dati
+   impossibili: valori negativi, date inesistenti, buffer fuori da 0-80%) e
+   bloccato = true se ci sono errori: allora crediti e debito valgono zero e
+   la pagina non salva il risultato (collaudo V01, D02/D04/D07).
    --------------------------------------------------------------------- */
 export function calcolaCrediti(dati) {
   const avvisi = [];
-  const { coefficiente, giorni } = coefficientePrimoAnno(dati.dataAvvio, dati.anno);
+  // Errori bloccanti (collaudo V01, D04 e D07): con dati impossibili il
+  // calcolo non produce crediti (lordi, buffer e netti a zero, «bloccato»)
+  // e la pagina non salva il risultato.
+  const errori = [];
+  const periodo = coefficientePrimoAnno(dati.dataAvvio, dati.anno);
+  if (periodo.errore) errori.push(periodo.errore);
+  const coefficiente = periodo.coefficiente ?? 1;
+  const giorni = periodo.giorni;
+  const nonAmmessi = valoriNonAmmessiBdu({ conferimenti: dati.conferimenti || [], riuso: dati.riuso || [] });
+  if (nonAmmessi.righe) {
+    errori.push(`Banca Dati Utenze: ${nonAmmessi.righe} righe con valori negativi o non numerici (es. ${nonAmmessi.messaggi.slice(0, 3).join("; ")}). Correggi il file e importalo di nuovo.`);
+  }
+  const rifiutiNegativi = (dati.rifiuti || []).filter((r) => !numeroAmmesso(r.qtot));
+  if (rifiutiNegativi.length) errori.push(`Rifiuti del territorio con quantità negativa o non numerica: ${rifiutiNegativi.map((r) => r.codice || r.tipologia).slice(0, 5).join(", ")}.`);
 
   // Fattori di emissione per tipologia e per bene.
   // FE vuoto resta null (= mancante), non 0: così l'avviso lo segnala.
@@ -416,8 +498,12 @@ export function calcolaCrediti(dati) {
   // ΔI < 0 → crediti lordi = −ΔI / 1000 (da kg a t); ΔI > 0 → debito, nessun credito.
   // Crediti netti = lordi × (1 − buffer%) (docs/crediti-cwp.md, punto 4).
   const buffer = calcolaBuffer({ ...(dati.opzioni || {}), soloVirtuose: !!dati.opzioni?.soloVirtuose });
-  const creditiLordi = deltaI < 0 ? -deltaI / 1000 : 0;
-  const debito = deltaI > 0 ? deltaI / 1000 : 0;
+  if (buffer.erroreManuale) errori.push(buffer.erroreManuale);
+  // Con errori bloccanti nessun credito e nessun debito: il risultato
+  // serve solo a mostrare i dati e gli errori, non si salva.
+  const bloccato = errori.length > 0;
+  const creditiLordi = !bloccato && deltaI < 0 ? -deltaI / 1000 : 0;
+  const debito = !bloccato && deltaI > 0 ? deltaI / 1000 : 0;
   const quotaBuffer = (creditiLordi * buffer.totale) / 100;
   const creditiNetti = creditiLordi - quotaBuffer;
 
@@ -453,5 +539,7 @@ export function calcolaCrediti(dati) {
     buffer,
     crediti: { lordi: creditiLordi, buffer: quotaBuffer, netti: creditiNetti, debito },
     avvisi: [...new Set(avvisi)],
+    errori: [...new Set(errori)],
+    bloccato,
   };
 }
