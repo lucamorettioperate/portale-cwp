@@ -19,6 +19,7 @@ prova("sottopagine e indirizzi sconosciuti", () => {
   assert.equal(nomePagina("/crediti/abc"), "Calcolo crediti");
   assert.equal(nomePagina("/crediti-emessi"), "Crediti emessi");
   assert.equal(nomePagina("/sconosciuta"), "/sconosciuta");
+  assert.equal(nomePagina("/audit-utenti"), "Audit trail user");
   assert.equal(nomePagina(null), "—");
 });
 prova("durate leggibili", () => {

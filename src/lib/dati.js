@@ -347,7 +347,11 @@ function traduciErrore(error) {
 // Ottiene un URL temporaneo per scaricare un documento.
 // Archivio `documenti` (04_storage.sql, regola documenti_select rivista in 07).
 // L'indirizzo firmato vale 60 secondi: non va salvato né condiviso.
+// Ogni richiesta scrive nell'audit trail «download documento» (RPC
+// registra_download, script 33): chi, quando, quale documento. La
+// registrazione parte insieme alla richiesta e non la rallenta né la blocca.
 export async function urlDocumento(storagePath) {
+  supabase.rpc("registra_download", { p_percorso: storagePath }).then(() => {}, () => {});
   return await supabase.storage.from("documenti").createSignedUrl(storagePath, 60);
 }
 
@@ -456,6 +460,27 @@ export async function elencaUtenti() {
 // (29_amministratori.sql); solo staff. Restituisce { data: uuid | null }.
 export async function idAmministratorePrincipale() {
   return await supabase.rpc("amministratore_principale_id");
+}
+
+// ---- Audit trail user (script 33, solo Amministratore principale) ----
+
+// Tutti gli utenti con stato online, ultimo accesso, accessi e tentativi
+// non riusciti degli ultimi 30 giorni, ultima operazione e numero di
+// operazioni (RPC audit_utenti_stato).
+export async function auditUtentiStato() {
+  return await supabase.rpc("audit_utenti_stato");
+}
+
+// Registro degli accessi (entrate, uscite, tentativi non riusciti).
+// Filtri facoltativi: utente (id), dal / al (ISO), evento; limite righe.
+export async function auditRegistroAccessi({ utente = null, dal = null, al = null, evento = null, limite = 500 } = {}) {
+  return await supabase.rpc("audit_registro_accessi", { p_utente: utente, p_dal: dal, p_al: al, p_evento: evento, p_limite: limite });
+}
+
+// Operazioni dell'audit trail con nome dell'utente e codice della pratica.
+// Filtri facoltativi: utente (id), dal / al (ISO); limite righe.
+export async function auditOperazioniUtente({ utente = null, dal = null, al = null, limite = 500 } = {}) {
+  return await supabase.rpc("audit_operazioni_utente", { p_utente: utente, p_dal: dal, p_al: al, p_limite: limite });
 }
 
 // ---- Utenti online (script 32, backlog 38) ----

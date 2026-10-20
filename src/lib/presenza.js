@@ -25,6 +25,7 @@ const PAGINE = {
   "/profilo": "Il mio profilo",
   "/password": "Cambio password",
   "/programma": "Il Programma",
+  "/audit-utenti": "Audit trail user",
 };
 
 // Nome della pagina da un indirizzo: la voce più lunga che corrisponde

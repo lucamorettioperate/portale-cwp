@@ -29,13 +29,15 @@ import { COLORI as C, RUOLI } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Notifiche from "./Notifiche.jsx";
 import AssistenteVirtuale from "./AssistenteVirtuale.jsx";
-import { IndicatoreOnline, SegnalaPresenza } from "./UtentiOnline.jsx";
+import { IndicatoreOnline, SegnalaPresenza, usePrincipale } from "./UtentiOnline.jsx";
 
 // Voci di menu per ruolo: elenco di coppie [indirizzo, etichetta].
 // Qualunque ruolo diverso da admin e operatore (compreso un profilo
 // senza ruolo) riceve il menu del cliente/Comune.
 // Se si aggiunge una pagina in App.jsx, aggiungere qui la voce del ruolo.
-function vociMenu(ruolo) {
+// principale: vero per l'Amministratore principale, che ha in più la voce
+// «Audit trail user» (/audit-utenti, script 33).
+function vociMenu(ruolo, principale = false) {
   if (ruolo === "admin") {
     return [
       ["/", "Dashboard"],
@@ -49,6 +51,7 @@ function vociMenu(ruolo) {
       ["/reclami", "Reclami"],
       ["/impostazioni", "Impostazioni"],
       ["/documentazione", "Documentazione"],
+      ...(principale ? [["/audit-utenti", "Audit trail user"]] : []),
     ];
   }
   if (ruolo === "operatore") {
@@ -79,6 +82,7 @@ export default function Header() {
   const { utente, ruolo, esci, backendPronto, passwordDaCambiare } = useAuth();
   const r = ruolo ? RUOLI[ruolo] : null;
   const location = useLocation();
+  const principale = usePrincipale();
 
   return (
     <header
@@ -109,11 +113,12 @@ export default function Header() {
       {backendPronto && utente && (
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <nav aria-label="Menu principale" style={{ display: "flex", gap: 4, marginRight: 4, flexWrap: "wrap" }}>
-            {vociMenu(ruolo).map(([to, label]) => {
+            {vociMenu(ruolo, principale).map(([to, label]) => {
               // "/" è attiva solo sulla pagina iniziale esatta (altrimenti
               // sarebbe sempre evidenziata); le altre anche sulle sottopagine
-              // (es. /crediti/123 evidenzia «Calcolo crediti»).
-              const attiva = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+              // (es. /crediti/123 evidenzia «Calcolo crediti»), ma /audit non si
+              // accende su /audit-utenti.
+              const attiva = to === "/" ? location.pathname === "/" : location.pathname === to || location.pathname.startsWith(to + "/");
               return (
                 <Link
                   key={to}

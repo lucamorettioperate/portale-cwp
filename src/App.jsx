@@ -32,6 +32,7 @@ import GestioneUtenti from "./pages/GestioneUtenti.jsx";
 import Cruscotto from "./pages/Cruscotto.jsx";
 import TuoiDocumenti from "./pages/TuoiDocumenti.jsx";
 import Audit from "./pages/Audit.jsx";
+import AuditUtenti from "./pages/AuditUtenti.jsx";
 import VerificaMfa from "./pages/VerificaMfa.jsx";
 import Crediti from "./pages/Crediti.jsx";
 import CalcoloCrediti from "./pages/CalcoloCrediti.jsx";
@@ -163,6 +164,15 @@ export default function App() {
         element={
           <Protetta>
             <Audit />
+          </Protetta>
+        }
+      />
+      {/* Audit trail user: solo Amministratore principale (script 33). */}
+      <Route
+        path="/audit-utenti"
+        element={
+          <Protetta>
+            <AuditUtenti />
           </Protetta>
         }
       />

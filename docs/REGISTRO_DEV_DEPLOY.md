@@ -250,6 +250,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `31_assistente.sql` | Assistente virtuale: tabella `assistente_uso` (utente, giorno in ora italiana, domande, token in entrata e in uscita; nessun testo), RLS «solo le proprie righe»; `assistente_registra_uso` e `assistente_domande_oggi` solo per la funzione del server (esecuzione tolta agli utenti); `assistente_riepilogo_uso()` per mese, solo Amministratori | 19/10/2026 — provato sul banco locale; **eseguito in produzione** da Luca il 19/10 |
 | `30_elimina_utente.sql` | Cancellazione di un utente mai attivo: `utente_mai_attivo` (nessuna voce di audit come autore e nessuna riga che lo indichi come autore o responsabile in qualunque tabella con chiave esterna verso `auth.users` o `profilo` non a cascata: documenti, messaggi, note, pagamenti, calcoli, scenari, reclami…; uso interno), `admin_utenti_eliminabili()` per la pagina Utenti, `admin_elimina_utente(id)` (solo Admin, mai sé stessi né il principale; cancella da `auth.users`, a cascata profilo, associazioni e notifiche; voce «cancellazione profilo» nell'audit) | 19/10/2026 — provato sul banco locale (`t30b.sql`); eseguito in produzione da Luca il 19/10 (pulsante «Elimina» verificato sul portale); controllo esteso alle colonne «autore» lo stesso giorno: da rieseguire la sola `utente_mai_attivo` |
 | `32_utenti_online.sql` | Utenti online (backlog 38): tabella `presenza` (una riga per utente: ultima segnalazione, inizio del collegamento, pagina aperta; nessun IP, nessuno storico; RLS senza regole), `segnala_presenza(pagina)` e `presenza_uscita()` per ognuno solo per sé, `utenti_online()` (visti nelle ultime 24 ore, online se l'ultima segnalazione ha meno di 2 minuti) solo per l'Amministratore principale | 20/10/2026 — provato sul banco locale; **da eseguire in produzione** |
+| `33_audit_trail_user.sql` | Audit trail user (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **da eseguire in produzione** dopo il 32 |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
 script successivi.
@@ -526,6 +527,23 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   persa e righe in più: «Unterminated regexp literal»); il codice è stato
   caricato nell'editor direttamente dal repository. Verify JWT attivo su
   tutte e tre. Registro 4.5.
+- **Audit trail user** (backlog 40, richiesta di Luca) — sezione
+  `/audit-utenti` solo per l'Amministratore principale: scheda «Utenti e
+  stato online» (tutti gli utenti, online o no, pagina aperta, ultimo
+  accesso, accessi e tentativi non riusciti in 30 giorni, ultima
+  operazione), «Accessi» (entrate, uscite con Esci, tentativi non riusciti,
+  filtri per utente, periodo ed evento) e «Operazioni» (audit trail per
+  utente con pratica e documento); ordinamento ed export CSV. Script
+  `33_audit_trail_user.sql` (registro immutabile, nessun IP, funzioni di
+  lettura riservate); il portale registra accesso, uscita e tentativo non
+  riuscito (`AuthContext.jsx`) e lo scaricamento dei documenti
+  (`urlDocumento`). Voce di menu e collegamento dal pannello «n online».
+  Provato sul banco locale (rifiuti per gli altri Admin, limite dei
+  tentativi, immutabilità, download solo dei documenti visibili) e a
+  schermo su computer e telefono. Corretto anche l'evidenziazione del
+  menu (/audit non si accende su /audit-utenti). Registro 4.6, Manuale
+  Utente 2.9, Manuale Amministratore 3.9, Manuale Test 3.5, Ripristino 1.3,
+  Presentazione 2.5.
 
 ### 19 ottobre 2026
 - **Assistente virtuale attivato** — Luca ha eseguito lo script 31,
@@ -1136,7 +1154,8 @@ completato (va barrato qui e annotato in Cronologia).
 aperte; il dettaglio è nei punti numerati qui sotto.
 
 *Azioni di Luca (Claude non le può fare: chiavi, pubblicazioni, account)*
-- Eseguire lo script `32_utenti_online.sql` nel SQL Editor (utenti online).
+- Eseguire nel SQL Editor lo script `32_utenti_online.sql` e poi il
+  `33_audit_trail_user.sql` (sezione «Audit trail user»).
 - ~~Ripubblicare le funzioni `assistente`, `crea-utente` e
   `reimposta-password`~~ — fatto il 20/10 (codice caricato nell'editor di
   Supabase direttamente dal repository, Verify JWT attivo su tutte e tre).
@@ -1211,7 +1230,7 @@ aperte; il dettaglio è nei punti numerati qui sotto.
 
 **Sicurezza**
 
-- **14.** Registro di sicurezza (accessi, tentativi falliti, cambi di permessi).
+- **14.** Registro di sicurezza (accessi, tentativi falliti, cambi di permessi). Il 20/10 fatti registro degli accessi e dei tentativi non riusciti (script 33, sezione «Audit trail user»); i cambi di permessi erano già nell'audit (tabelle profilo e utente_organizzazione). Restano gli avvisi automatici su accessi anomali.
 - **15.** Attivazione della verifica in due passaggi (MFA).
 - **16.** Antivirus sui file caricati (a fine progetto).
 - **17.** Verifica del dominio email su Resend.
@@ -1272,6 +1291,7 @@ aperte; il dettaglio è nei punti numerati qui sotto.
 - ~~**35.** Allineamento ai documenti ufficiali del Programma~~ — fatto la sera del 18/10 (script 22-24, portale, funzione `consultazione-pubblica`): vedi Decisioni e Cronologia. Resta SPID/CIE/CNS (punto 36).
 - **36.** Accesso degli stakeholders con SPID, CIE o CNS (Guida 3.9): adesione come fornitore di servizi (AgID o aggregatore), poi integrazione nella pagina del feedback pubblico.
 - ~~**38.** **Utenti online**~~ — richiesto da Luca il 19/10, fatto il 20/10 (script 32, componente `UtentiOnline.jsx`): l'Amministratore principale vede quanti e quali utenti sono collegati, con pagina aperta e durata, e chi è stato visto nelle ultime 24 ore. Da eseguire in produzione lo script 32.
+- ~~**40.** **Audit trail user**~~ — richiesto da Luca il 20/10, fatto lo stesso giorno (script 33, pagina `/audit-utenti`): sezione solo per l'Amministratore principale con utenti e stato online, registro degli accessi (entrate, uscite, tentativi non riusciti) e operazioni dell'audit trail per utente, compreso lo scaricamento dei documenti; CSV. Da eseguire in produzione lo script 33.
 - ~~**39.** **Messaggi d'errore dell'assistente in italiano semplice**~~ — fatto il 20/10 (funzione `assistente` ripubblicata lo stesso giorno). Proposto il 19/10: oggi, se Anthropic rifiuta una richiesta (per esempio credito finito), l'utente vede il messaggio tecnico in inglese. Da sostituire con frasi semplici («L'assistente è momentaneamente non disponibile, riprova più tardi»), lasciando il dettaglio tecnico nei log della funzione. Richiede di ripubblicare la funzione `assistente`. Confermato da Luca il 20/10.
 - **21.** **Assistente virtuale (Claude)** integrato nel portale — richiesto da Luca il 18/10, confermato tra i punti aperti il 19/10. **Prima versione fatta il 19/10** (Amministratori ed enti, risposte dalla base di conoscenza su portale e tariffe: script 31, funzione `assistente`, componente `AssistenteVirtuale`); **attivo dal 19/10** (chiave e crediti della Claude Console di Luca; da decidere se spostare la fatturazione su un'organizzazione della Fondazione). Durante l'attesa della risposta la finestra mostra «Un attimo…» (richiesta di Luca del 19/10). Restano i passi successivi descritti qui sotto (Operatori, aiuto sulla singola pratica). Funziona con i modelli Claude di Anthropic tramite API (lo sviluppo del portale si fa con Claude Code). Ambito da definire; usi possibili: assistente per gli utenti dei Comuni (come compilare, cosa manca nella pratica), supporto agli Operatori (controllo completezza dei documenti, bozze di richieste di integrazione e di risposte ai commenti), verifica del tracciato dati prima dell'import, spiegazione dei risultati del calcolo crediti. Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che faccia da tramite, regole su quali dati l'agente può leggere (privacy) e registrazione delle sue azioni nell'audit.
 
@@ -1387,6 +1407,8 @@ main.jsx → App.jsx (route, Protetta: accesso, password temporanea, MFA)
 | `password_cambiata` | 15 | tutti | Toglie l'obbligo di cambio password e scrive l'audit |
 | `segnala_presenza`, `presenza_uscita` | 32 | tutti | Presenza per «Utenti online» (all'apertura delle pagine, una volta al minuto, all'uscita) |
 | `utenti_online`, `amministratore_principale_id` | 32, 29 | Amministratore principale | Elenco degli utenti online e visti nelle ultime 24 ore; id dell'Amministratore principale |
+| `registra_accesso`, `registra_uscita`, `registra_accesso_fallito`, `registra_download` | 33 | tutti (il fallito anche senza accesso) | Registro degli accessi e «download documento» nell'audit |
+| `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 33 | Amministratore principale | Sezione «Audit trail user» |
 
 ### 14.5 Tabelle e archivi
 
@@ -1407,6 +1429,7 @@ main.jsx → App.jsx (route, Protetta: accesso, password temporanea, MFA)
 | `recupero_password_richiesta` | 16 | Limite alle richieste di recupero password |
 | `assistente_uso` | 31 | Domande e token dell'assistente per utente e giorno (nessun testo) |
 | `presenza` | 32 | Ultima presenza di ogni utente nel portale (Utenti online) |
+| `registro_accessi` | 33 | Accessi, uscite e tentativi non riusciti (immutabile) |
 
 Archivi (Storage, tutti privati): `documenti` (file delle pratiche,
 cartella = id della pratica), `modelli` (modelli per i Comuni),
@@ -1451,13 +1474,13 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 130 file, 30.971 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 132 file, 31.818 righe in tutto.
 
 **Avvio e instradamento**
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `src/App.jsx` | 244 | associa ogni indirizzo alla sua pagina e decide chi può aprirla. Le pagine riservate passano dal componente Protetta, che nell'ordine chiede: sessione attiva, eventuale nuova password (link di recupero o password temporanea),… |
+| `src/App.jsx` | 254 | associa ogni indirizzo alla sua pagina e decide chi può aprirla. Le pagine riservate passano dal componente Protetta, che nell'ordine chiede: sessione attiva, eventuale nuova password (link di recupero o password temporanea),… |
 | `src/main.jsx` | 32 | monta l'applicazione nell'elemento #root di index.html e la avvolge nei contesti globali: StrictMode (controlli di React in sviluppo), BrowserRouter (indirizzi /pratiche, /crediti, …) e AuthProvider (sessione, ruolo, MFA).… |
 
 **Pagine (src/pages)**
@@ -1467,6 +1490,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 130 file, 30.971 righe 
 | `src/pages/Anagrafiche.jsx` | 214 | censimento di Organizzazioni ed Enti di Validazione (requisiti §3: l'Operatore «censisce Organizzazioni ed Enti di Validazione»). - Organizzazioni: elenco con ricerca, dati essenziali (tipo, codice fiscale, partita IVA, PEC,… |
 | `src/pages/AreaCliente.jsx` | 148 | il Comune/azienda vede l'elenco dei propri Progetti (schede compatte con stato) e, sotto, il dettaglio della pratica selezionata: fasi, documenti, integrazioni, messaggi. Link al Manuale Utente in PDF. |
 | `src/pages/Audit.jsx` | 155 | tabella degli eventi registrati (data, utente, operazione, pratica, passaggio di stato, motivazione), con ricerca testuale e pulsante per caricare eventi meno recenti (requisiti §10). Ogni colonna si ordina con un clic… |
+| `src/pages/AuditUtenti.jsx` | 467 | Nomi leggibili degli eventi di accesso. |
 | `src/pages/BackOffice.jsx` | 240 | a sinistra l'elenco dei Progetti (con ricerca oltre 4 voci), a destra il dettaglio della pratica scelta con le sue fasi, documenti, integrazioni, consultazione, pagamenti, rapporti. Pulsante «+ Nuovo progetto» per registrare un… |
 | `src/pages/CalcoloCrediti.jsx` | 1491 | editor di un calcolo dei crediti di CO₂eq secondo la Metodologia CWP v1.2, a passi (menu a sinistra): import del tracciato dati, impostazioni, rifiuti del territorio, delibera tariffaria, fattori di emissione, Banca Dati Utenze,… |
 | `src/pages/CambiaPassword.jsx` | 163 | scegliere una nuova password, con le regole di src/lib/password.js. - "obbligatorio": primo accesso con password temporanea (o reimpostata dall'Amministratore): finché non la cambia l'utente non entra; - "volontario": l'utente… |
@@ -1497,7 +1521,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 130 file, 30.971 righe 
 | `src/components/CreditiEmessi.jsx` | 319 | crediti di carbonio emessi da un Rapporto di Monitoraggio registrato (Guida al Programma 6.3.2 e 6.3.3, Tabella 5; Standard 6.2; script 24): - emissione di un lotto con ID univoci (solo Amministratori), anche collegata a un… |
 | `src/components/DettaglioPratica.jsx` | 912 | pagina di dettaglio di una pratica (Progetto o Rapporto di Monitoraggio) con le sue 7 fasi (Guida al Programma 6.2 e 6.3.1). |
 | `src/components/Documenti.jsx` | 325 | gestione documentale di una pratica: elenco con versioni, caricamento di nuovi file e download. Lo staff sceglie anche tipologia e visibilità (Cliente, Pubblico) e può cambiarle dopo il caricamento. |
-| `src/components/Header.jsx` | 175 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
+| `src/components/Header.jsx` | 180 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
 | `src/components/Integrazioni.jsx` | 266 | richieste di integrazione di una fase (requisiti §4). Ciclo: l'Operatore richiede → il Cliente carica un documento e risponde → l'Operatore chiude la richiesta. Con la chiusura della fase la possibilità di integrare termina. La… |
 | `src/components/Messaggi.jsx` | 129 | conversazione tra Comune e Fondazione Operate dentro una pratica (backlog 26). Mostra i messaggi in ordine di data, quelli dell'utente a destra, e permette di scriverne di nuovi. |
 | `src/components/NoteFase.jsx` | 108 | note scritte sotto una delle fasi di una pratica (backlog 10). Lo staff legge tutte le note e ne aggiunge di nuove, interne (solo Fondazione) o condivise con il Comune; il Comune vede solo le condivise. |
@@ -1506,7 +1530,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 130 file, 30.971 righe 
 | `src/components/Ordinamento.jsx` | 110 | richiesta di Luca del 19/10/2026: ogni informazione tabellare del portale si deve poter ordinare per ciascun campo. Tre elementi: - useOrdinamento(righe, colonne, iniziale): restituisce le righe ordinate e lo stato (colonna e… |
 | `src/components/Pagamenti.jsx` | 306 | riquadro «Pagamenti» di una pratica (requisiti §7). Nessun incasso online: il back-office censisce il piano previsto (più voci con scadenze diverse) e registra a mano gli incassi. Mostra totali, incassato, da incassare e lo… |
 | `src/components/Rapporti.jsx` | 134 | elenco dei Rapporti di Monitoraggio annuali di un Progetto (requisiti §2): uno per anno, in sequenza, fino a 10 con il periodo di riferimento di 10 anni o fino a 21 con 7 anni rinnovabili 3 volte (Standard 4.3.8, script 23).… |
-| `src/components/UtentiOnline.jsx` | 195 | Ora italiana (hh:mm) di un istante; con il giorno se non è oggi. |
+| `src/components/UtentiOnline.jsx` | 204 | Ora italiana (hh:mm) di un istante; con il giorno se non è oggi. |
 | `src/components/crediti/ImportaTracciato.jsx` | 283 | passo «Importa il tracciato» del calcolo dei crediti (backlog 1-5). L'Amministratore sceglie il tracciato dati del Comune: - dai documenti della pratica del calcolo (file .xlsx o .zip caricati dal Comune), oppure dal proprio… |
 | `src/components/crediti/RegistroCrediti.jsx` | 178 | registro dei crediti (backlog 7), vista «Registro» della pagina Calcolo crediti. Elenca i calcoli ex post confermati con il numero di registro assegnato dal database alla conferma (CWP-REG-AAAA-NNNN). Un calcolo corretto con una… |
 | `src/components/crediti/TabellaDati.jsx` | 208 | tabella di dati modificabile in pagina per il calcolo dei crediti CWP (conferimenti, utenze, riuso…), con aggiunta ed eliminazione di righe, importazione da CSV (anche salvato da Excel in italiano) e scaricamento di un modello… |
@@ -1522,7 +1546,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 130 file, 30.971 righe 
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `src/lib/AuthContext.jsx` | 199 | tiene in memoria la sessione Supabase Auth, il profilo applicativo (ruolo, organizzazione, flag password temporanea) e lo stato MFA. Espone le funzioni accedi, esci, richiediRecuperoPassword, cambiaPassword e caricaMfa. Ogni… |
+| `src/lib/AuthContext.jsx` | 219 | tiene in memoria la sessione Supabase Auth, il profilo applicativo (ruolo, organizzazione, flag password temporanea) e lo stato MFA. Espone le funzioni accedi, esci, richiediRecuperoPassword, cambiaPassword e caricaMfa. Ogni… |
 | `src/lib/crediti/archivio.js` | 244 | crea, legge, aggiorna ed elimina i calcoli (testata e dati in calcolo_crediti) e la loro Banca Dati Utenze (righe di conferimento e di riuso), anche quando le righe sono centinaia di migliaia (invio e lettura a blocchi). Crea le… |
 | `src/lib/crediti/calcolo.js` | 457 | funzioni pure (nessun accesso al database): ricevono i dati del calcolo e restituiscono risultati intermedi e finali, con il riferimento alla formula della Metodologia accanto a ogni passaggio. |
 | `src/lib/crediti/parametri.js` | 95 | tabelle numeriche della Metodologia usate come valori iniziali di ogni calcolo: fattori di emissione per tipologia di rifiuto (Tab. 3, 4, 7), pesi specifici (Tab. 8), beni a riuso (Tab. 5), buffer (Tab. 15 e Cap. 7), giorni… |
@@ -1536,13 +1560,13 @@ Inventario generato da `strumenti/inventario_codice.py`: 130 file, 30.971 righe 
 | `src/lib/csv.js` | 157 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
 | `src/lib/cwpProgram.js` | 185 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
 | `src/lib/date.js` | 68 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO (anche la data italiana, indipendente dal fuso del computer). |
-| `src/lib/dati.js` | 1101 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
+| `src/lib/dati.js` | 1126 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
 | `src/lib/fascicolo.js` | 354 | ZIP con: riepilogo PDF (Riepilogo.pdf, src/lib/fascicoloPdf.js), dati della pratica con l'Ente di Validazione, fasi, tutti i documenti in tutte le versioni (cartella Validazione per il rapporto dell'Ente; per i Rapporti anche il… |
 | `src/lib/fascicoloPdf.js` | 129 | un documento leggibile da stampare o archiviare insieme ai file del fascicolo: dati della pratica e dell'Ente di Validazione, fasi, elenco dei documenti (con l'impronta SHA-256), integrazioni, consultazioni pubbliche, pagamenti… |
 | `src/lib/file.js` | 158 | prima di inviare un file all'archivio controlla formato ammesso, dimensione, contenuto reale (primi byte, "firma" del formato) e prepara un nome sicuro per il percorso nell'archivio. Traduce anche gli errori dello Storage di… |
 | `src/lib/ordinamento.js` | 37 | logica pura (senza React) usata dal componente src/components/Ordinamento.jsx. Numeri come numeri, booleani (falso prima di vero), date ISO e testi in ordine alfabetico italiano senza distinguere maiuscole e con i numeri nel… |
 | `src/lib/password.js` | 70 | controllo delle regole della password prima dell'invio, generazione della password temporanea assegnata dall'Amministratore, traduzione in italiano degli errori di Supabase Auth. |
-| `src/lib/presenza.js` | 51 | trasformare i dati della presenza (script 32) in testi leggibili: nome della pagina aperta e da quanto tempo un utente è collegato. |
+| `src/lib/presenza.js` | 52 | trasformare i dati della presenza (script 32) in testi leggibili: nome della pagina aperta e da quanto tempo un utente è collegato. |
 | `src/lib/supabase.js` | 37 | crea l'unico client @supabase/supabase-js usato dal portale (database, Auth, Storage, Edge Functions). Legge URL e chiave dalle variabili d'ambiente (file .env in locale, mai pubblicato; in produzione le variabili del progetto… |
 | `src/lib/tariffe.js` | 110 | calcolare le voci di pagamento proposte per una pratica dalle tariffe massime dello Schema tariffario (IVA esclusa). Sono proposte: lo staff le controlla, può cambiare l'importo e le salva come voci di pagamento (Pagamenti.jsx).… |
 
@@ -1582,6 +1606,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 130 file, 30.971 righe 
 | `supabase/30_elimina_utente.sql` | 104 | un Amministratore può cancellare un utente che non ha mai operato nel portale, cioè che non compare come autore di nessuna voce dell'audit trail (nessun documento, messaggio, modifica, cambio della password…). Serve, ad esempio,… |
 | `supabase/31_assistente.sql` | 81 | la funzione del server «assistente» (Claude di Anthropic) registra quante domande fa ogni utente al giorno e i token usati, per applicare un limite giornaliero e controllare la spesa. Nessun testo delle domande o delle risposte… |
 | `supabase/32_utenti_online.sql` | 112 | l'Amministratore principale (script 29) vede quanti e quali utenti sono collegati al portale in questo momento, in quale pagina sono e da quanto, più gli accessi delle ultime 24 ore. |
+| `supabase/33_audit_trail_user.sql` | 267 | 33 — AUDIT TRAIL USER (solo Amministratore principale) |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
@@ -1603,7 +1628,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 130 file, 30.971 righe 
 | `test/csv.test.mjs` | 53 | verifica che i CSV salvati da Excel in italiano (BOM, separatore ";", virgola decimale, punto delle migliaia, testi tra virgolette con ";" dentro, righe vuote) siano letti correttamente; che intestazioni con maiuscole/accenti… |
 | `test/date.test.mjs` | 31 | verificare le date in ora italiana usate per aprire le consultazioni (30 giorni) e per i nomi dei file: oggiItalia() deve dare sempre aaaa-mm-gg in fuso Europe/Rome, aggiungiGiorni() deve contare i giorni sul calendario (fine… |
 | `test/ordinamento.test.mjs` | 36 | — |
-| `test/presenza.test.mjs` | 32 | — |
+| `test/presenza.test.mjs` | 33 | — |
 | `test/qualita.test.mjs` | 43 | verificare il confronto con la Tabella 3 dello Standard CWP (soglia ±30%) e gli indicatori di completezza, unicità, letture a buon fine e tempestività. |
 | `test/simulatore.test.mjs` | 271 | verificare il riepilogo dell'anno base (totale, pro capite, % differenziata, fattore del secco), i dati dal cluster SOSE e da un calcolo, gli anni del periodo (7, 10, 21), la traiettoria lineare e la stima dei crediti anno per… |
 | `test/simulatoreExport.test.mjs` | 60 | verificare che le tabelle preparate per PDF ed Excel riprendano i risultati del simulatore (sintesi, anni, economia, costi del Caso 1), che il file .xlsx sia un archivio valido con i fogli attesi e numeri veri nelle celle, e che… |
@@ -1621,7 +1646,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 130 file, 30.971 righe 
 | `strumenti/impagina_pdf.py` | 429 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 716 | — |
+| `strumenti/revisioni_documenti.json` | 758 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

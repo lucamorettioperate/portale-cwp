@@ -22,6 +22,7 @@
    Registro sviluppo e deploy: capitolo «Portale (frontend)»; script 32.
    ========================================================================= */
 import React, { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { COLORI as C, RUOLI } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import { elencaUtentiOnline, idAmministratorePrincipale, segnalaPresenza } from "../lib/dati.js";
@@ -58,17 +59,12 @@ export function SegnalaPresenza({ pagina }) {
 // del browser (la risposta non cambia mentre si naviga).
 let principaleInMemoria = null;
 
-/* Pulsante «n online» e pannello. Nessuna prop: legge utente e ruolo da
-   useAuth(). Non mostra nulla a chi non è l'Amministratore principale. */
-export function IndicatoreOnline() {
+/* Hook: vero se l'utente collegato è l'Amministratore principale (script
+   29). Usato anche dall'intestazione per la voce «Audit trail user» e dalla
+   pagina /audit-utenti. È solo interfaccia: i dati li protegge il database. */
+export function usePrincipale() {
   const { utente, ruolo } = useAuth();
   const [principale, setPrincipale] = useState(principaleInMemoria);
-  const [righe, setRighe] = useState([]);
-  const [aperto, setAperto] = useState(false);
-  const [pos, setPos] = useState(null);
-  const box = useRef(null);
-
-  // Chiede al database chi è l'Amministratore principale (solo agli Admin).
   useEffect(() => {
     if (ruolo !== "admin" || principaleInMemoria) return;
     idAmministratorePrincipale().then(({ data }) => {
@@ -78,8 +74,18 @@ export function IndicatoreOnline() {
       }
     });
   }, [ruolo]);
+  return Boolean(ruolo === "admin" && utente && principale === utente.id);
+}
 
-  const sonoPrincipale = ruolo === "admin" && utente && principale === utente.id;
+/* Pulsante «n online» e pannello. Nessuna prop. Non mostra nulla a chi non
+   è l'Amministratore principale. In fondo al pannello il collegamento alla
+   sezione «Audit trail user» (/audit-utenti). */
+export function IndicatoreOnline() {
+  const sonoPrincipale = usePrincipale();
+  const [righe, setRighe] = useState([]);
+  const [aperto, setAperto] = useState(false);
+  const [pos, setPos] = useState(null);
+  const box = useRef(null);
 
   // Elenco aggiornato ogni 30 secondi (solo per l'Amministratore principale).
   useEffect(() => {
@@ -169,6 +175,9 @@ export function IndicatoreOnline() {
               {recenti.map((r) => <RigaUtente key={r.id} r={r} />)}
             </>
           )}
+          <Link to="/audit-utenti" onClick={() => setAperto(false)} style={{ display: "block", padding: "11px 14px", fontSize: 12.5, fontWeight: 700, color: C.green, textDecoration: "none", borderTop: `1px solid ${C.line}` }}>
+            Apri «Audit trail user»: tutti gli utenti, accessi e operazioni →
+          </Link>
         </div>
       )}
     </div>

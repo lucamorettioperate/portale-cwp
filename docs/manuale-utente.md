@@ -409,7 +409,7 @@ L'assistente risponde solo con le informazioni di questo manuale e delle tariffe
 
 ## Collegamento al portale
 
-Mentre avete il portale aperto, il portale registra **quando** siete collegati e **quale pagina** state guardando. Si conserva solo l'ultimo collegamento di ciascun utente (nessuno storico e nessun indirizzo di rete) e lo vede soltanto l'Amministratore principale della Fondazione, per sapere chi è collegato in quel momento. Con **Esci** risultate subito non collegati.
+Mentre avete il portale aperto, il portale registra **quando** siete collegati e **quale pagina** state guardando: di questo si conserva solo l'ultimo collegamento. Inoltre, come per ogni sistema che gestisce dati certificati, il portale tiene un **registro degli accessi** (data e ora di ogni entrata, di ogni uscita con **Esci** e dei tentativi di accesso con password errata) e un **registro delle operazioni** (per esempio caricamento e scaricamento dei documenti, risposte alle integrazioni), con data e ora. Non si registrano indirizzi di rete. I registri non si possono modificare e li consulta soltanto l'Amministratore principale della Fondazione, per sicurezza e controllo. Con **Esci** risultate subito non collegati.
 
 ## Domande frequenti
 

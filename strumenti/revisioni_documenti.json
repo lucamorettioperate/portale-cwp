@@ -113,6 +113,12 @@
       "data": "20/10/2026",
       "descrizione": "Nuovo capitolo «Collegamento al portale» (presenza visibile all'Amministratore principale).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.9",
+      "data": "20/10/2026",
+      "descrizione": "Collegamento al portale: registro degli accessi e delle operazioni.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -289,6 +295,12 @@
       "data": "20/10/2026",
       "descrizione": "Utenti online; PDF ed Excel del simulatore; messaggi d'errore dell'assistente.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.9",
+      "data": "20/10/2026",
+      "descrizione": "Nuovo capitolo «Audit trail user».",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -440,6 +452,12 @@
       "rev": "3.4",
       "data": "20/10/2026",
       "descrizione": "Prove 8b.7-8b.7e (PDF, Excel, telefono), 10.12 (utenti online), 10.11d.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.5",
+      "data": "20/10/2026",
+      "descrizione": "Prove 10.12b-10.13d (Audit trail user).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -659,6 +677,12 @@
       "data": "20/10/2026",
       "descrizione": "Funzioni assistente, crea-utente e reimposta-password ripubblicate.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.6",
+      "data": "20/10/2026",
+      "descrizione": "Script 33 Audit trail user (registro accessi, download documenti, lettura riservata); backlog 14 e 40.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -678,6 +702,12 @@
       "rev": "1.2",
       "data": "20/10/2026",
       "descrizione": "Script 01-32.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.3",
+      "data": "20/10/2026",
+      "descrizione": "Script 01-33.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -716,6 +746,12 @@
       "rev": "2.4",
       "data": "20/10/2026",
       "descrizione": "Novità del 20 ottobre: utenti online, PDF ed Excel del simulatore, errori dell'assistente in italiano.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.5",
+      "data": "20/10/2026",
+      "descrizione": "Audit trail user tra le novità del 20 ottobre.",
       "autore": "Fondazione Operate"
     }
   ]

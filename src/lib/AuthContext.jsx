@@ -16,6 +16,9 @@
      `password_temporanea` da 10_mfa_profilo.sql e 15_password.sql);
    - RPC `mio_stato_mfa` (10_mfa_profilo.sql) e `password_cambiata`
      (15_password.sql);
+   - RPC `registra_accesso`, `registra_accesso_fallito`, `registra_uscita`
+     (33_audit_trail_user.sql): registro degli accessi per la sezione
+     «Audit trail user» dell'Amministratore principale;
    - Edge Function `recupera-password` (email di recupero con Resend).
 
    Sicurezza: il ruolo letto qui serve solo a decidere cosa mostrare.
@@ -93,7 +96,11 @@ export function AuthProvider({ children }) {
     const { data: sub } = supabase.auth.onAuthStateChange(async (evento, sess) => {
       // PASSWORD_RECOVERY: la sessione nasce dal link dell'email di recupero.
       // App.jsx manda l'utente a /reimposta-password prima di ogni altra pagina.
-      if (evento === "PASSWORD_RECOVERY") setRecupero(true);
+      if (evento === "PASSWORD_RECOVERY") {
+        setRecupero(true);
+        // Anche l'ingresso dal link di recupero è un accesso (script 33).
+        supabase.rpc("registra_accesso", { p_modo: "recupero password" }).then(() => {}, () => {});
+      }
       setSessione(sess);
       if (sess?.user) {
         await caricaProfilo(sess.user.id);
@@ -109,19 +116,32 @@ export function AuthProvider({ children }) {
 
   // Accesso con email e password (Supabase Auth). Restituisce { data, error }
   // così come li dà Supabase; il profilo si carica da onAuthStateChange.
+  // Ogni esito finisce nel registro degli accessi (script 33, sezione
+  // «Audit trail user»): accesso riuscito oppure tentativo non riuscito
+  // (email o password errate). La registrazione non blocca mai l'accesso:
+  // se fallisce (script non ancora eseguito) si va avanti lo stesso.
   async function accedi(email, password) {
     if (!supabase) return { error: { message: "Backend non configurato." } };
-    return await supabase.auth.signInWithPassword({ email, password });
+    const esito = await supabase.auth.signInWithPassword({ email, password });
+    try {
+      if (!esito.error) await supabase.rpc("registra_accesso", { p_modo: "password" });
+      else if (/invalid login/i.test(esito.error.message || "")) await supabase.rpc("registra_accesso_fallito", { p_email: email });
+    } catch {
+      /* il registro non deve mai impedire l'accesso */
+    }
+    return esito;
   }
 
   // Chiude la sessione e azzera profilo e stato di recupero.
   async function esci() {
-    // Prima di uscire si cancella la presenza (script 32), così l'utente
-    // non risulta più online; un errore (script non ancora eseguito) non
-    // blocca l'uscita.
+    // Prima di uscire si registra l'uscita (script 33) e si cancella la
+    // presenza (script 32), così l'utente non risulta più online. Se lo
+    // script 33 manca si cancella almeno la presenza. Un errore non blocca
+    // mai l'uscita.
     if (supabase) {
       try {
-        await supabase.rpc("presenza_uscita");
+        const { error } = await supabase.rpc("registra_uscita");
+        if (error) await supabase.rpc("presenza_uscita");
       } catch {
         /* nessun effetto sull'uscita */
       }

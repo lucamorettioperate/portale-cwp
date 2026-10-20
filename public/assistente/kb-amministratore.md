@@ -405,7 +405,7 @@ L'assistente risponde solo con le informazioni di questo manuale e delle tariffe
 
 ## Collegamento al portale
 
-Mentre avete il portale aperto, il portale registra **quando** siete collegati e **quale pagina** state guardando. Si conserva solo l'ultimo collegamento di ciascun utente (nessuno storico e nessun indirizzo di rete) e lo vede soltanto l'Amministratore principale della Fondazione, per sapere chi è collegato in quel momento. Con **Esci** risultate subito non collegati.
+Mentre avete il portale aperto, il portale registra **quando** siete collegati e **quale pagina** state guardando: di questo si conserva solo l'ultimo collegamento. Inoltre, come per ogni sistema che gestisce dati certificati, il portale tiene un **registro degli accessi** (data e ora di ogni entrata, di ogni uscita con **Esci** e dei tentativi di accesso con password errata) e un **registro delle operazioni** (per esempio caricamento e scaricamento dei documenti, risposte alle integrazioni), con data e ora. Non si registrano indirizzi di rete. I registri non si possono modificare e li consulta soltanto l'Amministratore principale della Fondazione, per sicurezza e controllo. Con **Esci** risultate subito non collegati.
 
 ## Domande frequenti
 
@@ -833,7 +833,7 @@ La pagina **Utenti** elenca tutti gli utenti con nome, email, ruolo e organizzaz
 
 **Modificare un utente.** **Modifica** permette di cambiare ruolo e organizzazioni. Passando a Operatore o ad Amministratore le associazioni alle organizzazioni si azzerano. Con **Modifica** si nomina Amministratore un utente esistente, o si riporta un Amministratore a Operatore.
 
-**Eliminare un utente mai attivo.** Il pulsante **Elimina** compare solo sugli utenti che **non hanno mai operato nel portale**, cioè che non compaiono come autori di nessuna voce dell'audit trail. Basta anche il cambio della password al primo accesso perché l'utente risulti attivo. Serve, ad esempio, per un account creato per errore o con l'email sbagliata.
+**Eliminare un utente mai attivo.** Il pulsante **Elimina** compare solo sugli utenti che **non hanno mai operato nel portale**, cioè che non compaiono come autori di nessuna voce dell'audit trail. Basta anche un solo accesso al portale (registro degli accessi) o il cambio della password al primo accesso perché l'utente risulti attivo: da quel momento si può solo disattivare. Serve, ad esempio, per un account creato per errore o con l'email sbagliata.
 
 1. Premete **Elimina** nella riga dell'utente.
 2. Leggete l'avviso e premete **Elimina definitivamente**. Con **Annulla** non succede nulla.
@@ -855,7 +855,7 @@ La reimpostazione non è possibile per gli Amministratori né per sé stessi, e 
 
 **Amministratore principale.** La riga di luca.moretti@operate.it ha il segno **Principale** e nessun pulsante: nessun Amministratore la può modificare, declassare, disattivare o cancellare. Lo impedisce il database (script 29), non solo la pagina: nemmeno dal pannello *Authentication* di Supabase si può cancellare l'account. In caso di reale necessità la protezione si toglie solo dal *SQL Editor* di Supabase, con le istruzioni in fondo allo script 29.
 
-**Utenti online (solo Amministratore principale).** Nell'intestazione, accanto alla campanella, l'Amministratore principale vede il pulsante **● n online** con il numero degli utenti collegati in quel momento. Premendolo si apre l'elenco:
+**Utenti online (solo Amministratore principale).** Nell'intestazione, accanto alla campanella, l'Amministratore principale vede il pulsante **● n online** con il numero degli utenti collegati in quel momento. Il quadro completo è nella sezione **Audit trail user** (capitolo seguente). Premendo il pulsante si apre l'elenco rapido:
 
 - **online adesso**: nome o email, ruolo, organizzazione, pagina aperta e da quanto tempo è collegato;
 - **visti nelle ultime 24 ore**: chi è stato collegato di recente, con l'ora dell'ultimo accesso.
@@ -863,6 +863,24 @@ La reimpostazione non è possibile per gli Amministratori né per sé stessi, e 
 Un utente risulta online se ha una pagina del portale aperta e visibile nell'ultimo paio di minuti: il portale lo segnala da solo a ogni cambio di pagina e una volta al minuto. Con **Esci** non risulta più online; chiudendo la finestra senza uscire sparisce dopo circa 2 minuti. L'elenco si aggiorna ogni 30 secondi. Si conserva solo l'ultimo collegamento di ciascun utente (nessuno storico, nessun indirizzo IP) e gli altri Amministratori non vedono né il pulsante né i dati: lo controlla il database (script 32). Gli utenti ne sono informati nel Manuale Utente.
 
 **Limiti.** Nessuno può cambiare il proprio ruolo né disattivare sé stesso. La password di un Amministratore non si reimposta dalla pagina Utenti: si gestisce con **Password dimenticata?** oppure da Supabase (*Authentication → Users*).
+
+## Audit trail user (solo Amministratore principale)
+
+La voce di menu **Audit trail user** compare solo all'Amministratore principale (luca.moretti@operate.it). Gli altri Amministratori non la vedono e il database rifiuta loro i dati (script 33). Ha tre schede; ogni tabella si ordina per colonna e si scarica con **Esporta CSV**.
+
+1. **Utenti e stato online.** Tutti gli utenti, con in cima chi è collegato adesso. Per ognuno:
+   - stato (**Online** o **Non collegato**);
+   - ruolo e organizzazione;
+   - pagina aperta e da quanto tempo è collegato, oppure ultima presenza;
+   - ultimo accesso;
+   - accessi e **accessi non riusciti** degli ultimi 30 giorni;
+   - ultima operazione e numero di operazioni degli ultimi 30 giorni.
+
+   In alto i riquadri: online adesso, utenti registrati, account attivi, accessi non riusciti. I pulsanti **Accessi** e **Operazioni** su una riga aprono le altre schede già filtrate su quella persona. La scheda si aggiorna ogni 30 secondi.
+2. **Accessi.** Registro di ogni **accesso** (con email e password o dal link di recupero della password), di ogni **uscita** con Esci (con la durata del collegamento) e di ogni **accesso non riuscito** (password errata, oppure email non registrata), con data e ora al secondo. Si filtra per utente, periodo (Dal / Al) e tipo di evento.
+3. **Operazioni.** Tutto l'audit trail della persona scelta, o di tutti: data e ora, utente e ruolo, operazione, oggetto (per i documenti anche il nome del file), pratica, passaggio di stato e motivazione. Da ottobre 2026 comprende anche il **download documento**, cioè chi ha scaricato quale documento e quando. Si filtra per utente e periodo e si cerca per testo.
+
+**Cosa si registra e cosa no.** Registri immutabili come l'audit trail: nessuno li modifica o cancella, nemmeno l'Amministratore principale. Non si registrano indirizzi IP. Un accesso fatto senza il portale, per esempio con programmi diversi dal browser, non passa da qui: per quei casi restano i log di Supabase (Authentication → Logs). I tentativi non riusciti si contano al massimo 10 ogni 15 minuti per la stessa email, per non riempire il registro in caso di attacchi. Se l'utente chiude la finestra senza premere Esci non c'è la riga «uscita»: lo stato diventa «Non collegato» dopo circa 2 minuti.
 
 ## Audit trail
 

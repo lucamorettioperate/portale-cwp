@@ -38,7 +38,7 @@ Il portale non ha un server proprio: è distribuito su sei servizi. Sapere che c
 
 | Servizio | Che cosa contiene | Se si perde |
 | --- | --- | --- |
-| **GitHub** (lucamorettioperate/portale-cwp) | Tutto il codice, gli script del database (01-32), le funzioni del server, i manuali e la loro storia | Si recupera dal ramo `snapshot-…` o dal file `.bundle` dell'archivio di backup |
+| **GitHub** (lucamorettioperate/portale-cwp) | Tutto il codice, gli script del database (01-33), le funzioni del server, i manuali e la loro storia | Si recupera dal ramo `snapshot-…` o dal file `.bundle` dell'archivio di backup |
 | **Vercel** (progetto portale-cwp) | Solo la pubblicazione del portale; nessun dato | Si ricrea in 10 minuti collegando di nuovo GitHub |
 | **Supabase** (organizzazione Fondazione Operate, progetto portale-cwp) | Database (pratiche, utenti, audit, impostazioni), file caricati, funzioni del server, lavori pianificati, chiavi | La struttura si ricrea dagli script; **i dati e i file solo da una copia** (capitolo «Copie di sicurezza») |
 | **Resend** | Invio delle email; chiave API e verifica del dominio | Nuovo account o nuova chiave, poi aggiornare Supabase |
