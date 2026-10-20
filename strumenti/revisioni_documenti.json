@@ -761,6 +761,12 @@
       "data": "20/10/2026",
       "descrizione": "Sicurezza: librerie, intestazioni, inattività, script 34; backlog 14 e 30 aggiornati.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.1",
+      "data": "20/10/2026",
+      "descrizione": "Collaudo in corso con cinque Amministratori collaudatori (backlog 19).",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [

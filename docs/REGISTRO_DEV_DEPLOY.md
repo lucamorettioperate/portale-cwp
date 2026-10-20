@@ -1225,6 +1225,12 @@ aperte; il dettaglio è nei punti numerati qui sotto.
   della Claude Console intestata alla Fondazione (oggi è «Luca's Individual
   Org»; ricevute a nome di Luca) — punto 21.
 
+*Collaudo in corso*
+- Gli Amministratori Andrea Valentini, Albina Ambrogio, Andrea Pavan,
+  Gianluca Tapparini e Luca Belfiore stanno provando portale, calcolo
+  crediti e simulatore (punto 19): le loro segnalazioni si correggono man
+  mano; i dati di prova restano fino alla chiusura del collaudo.
+
 *Sviluppo (Claude)*
 - ~~Utenti online (punto 38)~~, ~~messaggi d'errore dell'assistente in
   italiano (punto 39)~~ e ~~PDF ed Excel del simulatore (punto 37)~~ —
@@ -1246,7 +1252,7 @@ aperte; il dettaglio è nei punti numerati qui sotto.
 - ~~**6.** Rapporto di calcolo in PDF~~ — fatto il 18/10.
 - ~~**7.** Registro dei crediti calcolati e confermati~~ — fatto il 18/10: numero progressivo dei calcoli (elenco interno) e, con lo script 24, emissione dei crediti con ID univoci, caricamento sul registro esterno, vendite e cancellazione tombale (Guida 6.3.2-6.3.3).
 - **8.** Collaudo con dati reali di un Comune.
-- **9.** Conferma delle scelte interpretative.
+- **9.** Conferma delle scelte interpretative (anche con l'aiuto dei collaudatori del punto 19).
 - **37.** **Simulatore di scenari** — richiesto da Luca il 19/10; **prima versione fatta il 19/10** (script 28 eseguito in produzione, pagina `/simulatore`, motore `simulatore.js`). Il 20/10 aggiunti PDF impaginato ed export Excel. Restano: eventuale visione da parte del Comune, conferma del modello. Strumento
   previsionale (ex ante, non certificabile) per stimare quanti crediti un
   Comune potrebbe generare:
@@ -1296,7 +1302,7 @@ aperte; il dettaglio è nei punti numerati qui sotto.
 
 **Chiusura**
 
-- **19.** Collaudo completo e pulizia dei dati di test (comprese le notifiche "Email di prova").
+- **19.** Collaudo completo e pulizia dei dati di test (comprese le notifiche "Email di prova"). **Collaudo in corso** (comunicato da Luca il 20/10): i test di funzionamento del portale, del calcolo crediti e del simulatore li stanno facendo gli Amministratori nominati da Luca: Andrea Valentini, Albina Ambrogio, Andrea Pavan, Gianluca Tapparini e Luca Belfiore. Le loro pratiche e i loro scenari di prova (per esempio «COLLAUDO V03», «TEST AL») non vanno cancellati finché il collaudo non è chiuso; le loro operazioni si seguono in Audit User.
 - ~~**20.** Decisioni A e B della Fondazione~~ — prese il 18/10 (capitolo Decisioni).
 
 **Rifiniture emerse dalla stesura del Manuale Utente (18/10)**
