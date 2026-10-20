@@ -248,9 +248,9 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `28_simulatore.sql` | Simulatore di scenari: tabella `scenario_simulazione` (Comune, nome, durata 7/10/21, primo anno, dati in jsonb, riepilogo), RLS solo staff (`scenario_staff`), data di modifica dal database, audit | 19/10/2026 — provato sul banco locale (`t28.sql`); eseguito in produzione da Luca il 19/10 (testo senza commenti, stesso contenuto) |
 | `29_amministratori.sql` | Più Amministratori: `admin_aggiorna_utente` accetta il ruolo `admin` e cambia il ruolo di un altro Admin (mai il proprio); colonna `profilo.amministratore_principale` (indice unico) assegnata a luca.moretti@operate.it; trigger `trg_profilo_principale` (dal portale non si cambia ruolo o stato del principale, non se ne cancella il profilo, non si sposta il segno) e `trg_account_principale` su `auth.users` (l'account non si cancella nemmeno dal pannello); `admin_imposta_attivo` con messaggio dedicato; `amministratore_principale_id()` per la pagina Utenti | 19/10/2026 — provato sul banco locale (`t29.sql`: 12 controlli); eseguito in produzione da Luca il 19/10 (verificato: riga «Principale» nella pagina Utenti) |
 | `31_assistente.sql` | Assistente virtuale: tabella `assistente_uso` (utente, giorno in ora italiana, domande, token in entrata e in uscita; nessun testo), RLS «solo le proprie righe»; `assistente_registra_uso` e `assistente_domande_oggi` solo per la funzione del server (esecuzione tolta agli utenti); `assistente_riepilogo_uso()` per mese, solo Amministratori | 19/10/2026 — provato sul banco locale; **eseguito in produzione** da Luca il 19/10 |
-| `30_elimina_utente.sql` | Cancellazione di un utente mai attivo: `utente_mai_attivo` (nessuna voce di audit come autore e nessuna riga che lo indichi come autore o responsabile in qualunque tabella con chiave esterna verso `auth.users` o `profilo` non a cascata: documenti, messaggi, note, pagamenti, calcoli, scenari, reclami…; uso interno), `admin_utenti_eliminabili()` per la pagina Utenti, `admin_elimina_utente(id)` (solo Admin, mai sé stessi né il principale; cancella da `auth.users`, a cascata profilo, associazioni e notifiche; voce «cancellazione profilo» nell'audit) | 19/10/2026 — provato sul banco locale (`t30b.sql`); eseguito in produzione da Luca il 19/10 (pulsante «Elimina» verificato sul portale); controllo esteso alle colonne «autore» lo stesso giorno: da rieseguire la sola `utente_mai_attivo` |
-| `32_utenti_online.sql` | Utenti online (backlog 38): tabella `presenza` (una riga per utente: ultima segnalazione, inizio del collegamento, pagina aperta; nessun IP, nessuno storico; RLS senza regole), `segnala_presenza(pagina)` e `presenza_uscita()` per ognuno solo per sé, `utenti_online()` (visti nelle ultime 24 ore, online se l'ultima segnalazione ha meno di 2 minuti) solo per l'Amministratore principale | 20/10/2026 — provato sul banco locale; **da eseguire in produzione** |
-| `33_audit_trail_user.sql` | Audit trail user (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **da eseguire in produzione** dopo il 32 |
+| `30_elimina_utente.sql` | Cancellazione di un utente mai attivo: `utente_mai_attivo` (nessuna voce di audit come autore e nessuna riga che lo indichi come autore o responsabile in qualunque tabella con chiave esterna verso `auth.users` o `profilo` non a cascata: documenti, messaggi, note, pagamenti, calcoli, scenari, reclami…; uso interno), `admin_utenti_eliminabili()` per la pagina Utenti, `admin_elimina_utente(id)` (solo Admin, mai sé stessi né il principale; cancella da `auth.users`, a cascata profilo, associazioni e notifiche; voce «cancellazione profilo» nell'audit) | 19/10/2026 — provato sul banco locale (`t30b.sql`); eseguito in produzione da Luca il 19/10 (pulsante «Elimina» verificato sul portale); controllo esteso alle colonne «autore» lo stesso giorno, rieseguito in produzione il 20/10 |
+| `32_utenti_online.sql` | Utenti online (backlog 38): tabella `presenza` (una riga per utente: ultima segnalazione, inizio del collegamento, pagina aperta; nessun IP, nessuno storico; RLS senza regole), `segnala_presenza(pagina)` e `presenza_uscita()` per ognuno solo per sé, `utenti_online()` (visti nelle ultime 24 ore, online se l'ultima segnalazione ha meno di 2 minuti) solo per l'Amministratore principale | 20/10/2026 — provato sul banco locale; **eseguito in produzione il 20/10** |
+| `33_audit_trail_user.sql` | Audit trail user (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **eseguito in produzione il 20/10** e provato dal vivo |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
 script successivi.
@@ -544,6 +544,13 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   menu (/audit non si accende su /audit-utenti). Registro 4.6, Manuale
   Utente 2.9, Manuale Amministratore 3.9, Manuale Test 3.5, Ripristino 1.3,
   Presentazione 2.5.
+- **Script 30 (rieseguito), 32 e 33 eseguiti in produzione** su incarico di
+  Luca, con il codice caricato nel SQL Editor direttamente dal repository
+  (avviso «operazioni distruttive» di Supabase confermato: riguarda solo
+  `drop trigger if exists`, `drop function if exists` e il testo della
+  funzione di cancellazione, nessun dato toccato). Provato dal vivo: «1
+  online», sezione Audit trail user con 7 utenti e le operazioni reali.
+  Registro 4.7.
 
 ### 19 ottobre 2026
 - **Assistente virtuale attivato** — Luca ha eseguito lo script 31,
@@ -1154,13 +1161,11 @@ completato (va barrato qui e annotato in Cronologia).
 aperte; il dettaglio è nei punti numerati qui sotto.
 
 *Azioni di Luca (Claude non le può fare: chiavi, pubblicazioni, account)*
-- Eseguire nel SQL Editor lo script `32_utenti_online.sql` e poi il
-  `33_audit_trail_user.sql` (sezione «Audit trail user»).
+- ~~Eseguire gli script 32 e 33 e rieseguire lo script 30~~ — fatto il
+  20/10 (su incarico di Luca, codice caricato dal repository).
 - ~~Ripubblicare le funzioni `assistente`, `crea-utente` e
   `reimposta-password`~~ — fatto il 20/10 (codice caricato nell'editor di
   Supabase direttamente dal repository, Verify JWT attivo su tutte e tre).
-- Rieseguire nel SQL Editor la sola funzione `utente_mai_attivo` dello
-  script 30 (controllo esteso alle colonne «autore»).
 - Verificare il dominio email su Resend (punto 17): finché manca, le email
   arrivano solo al titolare dell'account.
 - Decidere se spostare la fatturazione dell'assistente su un'organizzazione
@@ -1170,7 +1175,7 @@ aperte; il dettaglio è nei punti numerati qui sotto.
 *Sviluppo (Claude)*
 - ~~Utenti online (punto 38)~~, ~~messaggi d'errore dell'assistente in
   italiano (punto 39)~~ e ~~PDF ed Excel del simulatore (punto 37)~~ —
-  fatti il 20/10; manca solo lo script 32 in produzione.
+  fatti il 20/10 e attivi in produzione.
 - Assistente: Operatori e aiuto sulla singola pratica (punto 21).
 - Simulatore: conferma del modello ed eventuale visione da parte del Comune
   (punto 37).
@@ -1290,8 +1295,8 @@ aperte; il dettaglio è nei punti numerati qui sotto.
 
 - ~~**35.** Allineamento ai documenti ufficiali del Programma~~ — fatto la sera del 18/10 (script 22-24, portale, funzione `consultazione-pubblica`): vedi Decisioni e Cronologia. Resta SPID/CIE/CNS (punto 36).
 - **36.** Accesso degli stakeholders con SPID, CIE o CNS (Guida 3.9): adesione come fornitore di servizi (AgID o aggregatore), poi integrazione nella pagina del feedback pubblico.
-- ~~**38.** **Utenti online**~~ — richiesto da Luca il 19/10, fatto il 20/10 (script 32, componente `UtentiOnline.jsx`): l'Amministratore principale vede quanti e quali utenti sono collegati, con pagina aperta e durata, e chi è stato visto nelle ultime 24 ore. Da eseguire in produzione lo script 32.
-- ~~**40.** **Audit trail user**~~ — richiesto da Luca il 20/10, fatto lo stesso giorno (script 33, pagina `/audit-utenti`): sezione solo per l'Amministratore principale con utenti e stato online, registro degli accessi (entrate, uscite, tentativi non riusciti) e operazioni dell'audit trail per utente, compreso lo scaricamento dei documenti; CSV. Da eseguire in produzione lo script 33.
+- ~~**38.** **Utenti online**~~ — richiesto da Luca il 19/10, fatto il 20/10 (script 32, componente `UtentiOnline.jsx`): l'Amministratore principale vede quanti e quali utenti sono collegati, con pagina aperta e durata, e chi è stato visto nelle ultime 24 ore. Script 32 eseguito in produzione il 20/10.
+- ~~**40.** **Audit trail user**~~ — richiesto da Luca il 20/10, fatto lo stesso giorno (script 33, pagina `/audit-utenti`): sezione solo per l'Amministratore principale con utenti e stato online, registro degli accessi (entrate, uscite, tentativi non riusciti) e operazioni dell'audit trail per utente, compreso lo scaricamento dei documenti; CSV. Script 33 eseguito in produzione il 20/10.
 - ~~**39.** **Messaggi d'errore dell'assistente in italiano semplice**~~ — fatto il 20/10 (funzione `assistente` ripubblicata lo stesso giorno). Proposto il 19/10: oggi, se Anthropic rifiuta una richiesta (per esempio credito finito), l'utente vede il messaggio tecnico in inglese. Da sostituire con frasi semplici («L'assistente è momentaneamente non disponibile, riprova più tardi»), lasciando il dettaglio tecnico nei log della funzione. Richiede di ripubblicare la funzione `assistente`. Confermato da Luca il 20/10.
 - **21.** **Assistente virtuale (Claude)** integrato nel portale — richiesto da Luca il 18/10, confermato tra i punti aperti il 19/10. **Prima versione fatta il 19/10** (Amministratori ed enti, risposte dalla base di conoscenza su portale e tariffe: script 31, funzione `assistente`, componente `AssistenteVirtuale`); **attivo dal 19/10** (chiave e crediti della Claude Console di Luca; da decidere se spostare la fatturazione su un'organizzazione della Fondazione). Durante l'attesa della risposta la finestra mostra «Un attimo…» (richiesta di Luca del 19/10). Restano i passi successivi descritti qui sotto (Operatori, aiuto sulla singola pratica). Funziona con i modelli Claude di Anthropic tramite API (lo sviluppo del portale si fa con Claude Code). Ambito da definire; usi possibili: assistente per gli utenti dei Comuni (come compilare, cosa manca nella pratica), supporto agli Operatori (controllo completezza dei documenti, bozze di richieste di integrazione e di risposte ai commenti), verifica del tracciato dati prima dell'import, spiegazione dei risultati del calcolo crediti. Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che faccia da tramite, regole su quali dati l'agente può leggere (privacy) e registrazione delle sue azioni nell'audit.
 

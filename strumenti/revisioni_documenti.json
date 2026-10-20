@@ -683,6 +683,12 @@
       "data": "20/10/2026",
       "descrizione": "Script 33 Audit trail user (registro accessi, download documenti, lettura riservata); backlog 14 e 40.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.7",
+      "data": "20/10/2026",
+      "descrizione": "Script 30, 32 e 33 eseguiti in produzione.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
