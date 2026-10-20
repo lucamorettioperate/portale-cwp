@@ -22,7 +22,7 @@
 --  salvati che non rispetterebbero le nuove regole, per decidere insieme
 --  se e come riesaminarli: nessuna correzione automatica.
 --
---  Eseguire DOPO lo script 34, nel SQL Editor di Supabase. Si può
+--  Eseguire nel SQL Editor di Supabase (non dipende dallo script 34). Si può
 --  rieseguire senza danni.
 --  Registro sviluppo e deploy: capitolo «Database», script 35; capitolo
 --  «Collaudo»; test/collaudo_v01.test.mjs.
