@@ -462,7 +462,7 @@ export async function idAmministratorePrincipale() {
   return await supabase.rpc("amministratore_principale_id");
 }
 
-// ---- Audit trail user (script 33, solo Amministratore principale) ----
+// ---- Audit User (script 33, solo Amministratore principale) ----
 
 // Tutti gli utenti con stato online, ultimo accesso, accessi e tentativi
 // non riusciti degli ultimi 30 giorni, ultima operazione e numero di

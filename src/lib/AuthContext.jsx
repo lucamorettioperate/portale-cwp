@@ -18,7 +18,7 @@
      (15_password.sql);
    - RPC `registra_accesso`, `registra_accesso_fallito`, `registra_uscita`
      (33_audit_trail_user.sql): registro degli accessi per la sezione
-     «Audit trail user» dell'Amministratore principale;
+     «Audit User» dell'Amministratore principale;
    - Edge Function `recupera-password` (email di recupero con Resend).
 
    Sicurezza: il ruolo letto qui serve solo a decidere cosa mostrare.
@@ -117,7 +117,7 @@ export function AuthProvider({ children }) {
   // Accesso con email e password (Supabase Auth). Restituisce { data, error }
   // così come li dà Supabase; il profilo si carica da onAuthStateChange.
   // Ogni esito finisce nel registro degli accessi (script 33, sezione
-  // «Audit trail user»): accesso riuscito oppure tentativo non riuscito
+  // «Audit User»): accesso riuscito oppure tentativo non riuscito
   // (email o password errate). La registrazione non blocca mai l'accesso:
   // se fallisce (script non ancora eseguito) si va avanti lo stesso.
   async function accedi(email, password) {

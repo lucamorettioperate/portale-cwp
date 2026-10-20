@@ -250,7 +250,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `31_assistente.sql` | Assistente virtuale: tabella `assistente_uso` (utente, giorno in ora italiana, domande, token in entrata e in uscita; nessun testo), RLS «solo le proprie righe»; `assistente_registra_uso` e `assistente_domande_oggi` solo per la funzione del server (esecuzione tolta agli utenti); `assistente_riepilogo_uso()` per mese, solo Amministratori | 19/10/2026 — provato sul banco locale; **eseguito in produzione** da Luca il 19/10 |
 | `30_elimina_utente.sql` | Cancellazione di un utente mai attivo: `utente_mai_attivo` (nessuna voce di audit come autore e nessuna riga che lo indichi come autore o responsabile in qualunque tabella con chiave esterna verso `auth.users` o `profilo` non a cascata: documenti, messaggi, note, pagamenti, calcoli, scenari, reclami…; uso interno), `admin_utenti_eliminabili()` per la pagina Utenti, `admin_elimina_utente(id)` (solo Admin, mai sé stessi né il principale; cancella da `auth.users`, a cascata profilo, associazioni e notifiche; voce «cancellazione profilo» nell'audit) | 19/10/2026 — provato sul banco locale (`t30b.sql`); eseguito in produzione da Luca il 19/10 (pulsante «Elimina» verificato sul portale); controllo esteso alle colonne «autore» lo stesso giorno, rieseguito in produzione il 20/10 |
 | `32_utenti_online.sql` | Utenti online (backlog 38): tabella `presenza` (una riga per utente: ultima segnalazione, inizio del collegamento, pagina aperta; nessun IP, nessuno storico; RLS senza regole), `segnala_presenza(pagina)` e `presenza_uscita()` per ognuno solo per sé, `utenti_online()` (visti nelle ultime 24 ore, online se l'ultima segnalazione ha meno di 2 minuti) solo per l'Amministratore principale | 20/10/2026 — provato sul banco locale; **eseguito in produzione il 20/10** |
-| `33_audit_trail_user.sql` | Audit trail user (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **eseguito in produzione il 20/10** e provato dal vivo |
+| `33_audit_trail_user.sql` | Audit User (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **eseguito in produzione il 20/10** e provato dal vivo |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
 script successivi.
@@ -527,7 +527,7 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   persa e righe in più: «Unterminated regexp literal»); il codice è stato
   caricato nell'editor direttamente dal repository. Verify JWT attivo su
   tutte e tre. Registro 4.5.
-- **Audit trail user** (backlog 40, richiesta di Luca) — sezione
+- **Audit User** (backlog 40, richiesta di Luca) — sezione
   `/audit-utenti` solo per l'Amministratore principale: scheda «Utenti e
   stato online» (tutti gli utenti, online o no, pagina aperta, ultimo
   accesso, accessi e tentativi non riusciti in 30 giorni, ultima
@@ -549,8 +549,18 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   (avviso «operazioni distruttive» di Supabase confermato: riguarda solo
   `drop trigger if exists`, `drop function if exists` e il testo della
   funzione di cancellazione, nessun dato toccato). Provato dal vivo: «1
-  online», sezione Audit trail user con 7 utenti e le operazioni reali.
+  online», sezione Audit User con 7 utenti e le operazioni reali.
   Registro 4.7.
+- **Menu degli Amministratori riordinato** (richiesta di Luca): Dashboard,
+  Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti
+  emessi, Impostazioni, Utenti, Audit, Audit User (solo Amministratore
+  principale), Documentazione. La sezione «Audit trail user» si chiama ora
+  **Audit User** (stesso indirizzo /audit-utenti). Registro 4.8, Manuale
+  Amministratore 4.0, Manuale Test 3.6, Presentazione 2.6.
+- **Voce «Marketplaces»** (richiesta di Luca) in fondo al menu di
+  Amministratori e utenti degli enti: in grigio, non cliccabile, con il
+  suggerimento «In arrivo» (sezione futura, ancora da definire). Manuale
+  Utente 3.0.
 
 ### 19 ottobre 2026
 - **Assistente virtuale attivato** — Luca ha eseguito lo script 31,
@@ -1235,7 +1245,7 @@ aperte; il dettaglio è nei punti numerati qui sotto.
 
 **Sicurezza**
 
-- **14.** Registro di sicurezza (accessi, tentativi falliti, cambi di permessi). Il 20/10 fatti registro degli accessi e dei tentativi non riusciti (script 33, sezione «Audit trail user»); i cambi di permessi erano già nell'audit (tabelle profilo e utente_organizzazione). Restano gli avvisi automatici su accessi anomali.
+- **14.** Registro di sicurezza (accessi, tentativi falliti, cambi di permessi). Il 20/10 fatti registro degli accessi e dei tentativi non riusciti (script 33, sezione «Audit User»); i cambi di permessi erano già nell'audit (tabelle profilo e utente_organizzazione). Restano gli avvisi automatici su accessi anomali.
 - **15.** Attivazione della verifica in due passaggi (MFA).
 - **16.** Antivirus sui file caricati (a fine progetto).
 - **17.** Verifica del dominio email su Resend.
@@ -1294,9 +1304,10 @@ aperte; il dettaglio è nei punti numerati qui sotto.
 **Da rifinire**
 
 - ~~**35.** Allineamento ai documenti ufficiali del Programma~~ — fatto la sera del 18/10 (script 22-24, portale, funzione `consultazione-pubblica`): vedi Decisioni e Cronologia. Resta SPID/CIE/CNS (punto 36).
+- **41.** **Marketplaces** — voce di menu predisposta il 20/10 (grigia, non cliccabile) per Amministratori e utenti degli enti; contenuto della sezione da definire con Luca.
 - **36.** Accesso degli stakeholders con SPID, CIE o CNS (Guida 3.9): adesione come fornitore di servizi (AgID o aggregatore), poi integrazione nella pagina del feedback pubblico.
 - ~~**38.** **Utenti online**~~ — richiesto da Luca il 19/10, fatto il 20/10 (script 32, componente `UtentiOnline.jsx`): l'Amministratore principale vede quanti e quali utenti sono collegati, con pagina aperta e durata, e chi è stato visto nelle ultime 24 ore. Script 32 eseguito in produzione il 20/10.
-- ~~**40.** **Audit trail user**~~ — richiesto da Luca il 20/10, fatto lo stesso giorno (script 33, pagina `/audit-utenti`): sezione solo per l'Amministratore principale con utenti e stato online, registro degli accessi (entrate, uscite, tentativi non riusciti) e operazioni dell'audit trail per utente, compreso lo scaricamento dei documenti; CSV. Script 33 eseguito in produzione il 20/10.
+- ~~**40.** **Audit User**~~ — richiesto da Luca il 20/10, fatto lo stesso giorno (script 33, pagina `/audit-utenti`): sezione solo per l'Amministratore principale con utenti e stato online, registro degli accessi (entrate, uscite, tentativi non riusciti) e operazioni dell'audit trail per utente, compreso lo scaricamento dei documenti; CSV. Script 33 eseguito in produzione il 20/10.
 - ~~**39.** **Messaggi d'errore dell'assistente in italiano semplice**~~ — fatto il 20/10 (funzione `assistente` ripubblicata lo stesso giorno). Proposto il 19/10: oggi, se Anthropic rifiuta una richiesta (per esempio credito finito), l'utente vede il messaggio tecnico in inglese. Da sostituire con frasi semplici («L'assistente è momentaneamente non disponibile, riprova più tardi»), lasciando il dettaglio tecnico nei log della funzione. Richiede di ripubblicare la funzione `assistente`. Confermato da Luca il 20/10.
 - **21.** **Assistente virtuale (Claude)** integrato nel portale — richiesto da Luca il 18/10, confermato tra i punti aperti il 19/10. **Prima versione fatta il 19/10** (Amministratori ed enti, risposte dalla base di conoscenza su portale e tariffe: script 31, funzione `assistente`, componente `AssistenteVirtuale`); **attivo dal 19/10** (chiave e crediti della Claude Console di Luca; da decidere se spostare la fatturazione su un'organizzazione della Fondazione). Durante l'attesa della risposta la finestra mostra «Un attimo…» (richiesta di Luca del 19/10). Restano i passi successivi descritti qui sotto (Operatori, aiuto sulla singola pratica). Funziona con i modelli Claude di Anthropic tramite API (lo sviluppo del portale si fa con Claude Code). Ambito da definire; usi possibili: assistente per gli utenti dei Comuni (come compilare, cosa manca nella pratica), supporto agli Operatori (controllo completezza dei documenti, bozze di richieste di integrazione e di risposte ai commenti), verifica del tracciato dati prima dell'import, spiegazione dei risultati del calcolo crediti. Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che faccia da tramite, regole su quali dati l'agente può leggere (privacy) e registrazione delle sue azioni nell'audit.
 
@@ -1413,7 +1424,7 @@ main.jsx → App.jsx (route, Protetta: accesso, password temporanea, MFA)
 | `segnala_presenza`, `presenza_uscita` | 32 | tutti | Presenza per «Utenti online» (all'apertura delle pagine, una volta al minuto, all'uscita) |
 | `utenti_online`, `amministratore_principale_id` | 32, 29 | Amministratore principale | Elenco degli utenti online e visti nelle ultime 24 ore; id dell'Amministratore principale |
 | `registra_accesso`, `registra_uscita`, `registra_accesso_fallito`, `registra_download` | 33 | tutti (il fallito anche senza accesso) | Registro degli accessi e «download documento» nell'audit |
-| `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 33 | Amministratore principale | Sezione «Audit trail user» |
+| `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 33 | Amministratore principale | Sezione «Audit User» |
 
 ### 14.5 Tabelle e archivi
 
@@ -1479,7 +1490,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 132 file, 31.818 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 132 file, 31.873 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1526,7 +1537,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 132 file, 31.818 righe 
 | `src/components/CreditiEmessi.jsx` | 319 | crediti di carbonio emessi da un Rapporto di Monitoraggio registrato (Guida al Programma 6.3.2 e 6.3.3, Tabella 5; Standard 6.2; script 24): - emissione di un lotto con ID univoci (solo Amministratori), anche collegata a un… |
 | `src/components/DettaglioPratica.jsx` | 912 | pagina di dettaglio di una pratica (Progetto o Rapporto di Monitoraggio) con le sue 7 fasi (Guida al Programma 6.2 e 6.3.1). |
 | `src/components/Documenti.jsx` | 325 | gestione documentale di una pratica: elenco con versioni, caricamento di nuovi file e download. Lo staff sceglie anche tipologia e visibilità (Cliente, Pubblico) e può cambiarle dopo il caricamento. |
-| `src/components/Header.jsx` | 180 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
+| `src/components/Header.jsx` | 199 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
 | `src/components/Integrazioni.jsx` | 266 | richieste di integrazione di una fase (requisiti §4). Ciclo: l'Operatore richiede → il Cliente carica un documento e risponde → l'Operatore chiude la richiesta. Con la chiusura della fase la possibilità di integrare termina. La… |
 | `src/components/Messaggi.jsx` | 129 | conversazione tra Comune e Fondazione Operate dentro una pratica (backlog 26). Mostra i messaggi in ordine di data, quelli dell'utente a destra, e permette di scriverne di nuovi. |
 | `src/components/NoteFase.jsx` | 108 | note scritte sotto una delle fasi di una pratica (backlog 10). Lo staff legge tutte le note e ne aggiunge di nuove, interne (solo Fondazione) o condivise con il Comune; il Comune vede solo le condivise. |
@@ -1651,7 +1662,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 132 file, 31.818 righe 
 | `strumenti/impagina_pdf.py` | 429 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 758 | — |
+| `strumenti/revisioni_documenti.json` | 794 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

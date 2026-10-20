@@ -119,6 +119,12 @@
       "data": "20/10/2026",
       "descrizione": "Collegamento al portale: registro degli accessi e delle operazioni.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.0",
+      "data": "20/10/2026",
+      "descrizione": "Voce di menu «Marketplaces» (in arrivo).",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -301,6 +307,12 @@
       "data": "20/10/2026",
       "descrizione": "Nuovo capitolo «Audit trail user».",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.0",
+      "data": "20/10/2026",
+      "descrizione": "Nuovo ordine del menu; la sezione si chiama «Audit User». Voce «Marketplaces» in arrivo.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -458,6 +470,12 @@
       "rev": "3.5",
       "data": "20/10/2026",
       "descrizione": "Prove 10.12b-10.13d (Audit trail user).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.6",
+      "data": "20/10/2026",
+      "descrizione": "Sezione «Audit User». Voce «Marketplaces» in arrivo.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -689,6 +707,12 @@
       "data": "20/10/2026",
       "descrizione": "Script 30, 32 e 33 eseguiti in produzione.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.8",
+      "data": "20/10/2026",
+      "descrizione": "Menu degli Amministratori riordinato; «Audit User». Voce «Marketplaces» in arrivo.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -758,6 +782,12 @@
       "rev": "2.5",
       "data": "20/10/2026",
       "descrizione": "Audit trail user tra le novità del 20 ottobre.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.6",
+      "data": "20/10/2026",
+      "descrizione": "«Audit User».",
       "autore": "Fondazione Operate"
     }
   ]

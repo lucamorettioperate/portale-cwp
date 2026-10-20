@@ -37,7 +37,7 @@ Le credenziali vi arrivano per email da Fondazione Operate, con oggetto «Portal
 
 **Regole per la password:** almeno 10 caratteri, con almeno una lettera e un numero, senza il vostro indirizzo email. Usate una password che non adoperate per altri servizi.
 
-In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato dati**, **Reclami**, **Il Programma**, **Manuale**), la campanella delle notifiche, l'indicazione *Cliente*, il vostro indirizzo email con il collegamento **Il mio profilo** e il pulsante **Esci** per uscire.
+In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato dati**, **Reclami**, **Il Programma**, **Manuale**; **Marketplaces** è in grigio perché la sezione è in arrivo), la campanella delle notifiche, l'indicazione *Cliente*, il vostro indirizzo email con il collegamento **Il mio profilo** e il pulsante **Esci** per uscire.
 
 | Voce del menu | Cosa trovate |
 | --- | --- |

@@ -1,5 +1,5 @@
 /* =========================================================================
-   Audit trail user — indirizzo «/audit-utenti»
+   Audit User — indirizzo «/audit-utenti»
    Scopo (richiesta di Luca del 20/10/2026, backlog 40): sezione riservata
      all'Amministratore principale (luca.moretti@operate.it) con tre schede:
      1. «Utenti e stato online»: tutti gli utenti, chi è collegato adesso
@@ -115,7 +115,7 @@ export default function AuditUtenti() {
     <div style={{ background: C.paper, minHeight: "100vh" }}>
       <Header />
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: "22px 24px" }}>
-        <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 4px" }}>Audit trail user</h1>
+        <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 4px" }}>Audit User</h1>
         <p style={{ fontSize: 13.5, color: C.grafite, margin: "0 0 14px", maxWidth: 820 }}>
           Chi è collegato, chi è entrato e uscito e quali operazioni ha svolto, con data e ora. Riservato all'Amministratore principale; registro
           automatico e non modificabile.

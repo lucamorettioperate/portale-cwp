@@ -37,7 +37,7 @@ Le credenziali vi arrivano per email da Fondazione Operate, con oggetto «Portal
 
 **Regole per la password:** almeno 10 caratteri, con almeno una lettera e un numero, senza il vostro indirizzo email. Usate una password che non adoperate per altri servizi.
 
-In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato dati**, **Reclami**, **Il Programma**, **Manuale**), la campanella delle notifiche, l'indicazione *Cliente*, il vostro indirizzo email con il collegamento **Il mio profilo** e il pulsante **Esci** per uscire.
+In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato dati**, **Reclami**, **Il Programma**, **Manuale**; **Marketplaces** è in grigio perché la sezione è in arrivo), la campanella delle notifiche, l'indicazione *Cliente*, il vostro indirizzo email con il collegamento **Il mio profilo** e il pulsante **Esci** per uscire.
 
 | Voce del menu | Cosa trovate |
 | --- | --- |
@@ -472,7 +472,7 @@ Si accede da [portale-cwp.vercel.app](https://portale-cwp.vercel.app) con **Emai
 | Ruolo | Voci di menu |
 | --- | --- |
 | Operatore | Dashboard, Pratiche, Anagrafiche, Crediti emessi, Reclami, Manuale |
-| Amministratore | Dashboard, Pratiche, Utenti, Audit, Anagrafiche, Calcolo crediti, Crediti emessi, Reclami, Impostazioni, Documentazione |
+| Amministratore | Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, Audit User (solo l'Amministratore principale), Documentazione; **Marketplaces** in grigio, non cliccabile (sezione in arrivo) |
 
 **Ordinare tabelle ed elenchi.** Ogni tabella del portale si ordina per qualsiasi colonna: fate clic sull'intestazione per l'ordine crescente (freccia ▲) e di nuovo per il decrescente (▼); le colonne non ordinate mostrano ↕. Vale per Dashboard, Audit, Calcolo crediti, Registro dei crediti, Simulatore (scenari, risultati, costi e parte economica) e per le tabelle del calcolo. Gli elenchi a schede (Pratiche, Utenti, Organizzazioni, Enti di Validazione, Registri, Reclami, Crediti emessi, documenti, pagamenti e Rapporti di una pratica) hanno in alto il menu **Ordina per** con il pulsante ▲/▼ del verso; «ordine predefinito» torna all'ordine iniziale. I valori vuoti restano sempre in fondo. Le tabelle in cui si inseriscono i dati anno per anno restano in ordine di anno.
 
@@ -855,7 +855,7 @@ La reimpostazione non è possibile per gli Amministratori né per sé stessi, e 
 
 **Amministratore principale.** La riga di luca.moretti@operate.it ha il segno **Principale** e nessun pulsante: nessun Amministratore la può modificare, declassare, disattivare o cancellare. Lo impedisce il database (script 29), non solo la pagina: nemmeno dal pannello *Authentication* di Supabase si può cancellare l'account. In caso di reale necessità la protezione si toglie solo dal *SQL Editor* di Supabase, con le istruzioni in fondo allo script 29.
 
-**Utenti online (solo Amministratore principale).** Nell'intestazione, accanto alla campanella, l'Amministratore principale vede il pulsante **● n online** con il numero degli utenti collegati in quel momento. Il quadro completo è nella sezione **Audit trail user** (capitolo seguente). Premendo il pulsante si apre l'elenco rapido:
+**Utenti online (solo Amministratore principale).** Nell'intestazione, accanto alla campanella, l'Amministratore principale vede il pulsante **● n online** con il numero degli utenti collegati in quel momento. Il quadro completo è nella sezione **Audit User** (capitolo seguente). Premendo il pulsante si apre l'elenco rapido:
 
 - **online adesso**: nome o email, ruolo, organizzazione, pagina aperta e da quanto tempo è collegato;
 - **visti nelle ultime 24 ore**: chi è stato collegato di recente, con l'ora dell'ultimo accesso.
@@ -864,9 +864,9 @@ Un utente risulta online se ha una pagina del portale aperta e visibile nell'ult
 
 **Limiti.** Nessuno può cambiare il proprio ruolo né disattivare sé stesso. La password di un Amministratore non si reimposta dalla pagina Utenti: si gestisce con **Password dimenticata?** oppure da Supabase (*Authentication → Users*).
 
-## Audit trail user (solo Amministratore principale)
+## Audit User (solo Amministratore principale)
 
-La voce di menu **Audit trail user** compare solo all'Amministratore principale (luca.moretti@operate.it). Gli altri Amministratori non la vedono e il database rifiuta loro i dati (script 33). Ha tre schede; ogni tabella si ordina per colonna e si scarica con **Esporta CSV**.
+La voce di menu **Audit User** compare solo all'Amministratore principale (luca.moretti@operate.it). Gli altri Amministratori non la vedono e il database rifiuta loro i dati (script 33). Ha tre schede; ogni tabella si ordina per colonna e si scarica con **Esporta CSV**.
 
 1. **Utenti e stato online.** Tutti gli utenti, con in cima chi è collegato adesso. Per ognuno:
    - stato (**Online** o **Non collegato**);

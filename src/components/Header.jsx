@@ -36,22 +36,27 @@ import { IndicatoreOnline, SegnalaPresenza, usePrincipale } from "./UtentiOnline
 // senza ruolo) riceve il menu del cliente/Comune.
 // Se si aggiunge una pagina in App.jsx, aggiungere qui la voce del ruolo.
 // principale: vero per l'Amministratore principale, che ha in più la voce
-// «Audit trail user» (/audit-utenti, script 33).
+// «Audit User» (/audit-utenti, script 33).
+// Una voce senza indirizzo ([null, "nome"]) è una sezione in arrivo: si
+// vede in grigio e non è cliccabile (es. «Marketplaces», richiesta di Luca
+// del 20/10/2026, per Amministratori e utenti degli enti).
 function vociMenu(ruolo, principale = false) {
   if (ruolo === "admin") {
+    // Ordine scelto da Luca il 20/10/2026.
     return [
       ["/", "Dashboard"],
+      ["/anagrafiche", "Anagrafiche"],
+      ["/simulatore", "Simulatore"],
       ["/pratiche", "Pratiche"],
+      ["/reclami", "Reclami"],
+      ["/crediti", "Calcolo crediti"],
+      ["/crediti-emessi", "Crediti emessi"],
+      ["/impostazioni", "Impostazioni"],
       ["/utenti", "Utenti"],
       ["/audit", "Audit"],
-      ["/anagrafiche", "Anagrafiche"],
-      ["/crediti", "Calcolo crediti"],
-      ["/simulatore", "Simulatore"],
-      ["/crediti-emessi", "Crediti emessi"],
-      ["/reclami", "Reclami"],
-      ["/impostazioni", "Impostazioni"],
+      ...(principale ? [["/audit-utenti", "Audit User"]] : []),
       ["/documentazione", "Documentazione"],
-      ...(principale ? [["/audit-utenti", "Audit trail user"]] : []),
+      [null, "Marketplaces"],
     ];
   }
   if (ruolo === "operatore") {
@@ -72,6 +77,7 @@ function vociMenu(ruolo, principale = false) {
     ["/reclami", "Reclami"],
     ["/programma", "Il Programma"],
     ["/documentazione", "Manuale"],
+    [null, "Marketplaces"],
   ];
 }
 
@@ -114,6 +120,19 @@ export default function Header() {
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <nav aria-label="Menu principale" style={{ display: "flex", gap: 4, marginRight: 4, flexWrap: "wrap" }}>
             {vociMenu(ruolo, principale).map(([to, label]) => {
+              // Sezione in arrivo: testo grigio, non cliccabile.
+              if (!to) {
+                return (
+                  <span
+                    key={label}
+                    aria-disabled="true"
+                    title="In arrivo"
+                    style={{ fontSize: 12.5, fontWeight: 600, color: "#a9ada3", padding: "6px 10px", borderRadius: 7, cursor: "not-allowed", userSelect: "none" }}
+                  >
+                    {label}
+                  </span>
+                );
+              }
               // "/" è attiva solo sulla pagina iniziale esatta (altrimenti
               // sarebbe sempre evidenziata); le altre anche sulle sottopagine
               // (es. /crediti/123 evidenzia «Calcolo crediti»), ma /audit non si

@@ -167,7 +167,7 @@ export default function App() {
           </Protetta>
         }
       />
-      {/* Audit trail user: solo Amministratore principale (script 33). */}
+      {/* Audit User: solo Amministratore principale (script 33). */}
       <Route
         path="/audit-utenti"
         element={

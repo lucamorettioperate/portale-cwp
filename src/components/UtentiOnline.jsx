@@ -60,7 +60,7 @@ export function SegnalaPresenza({ pagina }) {
 let principaleInMemoria = null;
 
 /* Hook: vero se l'utente collegato è l'Amministratore principale (script
-   29). Usato anche dall'intestazione per la voce «Audit trail user» e dalla
+   29). Usato anche dall'intestazione per la voce «Audit User» e dalla
    pagina /audit-utenti. È solo interfaccia: i dati li protegge il database. */
 export function usePrincipale() {
   const { utente, ruolo } = useAuth();
@@ -79,7 +79,7 @@ export function usePrincipale() {
 
 /* Pulsante «n online» e pannello. Nessuna prop. Non mostra nulla a chi non
    è l'Amministratore principale. In fondo al pannello il collegamento alla
-   sezione «Audit trail user» (/audit-utenti). */
+   sezione «Audit User» (/audit-utenti). */
 export function IndicatoreOnline() {
   const sonoPrincipale = usePrincipale();
   const [righe, setRighe] = useState([]);
@@ -176,7 +176,7 @@ export function IndicatoreOnline() {
             </>
           )}
           <Link to="/audit-utenti" onClick={() => setAperto(false)} style={{ display: "block", padding: "11px 14px", fontSize: 12.5, fontWeight: 700, color: C.green, textDecoration: "none", borderTop: `1px solid ${C.line}` }}>
-            Apri «Audit trail user»: tutti gli utenti, accessi e operazioni →
+            Apri «Audit User»: tutti gli utenti, accessi e operazioni →
           </Link>
         </div>
       )}
