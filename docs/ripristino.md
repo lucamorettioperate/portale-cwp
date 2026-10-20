@@ -272,12 +272,14 @@ update profilo set ruolo = 'admin'
  where id = (select id from auth.users where email = '<email di Luca>');
 ```
 
+Se lo script 29 è stato eseguito quando l'account di Luca non c'era ancora, rieseguitelo ora: segna luca.moretti@operate.it come **Amministratore principale** (protetto, con la sezione Audit User e il pannello «n online»).
+
 Gli altri utenti li crea poi l'Amministratore dal portale (*Gestione utenti*).
 
 ### 8. Collegare il portale e verificare
 
 1. Su Vercel aggiornate `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` con i valori del nuovo progetto e ripubblicate (*Deployments* › *Redeploy*).
-2. Verifiche: accesso come Amministratore; la pagina /programma mostra gli 8 documenti, la PEC e il soggetto promotore; un utente di prova riceve l'email; i lavori pianificati sono tre:
+2. Verifiche: accesso come Amministratore principale, con il menu completo (fino ad Audit User) e la scheda Accessi di Audit User che registra l'accesso appena fatto; la pagina /programma mostra gli 8 documenti, la PEC e il soggetto promotore; un utente di prova riceve l'email; l'assistente risponde; i lavori pianificati sono tre:
 
 ```sql
 select jobname, schedule from cron.job order by jobname;

@@ -139,7 +139,8 @@ export default function Documentazione() {
     <div style={{ background: C.paper, minHeight: "100vh" }}>
       <Header />
       <main style={{ maxWidth: 900, margin: "0 auto", padding: "22px 24px" }}>
-        <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 4px" }}>{admin ? "Documentazione" : "Manuale"}</h1>
+        <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 4px" }}>{/* Titolo come la voce di menu: «Manuali» per gli enti (dal 20/10), «Manuale» per gli Operatori. */}
+          {admin ? "Documentazione" : ruolo === "cliente" ? "Manuali" : "Manuale"}</h1>
         <p style={{ fontSize: 13.5, color: C.grafite, margin: "0 0 18px" }}>
           {admin
             ? "Documenti del portale da scaricare in Word o PDF. Sono aggiornati a ogni nuova funzione o rilascio: la revisione indica la versione."

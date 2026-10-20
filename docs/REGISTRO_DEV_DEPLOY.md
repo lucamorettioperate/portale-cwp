@@ -345,8 +345,8 @@ pubblicazione verificare che l'impostazione *Verify JWT* sia quella attesa.
 
 ## 6. Portale (frontend)
 
-React 18 + Vite 5, React Router 6, `@supabase/supabase-js`, `jspdf` e `jspdf-autotable` (rapporto di calcolo), `jszip` (lettura del tracciato ed export
-fascicolo). Nessun server proprio: tutto passa da Supabase.
+React 18 + Vite 5, React Router 6, `@supabase/supabase-js`, `jspdf` e `jspdf-autotable` (rapporto di calcolo, PDF del simulatore), `jszip` (lettura del tracciato, export
+fascicolo, file Excel del simulatore). Nessun server proprio: tutto passa da Supabase.
 
 **Pagine**
 
@@ -361,23 +361,38 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 | `/reclami` | Reclami e richieste di chiarimento: invio e stato (utenti), registrazione e gestione (staff) | tutti |
 | `/crediti-emessi` | Crediti emessi: tutti i lotti con vendite, cancellazioni e totali | Operatore, Admin |
 | `/formato-dati` | Formato dei dati per il calcolo crediti, download del tracciato Excel | **pubblica**, senza login |
-| `/` | Cruscotto (staff) oppure Le mie pratiche (cliente) | tutti |
+| `/` | Dashboard (staff) oppure Le mie pratiche (cliente) | tutti |
 | `/pratiche` | Back-office: elenco e dettaglio pratiche (`?id=` apre una pratica) | Operatore, Admin |
 | `/anagrafiche` | Organizzazioni (con delegati), Enti di Validazione e Registri, con le pratiche collegate | Operatore, Admin |
 | `/documenti` | I tuoi documenti, modelli generali, manuale | Cliente |
 | `/utenti` | Gestione utenti | Admin |
 | `/audit` | Audit trail | Admin |
+| `/audit-utenti` | **Audit User**: utenti e stato online, registro degli accessi, operazioni per utente (script 33) | solo Amministratore principale |
 | `/crediti`, `/crediti/:id` | Calcolo crediti CWP | Admin |
 | `/simulatore` | Simulatore di scenari: stima ex ante dei crediti di un Comune su 7, 10 o 21 anni | Operatore, Admin |
 | `/impostazioni` | Informazioni del Programma e metodologie, durata delle fasi (Progetto e Rapporto), documenti richiesti per fase, modelli di documento (anche pubblici) | Admin |
-| `/documentazione` | Documentazione: Manuale Utente (PDF; Word solo Admin), Manuale Amministratore e Registro (solo Admin) | tutti (contenuto per ruolo) |
+| `/documentazione` | Documentazione (Admin: manuali, Registro, Istruzioni di ripristino, presentazione, documenti ufficiali del Programma); «Manuali» per gli enti, «Manuale» per gli Operatori | tutti (contenuto per ruolo) |
+
+**Menu per ruolo** (`vociMenu` in `src/components/Header.jsx`; ordini scelti da Luca il 20/10/2026)
+
+| Ruolo | Voci, nell'ordine |
+|---|---|
+| Amministratore principale | Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, **Audit User**, Documentazione, *Marketplaces* (grigia, non cliccabile) |
+| Amministratore | come sopra, senza Audit User |
+| Operatore | Dashboard, Pratiche, Anagrafiche, Simulatore, Crediti emessi, Reclami, Manuale |
+| Utente dell'ente (cliente) | Le mie pratiche, I tuoi documenti, Reclami, Formato dati, Il Programma CWP, Manuali, *Marketplaces* (grigia, non cliccabile) |
+
+Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), campanella delle notifiche, ruolo, profilo ed Esci; in basso a destra «✦ Assistente» (Amministratori ed enti).
 
 **Struttura del codice** (in sintesi; descrizione completa file per file nel capitolo 14 «Codice sorgente»)
 - `src/pages/` — pagine elencate sopra (+ `VerificaMfa.jsx`;
   `ConsultazioniPubbliche.jsx` contiene le tre pagine pubbliche).
 - `src/components/` — `DettaglioPratica`, `Documenti`, `Integrazioni`,
   `Consultazione`, `Rapporti`, `Pagamenti`, `Notifiche`, `NuovoProgetto`,
-  `Header`, `Messaggi`, `NoteFase`, `CreditiEmessi`, `stili.js` (stili condivisi),
+  `Header`, `Messaggi`, `NoteFase`, `CreditiEmessi`, `BarraFasi` (LED delle
+  7 fasi), `Ordinamento` (tabelle ordinabili), `AssistenteVirtuale`,
+  `UtentiOnline` (presenza, «n online», hook `usePrincipale`), `Badge`,
+  `stili.js` (stili condivisi),
   `impostazioni/{DurateFasi,DocumentiRichiesti,EntiValidazione,ModelliDocumento,Registri,InfoProgramma}`,
   `crediti/{ImportaTracciato,RegistroCrediti,TabellaDati}`.
 - `src/lib/` — `dati.js` (accesso ai dati), `AuthContext.jsx` (sessione,
@@ -386,18 +401,22 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
   `csv.js`, `date.js`, `cwpProgram.js` (fasi, ruoli, colori, stati del
   Programma, tipologie), `tariffe.js` (Schema tariffario),
   `crediti/{parametri,calcolo,archivio,qualita}.js` (motore di calcolo e
-  controlli della Gestione qualità dei dati).
+  controlli della Gestione qualità dei dati), `crediti/rapportoPdf.js`,
+  `crediti/{simulatore,simulatoreExport,simulatorePdf,scenari}.js`
+  (simulatore, Excel e PDF), `ordinamento.js`, `presenza.js` (testi di
+  Utenti online e Audit User).
 - `public/loghi/` — loghi Carbon WastePrint, Fondazione Operate, RINA,
   Carbon Credit. `public/modelli/` — tracciato dati Excel.
 - `test/` — test del motore crediti, del lettore CSV, dell'import del
-  tracciato, delle date, dello Schema tariffario e della qualità dei dati
-  (`npm test`); `test/dati/` file di esempio.
+  tracciato, delle date, dello Schema tariffario, della qualità dei dati,
+  del simulatore e del suo export, dell'ordinamento e dei testi della
+  presenza (`npm test`, 10 file); `test/dati/` file di esempio.
 - `strumenti/genera_tracciato_dati.py` — rigenera il tracciato Excel;
   `strumenti/genera_esempi_tracciato.py` — file di esempio compilati.
 
 ---
 
-## 7. Funzionalità per area (stato al 18/10/2026 sera)
+## 7. Funzionalità per area (stato al 20/10/2026)
 
 | Area (requisiti) | Stato | Dettaglio |
 |---|---|---|
@@ -411,15 +430,15 @@ fascicolo). Nessun server proprio: tutto passa da Supabase.
 | Pagamenti (§7) | Fatto | Voci con la voce dello Schema tariffario e proposta degli importi (iscrizione, registrazione, emissione, vendita), incassi, operatore registrato e mostrato allo staff; attività sospese fino al saldo delle voci scadute, iscrizione da saldare prima della fase 5; visibili al Comune in sola lettura |
 | Back-office (§8) | Fatto | Cruscotto con scadenze/scaduti, ricerca, azioni con motivazione |
 | Notifiche (§9) | Fatto | Interne + email (Resend); messaggi Comune-Fondazione nella pratica; manca verifica dominio |
-| Audit (§10) | Fatto | Scritto dal database, immutabile, pagina di consultazione |
+| Audit (§10) | Fatto | Scritto dal database, immutabile, pagina di consultazione; dal 20/10 anche lo scaricamento dei documenti e la sezione Audit User (accessi e operazioni per utente, solo Amministratore principale) |
 | Export fascicolo (§11) | Fatto | ZIP con riepilogo PDF, documenti, validazione, consultazioni con allegati ed errata corrige, note, messaggi, pagamenti e audit con i nomi |
 | Conservazione (§12) | Fatto (parte tecnica) | Nessuna cancellazione; data di conservazione a 12 anni (Guida 6.2.1 e 6.5.1); la procedura di cancellazione a fine periodo la definirà la Fondazione |
 | Piattaforma pubblica (Guida 3.7) | Fatto | Pagina /programma: informazioni del Programma, enti, registri, metodologie, documenti e modulistica, Progetti dal momento «in fase di validazione» con documenti pubblici, Rapporti e crediti |
 | Crediti emessi (Guida 6.3.2-6.3.3, Standard 6) | Fatto | Lotti con ID univoci emessi dall'Admin dopo la registrazione del Rapporto (con il limite del calcolo ex post confermato), caricamento sul registro esterno, vendite comunicate dal registro, cancellazione tombale (attivo / ritirato), avviso dopo 10 giorni senza dichiarazione |
 | Reclami (Politica di reclamo, Guida 8) | Fatto | Invio dal portale, registrazione dei reclami arrivati via PEC, gestore, conferma, risposta scritta, costi, note interne, notifiche |
 | Calcolo crediti (Metodologia v1.2) | Fatto (scelte interpretative da confermare) | Motore formule 1-32, Tabelle 3-5, 8, 15, 16; import diretto del tracciato con aggregazione delle letture, blocco dei dati personali e controlli di coerenza; controlli della Gestione qualità dei dati (Tabella 3 dello Standard ±30% con motivazione obbligatoria, completezza, unicità, letture a buon fine, tempestività); calcoli confermati immutabili con numero progressivo interno; rapporto PDF. Funzione migliorativa: per la Metodologia il calcolo lo fa il promotore nel Rapporto e l'ente lo verifica |
-| Amministrazione | Fatto | Utenti, audit, impostazioni: durata fasi, documenti richiesti, modelli di documento |
-| Sicurezza (§13) | Parziale | RLS, audit, controlli file; mancano registro di sicurezza, antivirus, ambiente di prova |
+| Amministrazione | Fatto | Utenti (più Amministratori, principale protetto, cancellazione dei mai attivi), audit, Audit User, utenti online, impostazioni: durata fasi, documenti richiesti, modelli di documento; simulatore con PDF ed Excel; assistente virtuale |
+| Sicurezza (§13) | Parziale | RLS, audit, controlli file, registro degli accessi e dei tentativi non riusciti (20/10); mancano avvisi automatici, antivirus, ambiente di prova, verifica in due passaggi attiva |
 
 ---
 
@@ -561,6 +580,14 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   Amministratori e utenti degli enti: in grigio, non cliccabile, con il
   suggerimento «In arrivo» (sezione futura, ancora da definire). Manuale
   Utente 3.0.
+- **Menu degli utenti degli enti riordinato** (richiesta di Luca): Le mie
+  pratiche, I tuoi documenti, Reclami, Formato dati, **Il Programma CWP**,
+  **Manuali**, Marketplaces (grigia); la pagina Documentazione per gli enti
+  si intitola «Manuali». Aggiornati tutti i documenti: capitolo 6 (pagine,
+  menu per ruolo, struttura del codice) e 7 (stato per area) di questo
+  registro, inventario del codice, Manuale Utente 3.1, Manuale
+  Amministratore 4.1, Manuale Test 3.7, Istruzioni di ripristino 1.4,
+  Presentazione 2.7, base di conoscenza dell'assistente. Registro 4.9.
 
 ### 19 ottobre 2026
 - **Assistente virtuale attivato** — Luca ha eseguito lo script 31,
@@ -1490,7 +1517,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 132 file, 31.873 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 132 file, 31.912 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1514,7 +1541,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 132 file, 31.873 righe 
 | `src/pages/Crediti.jsx` | 240 | sezione del calcolo dei crediti di CO₂eq (Metodologia Carbon WastePrint® v1.2). Due viste: - «Calcoli»: elenco di tutti i calcoli (titolo, pratica, anno e tipo, crediti netti, stato bozza/confermato) e modulo «+ Nuovo calcolo»… |
 | `src/pages/CreditiEmessiPagina.jsx` | 83 | elenco di tutti i lotti di crediti emessi dai Rapporti di Monitoraggio (Guida al Programma 6.3.2 e 6.3.3; script 24), con il totale emessi / attivi / ritirati e, per lo staff, le azioni su ogni lotto (caricamento sul registro,… |
 | `src/pages/Cruscotto.jsx` | 299 | (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso, in scadenza, scadute, in attesa del Cliente, integrazioni da verificare, consultazioni attive) e tabella di tutte le pratiche, Progetti e Rapporti, con ricerca e… |
-| `src/pages/Documentazione.jsx` | 211 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
+| `src/pages/Documentazione.jsx` | 212 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
 | `src/pages/FormatoDati.jsx` | 136 | spiega lo standard dei dati da inviare per il calcolo dei crediti e permette di scaricare il tracciato Excel. Il link si può mandare a Comuni e gestori anche senza credenziali. Contiene: elenco dei fogli del tracciato,… |
 | `src/pages/GestioneUtenti.jsx` | 763 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
 | `src/pages/Impostazioni.jsx` | 60 | parametri del Programma modificabili dagli Amministratori: - Durata delle fasi del Progetto e del Rapporto di Monitoraggio (script 13 e 21, componente DurateFasi); - Documenti richiesti per fase (script 21, componente… |
@@ -1537,7 +1564,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 132 file, 31.873 righe 
 | `src/components/CreditiEmessi.jsx` | 319 | crediti di carbonio emessi da un Rapporto di Monitoraggio registrato (Guida al Programma 6.3.2 e 6.3.3, Tabella 5; Standard 6.2; script 24): - emissione di un lotto con ID univoci (solo Amministratori), anche collegata a un… |
 | `src/components/DettaglioPratica.jsx` | 912 | pagina di dettaglio di una pratica (Progetto o Rapporto di Monitoraggio) con le sue 7 fasi (Guida al Programma 6.2 e 6.3.1). |
 | `src/components/Documenti.jsx` | 325 | gestione documentale di una pratica: elenco con versioni, caricamento di nuovi file e download. Lo staff sceglie anche tipologia e visibilità (Cliente, Pubblico) e può cambiarle dopo il caricamento. |
-| `src/components/Header.jsx` | 199 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
+| `src/components/Header.jsx` | 200 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
 | `src/components/Integrazioni.jsx` | 266 | richieste di integrazione di una fase (requisiti §4). Ciclo: l'Operatore richiede → il Cliente carica un documento e risponde → l'Operatore chiude la richiesta. Con la chiusura della fase la possibilità di integrare termina. La… |
 | `src/components/Messaggi.jsx` | 129 | conversazione tra Comune e Fondazione Operate dentro una pratica (backlog 26). Mostra i messaggi in ordine di data, quelli dell'utente a destra, e permette di scriverne di nuovi. |
 | `src/components/NoteFase.jsx` | 108 | note scritte sotto una delle fasi di una pratica (backlog 10). Lo staff legge tutte le note e ne aggiunge di nuove, interne (solo Fondazione) o condivise con il Comune; il Comune vede solo le condivise. |
@@ -1622,7 +1649,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 132 file, 31.873 righe 
 | `supabase/30_elimina_utente.sql` | 104 | un Amministratore può cancellare un utente che non ha mai operato nel portale, cioè che non compare come autore di nessuna voce dell'audit trail (nessun documento, messaggio, modifica, cambio della password…). Serve, ad esempio,… |
 | `supabase/31_assistente.sql` | 81 | la funzione del server «assistente» (Claude di Anthropic) registra quante domande fa ogni utente al giorno e i token usati, per applicare un limite giornaliero e controllare la spesa. Nessun testo delle domande o delle risposte… |
 | `supabase/32_utenti_online.sql` | 112 | l'Amministratore principale (script 29) vede quanti e quali utenti sono collegati al portale in questo momento, in quale pagina sono e da quanto, più gli accessi delle ultime 24 ore. |
-| `supabase/33_audit_trail_user.sql` | 267 | 33 — AUDIT TRAIL USER (solo Amministratore principale) |
+| `supabase/33_audit_trail_user.sql` | 268 | 33 — AUDIT USER (solo Amministratore principale; sezione chiamata |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
@@ -1662,7 +1689,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 132 file, 31.873 righe 
 | `strumenti/impagina_pdf.py` | 429 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 794 | — |
+| `strumenti/revisioni_documenti.json` | 830 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

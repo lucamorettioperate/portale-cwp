@@ -125,6 +125,12 @@
       "data": "20/10/2026",
       "descrizione": "Voce di menu «Marketplaces» (in arrivo).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.1",
+      "data": "20/10/2026",
+      "descrizione": "Nuovo menu degli enti: Il Programma CWP, Manuali.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -313,6 +319,12 @@
       "data": "20/10/2026",
       "descrizione": "Nuovo ordine del menu; la sezione si chiama «Audit User». Voce «Marketplaces» in arrivo.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.1",
+      "data": "20/10/2026",
+      "descrizione": "Voci di menu degli enti aggiornate.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -476,6 +488,12 @@
       "rev": "3.6",
       "data": "20/10/2026",
       "descrizione": "Sezione «Audit User». Voce «Marketplaces» in arrivo.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.7",
+      "data": "20/10/2026",
+      "descrizione": "Prove 10.6b (menu Amministratori) e 10.7 (menu enti).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -713,6 +731,12 @@
       "data": "20/10/2026",
       "descrizione": "Menu degli Amministratori riordinato; «Audit User». Voce «Marketplaces» in arrivo.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.9",
+      "data": "20/10/2026",
+      "descrizione": "Menu degli enti riordinato; capitoli 6 e 7 aggiornati (pagine, menu per ruolo, struttura del codice, stato per area).",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -738,6 +762,12 @@
       "rev": "1.3",
       "data": "20/10/2026",
       "descrizione": "Script 01-33.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.4",
+      "data": "20/10/2026",
+      "descrizione": "Amministratore principale e verifiche dopo il ripristino (Audit User, assistente).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -788,6 +818,12 @@
       "rev": "2.6",
       "data": "20/10/2026",
       "descrizione": "«Audit User».",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.7",
+      "data": "20/10/2026",
+      "descrizione": "Menu per ruolo aggiornati.",
       "autore": "Fondazione Operate"
     }
   ]

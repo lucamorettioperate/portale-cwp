@@ -955,7 +955,7 @@ Dalla voce **Documentazione** del menu (e da **Il mio profilo**) l'Amministrator
 
 **Documenti ufficiali del Programma.** In fondo alla pagina Documentazione ci sono gli **8 documenti ufficiali del Programma Carbon WastePrint® versione 1.2** (04/09/2025): 0. Guida al Programma, 1. Definizioni, 2. Normativa di riferimento, 3. Standard, 4. Metodologia, 5. Politica di reclamo, 6. Schema tariffario, 7. Gestione della qualità dei dati. **Apri PDF** li apre in una nuova scheda, **Scarica** li salva. Sono gli stessi pubblicati sulla pagina pubblica del Programma e si aggiornano da Impostazioni → Modelli (categoria «programma»).
 
-Operatori e Comuni trovano il Manuale Utente nella voce **Manuale** del menu; i Comuni anche in **I tuoi documenti**. Ogni documento riporta in copertina il numero di revisione e la data; a ogni nuova funzione si aggiornano insieme i manuali, il Registro e la Presentazione di riepilogo. Per la presentazione il secondo pulsante è **Scarica PowerPoint**.
+Gli Operatori trovano il Manuale Utente nella voce **Manuale** del menu, i Comuni nella voce **Manuali**; i Comuni anche in **I tuoi documenti**. Ogni documento riporta in copertina il numero di revisione e la data; a ogni nuova funzione si aggiornano insieme i manuali, il Registro e la Presentazione di riepilogo. Per la presentazione il secondo pulsante è **Scarica PowerPoint**.
 
 ## Assistente virtuale
 

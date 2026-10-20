@@ -271,7 +271,8 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 10.4 | [A] Utenti → Reimposta password del Cliente | Al successivo accesso il Cliente deve scegliere una nuova password e, finché non lo fa, non vede alcun dato |
 | 10.5 | [A] Disattivate il Cliente e provate ad accedere con lui | Non vede più alcun dato; riattivatelo |
 | 10.6 | [O] Cercate le pagine Utenti, Audit, Calcolo crediti; provate anche a scrivere l'indirizzo (es. /utenti) | Non compaiono nel menu dell'Operatore e i loro dati non sono accessibili; ci sono invece Crediti emessi e Reclami |
-| 10.7 | [C] Controllate menu e pratiche visibili | Menu: Le mie pratiche, I tuoi documenti, Formato dati, Reclami, Il Programma, Manuale e, in grigio e non cliccabile, Marketplaces; solo le pratiche del proprio Comune |
+| 10.6b | [A] Controllate il menu come luca.moretti@operate.it e come altro Amministratore | Ordine: Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, Audit User (solo il principale), Documentazione e Marketplaces in grigio, che non si apre |
+| 10.7 | [C] Controllate menu e pratiche visibili | Menu: Le mie pratiche, I tuoi documenti, Reclami, Formato dati, Il Programma CWP, Manuali e, in grigio e non cliccabile, Marketplaces; solo le pratiche del proprio Comune |
 | 10.8 | Senza accesso, /programma | Informazioni del Programma (soggetto promotore, email, sito), enti di validazione e verifica (RINA (prova)), registri (Registro (prova)), metodologie, la modulistica pubblica della prova 1.7 e come presentare un reclamo |
 | 10.9 | [A] Audit: cercate il codice della pratica di prova | Tutte le operazioni fatte, con autore, data e motivazione |
 | 10.10 | [A] Dashboard: provate riquadri, filtri e ricerca | La tabella si filtra di conseguenza |

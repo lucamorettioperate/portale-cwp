@@ -37,7 +37,7 @@ Le credenziali vi arrivano per email da Fondazione Operate, con oggetto «Portal
 
 **Regole per la password:** almeno 10 caratteri, con almeno una lettera e un numero, senza il vostro indirizzo email. Usate una password che non adoperate per altri servizi.
 
-In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato dati**, **Reclami**, **Il Programma**, **Manuale**; **Marketplaces** è in grigio perché la sezione è in arrivo), la campanella delle notifiche, l'indicazione *Cliente*, il vostro indirizzo email con il collegamento **Il mio profilo** e il pulsante **Esci** per uscire.
+In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Reclami**, **Formato dati**, **Il Programma CWP**, **Manuali**; **Marketplaces** è in grigio perché la sezione è in arrivo), la campanella delle notifiche, l'indicazione *Cliente*, il vostro indirizzo email con il collegamento **Il mio profilo** e il pulsante **Esci** per uscire.
 
 | Voce del menu | Cosa trovate |
 | --- | --- |
@@ -53,7 +53,7 @@ In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Formato da
 | Email o password non corretti. | Credenziali sbagliate | Ricontrollate maiuscole e spazi, poi riprovate |
 | Accesso non riuscito. Riprova. | Problema temporaneo | Riprovate dopo qualche minuto |
 
-**Il manuale.** La voce **Manuale** del menu, la pagina **I tuoi documenti** e la pagina **Il mio profilo** permettono di aprire e scaricare questo manuale in PDF, sempre nella revisione più recente.
+**Il manuale.** La voce **Manuali** del menu (per gli Operatori **Manuale**), la pagina **I tuoi documenti** e la pagina **Il mio profilo** permettono di aprire e scaricare questo manuale in PDF, sempre nella revisione più recente.
 
 **Il mio profilo.** Fate clic sul vostro indirizzo email in alto (sotto c'è scritto **Il mio profilo**): trovate i dati del vostro account, il pulsante **Cambia password** e il manuale da scaricare.
 
@@ -381,7 +381,7 @@ Si può presentare un reclamo anche per iscritto alla PEC indicata nella pagina 
 
 ## La pagina pubblica del Programma
 
-La pagina **Il Programma** ([portale-cwp.vercel.app/programma](https://portale-cwp.vercel.app/programma)) è pubblica: chiunque la apre senza credenziali. Si raggiunge dalla voce **Il Programma** del menu, dal link nella pagina di accesso e dall'intestazione delle pagine pubbliche.
+La pagina **Il Programma** ([portale-cwp.vercel.app/programma](https://portale-cwp.vercel.app/programma)) è pubblica: chiunque la apre senza credenziali. Si raggiunge dalla voce **Il Programma CWP** del menu, dal link nella pagina di accesso e dall'intestazione delle pagine pubbliche.
 
 La pagina contiene:
 
@@ -1378,7 +1378,7 @@ Dalla voce **Documentazione** del menu (e da **Il mio profilo**) l'Amministrator
 
 **Documenti ufficiali del Programma.** In fondo alla pagina Documentazione ci sono gli **8 documenti ufficiali del Programma Carbon WastePrint® versione 1.2** (04/09/2025): 0. Guida al Programma, 1. Definizioni, 2. Normativa di riferimento, 3. Standard, 4. Metodologia, 5. Politica di reclamo, 6. Schema tariffario, 7. Gestione della qualità dei dati. **Apri PDF** li apre in una nuova scheda, **Scarica** li salva. Sono gli stessi pubblicati sulla pagina pubblica del Programma e si aggiornano da Impostazioni → Modelli (categoria «programma»).
 
-Operatori e Comuni trovano il Manuale Utente nella voce **Manuale** del menu; i Comuni anche in **I tuoi documenti**. Ogni documento riporta in copertina il numero di revisione e la data; a ogni nuova funzione si aggiornano insieme i manuali, il Registro e la Presentazione di riepilogo. Per la presentazione il secondo pulsante è **Scarica PowerPoint**.
+Gli Operatori trovano il Manuale Utente nella voce **Manuale** del menu, i Comuni nella voce **Manuali**; i Comuni anche in **I tuoi documenti**. Ogni documento riporta in copertina il numero di revisione e la data; a ogni nuova funzione si aggiornano insieme i manuali, il Registro e la Presentazione di riepilogo. Per la presentazione il secondo pulsante è **Scarica PowerPoint**.
 
 ## Assistente virtuale
 

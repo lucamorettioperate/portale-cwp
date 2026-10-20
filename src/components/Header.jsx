@@ -70,13 +70,14 @@ function vociMenu(ruolo, principale = false) {
       ["/documentazione", "Manuale"],
     ];
   }
+  // Utenti degli enti: ordine ed etichette scelti da Luca il 20/10/2026.
   return [
     ["/", "Le mie pratiche"],
     ["/documenti", "I tuoi documenti"],
-    ["/formato-dati", "Formato dati"],
     ["/reclami", "Reclami"],
-    ["/programma", "Il Programma"],
-    ["/documentazione", "Manuale"],
+    ["/formato-dati", "Formato dati"],
+    ["/programma", "Il Programma CWP"],
+    ["/documentazione", "Manuali"],
     [null, "Marketplaces"],
   ];
 }

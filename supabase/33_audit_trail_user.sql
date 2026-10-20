@@ -1,5 +1,6 @@
 -- =====================================================================
---  33 — AUDIT TRAIL USER (solo Amministratore principale)
+--  33 — AUDIT USER (solo Amministratore principale; sezione chiamata
+--       «Audit trail user» fino al 20/10/2026, file con il nome di allora)
 --
 --  Scopo (richiesta di Luca del 20/10/2026): una sezione del portale
 --  riservata all'Amministratore principale (luca.moretti@operate.it,
