@@ -30,6 +30,7 @@ import { useAuth } from "../lib/AuthContext.jsx";
 import Notifiche from "./Notifiche.jsx";
 import AssistenteVirtuale from "./AssistenteVirtuale.jsx";
 import { IndicatoreOnline, SegnalaPresenza, usePrincipale } from "./UtentiOnline.jsx";
+import UscitaInattivita from "./UscitaInattivita.jsx";
 
 // Voci di menu per ruolo: elenco di coppie [indirizzo, etichetta].
 // Qualunque ruolo diverso da admin e operatore (compreso un profilo
@@ -175,7 +176,7 @@ export default function Header() {
             <span style={{ display: "block", fontSize: 11, color: C.green, fontWeight: 600 }}>Il mio profilo</span>
           </Link>
           <button
-            onClick={esci}
+            onClick={() => esci()}
             style={{
               background: "transparent",
               color: C.grafite,
@@ -193,6 +194,8 @@ export default function Header() {
       )}
       {/* Presenza per «Utenti online» (script 32): tutti gli utenti attivi. */}
       {backendPronto && utente && <SegnalaPresenza pagina={location.pathname} />}
+      {/* Uscita automatica dopo un periodo senza attività (script 34). */}
+      {backendPronto && utente && <UscitaInattivita />}
       {/* Assistente virtuale (Claude): per ora Amministratori ed enti. */}
       {backendPronto && utente && !passwordDaCambiare && (ruolo === "admin" || ruolo === "cliente") && <AssistenteVirtuale ruolo={ruolo} />}
     </header>

@@ -159,7 +159,7 @@ export default function VerificaMfa() {
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 18, fontSize: 12, color: C.grafite }}>
           <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 240 }}>{utente?.email}</span>
-          <button onClick={esci} style={{ background: "none", border: "none", color: C.grafite, textDecoration: "underline", cursor: "pointer", fontSize: 12 }}>
+          <button onClick={() => esci()} style={{ background: "none", border: "none", color: C.grafite, textDecoration: "underline", cursor: "pointer", fontSize: 12 }}>
             Esci
           </button>
         </div>

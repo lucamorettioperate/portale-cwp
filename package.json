@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node test/crediti.test.mjs && node test/csv.test.mjs && node test/tracciato.test.mjs && node test/date.test.mjs && node test/tariffe.test.mjs && node test/qualita.test.mjs && node test/simulatore.test.mjs && node test/ordinamento.test.mjs && node test/presenza.test.mjs && node test/simulatoreExport.test.mjs"
+    "test": "node test/crediti.test.mjs && node test/csv.test.mjs && node test/tracciato.test.mjs && node test/date.test.mjs && node test/tariffe.test.mjs && node test/qualita.test.mjs && node test/simulatore.test.mjs && node test/ordinamento.test.mjs && node test/presenza.test.mjs && node test/simulatoreExport.test.mjs && node test/inattivita.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
@@ -17,10 +17,10 @@
     "jszip": "^3.10.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.2"
+    "react-router-dom": "^7.18.4"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.4.8"
+    "vite": "^7.3.7"
   }
 }

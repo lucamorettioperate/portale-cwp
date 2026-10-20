@@ -137,7 +137,7 @@ export default function CambiaPassword({ modo = "volontario" }) {
           {inCorso ? "Salvataggio…" : "Salva la password"}
         </button>
         {modo === "obbligatorio" && (
-          <button type="button" onClick={esci} style={{ background: "none", border: "none", color: C.grafite, fontSize: 13, marginTop: 12, cursor: "pointer" }}>
+          <button type="button" onClick={() => esci()} style={{ background: "none", border: "none", color: C.grafite, fontSize: 13, marginTop: 12, cursor: "pointer" }}>
             Esci
           </button>
         )}

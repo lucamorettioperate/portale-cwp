@@ -30,6 +30,8 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [errore, setErrore] = useState("");
   const [inCorso, setInCorso] = useState(false);
+  // Arrivo dopo l'uscita automatica per inattività (UscitaInattivita).
+  const perInattivita = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("uscita") === "inattivita";
 
   // Invio del modulo di accesso. In caso di successo non fa nulla: la nuova
   // sessione arriva ad AuthContext e App.jsx cambia pagina.
@@ -104,6 +106,11 @@ export default function Login() {
           </div>
         )}
 
+        {perInattivita && !recupero && (
+          <div role="status" style={{ background: C.greenSoft, color: C.green, borderRadius: 10, padding: "10px 12px", fontSize: 13, marginBottom: 16, lineHeight: 1.45 }}>
+            Per sicurezza la sessione è stata chiusa dopo un periodo senza attività. Accedete di nuovo per continuare.
+          </div>
+        )}
         {recupero && (
           <RecuperoPassword
             emailIniziale={email}

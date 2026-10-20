@@ -132,15 +132,17 @@ export function AuthProvider({ children }) {
     return esito;
   }
 
-  // Chiude la sessione e azzera profilo e stato di recupero.
-  async function esci() {
+  // Chiude la sessione e azzera profilo e stato di recupero. Parametro
+  // facoltativo: motivo («inattivita» quando esce da solo il portale,
+  // componente UscitaInattivita), registrato nel registro degli accessi.
+  async function esci(motivo) {
     // Prima di uscire si registra l'uscita (script 33) e si cancella la
     // presenza (script 32), così l'utente non risulta più online. Se lo
     // script 33 manca si cancella almeno la presenza. Un errore non blocca
     // mai l'uscita.
     if (supabase) {
       try {
-        const { error } = await supabase.rpc("registra_uscita");
+        const { error } = await supabase.rpc("registra_uscita", motivo === "inattivita" ? { p_motivo: "inattivita" } : {});
         if (error) await supabase.rpc("presenza_uscita");
       } catch {
         /* nessun effetto sull'uscita */
