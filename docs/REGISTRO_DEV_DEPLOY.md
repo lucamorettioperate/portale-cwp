@@ -329,9 +329,9 @@ autenticazione, dal SQL Editor:
 
 | Funzione | Cosa fa | Protezione | Pubblicazione |
 |---|---|---|---|
-| `crea-utente` | L'Amministratore crea un utente con password temporanea e lo associa a tutte le sue organizzazioni (`admin_imposta_organizzazioni` con il token dell'Admin); se un passo fallisce l'account appena creato viene eliminato | Verifica che il chiamante sia Admin (`sono_admin`); password temporanea di almeno 10 caratteri con lettere e numeri; niente creazione di Admin; dal 19/10 email all'utente con indirizzo del portale, email di accesso e password temporanea (Resend), esito `email_inviata`/`motivo_email` restituito al portale | Dashboard Supabase (editor web); ripubblicata 18/10 (script 20); Verify JWT attivo; **versione 19/10 con l'email da ripubblicare** |
-| `assistente` | Assistente virtuale (Claude, Anthropic Messages API): risponde dalla base di conoscenza `public/assistente/kb-amministratore.md` (Admin) o `kb-comune.md` (utenti degli enti), letta dal portale e tenuta in memoria 10 minuti; base di conoscenza nella cache dei prompt per 1 ora; modello predefinito `claude-haiku-5-5` (`ASSISTENTE_MODELLO`); conta domande e token con `assistente_registra_uso` | Ruolo letto dal server (solo admin e cliente, profilo attivo, senza password temporanea); limite di domande al giorno (`ASSISTENTE_LIMITE_GIORNO`, predefinito 40); massimo 12 messaggi da 2.000 caratteri; chiave `ANTHROPIC_API_KEY` solo nei segreti; nessun testo salvato; non legge le pratiche | **Pubblicata il 19/10** (dashboard Supabase, Verify JWT attivo); chiave `ANTHROPIC_API_KEY` legata a un solo spazio di lavoro inserita da Luca; provata dal vivo; **versione 20/10 con i messaggi d'errore in italiano da ripubblicare** |
-| `reimposta-password` | L'Amministratore assegna una password temporanea a un Cliente o Operatore; il flag obbliga al cambio al primo accesso; audit; dal 19/10 email all'utente con la nuova password temporanea (Resend), esito restituito al portale | Verifica `sono_admin`; esclusi amministratori e sé stessi | Dashboard Supabase (editor web), 18/10; Verify JWT attivo; **versione 19/10 con l'email da ripubblicare** |
+| `crea-utente` | L'Amministratore crea un utente con password temporanea e lo associa a tutte le sue organizzazioni (`admin_imposta_organizzazioni` con il token dell'Admin); se un passo fallisce l'account appena creato viene eliminato | Verifica che il chiamante sia Admin (`sono_admin`); password temporanea di almeno 10 caratteri con lettere e numeri; niente creazione di Admin; dal 19/10 email all'utente con indirizzo del portale, email di accesso e password temporanea (Resend), esito `email_inviata`/`motivo_email` restituito al portale | Dashboard Supabase (editor web); ripubblicata 18/10 (script 20); Verify JWT attivo; versione 19/10 con l'email **ripubblicata il 20/10** |
+| `assistente` | Assistente virtuale (Claude, Anthropic Messages API): risponde dalla base di conoscenza `public/assistente/kb-amministratore.md` (Admin) o `kb-comune.md` (utenti degli enti), letta dal portale e tenuta in memoria 10 minuti; base di conoscenza nella cache dei prompt per 1 ora; modello predefinito `claude-haiku-5-5` (`ASSISTENTE_MODELLO`); conta domande e token con `assistente_registra_uso` | Ruolo letto dal server (solo admin e cliente, profilo attivo, senza password temporanea); limite di domande al giorno (`ASSISTENTE_LIMITE_GIORNO`, predefinito 40); massimo 12 messaggi da 2.000 caratteri; chiave `ANTHROPIC_API_KEY` solo nei segreti; nessun testo salvato; non legge le pratiche | **Pubblicata il 19/10** (dashboard Supabase, Verify JWT attivo); chiave `ANTHROPIC_API_KEY` legata a un solo spazio di lavoro inserita da Luca; provata dal vivo; versione 20/10 con i messaggi d'errore in italiano **ripubblicata il 20/10** |
+| `reimposta-password` | L'Amministratore assegna una password temporanea a un Cliente o Operatore; il flag obbliga al cambio al primo accesso; audit; dal 19/10 email all'utente con la nuova password temporanea (Resend), esito restituito al portale | Verifica `sono_admin`; esclusi amministratori e sé stessi | Dashboard Supabase (editor web), 18/10; Verify JWT attivo; versione 19/10 con l'email **ripubblicata il 20/10** |
 | `consultazione-pubblica` | Pagine pubbliche del feedback pubblico (data di «oggi» in ora italiana dal 18/10; numero delle osservazioni dallo script 21; dalla sera del 18/10 anche i Rapporti di Monitoraggio, ripubblicata; azioni `programma` e `file` per la pagina pubblica /programma, script 24, ripubblicata la sera del 18/10, Verify JWT spento): elenco, dettaglio (documento, errata corrige, osservazioni ammesse), invio di un'osservazione con allegato facoltativo ed email di conferma, conferma dell'email (l'osservazione diventa *Ricevuto*) | Verify JWT **disattivato** di proposito (pubblico senza account): nessun dato personale restituito, 3 invii/ora per indirizzo e 100/ora per consultazione, campo trappola anti-robot, allegati max 10 MB con controllo del contenuto, token monouso 48 ore salvato come SHA-256 | Dashboard Supabase (editor web), 18/10 |
 | `recupera-password` | «Password dimenticata?»: genera il collegamento di recupero (`auth.admin.generateLink`) e spedisce con Resend l'email in italiano «Portale Carbon WastePrint (CWP) — Richiesta di reimpostazione della password», al posto del modello email di Supabase | Verify JWT **disattivato** di proposito (la chiama chi non ha fatto l'accesso): risponde sempre `ok` senza rivelare se l'indirizzo esiste; niente email agli utenti disattivati; massimo una richiesta ogni 2 minuti per indirizzo; il collegamento porta solo al portale | Dashboard Supabase (editor web), 18/10 |
 | `invia-email-notifica` | Spedisce per email una notifica interna (pulsante "Apri nel portale") tramite Resend | Verify JWT **disattivato** di proposito: usa solo l'id ricevuto e rilegge tutto dal database; ogni notifica parte una volta sola | Dashboard Supabase; prima pubblicazione 17/10, aggiornata 17/10 (pulsante per tema scuro) |
@@ -507,7 +507,7 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   (non disponibile / troppe domande / sovraccarico); agli Amministratori
   aggiunge la causa (credito esaurito, chiave non valida o non legata a uno
   spazio di lavoro, modello non trovato); il dettaglio tecnico resta nei
-  log. Va ripubblicata la funzione.
+  log. Funzione ripubblicata il 20/10.
 - **Simulatore: PDF impaginato ed export Excel** (backlog 37) — pulsanti
   «Scarica PDF» (A4 orizzontale: loghi, scheda, avvertenza, sintesi,
   anni, economia, costi del Caso 1 o 2, note, avvisi, numeri di pagina) ed
@@ -520,6 +520,12 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 - Documenti: Manuale Utente 2.8 (capitolo «Collegamento al portale»),
   Manuale Amministratore 3.8, Manuale Test 3.4, Registro 4.4, Istruzioni di
   ripristino 1.2, Presentazione 2.4.
+- **Funzioni ripubblicate** (con l'autorizzazione di Luca): `assistente`
+  (errori in italiano), `crea-utente` e `reimposta-password` (email con le
+  credenziali). Il testo incollato a mano si era rovinato (barra iniziale
+  persa e righe in più: «Unterminated regexp literal»); il codice è stato
+  caricato nell'editor direttamente dal repository. Verify JWT attivo su
+  tutte e tre. Registro 4.5.
 
 ### 19 ottobre 2026
 - **Assistente virtuale attivato** — Luca ha eseguito lo script 31,
@@ -1131,10 +1137,9 @@ aperte; il dettaglio è nei punti numerati qui sotto.
 
 *Azioni di Luca (Claude non le può fare: chiavi, pubblicazioni, account)*
 - Eseguire lo script `32_utenti_online.sql` nel SQL Editor (utenti online).
-- Ripubblicare la funzione `assistente` (versione del 20/10 con i
-  messaggi d'errore in italiano).
-- Ripubblicare le funzioni `crea-utente` e `reimposta-password` (versione
-  del 19/10 con l'email delle credenziali; capitolo 5).
+- ~~Ripubblicare le funzioni `assistente`, `crea-utente` e
+  `reimposta-password`~~ — fatto il 20/10 (codice caricato nell'editor di
+  Supabase direttamente dal repository, Verify JWT attivo su tutte e tre).
 - Rieseguire nel SQL Editor la sola funzione `utente_mai_attivo` dello
   script 30 (controllo esteso alle colonne «autore»).
 - Verificare il dominio email su Resend (punto 17): finché manca, le email
@@ -1146,8 +1151,7 @@ aperte; il dettaglio è nei punti numerati qui sotto.
 *Sviluppo (Claude)*
 - ~~Utenti online (punto 38)~~, ~~messaggi d'errore dell'assistente in
   italiano (punto 39)~~ e ~~PDF ed Excel del simulatore (punto 37)~~ —
-  fatti il 20/10; manca solo l'attivazione da parte di Luca (script 32 e
-  funzione `assistente`).
+  fatti il 20/10; manca solo lo script 32 in produzione.
 - Assistente: Operatori e aiuto sulla singola pratica (punto 21).
 - Simulatore: conferma del modello ed eventuale visione da parte del Comune
   (punto 37).
@@ -1268,7 +1272,7 @@ aperte; il dettaglio è nei punti numerati qui sotto.
 - ~~**35.** Allineamento ai documenti ufficiali del Programma~~ — fatto la sera del 18/10 (script 22-24, portale, funzione `consultazione-pubblica`): vedi Decisioni e Cronologia. Resta SPID/CIE/CNS (punto 36).
 - **36.** Accesso degli stakeholders con SPID, CIE o CNS (Guida 3.9): adesione come fornitore di servizi (AgID o aggregatore), poi integrazione nella pagina del feedback pubblico.
 - ~~**38.** **Utenti online**~~ — richiesto da Luca il 19/10, fatto il 20/10 (script 32, componente `UtentiOnline.jsx`): l'Amministratore principale vede quanti e quali utenti sono collegati, con pagina aperta e durata, e chi è stato visto nelle ultime 24 ore. Da eseguire in produzione lo script 32.
-- ~~**39.** **Messaggi d'errore dell'assistente in italiano semplice**~~ — fatto il 20/10 (da ripubblicare la funzione `assistente`). Proposto il 19/10: oggi, se Anthropic rifiuta una richiesta (per esempio credito finito), l'utente vede il messaggio tecnico in inglese. Da sostituire con frasi semplici («L'assistente è momentaneamente non disponibile, riprova più tardi»), lasciando il dettaglio tecnico nei log della funzione. Richiede di ripubblicare la funzione `assistente`. Confermato da Luca il 20/10.
+- ~~**39.** **Messaggi d'errore dell'assistente in italiano semplice**~~ — fatto il 20/10 (funzione `assistente` ripubblicata lo stesso giorno). Proposto il 19/10: oggi, se Anthropic rifiuta una richiesta (per esempio credito finito), l'utente vede il messaggio tecnico in inglese. Da sostituire con frasi semplici («L'assistente è momentaneamente non disponibile, riprova più tardi»), lasciando il dettaglio tecnico nei log della funzione. Richiede di ripubblicare la funzione `assistente`. Confermato da Luca il 20/10.
 - **21.** **Assistente virtuale (Claude)** integrato nel portale — richiesto da Luca il 18/10, confermato tra i punti aperti il 19/10. **Prima versione fatta il 19/10** (Amministratori ed enti, risposte dalla base di conoscenza su portale e tariffe: script 31, funzione `assistente`, componente `AssistenteVirtuale`); **attivo dal 19/10** (chiave e crediti della Claude Console di Luca; da decidere se spostare la fatturazione su un'organizzazione della Fondazione). Durante l'attesa della risposta la finestra mostra «Un attimo…» (richiesta di Luca del 19/10). Restano i passi successivi descritti qui sotto (Operatori, aiuto sulla singola pratica). Funziona con i modelli Claude di Anthropic tramite API (lo sviluppo del portale si fa con Claude Code). Ambito da definire; usi possibili: assistente per gli utenti dei Comuni (come compilare, cosa manca nella pratica), supporto agli Operatori (controllo completezza dei documenti, bozze di richieste di integrazione e di risposte ai commenti), verifica del tracciato dati prima dell'import, spiegazione dei risultati del calcolo crediti. Richiede: chiave API Anthropic (segreto in Supabase), una Edge Function che faccia da tramite, regole su quali dati l'agente può leggere (privacy) e registrazione delle sue azioni nell'audit.
 
 ---

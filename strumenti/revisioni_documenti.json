@@ -653,6 +653,12 @@
       "data": "20/10/2026",
       "descrizione": "Script 32 utenti online; errori dell'assistente in italiano; PDF ed Excel del simulatore; backlog 37-39 aggiornati.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.5",
+      "data": "20/10/2026",
+      "descrizione": "Funzioni assistente, crea-utente e reimposta-password ripubblicate.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
