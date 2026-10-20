@@ -6,7 +6,7 @@
 
 Questo file è autonomo: contiene priorità, dati sintetici, passi di riproduzione, risultati osservati, riferimenti al codice e criteri di verifica. Il dossier completo V03 rimane la raccolta delle prove originali; non è necessario possedere il percorso locale dell’agente che ha svolto il collaudo per leggere questa consegna. Nessuna password, chiave, credenziale o collegamento temporaneo ai documenti è incluso.
 
-> **Risposte dello sviluppo (Claude, per Fondazione Operate) — 20/10/2026.** Le risposte sono inserite qui sotto ogni scheda, nei riquadri «Risposta dello sviluppo», e riassunte nel punto 9-bis. Le correzioni sono sul ramo `correzioni-collaudo-v01` del repository, non ancora in produzione. Dove serve una regola della Fondazione la domanda è scritta nella scheda, con lo spazio «Risposta della Fondazione» da compilare.
+> **Risposte dello sviluppo (Claude, per Fondazione Operate) — 20/10/2026.** Le risposte sono inserite qui sotto ogni scheda, nei riquadri «Risposta dello sviluppo», e riassunte nel punto 9-bis. Le correzioni sono **in produzione dal 20/10/2026 (commit `e0c91a9`)** e lo script 35 è stato eseguito sul database reale con il mandato di Luca Moretti. Dove serve una regola della Fondazione la domanda è scritta nella scheda, con lo spazio «Risposta della Fondazione» da compilare.
 >
 > | Esito | ID |
 > |---|---|
@@ -139,7 +139,7 @@ La correzione deve chiarire anche lo scarto di singole righe: un import parziale
 > 2. Salvataggio (`archivio.js`): `valoriNonAmmessiBdu` controlla tutte le righe **prima** di cancellare quelle vecchie.
 > 3. Controlli di coerenza (`tracciato.js`): errore «Banca Dati Utenze con n righe con valori negativi o non numerici». Questo errore blocca anche la conferma (vedi R05).
 > 4. Motore (`calcolaCrediti`): con valori non ammessi `bloccato = true` ed `errori` elencati; lordi, buffer, netti e debito valgono 0. La pagina mostra il riquadro rosso «Calcolo bloccato», non salva il risultato e toglie quello eventualmente già salvato.
-> 5. Database (script `35_controlli_collaudo.sql`, **non ancora eseguito in produzione**): vincoli `calcolo_conferimento_non_negativi` e `calcolo_riuso_non_negativi` (`NOT VALID`: valgono per ogni nuova riga, le righe esistenti non vengono toccate).
+> 5. Database (script `35_controlli_collaudo.sql`, **eseguito in produzione il 20/10**): vincoli `calcolo_conferimento_non_negativi` e `calcolo_riuso_non_negativi` (`NOT VALID`: valgono per ogni nuova riga, le righe esistenti non vengono toccate).
 >
 > **Campi coperti:** svuotamenti, volume contenitore, peso e volume delle strutture informatizzate, peso e volume dei centri di raccolta, N. utenze, pezzi e peso del riuso. Zero e cella vuota restano ammessi.
 >
@@ -337,7 +337,7 @@ Per l’anteprima online è stato usato uno ZIP sintetico con `5_Conferimenti` v
 > - ricerca anche per nome o codice;
 > - nel CSV di Audit User le colonne «Id oggetto» e «Modifiche».
 >
-> Nessun evento storico riscritto. Siccome i dati erano già registrati, la nuova vista rende leggibili **anche gli eventi del 19/10 (21:21–21:26)** delle prove.
+> Nessun evento storico riscritto. Siccome i dati erano già registrati, la nuova vista rende leggibili **anche gli eventi del 19/10 (21:21–21:26)** delle prove. Verificato in produzione: per esempio l'evento delle 21:23:53 mostra «Scenario del simulatore «COLLAUDO AL V02 20261019 - riferimento indipendente» (8d3a7cb5)», con «Anno 2027 › secco pro capite (kg/ab): 75 → -10», «Buffer (%): 90 → 20», «Ultimo ricalcolo» e «Crediti netti stimati (tCO₂eq): 366 → 2928».
 >
 > **Prove:** «D05» (riconoscimento di due scenari, campi cambiati, creazione) e verifica a schermo con dati di prova (computer e telefono).
 >
@@ -707,15 +707,15 @@ Per la chiusura positiva servono P0/P1 del perimetro superati sulla release prev
 
 **1. Revisione e build proposta.**
 - Partenza: commit di produzione `640111a`. Il collaudo è stato fatto su `2526602`; tutti i difetti D01–D07 sono stati riprodotti anche su `640111a`.
-- Correzioni sul ramo `correzioni-collaudo-v01` del repository (commit `66d253e` e successivi), **non ancora in produzione**: il portale online ha ancora i difetti finché Luca non autorizza il rilascio.
+- Correzioni sul ramo `correzioni-collaudo-v01` (commit `66d253e` e successivi), unito a `main` e **rilasciato in produzione il 20/10/2026 alle 17:15 circa** su incarico di Luca Moretti. **Build da collaudare: commit `e0c91a9`** su <https://portale-cwp.vercel.app>.
 - Verifica locale ripetibile: `git checkout correzioni-collaudo-v01`, poi `npm ci`, `npm test` (12 serie di prove) e `npx vite build`.
 - Confronto con la partenza: `git diff 640111a..correzioni-collaudo-v01`.
 
 **2. Migrazione.** `supabase/35_controlli_collaudo.sql`.
 - Vincoli `NOT VALID` e trigger: le righe già salvate non vengono controllate né modificate.
 - Rieseguibile; provato sul banco Postgres 16 locale con tutti gli script 01–35 (`t35.sql`).
-- **Non eseguito sul database reale**: serve il mandato di Luca Moretti / Luca Belfiore.
-- L'ultima istruzione conta, in sola lettura, i dati già salvati che non rispettano le nuove regole.
+- **Eseguito sul database reale il 20/10/2026** su incarico di Luca Moretti. Verifica dopo l'esecuzione: 3 vincoli e 2 trigger presenti.
+- L'ultima istruzione conta, in sola lettura, i dati già salvati che non rispettano le nuove regole. Esito in produzione: **0** in tutte le voci (conferimenti e riuso negativi, calcoli con buffer o crediti fuori regola, calcoli confermati senza Banca Dati, scenari con buffer non ammesso); anche 0 scenari con anni impossibili.
 
 **3. Esito delle prove.**
 - Le otto serie originali (crediti, csv, tracciato, date, tariffe, qualità, simulatore, ordinamento) e le tre successive (presenza, simulatoreExport, inattività) superate.

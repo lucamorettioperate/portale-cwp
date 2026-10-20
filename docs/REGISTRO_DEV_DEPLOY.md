@@ -252,7 +252,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `32_utenti_online.sql` | Utenti online (backlog 38): tabella `presenza` (una riga per utente: ultima segnalazione, inizio del collegamento, pagina aperta; nessun IP, nessuno storico; RLS senza regole), `segnala_presenza(pagina)` e `presenza_uscita()` per ognuno solo per sé, `utenti_online()` (visti nelle ultime 24 ore, online se l'ultima segnalazione ha meno di 2 minuti) solo per l'Amministratore principale | 20/10/2026 — provato sul banco locale; **eseguito in produzione il 20/10** |
 | `33_audit_trail_user.sql` | Audit User (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **eseguito in produzione il 20/10** e provato dal vivo |
 | `34_sicurezza_avvisi.sql` | Sicurezza (backlog 14, 30): avvisi all'Amministratore principale (`cwp_avviso_sicurezza`, evento «sicurezza»): 5 accessi non riusciti in 15 minuti per email, 30 in un'ora in tutto, nuovo Amministratore (trigger `trg_profilo_avviso_admin`); `registra_uscita(p_motivo)` con l'uscita per inattività; rinforzi del Security Advisor: `search_path` fisso su tutte le funzioni, funzioni SECURITY DEFINER non eseguibili da anon (tranne `registra_accesso_fallito` e quelle usate nelle regole RLS) | 20/10/2026 — provato sul banco locale (`t34.sql`, regressioni `t33.sql`); **da eseguire in produzione** |
-| `35_controlli_collaudo.sql` | Collaudo V01 (20/10/2026): vincoli `NOT VALID` (valgono per i nuovi dati, quelli salvati restano com'erano) — `calcolo_conferimento_non_negativi` e `calcolo_riuso_non_negativi` (D07: niente svuotamenti, volumi, pesi, pezzi negativi; N. utenze > 0), `calcolo_crediti_valori_ammessi` (D02: buffer 0-80%, crediti non negativi); trigger `trg_calcolo_prerequisiti` (R05: niente conferma senza Banca Dati Utenze o con risultato bloccato); `cwp_numero_json` e trigger `trg_scenario_valida` sugli scenari (D01/D02/D03: popolazione e produzione > 0, secco e rifiuti ≥ 0, buffer 0-80%, valori economici ≥ 0); in fondo un conteggio in sola lettura dei dati già salvati che non rispettano le nuove regole | 20/10/2026 — provato sul banco locale (`t35.sql`: rifiuti attesi, conferma ordinaria ancora possibile, rieseguibile con dati vecchi non validi); **da eseguire in produzione dopo l'OK di Luca**, insieme al rilascio del ramo `correzioni-collaudo-v01` |
+| `35_controlli_collaudo.sql` | Collaudo V01 (20/10/2026): vincoli `NOT VALID` (valgono per i nuovi dati, quelli salvati restano com'erano) — `calcolo_conferimento_non_negativi` e `calcolo_riuso_non_negativi` (D07: niente svuotamenti, volumi, pesi, pezzi negativi; N. utenze > 0), `calcolo_crediti_valori_ammessi` (D02: buffer 0-80%, crediti non negativi); trigger `trg_calcolo_prerequisiti` (R05: niente conferma senza Banca Dati Utenze o con risultato bloccato); `cwp_numero_json` e trigger `trg_scenario_valida` sugli scenari (D01/D02/D03: popolazione e produzione > 0, secco e rifiuti ≥ 0, buffer 0-80%, valori economici ≥ 0); in fondo un conteggio in sola lettura dei dati già salvati che non rispettano le nuove regole | 20/10/2026 — provato sul banco locale (`t35.sql`: rifiuti attesi, conferma ordinaria ancora possibile, rieseguibile con dati vecchi non validi); **eseguito in produzione il 20/10** su incarico di Luca (conteggio finale: 0 dati salvati fuori regola; 3 vincoli e 2 trigger presenti) |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
 script successivi.
@@ -519,7 +519,10 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   consegna all'agente di correzione» dei collaudatori A. Valentini, A.
   Ambrogio, A. Pavan, G. Tapparini, L. Belfiore; prove fatte sul commit
   2526602, riprodotte tutte sul 640111a) — ramo `correzioni-collaudo-v01`,
-  NON ancora in produzione. D07: import CSV diretto della Banca Dati
+  **rilasciato in produzione il 20/10 alle 17:15 circa** (commit e0c91a9,
+  OK di Luca «parti con il rilascio»; script 35 eseguito, nessun dato
+  salvato fuori regola). Verifica dal vivo: la pagina Audit mostra ora
+  nome e modifiche anche degli eventi di prova del 19/10 (21:21-21:26). D07: import CSV diretto della Banca Dati
   «tutto o niente» con rifiuto dei negativi (`csvInOggetti` con `min`),
   controllo `valoriNonAmmessiBdu` in salvataggio (`archivio.js`), coerenza
   (`tracciato.js`) e motore (`calcolaCrediti` → `errori`, `bloccato`, crediti
@@ -1257,11 +1260,10 @@ aperte; il dettaglio è nei punti numerati qui sotto.
   Gianluca Tapparini e Luca Belfiore stanno provando portale, calcolo
   crediti e simulatore (punto 19): le loro segnalazioni si correggono man
   mano; i dati di prova restano fino alla chiusura del collaudo.
-- Primo rapporto (V01 del 20/10): D01-D07 corretti sul ramo
-  `correzioni-collaudo-v01` (da ritestare); R01, R02, R03, R06, R08 e il
+- Primo rapporto (V01 del 20/10): D01-D07 corretti e **rilasciati in
+  produzione il 20/10** (commit e0c91a9, script 35 eseguito; da ritestare); R01, R02, R03, R06, R08 e il
   segno del riuso aspettano una regola della Fondazione; risposte nel
-  documento `docs/collaudo/Collaudo_V01_risposte.md`. **Per Luca:** OK al
-  rilascio del ramo e all'esecuzione dello script 35; creare i tre utenti
+  documento `docs/collaudo/Collaudo_V01_risposte.md`. **Per Luca:** creare i tre utenti
   di prova «COLLAUDO V03 Cliente A / Cliente B / Operatore» (password per
   canale separato, MFA non disattivata).
 
