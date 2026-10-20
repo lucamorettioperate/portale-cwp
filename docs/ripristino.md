@@ -38,7 +38,7 @@ Il portale non ha un server proprio: è distribuito su sei servizi. Sapere che c
 
 | Servizio | Che cosa contiene | Se si perde |
 | --- | --- | --- |
-| **GitHub** (lucamorettioperate/portale-cwp) | Tutto il codice, gli script del database (01-33), le funzioni del server, i manuali e la loro storia | Si recupera dal ramo `snapshot-…` o dal file `.bundle` dell'archivio di backup |
+| **GitHub** (lucamorettioperate/portale-cwp) | Tutto il codice, gli script del database (01-34), le funzioni del server, i manuali e la loro storia | Si recupera dal ramo `snapshot-…` o dal file `.bundle` dell'archivio di backup |
 | **Vercel** (progetto portale-cwp) | Solo la pubblicazione del portale; nessun dato | Si ricrea in 10 minuti collegando di nuovo GitHub |
 | **Supabase** (organizzazione Fondazione Operate, progetto portale-cwp) | Database (pratiche, utenti, audit, impostazioni), file caricati, funzioni del server, lavori pianificati, chiavi | La struttura si ricrea dagli script; **i dati e i file solo da una copia** (capitolo «Copie di sicurezza») |
 | **Resend** | Invio delle email; chiave API e verifica del dominio | Nuovo account o nuova chiave, poi aggiornare Supabase |
@@ -278,7 +278,7 @@ Gli altri utenti li crea poi l'Amministratore dal portale (*Gestione utenti*).
 
 ### 8. Collegare il portale e verificare
 
-1. Su Vercel aggiornate `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` con i valori del nuovo progetto e ripubblicate (*Deployments* › *Redeploy*).
+1. Su Vercel aggiornate `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` con i valori del nuovo progetto. Nel file `vercel.json` del repository sostituite l'indirizzo del vecchio progetto (`ajxrnofgunynkynozmrn.supabase.co`, 4 volte) con quello nuovo, nella regola `Content-Security-Policy`: altrimenti il browser blocca i collegamenti al database e il portale non funziona. Poi ripubblicate (*Deployments* › *Redeploy*).
 2. Verifiche: accesso come Amministratore principale, con il menu completo (fino ad Audit User) e la scheda Accessi di Audit User che registra l'accesso appena fatto; la pagina /programma mostra gli 8 documenti, la PEC e il soggetto promotore; un utente di prova riceve l'email; l'assistente risponde; i lavori pianificati sono tre:
 
 ```sql

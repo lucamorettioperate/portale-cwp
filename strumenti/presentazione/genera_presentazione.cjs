@@ -402,9 +402,9 @@ async function icona(Comp, colore) {
   s.addText("Punti aperti: sviluppo e servizi da attivare", { placeholder: "title" });
   const colonne = [
     { i: "scudo", t: "Sicurezza e infrastruttura", r: [
-      "Registro di sicurezza: accessi, tentativi falliti, cambi di permessi",
-      "Verifica in due passaggi per lo staff (pronta, spenta) e scadenza delle sessioni",
-      "Antivirus sui file; verifica OWASP, test di intrusione, librerie aggiornate",
+      "Fatto il 20/10: registro degli accessi e avvisi di sicurezza, uscita per inattività, intestazioni del sito, librerie aggiornate (0 vulnerabilità)",
+      "Verifica in due passaggi per lo staff (pronta, spenta); CAPTCHA sulle pagine pubbliche",
+      "Antivirus sui file; verifica OWASP, test di intrusione a fine sviluppo",
       "Backup: archivio completo e istruzioni di ripristino fatti (19/10); da attivare copie automatiche di database e file, ambiente di prova, monitoraggio errori",
       "Piani a pagamento e repository privato (slide «Piani a pagamento»); dominio email verificato, che serve anche alle email con le credenziali",
     ] },
@@ -420,7 +420,7 @@ async function icona(Comp, colore) {
       "Conferma delle scelte interpretative del calcolo con l'ente",
       "Privacy: DPIA, registro dei trattamenti; accessibilità WCAG 2.1 AA",
       "Collaudo con i dati reali di un Comune",
-      "Nuovi moduli: simulatore (online, due metodi), assistente virtuale (attivo dal 19/10; poi messaggi d'errore in italiano, Operatori e aiuto sulla pratica); utenti online per l'amministratore principale (in sviluppo)",
+      "Nuovi moduli: simulatore con PDF ed Excel, assistente virtuale (poi Operatori e aiuto sulla pratica), Audit User e utenti online (fatti il 20/10); Marketplaces da definire",
     ] },
   ];
   const cw = (12.1 - 0.6) / 3;

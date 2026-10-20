@@ -407,6 +407,8 @@ L'assistente risponde solo con le informazioni di questo manuale e delle tariffe
 
 Mentre avete il portale aperto, il portale registra **quando** siete collegati e **quale pagina** state guardando: di questo si conserva solo l'ultimo collegamento. Inoltre, come per ogni sistema che gestisce dati certificati, il portale tiene un **registro degli accessi** (data e ora di ogni entrata, di ogni uscita con **Esci** e dei tentativi di accesso con password errata) e un **registro delle operazioni** (per esempio caricamento e scaricamento dei documenti, risposte alle integrazioni), con data e ora. Non si registrano indirizzi di rete. I registri non si possono modificare e li consulta soltanto l'Amministratore principale della Fondazione, per sicurezza e controllo. Con **Esci** risultate subito non collegati.
 
+**Uscita automatica.** Per sicurezza, se il portale resta aperto senza attività per **60 minuti** (30 per il personale della Fondazione), compare l'avviso **«Sei ancora lì?»** con un conto alla rovescia di 2 minuti. Premete **Resto collegato** per continuare; altrimenti il portale esce da solo e alla pagina di accesso spiega perché. Le modifiche non salvate in quel momento si perdono: salvate spesso i lavori lunghi.
+
 ## Domande frequenti
 
 **Ho dimenticato la password.** Usate **Password dimenticata?** nella pagina di accesso (capitolo 2). In alternativa Fondazione Operate può assegnarvi una password temporanea, che al primo accesso vi verrà chiesto di sostituire.
@@ -1393,6 +1395,22 @@ In basso a destra di ogni pagina c'è il pulsante **✦ Assistente**: apre una c
 **Quando qualcosa non va.** Se Claude non può rispondere, l'utente vede un messaggio in italiano semplice: «L'assistente non è disponibile in questo momento. Riprova più tardi…», oppure «arrivano troppe domande» o «momentaneamente sovraccarico» quando il problema è passeggero. Gli Amministratori leggono anche la causa tra parentesi, per esempio «il credito della Claude Console è esaurito» o «la chiave non è legata a uno spazio di lavoro». Il dettaglio tecnico, in inglese, resta nei log della funzione: Supabase → Edge Functions → assistente → Logs.
 
 **Aggiornare le conoscenze.** Quando cambiano i manuali o le tariffe si rigenera la base di conoscenza (`node strumenti/genera_base_conoscenza.cjs`) e si pubblica: l'assistente la rilegge entro 10 minuti.
+
+## Sicurezza
+
+**Uscita per inattività.** Dopo **30 minuti** senza attività per Operatori e Amministratori, e dopo **60 minuti** per gli utenti degli enti, compare «Sei ancora lì?». Se nessuno risponde entro 2 minuti, il portale esce da solo. L'uscita si vede in Audit User → Accessi come «Uscita (Esci) – per inattività». L'attività in un'altra scheda dello stesso browser tiene aperte tutte le schede.
+
+**Avvisi di sicurezza all'Amministratore principale.** Arrivano come notifica nella campanella e per email (script 34):
+
+- **Accessi non riusciti ripetuti**: 5 tentativi falliti in 15 minuti per la stessa email;
+- **Molti accessi non riusciti**: 30 tentativi falliti in un'ora, su più email (possibile attacco);
+- **Nuovo Amministratore**: un utente ottiene il ruolo di Amministratore. Se l'hai nominato tu, l'avviso non arriva.
+
+Davanti a un avviso inatteso: controlla Audit User → Accessi e Operazioni; se serve, disattiva l'utente da Utenti oppure reimposta la password.
+
+**Protezioni del sito.** Il portale si apre solo in https e non si può incorporare in pagine di altri siti (contro il clickjacking). Carica programmi solo da sé stesso e si collega solo a Supabase. Le librerie vengono controllate a ogni rilascio (`npm audit`: 0 vulnerabilità al 20/10/2026). Le regole sono nel file `vercel.json`: se cambia il progetto Supabase, va aggiornato anche lì (vedi Istruzioni di ripristino).
+
+**Database.** Le funzioni riservate non sono eseguibili da chi non ha fatto l'accesso. Ogni funzione ha il percorso di ricerca fisso, come raccomanda il Security Advisor di Supabase (Supabase → Advisors → Security Advisor). Il controllo si rifà dopo ogni nuovo script.
 
 ## Manutenzione ed emergenze
 

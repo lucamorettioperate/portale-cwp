@@ -131,6 +131,12 @@
       "data": "20/10/2026",
       "descrizione": "Nuovo menu degli enti: Il Programma CWP, Manuali.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.2",
+      "data": "20/10/2026",
+      "descrizione": "Uscita automatica per inattività.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -325,6 +331,12 @@
       "data": "20/10/2026",
       "descrizione": "Voci di menu degli enti aggiornate.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.2",
+      "data": "20/10/2026",
+      "descrizione": "Nuovo capitolo «Sicurezza»: inattività, avvisi, protezioni del sito e del database.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -494,6 +506,12 @@
       "rev": "3.7",
       "data": "20/10/2026",
       "descrizione": "Prove 10.6b (menu Amministratori) e 10.7 (menu enti).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.8",
+      "data": "20/10/2026",
+      "descrizione": "Prove 10.14-10.14d (sicurezza).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -737,6 +755,12 @@
       "data": "20/10/2026",
       "descrizione": "Menu degli enti riordinato; capitoli 6 e 7 aggiornati (pagine, menu per ruolo, struttura del codice, stato per area).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.0",
+      "data": "20/10/2026",
+      "descrizione": "Sicurezza: librerie, intestazioni, inattività, script 34; backlog 14 e 30 aggiornati.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -768,6 +792,12 @@
       "rev": "1.4",
       "data": "20/10/2026",
       "descrizione": "Amministratore principale e verifiche dopo il ripristino (Audit User, assistente).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.5",
+      "data": "20/10/2026",
+      "descrizione": "Indirizzo Supabase nella Content-Security-Policy di vercel.json; script 01-34.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -824,6 +854,12 @@
       "rev": "2.7",
       "data": "20/10/2026",
       "descrizione": "Menu per ruolo aggiornati.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.8",
+      "data": "20/10/2026",
+      "descrizione": "Punti aperti di sicurezza aggiornati.",
       "autore": "Fondazione Operate"
     }
   ]

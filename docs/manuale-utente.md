@@ -411,6 +411,8 @@ L'assistente risponde solo con le informazioni di questo manuale e delle tariffe
 
 Mentre avete il portale aperto, il portale registra **quando** siete collegati e **quale pagina** state guardando: di questo si conserva solo l'ultimo collegamento. Inoltre, come per ogni sistema che gestisce dati certificati, il portale tiene un **registro degli accessi** (data e ora di ogni entrata, di ogni uscita con **Esci** e dei tentativi di accesso con password errata) e un **registro delle operazioni** (per esempio caricamento e scaricamento dei documenti, risposte alle integrazioni), con data e ora. Non si registrano indirizzi di rete. I registri non si possono modificare e li consulta soltanto l'Amministratore principale della Fondazione, per sicurezza e controllo. Con **Esci** risultate subito non collegati.
 
+**Uscita automatica.** Per sicurezza, se il portale resta aperto senza attività per **60 minuti** (30 per il personale della Fondazione), compare l'avviso **«Sei ancora lì?»** con un conto alla rovescia di 2 minuti. Premete **Resto collegato** per continuare; altrimenti il portale esce da solo e alla pagina di accesso spiega perché. Le modifiche non salvate in quel momento si perdono: salvate spesso i lavori lunghi.
+
 ## Domande frequenti
 
 **Ho dimenticato la password.** Usate **Password dimenticata?** nella pagina di accesso (capitolo 2). In alternativa Fondazione Operate può assegnarvi una password temporanea, che al primo accesso vi verrà chiesto di sostituire.

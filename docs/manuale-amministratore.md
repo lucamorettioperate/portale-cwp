@@ -971,6 +971,22 @@ In basso a destra di ogni pagina c'è il pulsante **✦ Assistente**: apre una c
 
 **Aggiornare le conoscenze.** Quando cambiano i manuali o le tariffe si rigenera la base di conoscenza (`node strumenti/genera_base_conoscenza.cjs`) e si pubblica: l'assistente la rilegge entro 10 minuti.
 
+## Sicurezza
+
+**Uscita per inattività.** Dopo **30 minuti** senza attività per Operatori e Amministratori, e dopo **60 minuti** per gli utenti degli enti, compare «Sei ancora lì?». Se nessuno risponde entro 2 minuti, il portale esce da solo. L'uscita si vede in Audit User → Accessi come «Uscita (Esci) – per inattività». L'attività in un'altra scheda dello stesso browser tiene aperte tutte le schede.
+
+**Avvisi di sicurezza all'Amministratore principale.** Arrivano come notifica nella campanella e per email (script 34):
+
+- **Accessi non riusciti ripetuti**: 5 tentativi falliti in 15 minuti per la stessa email;
+- **Molti accessi non riusciti**: 30 tentativi falliti in un'ora, su più email (possibile attacco);
+- **Nuovo Amministratore**: un utente ottiene il ruolo di Amministratore. Se l'hai nominato tu, l'avviso non arriva.
+
+Davanti a un avviso inatteso: controlla Audit User → Accessi e Operazioni; se serve, disattiva l'utente da Utenti oppure reimposta la password.
+
+**Protezioni del sito.** Il portale si apre solo in https e non si può incorporare in pagine di altri siti (contro il clickjacking). Carica programmi solo da sé stesso e si collega solo a Supabase. Le librerie vengono controllate a ogni rilascio (`npm audit`: 0 vulnerabilità al 20/10/2026). Le regole sono nel file `vercel.json`: se cambia il progetto Supabase, va aggiornato anche lì (vedi Istruzioni di ripristino).
+
+**Database.** Le funzioni riservate non sono eseguibili da chi non ha fatto l'accesso. Ogni funzione ha il percorso di ricerca fisso, come raccomanda il Security Advisor di Supabase (Supabase → Advisors → Security Advisor). Il controllo si rifà dopo ogni nuovo script.
+
 ## Manutenzione ed emergenze
 
 Il portale si appoggia a quattro servizi. L'architettura completa, gli script del database e la cronologia dei rilasci sono nel **Registro sviluppo e deploy**.
