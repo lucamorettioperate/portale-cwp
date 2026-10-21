@@ -1263,8 +1263,15 @@ A destra il riepilogo: produzione totale e pro capite, secco pro capite, **% di 
 
 Premete **Salva** per conservare lo scenario: nell'elenco *Scenari per Comune* compaiono, per confrontarli, la % di differenziata finale e i crediti netti stimati di ogni scenario. Per consegnare o presentare lo scenario al Comune:
 
-- **Scarica PDF**: un rapporto impaginato in A4 orizzontale con i loghi, la scheda dello scenario, l'avvertenza «stima ex ante», gli indicatori di sintesi, i crediti anno per anno, la parte economica, i costi del Caso 1 o 2, le note e gli avvisi, con i numeri di pagina;
-- **Esporta Excel**: un file .xlsx con i fogli **Sintesi**, **Anni**, **Economia** e **Costi**; i numeri restano numeri, quindi si possono sommare, ordinare e usare nei grafici;
+- **Scarica PDF**: un rapporto impaginato in A4 orizzontale con **tutti i dati della pagina**, sezione per sezione. Contiene:
+  - i loghi, la scheda dello scenario, l'avvertenza «stima ex ante» e gli indicatori di sintesi;
+  - i **grafici**: crediti netti per anno, raccolta differenziata con la soglia del 65%, margine netto per anno e margine cumulato;
+  - le **impostazioni** (metodo di stima, buffer previsto, Tabelle 15 e 16, tariffa puntuale) con il buffer calcolato secondo il Capitolo 7;
+  - lo **scenario di riferimento** con i rifiuti di ogni tipologia (tonnellate e kg per abitante) e il riepilogo, la **situazione attuale** e gli **obiettivi anno per anno**;
+  - i **risultati** anno per anno con la riga del totale e la spiegazione «da dove vengono i crediti»;
+  - la **parte economica**: parametri inseriti (valore del credito, variazione annua, costi dell'ente e altri costi), costi del Caso 1 o 2 con il totale annuo, ricavi, costi e margine anno per anno;
+  - le note, gli avvisi e i numeri di pagina;
+- **Esporta Excel**: un file .xlsx con i fogli **Sintesi**, **Dati inseriti** (tutti i valori della pagina, per rifare la simulazione), **Anni** (con il totale), **Economia** e **Costi**; i numeri restano numeri, quindi si possono sommare, ordinare e usare nei grafici;
 - **CSV**: la tabella in formato testo, per altri programmi.
 
 PDF ed Excel contengono le stesse tabelle. Prima di scaricarli salvate lo scenario, così file e portale coincidono.

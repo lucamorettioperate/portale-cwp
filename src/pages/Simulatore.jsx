@@ -455,8 +455,8 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
           <button style={{ ...btnPrimario, opacity: errori.length ? 0.5 : 1 }} disabled={errori.length > 0} title={errori.length ? "Ci sono dati non ammessi: correggili (elenco nel riquadro «Risultati»)" : undefined} onClick={() => onSalva(risultato)}>Salva</button>
           <button style={btnMini} onClick={onDuplica}>Duplica</button>
           {esportazione && <span style={{ fontSize: 12.5, color: C.grafite }}>{esportazione}</span>}
-          <button style={btnMini} onClick={() => esporta("pdf")} disabled={!risultato.righe.length} title="Rapporto impaginato in A4 orizzontale">Scarica PDF</button>
-          <button style={btnMini} onClick={() => esporta("xlsx")} disabled={!risultato.righe.length} title="File Excel con fogli Sintesi, Anni, Economia e Costi">Esporta Excel</button>
+          <button style={btnMini} onClick={() => esporta("pdf")} disabled={!risultato.righe.length} title="Rapporto in A4 orizzontale con tutti i dati della pagina, i costi e i grafici">Scarica PDF</button>
+          <button style={btnMini} onClick={() => esporta("xlsx")} disabled={!risultato.righe.length} title="File Excel con fogli Sintesi, Dati inseriti, Anni, Economia e Costi">Esporta Excel</button>
           <button style={btnMini} onClick={esportaCsv} disabled={!risultato.righe.length}>CSV</button>
           <button style={btnMini} onClick={onElimina}>Cancella</button>
           <button style={btnMini} onClick={onChiudi}>Chiudi</button>

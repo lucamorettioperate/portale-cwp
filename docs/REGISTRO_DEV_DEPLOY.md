@@ -522,6 +522,20 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 21 ottobre 2026
+- **Simulatore: PDF ed Excel con tutti i dati** (ISS-035, richiesta di Luca:
+  «nel report inserisci tutti i dati completi della simulazione con costo e
+  grafici, in pratica cosa hai nella forma») — `contenutoSimulazione`
+  (`simulatoreExport.js`) riprende ogni sezione della pagina: impostazioni
+  e buffer del Capitolo 7 (`bufferMetodologia`), scenario di riferimento con
+  i rifiuti di tutte le tipologie e il riepilogo, situazione attuale,
+  obiettivi anno per anno, risultati con le colonne della pagina e la riga
+  del totale, spiegazione «da dove vengono i crediti», parametri economici
+  inseriti, costi del Caso 1 o 2 con il totale annuo. Nel PDF
+  (`simulatorePdf.js`) quattro grafici vettoriali disegnati con jsPDF
+  (crediti netti, differenziata con soglia 65%, margine netto, margine
+  cumulato), tabelle corte che non si spezzano tra due pagine. Nell'Excel il
+  nuovo foglio «Dati inseriti». Prove `test/simulatoreExport.test.mjs` (7);
+  PDF verificati a schermo su due scenari di prova.
 - **Assistente, seconda fase** (backlog 21) — aperto agli **Operatori** con
   una base di conoscenza propria (`kb-operatore.md`: Manuale Utente +
   Manuale Amministratore senza i capitoli riservati agli Amministratori,
@@ -1649,7 +1663,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 145 file, 34.252 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 145 file, 34.745 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1735,8 +1749,8 @@ Inventario generato da `strumenti/inventario_codice.py`: 145 file, 34.252 righe 
 | `src/lib/crediti/rapportoPdf.js` | 374 | genera nel browser, con jsPDF e jspdf-autotable, il rapporto di un calcolo: scheda, sintesi dei crediti, buffer, dati di ingresso, risultati per tipologia e per classe, avvisi, controlli di coerenza e scelte interpretative. Il… |
 | `src/lib/crediti/scenari.js` | 75 | unico punto in cui il portale legge e scrive la tabella scenario_simulazione (supabase/28_simulatore.sql). |
 | `src/lib/crediti/simulatore.js` | 880 | dati i rifiuti dell'anno base (per tipologia) e, per ogni anno del periodo, gli obiettivi di produzione totale e di secco residuo pro capite, ricalcola la percentuale di raccolta differenziata e stima i crediti anno per anno con… |
-| `src/lib/crediti/simulatoreExport.js` | 273 | Nomi dei listini dei costi (come i pulsanti della pagina). |
-| `src/lib/crediti/simulatorePdf.js` | 224 | Colori RGB, uguali alla palette del portale e al rapporto di calcolo. |
+| `src/lib/crediti/simulatoreExport.js` | 486 | Campo vuoto (non indicato) e numero da testo con la virgola decimale. |
+| `src/lib/crediti/simulatorePdf.js` | 440 | Colori RGB, uguali alla palette del portale e al rapporto di calcolo. |
 | `src/lib/crediti/tracciato.js` | 676 | legge il file del tracciato compilato dal Comune o dal gestore, blocca l'import se trova dati personali, converte i fogli nei dati del motore di calcolo (calcolo.js) e segnala le incoerenze. |
 | `src/lib/csv.js` | 184 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
 | `src/lib/cwpProgram.js` | 185 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
@@ -1819,7 +1833,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 145 file, 34.252 righe 
 | `test/presenza.test.mjs` | 33 | — |
 | `test/qualita.test.mjs` | 43 | verificare il confronto con la Tabella 3 dello Standard CWP (soglia ±30%) e gli indicatori di completezza, unicità, letture a buon fine e tempestività. |
 | `test/simulatore.test.mjs` | 273 | verificare il riepilogo dell'anno base (totale, pro capite, % differenziata, fattore del secco), i dati dal cluster SOSE e da un calcolo, gli anni del periodo (7, 10, 21), la traiettoria lineare e la stima dei crediti anno per… |
-| `test/simulatoreExport.test.mjs` | 60 | verificare che le tabelle preparate per PDF ed Excel riprendano i risultati del simulatore (sintesi, anni, economia, costi del Caso 1), che il file .xlsx sia un archivio valido con i fogli attesi e numeri veri nelle celle, e che… |
+| `test/simulatoreExport.test.mjs` | 94 | verificare che le tabelle preparate per PDF ed Excel riprendano i risultati del simulatore (sintesi, anni, economia, costi del Caso 1), che il file .xlsx sia un archivio valido con i fogli attesi e numeri veri nelle celle, e che… |
 | `test/tariffe.test.mjs` | 44 | verificare gli importi proposti per le voci di pagamento con gli esempi dello Schema tariffario v1.2: fasce di popolazione, quote per credito previsto, scaglioni cumulativi di emissione e minimo di vendita. |
 | `test/tracciato.test.mjs` | 110 | cinque prove sui file di esempio: lettura dell'Excel compilato, blocco dei dati personali (con valori oscurati nei messaggi), ZIP di CSV con singole letture (aggregazione ed esclusione delle letture fuori anno), controlli di… |
 
@@ -1834,7 +1848,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 145 file, 34.252 righe 
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1018 | — |
+| `strumenti/revisioni_documenti.json` | 1048 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

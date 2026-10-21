@@ -386,7 +386,7 @@ async function icona(Comp, colore) {
     ["Utenti", "più amministratori; luca.moretti@operate.it è il principale e ha la sezione «Audit User»: chi è online, accessi e operazioni di ogni utente (20/10)"],
     ["Credenziali per email", "al nuovo utente arrivano indirizzo, email e password temporanea (a tutti dopo la verifica del dominio)"],
     ["Assistente virtuale", "«✦ Assistente» con Claude per enti e Amministratori, dai manuali e dalle tariffe; attivo dal 19/10, errori in italiano dal 20/10"],
-    ["Simulatore", "metodo «per utenza, solo utenze virtuose» come nell'Allegato A EsaCom; dal 20/10 PDF impaginato ed export Excel"],
+    ["Simulatore", "metodo «per utenza, solo utenze virtuose» come nell'Allegato A EsaCom; dal 20/10 PDF impaginato ed export Excel; dal 21/10 il PDF riporta tutti i dati inseriti, i costi e quattro grafici"],
     ["Menu e documenti", "menu riordinati per ruolo, «Marketplaces» in arrivo; 8 documenti ufficiali v1.2 e questa presentazione per gli Amministratori"],
     ["Decisione", "qualificazione ACN non necessaria (parere legale da confermare)"],
   ];
