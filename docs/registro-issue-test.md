@@ -31,7 +31,7 @@ Dal 21/10/2026 ogni nuova voce riporta l'ora esatta della segnalazione.
 
 **Chi segnala:** Luca = Luca Moretti; Collaudo = Amministratori collaudatori (Andrea Valentini, Albina Ambrogio, Andrea Pavan, Gianluca Tapparini, Luca Belfiore); Revisione = rilettura del codice da parte dello sviluppo; Sviluppo = prova dello sviluppo o messaggio di errore di un servizio.
 
-## Riepilogo al 21/10/2026 (ore 11:55)
+## Riepilogo al 21/10/2026 (ore 11:45)
 
 | Stato | Numero | Voci |
 |---|---|---|
@@ -161,7 +161,7 @@ Si eseguono con `npm test` prima di ogni rilascio; l'ultimo esito è sempre «tu
 | `collaudo_v05.test.mjs` | 4 | D05-R1: testi lunghi, aggiunta/rimozione, 80/81 caratteri, ricerca |
 | `assistente.test.mjs` | 4 | Riepilogo della pratica per l'assistente, copia identica nella funzione del server, base di conoscenza degli Operatori |
 
-**Ultima esecuzione:** 21/10/2026 11:55, 14 serie superate.
+**Ultima esecuzione:** 21/10/2026 11:42, 14 serie superate.
 
 ### Prove del database (banco locale)
 
@@ -196,4 +196,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 21/10/2026 10:55 | Prima emissione: ricostruite 34 segnalazioni dal 17/10 e i rilievi dei collaudi V01 e V05, con le azioni correttive e il registro dei test |
 | 21/10/2026 11:20 | R08 corretto e da ritestare; prova di ripristino da backup nel registro dei test |
 | 21/10/2026 11:40 | Nuova serie di prove dell'assistente (14 serie) |
-| 21/10/2026 11:55 | ISS-035: PDF ed Excel della simulazione con tutti i dati e i grafici |
+| 21/10/2026 11:45 | ISS-035: PDF ed Excel della simulazione con tutti i dati e i grafici |
