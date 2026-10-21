@@ -22,7 +22,7 @@
    - archivi Storage `documenti` (04_storage.sql, limiti in 14),
      `modelli` e `allegati-consultazione` (17_pratiche.sql);
    - Edge Functions crea-utente, reimposta-password, consultazione-pubblica,
-     notizie (osservatorio News, script 36).
+     notizie (osservatorio Notizie CO2, script 36).
 
    Sicurezza: il browser usa solo la chiave anon con la sessione
    dell'utente. Chi può fare cosa lo decide il database (RLS, trigger,
@@ -1130,7 +1130,7 @@ export async function elencaStaff() {
   return await supabase.from("profilo").select("id, nome_completo, ruolo").in("ruolo", ["operatore", "admin"]).eq("attivo", true).order("nome_completo");
 }
 
-// ---- News: osservatorio sui crediti di carbonio volontari (script 36) ----
+// ---- Notizie CO2: osservatorio sui crediti di carbonio volontari (script 36) ----
 // Solo Amministratori: le regole RLS di notizia e notizie_esecuzione
 // restituiscono zero righe a tutti gli altri.
 

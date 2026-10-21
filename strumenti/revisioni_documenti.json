@@ -149,6 +149,12 @@
       "data": "21/10/2026",
       "descrizione": "Assistente: domande sulla pratica aperta.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.5",
+      "data": "21/10/2026",
+      "descrizione": "Barra a LED delle fasi nell'elenco e nella pratica aperta.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -391,6 +397,12 @@
       "data": "21/10/2026",
       "descrizione": "Nuovo capitolo «News»: osservatorio sui crediti di carbonio volontari. Canali Bing News e Verra.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.0",
+      "data": "21/10/2026",
+      "descrizione": "«News» diventa «Notizie CO2»; Google News attraverso il tramite; barra a LED nell'elenco e nella pratica.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -608,6 +620,12 @@
       "rev": "3.15",
       "data": "21/10/2026",
       "descrizione": "Prove 10.15-10.15g (News).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.16",
+      "data": "21/10/2026",
+      "descrizione": "Prove 10.10d-10.10e (barra a LED, loghi); nomi Notizie CO2.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -911,6 +929,12 @@
       "data": "21/10/2026",
       "descrizione": "Attivazione delle News (script 36, funzioni notizie e assistente pubblicate), canali Bing News; loghi nella pagina di accesso.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.0",
+      "data": "21/10/2026",
+      "descrizione": "Barra a LED nelle pratiche, loghi, Notizie CO2, ISS-036 (Google News).",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -966,6 +990,12 @@
       "rev": "1.8",
       "data": "21/10/2026",
       "descrizione": "Script 36 e funzione notizie (Verify JWT disattivato, indirizzo url_notizie, quarto lavoro pianificato).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.9",
+      "data": "21/10/2026",
+      "descrizione": "Tramite per Google News delle Notizie CO2.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1053,6 +1083,12 @@
       "data": "21/10/2026",
       "descrizione": "Nuova sezione News per gli Amministratori.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.3",
+      "data": "21/10/2026",
+      "descrizione": "Notizie CO2.",
+      "autore": "Fondazione Operate"
     }
   ],
   "issue": [
@@ -1090,6 +1126,12 @@
       "rev": "1.5",
       "data": "21/10/2026",
       "descrizione": "ISS-036: canali News da Google a Bing.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.6",
+      "data": "21/10/2026",
+      "descrizione": "ISS-036: causa e tramite per Google News.",
       "autore": "Fondazione Operate"
     }
   ]

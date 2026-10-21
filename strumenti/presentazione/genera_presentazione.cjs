@@ -387,7 +387,7 @@ async function icona(Comp, colore) {
     ["Credenziali per email", "al nuovo utente arrivano indirizzo, email e password temporanea (a tutti dopo la verifica del dominio)"],
     ["Assistente virtuale", "«✦ Assistente» con Claude per enti e Amministratori, dai manuali e dalle tariffe; attivo dal 19/10, errori in italiano dal 20/10"],
     ["Simulatore", "metodo «per utenza, solo utenze virtuose» come nell'Allegato A EsaCom; dal 20/10 PDF impaginato ed export Excel; dal 21/10 il PDF riporta tutti i dati inseriti, i costi e quattro grafici"],
-    ["Menu e documenti", "menu per ruolo; dal 21/10 «News», osservatorio sui crediti volontari aggiornato ogni 2 ore (Admin); «Marketplaces» in arrivo; 8 documenti ufficiali v1.2"],
+    ["Menu e documenti", "menu per ruolo; dal 21/10 «Notizie CO2», osservatorio sui crediti volontari aggiornato ogni 2 ore (Admin); «Marketplaces» in arrivo; 8 documenti ufficiali v1.2"],
     ["Decisione", "qualificazione ACN non necessaria (parere legale da confermare)"],
   ];
   s.addText(novita.flatMap(([t, d], j) => [

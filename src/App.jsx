@@ -13,7 +13,7 @@
 
    Sicurezza: questi controlli servono all'esperienza d'uso (cosa mostrare).
    Il controllo del ruolo per le pagine Admin (/utenti, /audit, /crediti,
-   /impostazioni, /news) e per le pagine dello staff /anagrafiche e /simulatore è fatto anche
+   /impostazioni, /notizie-co2) e per le pagine dello staff /anagrafiche e /simulatore è fatto anche
    dentro le pagine e, soprattutto, dal database con RLS e funzioni: una
    rotta aperta per errore non espone dati.
 
@@ -254,13 +254,15 @@ export default function App() {
         }
       />
       <Route
-        path="/news"
+        path="/notizie-co2"
         element={
           <Protetta>
             <News />
           </Protetta>
         }
       />
+      {/* Vecchio indirizzo della sezione (prima del nome «Notizie CO2»). */}
+      <Route path="/news" element={<Navigate to="/notizie-co2" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

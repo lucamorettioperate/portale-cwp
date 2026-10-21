@@ -55,7 +55,7 @@ const CAPITOLI_SOLO_ADMIN = [
   "Calcolo dei crediti CWP",
   "Backup automatico",
   "Documentazione e manuali",
-  "News",
+  "Notizie CO2",
   "Sicurezza",
   "Manutenzione ed emergenze",
 ];

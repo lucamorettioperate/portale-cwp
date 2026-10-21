@@ -258,7 +258,7 @@ Nel *SQL Editor* eseguite gli script della cartella `supabase/` del repository, 
 - `03_dati_esempio.sql` crea solo dati di prova (Comune di Borgoval): eseguitelo solo per un ambiente di prova;
 - se compare l'avviso *Potential issue detected*, confermate con *Run this query*: gli script sono pensati per essere rieseguibili;
 - **prima** di `25_documenti_programma.sql` caricate gli 8 PDF della cartella `4-documenti-ufficiali-CWP` nella radice dell'archivio **modelli** (*Storage* › modelli › *Upload*), con gli stessi nomi di file;
-- gli script dal 28 al 35 aggiungono simulatore, Amministratore principale (29), eliminazione degli utenti mai attivi, assistente, utenti online, Audit User, avvisi di sicurezza (34) e i controlli dei dati chiesti dal collaudo (35) e l'osservatorio News (36); il 35 termina con un conteggio di sola lettura che su un database nuovo vale 0 in tutte le righe;
+- gli script dal 28 al 35 aggiungono simulatore, Amministratore principale (29), eliminazione degli utenti mai attivi, assistente, utenti online, Audit User, avvisi di sicurezza (34) e i controlli dei dati chiesti dal collaudo (35) e l'osservatorio Notizie CO2 (36); il 35 termina con un conteggio di sola lettura che su un database nuovo vale 0 in tutte le righe;
 - **dopo** `12_email_notifiche.sql` aggiornate l'indirizzo della funzione email con quello del nuovo progetto:
 
 ```sql
@@ -267,13 +267,15 @@ update impostazione
  where chiave = 'url_email_notifiche';
 ```
 
-- **dopo** `36_notizie.sql`, allo stesso modo, l'indirizzo della funzione delle News:
+- **dopo** `36_notizie.sql`, allo stesso modo, l'indirizzo della funzione delle Notizie CO2:
 
 ```sql
 update impostazione
    set valore = 'https://<nuovo-progetto>.supabase.co/functions/v1/notizie'
  where chiave = 'url_notizie';
 ```
+
+- l'impostazione `url_proxy_google_news` (tramite per Google News) torna con i dati del backup; il programma «Notizie CO2 – Google News» resta in Google Apps Script nell'account di Luca e non va reinstallato (`strumenti/notizie/ProxyGoogleNews.gs`, se servisse).
 
 ### 3. Dati e file (se esiste una copia)
 
@@ -315,7 +317,7 @@ Create le sette funzioni con lo **stesso nome**, incollate il codice da `supabas
 - `RESEND_API_KEY`: chiave API di Resend;
 - `EMAIL_MITTENTE`: il mittente sul dominio verificato (dopo la verifica del dominio);
 - `PORTALE_URL`: l'indirizzo del portale, se diverso da portale-cwp.vercel.app;
-- `ANTHROPIC_API_KEY`: chiave della Claude Console per l'assistente virtuale e per il filtro delle News. Deve essere legata a **un solo spazio di lavoro** (workspace): una chiave «per tutti gli spazi di lavoro» viene rifiutata. L'organizzazione della Console deve avere credito (crediti mensili del piano Max collegato oppure crediti acquistati).
+- `ANTHROPIC_API_KEY`: chiave della Claude Console per l'assistente virtuale e per il filtro delle Notizie CO2. Deve essere legata a **un solo spazio di lavoro** (workspace): una chiave «per tutti gli spazi di lavoro» viene rifiutata. L'organizzazione della Console deve avere credito (crediti mensili del piano Max collegato oppure crediti acquistati).
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` le fornisce Supabase da solo.
 
@@ -343,7 +345,7 @@ Gli altri utenti li crea poi l'Amministratore dal portale (*Gestione utenti*).
 ### 8. Collegare il portale e verificare
 
 1. Su Vercel aggiornate `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` con i valori del nuovo progetto. Nel file `vercel.json` del repository sostituite l'indirizzo del vecchio progetto (`ajxrnofgunynkynozmrn.supabase.co`, 4 volte) con quello nuovo, nella regola `Content-Security-Policy`: altrimenti il browser blocca i collegamenti al database e il portale non funziona. Poi ripubblicate (*Deployments* › *Redeploy*).
-2. Verifiche: accesso come Amministratore principale, con il menu completo (fino ad Audit User) e la scheda Accessi di Audit User che registra l'accesso appena fatto; la pagina /programma mostra gli 8 documenti, la PEC e il soggetto promotore; un utente di prova riceve l'email; l'assistente risponde; nella pagina News «Aggiorna ora» completa una ricerca; i lavori pianificati sono quattro:
+2. Verifiche: accesso come Amministratore principale, con il menu completo (fino ad Audit User) e la scheda Accessi di Audit User che registra l'accesso appena fatto; la pagina /programma mostra gli 8 documenti, la PEC e il soggetto promotore; un utente di prova riceve l'email; l'assistente risponde; nella pagina Notizie CO2 «Aggiorna ora» completa una ricerca; i lavori pianificati sono quattro:
 
 ```sql
 select jobname, schedule from cron.job order by jobname;

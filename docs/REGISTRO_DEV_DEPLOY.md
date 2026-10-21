@@ -338,7 +338,7 @@ autenticazione, dal SQL Editor:
 | `reimposta-password` | L'Amministratore assegna una password temporanea a un Cliente o Operatore; il flag obbliga al cambio al primo accesso; audit; dal 19/10 email all'utente con la nuova password temporanea (Resend), esito restituito al portale | Verifica `sono_admin`; esclusi amministratori e sé stessi | Dashboard Supabase (editor web), 18/10; Verify JWT attivo; versione 19/10 con l'email **ripubblicata il 20/10** |
 | `consultazione-pubblica` | Pagine pubbliche del feedback pubblico (data di «oggi» in ora italiana dal 18/10; numero delle osservazioni dallo script 21; dalla sera del 18/10 anche i Rapporti di Monitoraggio, ripubblicata; azioni `programma` e `file` per la pagina pubblica /programma, script 24, ripubblicata la sera del 18/10, Verify JWT spento): elenco, dettaglio (documento, errata corrige, osservazioni ammesse), invio di un'osservazione con allegato facoltativo ed email di conferma, conferma dell'email (l'osservazione diventa *Ricevuto*) | Verify JWT **disattivato** di proposito (pubblico senza account): nessun dato personale restituito, 3 invii/ora per indirizzo e 100/ora per consultazione, campo trappola anti-robot, allegati max 10 MB con controllo del contenuto, token monouso 48 ore salvato come SHA-256 | Dashboard Supabase (editor web), 18/10 |
 | `recupera-password` | «Password dimenticata?»: genera il collegamento di recupero (`auth.admin.generateLink`) e spedisce con Resend l'email in italiano «Portale Carbon WastePrint (CWP) — Richiesta di reimpostazione della password», al posto del modello email di Supabase | Verify JWT **disattivato** di proposito (la chiama chi non ha fatto l'accesso): risponde sempre `ok` senza rivelare se l'indirizzo esiste; niente email agli utenti disattivati; massimo una richiesta ogni 2 minuti per indirizzo; il collegamento porta solo al portale | Dashboard Supabase (editor web), 18/10 |
-| `notizie` | Osservatorio News (21/10/2026): legge 16 canali RSS, 4 alla volta (12 ricerche Bing News in italiano e inglese — Google News risponde 503 ai server di Supabase —, Carbon Herald, CarbonCredits.com, Ecosystem Marketplace, Verra), toglie doppioni e notizie già viste o più vecchie di 10 giorni, pre-filtro sulle parole chiave, valutazione di Claude a gruppi di 25 (massimo 100 per ricerca; attinente, categoria, rilevanza 1-5, titolo e sintesi in italiano, prezzi citati, motivo), salva in `notizia` e chiude `notizie_esecuzione`; modello `claude-haiku-5-5` (`NOTIZIE_MODELLO`); funzioni pure copiate identiche da `src/lib/notizie.js` | Verify JWT **disattivato** di proposito (la chiama pg_cron senza token): nessun dato ricevuto viene salvato; `notizie_puo_partire` (script 36) ammette una ricerca ogni 100 minuti senza token di Amministratore, ogni 10 minuti con il token (`app_is_admin`, MFA compresa); scrive con la chiave di servizio | **Pubblicata il 21/10** (dashboard Supabase, Verify JWT disattivato), ripubblicata alle 12:10 con Bing News |
+| `notizie` | Osservatorio News (21/10/2026): legge 25 canali RSS, 4 alla volta: 12 ricerche Bing News e 9 Google News in italiano e inglese, Carbon Herald, CarbonCredits.com, Ecosystem Marketplace, Verra. Google News risponde 503 (pagina «Sorry…») a ogni richiesta dai server di Supabase, con qualunque intestazione: i suoi canali passano dal tramite in Google Apps Script `strumenti/notizie/ProxyGoogleNews.gs` (impostazione `url_proxy_google_news`; senza, si saltano). Con `{"diagnosi": true}` prova i canali e restituisce gli esiti HTTP (nessuna scrittura, niente Claude), toglie doppioni e notizie già viste o più vecchie di 10 giorni, pre-filtro sulle parole chiave, valutazione di Claude a gruppi di 25 (massimo 100 per ricerca; attinente, categoria, rilevanza 1-5, titolo e sintesi in italiano, prezzi citati, motivo), salva in `notizia` e chiude `notizie_esecuzione`; modello `claude-haiku-5-5` (`NOTIZIE_MODELLO`); funzioni pure copiate identiche da `src/lib/notizie.js` | Verify JWT **disattivato** di proposito (la chiama pg_cron senza token): nessun dato ricevuto viene salvato; `notizie_puo_partire` (script 36) ammette una ricerca ogni 100 minuti senza token di Amministratore, ogni 10 minuti con il token (`app_is_admin`, MFA compresa); scrive con la chiave di servizio | **Pubblicata il 21/10** (dashboard Supabase, Verify JWT disattivato), ripubblicata alle 12:10 con Bing News |
 | `invia-email-notifica` | Spedisce per email una notifica interna (pulsante "Apri nel portale") tramite Resend | Verify JWT **disattivato** di proposito: usa solo l'id ricevuto e rilegge tutto dal database; ogni notifica parte una volta sola | Dashboard Supabase; prima pubblicazione 17/10, aggiornata 17/10 (pulsante per tema scuro) |
 
 Sorgenti in `supabase/functions/<nome>/index.ts`. Si pubblicano dalla
@@ -371,7 +371,7 @@ fascicolo, file Excel del simulatore). Nessun server proprio: tutto passa da Sup
 | `/documenti` | I tuoi documenti, modelli generali, manuale | Cliente |
 | `/utenti` | Gestione utenti | Admin |
 | `/audit` | Audit trail | Admin |
-| `/news` | **News**: osservatorio sui crediti di carbonio volontari (notizie cercate ogni 2 ore e filtrate da Claude, prezzi citati, filtri, «Aggiorna ora», registro delle ricerche; script 36, funzione `notizie`) | Admin |
+| `/notizie-co2` | **Notizie CO2** (prima «News», `/news` porta qui): osservatorio sui crediti di carbonio volontari (notizie cercate ogni 2 ore e filtrate da Claude, prezzi citati, filtri, «Aggiorna ora», registro delle ricerche; script 36, funzione `notizie`) | Admin |
 | `/audit-utenti` | **Audit User**: utenti e stato online, registro degli accessi, operazioni per utente (script 33) | solo Amministratore principale |
 | `/crediti`, `/crediti/:id` | Calcolo crediti CWP | Admin |
 | `/simulatore` | Simulatore di scenari: stima ex ante dei crediti di un Comune su 7, 10 o 21 anni | Operatore, Admin |
@@ -382,7 +382,7 @@ fascicolo, file Excel del simulatore). Nessun server proprio: tutto passa da Sup
 
 | Ruolo | Voci, nell'ordine |
 |---|---|
-| Amministratore principale | Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, **Audit User**, Documentazione, **News** (dal 21/10), *Marketplaces* (grigia, non cliccabile) |
+| Amministratore principale | Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, **Audit User**, Documentazione, **Notizie CO2** (dal 21/10), *Marketplaces* (grigia, non cliccabile) |
 | Amministratore | come sopra, senza Audit User |
 | Operatore | Dashboard, Pratiche, Anagrafiche, Simulatore, Crediti emessi, Reclami, Manuale |
 | Utente dell'ente (cliente) | Le mie pratiche, I tuoi documenti, Reclami, Formato dati, Il Programma CWP, Manuali, *Marketplaces* (grigia, non cliccabile) |
@@ -525,6 +525,27 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 21 ottobre 2026
+- **Pratiche: barra a LED delle fasi negli elenchi e nel dettaglio**
+  (richiesta di Luca) — in ogni riquadro dell'elenco delle pratiche
+  (`BackOffice.jsx`, `AreaCliente.jsx`) e in alto a destra nella pratica
+  aperta (`DettaglioPratica.jsx`) il componente `BarraFasi` della
+  Dashboard; `elencaProgetti` legge anche lo stato delle fasi.
+- **Loghi RINA e Carbon Credit della stessa misura** (intestazione e pagina
+  di accesso): nel file di RINA il cerchio è l'88% dell'altezza, nel Carbon
+  Credit il 96%, quindi RINA è un po' più alto (classe `logo-rina`); nella
+  pagina di accesso piccoli, sulla stessa riga del logo CWP, allineati in
+  basso e a destra.
+- **«News» diventa «Notizie CO2»** (richiesta di Luca): voce di menu,
+  titolo, indirizzo `/notizie-co2` (il vecchio `/news` porta lì), manuali.
+- **ISS-036, Google News nelle Notizie CO2:** con la nuova modalità
+  «diagnosi» della funzione `notizie` (chiamata dal SQL Editor con
+  `net.http_post`) si è visto che Google risponde 503 con la pagina
+  «Sorry…» a ogni richiesta dai server di Supabase, anche con intestazioni
+  da browser e senza parametri (blocco dei centri dati); Bing News risponde
+  200. Soluzione: i canali Google passano da un piccolo tramite in Google
+  Apps Script nell'account di Luca (`strumenti/notizie/ProxyGoogleNews.gs`,
+  legge solo `news.google.com/rss`), indirizzo nell'impostazione
+  `url_proxy_google_news`; restano anche i canali Bing e i siti.
 - **News: osservatorio sui crediti di carbonio volontari** (richiesta di
   Luca: sezione solo per gli Amministratori, ricerca ogni 2 ore, solo
   notizie attinenti ai crediti volontari: mercato, marketplace, prezzi

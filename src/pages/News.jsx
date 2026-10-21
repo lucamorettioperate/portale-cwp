@@ -1,5 +1,6 @@
 /* =========================================================================
-   News — indirizzo «/news»
+   Notizie CO2 — indirizzo «/notizie-co2» (prima «News», «/news»: il
+   vecchio indirizzo porta qui)
    Scopo (richiesta di Luca Moretti del 21/10/2026): osservatorio riservato
      agli Amministratori sulle notizie dal mondo dei crediti di carbonio
      volontari: mercato volontario, marketplace e borse, prezzi dei crediti
@@ -158,7 +159,7 @@ export default function News() {
     <div style={{ background: C.paper, minHeight: "100vh" }}>
       <Header />
       <main style={{ maxWidth: 1100, margin: "0 auto", padding: "22px 16px" }}>
-        <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 4px" }}>News</h1>
+        <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 4px" }}>Notizie CO2</h1>
         <p style={{ fontSize: 13.5, color: C.grafite, margin: "0 0 14px", maxWidth: 820 }}>
           Osservatorio sui crediti di carbonio volontari: mercato, marketplace, prezzi, standard e registri, regole e progetti. Le notizie si
           cercano ogni 2 ore e Claude tiene solo quelle attinenti, con una sintesi in italiano. Riservato agli Amministratori.
