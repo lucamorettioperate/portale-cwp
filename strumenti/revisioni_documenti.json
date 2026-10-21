@@ -401,7 +401,7 @@
     {
       "rev": "5.0",
       "data": "21/10/2026",
-      "descrizione": "«News» diventa «Notizie CO2»; Google News attraverso il tramite; barra a LED nell'elenco e nella pratica. Pallino verde delle Notizie CO2 nuove. Notizie CO2: siti di notizie ambientali al posto di Google News.",
+      "descrizione": "«News» diventa «Notizie CO2»; Google News attraverso il tramite; barra a LED nell'elenco e nella pratica. Pallino verde delle Notizie CO2 nuove. Notizie CO2: siti di notizie ambientali al posto di Google News. Notizie CO2: siti di notizie ambientali al posto di Google News.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -933,7 +933,7 @@
     {
       "rev": "6.0",
       "data": "21/10/2026",
-      "descrizione": "Barra a LED nelle pratiche, loghi, Notizie CO2, ISS-036 (Google News). Script 37: pallino verde delle Notizie CO2. ISS-036: Google News sostituito da 8 siti di notizie ambientali.",
+      "descrizione": "Barra a LED nelle pratiche, loghi, Notizie CO2, ISS-036 (Google News). Script 37: pallino verde delle Notizie CO2. ISS-036: Google News sostituito da 8 siti di notizie ambientali. ISS-036: Google News sostituito da 8 siti di notizie ambientali.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -995,7 +995,7 @@
     {
       "rev": "1.9",
       "data": "21/10/2026",
-      "descrizione": "Tramite per Google News delle Notizie CO2. Script 37. Tolto il tramite per Google News.",
+      "descrizione": "Tramite per Google News delle Notizie CO2. Script 37. Tolto il tramite per Google News. Tolto il tramite per Google News.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1131,7 +1131,7 @@
     {
       "rev": "1.6",
       "data": "21/10/2026",
-      "descrizione": "ISS-036: causa e tramite per Google News. Prova t37.sql. ISS-036: tramite bloccato da Google, siti ambientali.",
+      "descrizione": "ISS-036: causa e tramite per Google News. Prova t37.sql. ISS-036: tramite bloccato da Google, siti ambientali. ISS-036: tramite bloccato da Google, siti ambientali.",
       "autore": "Fondazione Operate"
     }
   ]

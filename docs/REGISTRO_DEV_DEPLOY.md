@@ -558,7 +558,10 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   dell'account): con l'OK di Luca il tramite è stato tolto e al posto di
   Google News sono entrati 8 siti di notizie ambientali, con pre-filtro più
   stretto (`PAROLE_STRETTE`). Attenzione: lo stesso blocco potrebbe
-  fermare l'attivazione del backup automatico in Google Apps Script.
+  fermare l'attivazione del backup automatico in Google Apps Script
+  (confermato da Luca alle 13:57: anche «Backup CWP» è bloccato; il
+  progetto «Notizie CO2 – Google News» è stato spostato nel cestino di
+  Drive su sua richiesta).
 - **News: osservatorio sui crediti di carbonio volontari** (richiesta di
   Luca: sezione solo per gli Amministratori, ricerca ogni 2 ore, solo
   notizie attinenti ai crediti volontari: mercato, marketplace, prezzi
