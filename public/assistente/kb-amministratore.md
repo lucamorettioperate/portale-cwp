@@ -1438,8 +1438,8 @@ La voce **News** del menu, riservata agli Amministratori, raccoglie le notizie d
 
 **Come funziona.** Ogni 2 ore (al minuto 7 delle ore pari, ora del server) il portale cerca le notizie degli ultimi 7 giorni:
 
-- su Google News, con 12 ricerche mirate in italiano e in inglese;
-- su tre siti specializzati: Carbon Herald, Ecosystem Marketplace, CarbonCredits.com.
+- su Bing News, con 12 ricerche mirate in italiano e in inglese;
+- su quattro siti specializzati: Carbon Herald, CarbonCredits.com, Ecosystem Marketplace e Verra.
 
 Ogni notizia nuova passa da un primo filtro sulle parole chiave e poi la controlla **Claude**, che decide se è **attinente** al mondo dei crediti di carbonio volontari, oggetto del portale, e prepara:
 

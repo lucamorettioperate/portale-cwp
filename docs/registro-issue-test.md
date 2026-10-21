@@ -31,12 +31,12 @@ Dal 21/10/2026 ogni nuova voce riporta l'ora esatta della segnalazione.
 
 **Chi segnala:** Luca = Luca Moretti; Collaudo = Amministratori collaudatori (Andrea Valentini, Albina Ambrogio, Andrea Pavan, Gianluca Tapparini, Luca Belfiore); Revisione = rilettura del codice da parte dello sviluppo; Sviluppo = prova dello sviluppo o messaggio di errore di un servizio.
 
-## Riepilogo al 21/10/2026 (ore 11:45)
+## Riepilogo al 21/10/2026 (ore 12:25)
 
 | Stato | Numero | Voci |
 |---|---|---|
 | CHIUSO | 32 | ISS-001 … ISS-034, tranne ISS-012 e ISS-020 |
-| CORRETTO_DA_RITESTARE | 13 | D01, D02, D03, D04, D05, D06, D07, R05, R07, R08, D05-R1, O01, ISS-035 |
+| CORRETTO_DA_RITESTARE | 14 | D01, D02, D03, D04, D05, D06, D07, R05, R07, R08, D05-R1, O01, ISS-035, ISS-036 |
 | ATTESA_REGOLA | 6 | R01, R02, R03, R04, R06, riuso |
 | APERTO | 2 voci, 1 causa | ISS-012 e D08 (email ai destinatari diversi dal titolare) |
 | NON_RIPRODOTTO | 1 | ISS-020 |
@@ -83,6 +83,7 @@ Ordine cronologico. Una data senza ora vuol dire «ora della segnalazione non re
 | ISS-032 | 20/10 | **Simulatore** — Sul telefono la pagina del simulatore scorreva di lato. Segnalato da: Sviluppo | CHIUSO (P2) | 20/10 14:07 (`9f0043e`) |
 | ISS-033 | 20/10 14:52 | **Funzioni** — Pubblicazione della funzione non riuscita: «Unterminated regexp literal» (codice incollato a mano rovinato). Segnalato da: Luca | CHIUSO (P1) | 20/10 14:59 (`2f5fe1c`): codice caricato dal repository, tre funzioni ripubblicate con Verify JWT |
 | ISS-034 | 20/10 pomeriggio | **Menu** — La voce «Audit» si accendeva anche sulla pagina Audit User. Segnalato da: Sviluppo | CHIUSO (P3) | 20/10 15:13 (`be97c16`) |
+| ISS-036 | 21/10 12:07 | **News** — Alla prima ricerca automatica i 12 canali Google News rispondevano 503 (Google rifiuta le richieste dai server di Supabase): lette solo 23 notizie da due siti. Segnalato da: Sviluppo (log della funzione) | CORRETTO_DA_RITESTARE (P2) | 21/10 12:10 (`5e88cf6`): Bing News al posto di Google News, aggiunto Verra, canali letti 4 alla volta; funzione ripubblicata. Da verificare con la ricerca automatica delle 14:07 |
 | ISS-035 | 21/10 circa 11:30 | **Simulatore** — Il PDF scaricato da una simulazione non riportava tutti i dati della pagina né i grafici («inserisci tutti i dati completi della simulazione con costo e grafici»). Segnalato da: Luca | CORRETTO_DA_RITESTARE (P2) | 21/10 11:43 (`e6ed26c`): PDF con grafici e sezioni 1-5 complete, Excel con il foglio «Dati inseriti»; verificato su due scenari di prova (10 anni Caso 1; 21 anni per utenza senza economia) |
 | D07 | 20/10 16:40 (rapporto V01; prima prova 19-20/10) | **Calcolo crediti** — Il CSV diretto della Banca Dati accettava pesi negativi e salvava crediti gonfiati. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P0) | 20/10 17:05 (`66d253e`); in produzione circa alle 17:15 con lo script 35 |
 | D01 | 20/10 16:40 (prima prova V02 del 19/10) | **Simulatore** — Produzione e secco negativi accettati, differenziata oltre il 100%, scenario salvabile. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P0) | 20/10 17:05 (`66d253e`); in produzione circa alle 17:15 |
@@ -160,7 +161,7 @@ Si eseguono con `npm test` prima di ogni rilascio; l'ultimo esito è sempre «tu
 | `collaudo_v01.test.mjs` | 27 | D01-D07, R04, R05, casi ordinari S e C, R01/R02 fissati |
 | `collaudo_v05.test.mjs` | 4 | D05-R1: testi lunghi, aggiunta/rimozione, 80/81 caratteri, ricerca |
 | `assistente.test.mjs` | 4 | Riepilogo della pratica per l'assistente, copia identica nella funzione del server, base di conoscenza degli Operatori |
-| `notizie.test.mjs` | 7 | Osservatorio News: lettura dei feed RSS (Google News e siti), chiave dei titoli, pre-filtro, lettura della risposta di Claude, categorie uguali allo script 36, copia identica nella funzione del server |
+| `notizie.test.mjs` | 8 | Osservatorio News: lettura dei feed RSS (Google News, Bing News e siti), chiave dei titoli, pre-filtro, lettura della risposta di Claude, categorie uguali allo script 36, copia identica nella funzione del server |
 
 **Ultima esecuzione:** 21/10/2026 11:55, 15 serie superate.
 
@@ -202,3 +203,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 21/10/2026 11:40 | Nuova serie di prove dell'assistente (14 serie) |
 | 21/10/2026 11:45 | ISS-035: PDF ed Excel della simulazione con tutti i dati e i grafici |
 | 21/10/2026 11:57 | Nuove prove dell'osservatorio News (`notizie.test.mjs`, `t36.sql`); 15 serie |
+| 21/10/2026 12:25 | ISS-036: canali News da Google a Bing; prova Bing in `notizie.test.mjs` (8) |

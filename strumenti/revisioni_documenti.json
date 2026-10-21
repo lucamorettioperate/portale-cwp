@@ -389,7 +389,7 @@
     {
       "rev": "4.9",
       "data": "21/10/2026",
-      "descrizione": "Nuovo capitolo «News»: osservatorio sui crediti di carbonio volontari.",
+      "descrizione": "Nuovo capitolo «News»: osservatorio sui crediti di carbonio volontari. Canali Bing News e Verra.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -905,6 +905,12 @@
       "data": "21/10/2026",
       "descrizione": "News: script 36, funzione notizie, pagina /news.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.9",
+      "data": "21/10/2026",
+      "descrizione": "Attivazione delle News (script 36, funzioni notizie e assistente pubblicate), canali Bing News; loghi nella pagina di accesso.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1078,6 +1084,12 @@
       "rev": "1.4",
       "data": "21/10/2026",
       "descrizione": "Nuove prove notizie.test.mjs e t36.sql.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.5",
+      "data": "21/10/2026",
+      "descrizione": "ISS-036: canali News da Google a Bing.",
       "autore": "Fondazione Operate"
     }
   ]
