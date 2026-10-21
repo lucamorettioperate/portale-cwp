@@ -23,7 +23,7 @@
      digita a mano un indirizzo Admin non vede comunque dati non suoi.
    Registro sviluppo e deploy: capitolo «Portale (frontend)»
    ========================================================================= */
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { COLORI as C, RUOLI } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
@@ -31,6 +31,29 @@ import Notifiche from "./Notifiche.jsx";
 import AssistenteVirtuale from "./AssistenteVirtuale.jsx";
 import { IndicatoreOnline, SegnalaPresenza, usePrincipale } from "./UtentiOnline.jsx";
 import UscitaInattivita from "./UscitaInattivita.jsx";
+import { notizieNuove } from "../lib/dati.js";
+
+// Notizie CO2 nuove per il pallino verde del menu (solo Amministratori,
+// script 37): si legge all'apertura, a ogni cambio di pagina e ogni 2
+// minuti; la pagina Notizie CO2 lo spegne con l'evento «cwp-notizie-viste».
+function useNotizieNuove(attivo, percorso) {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    if (!attivo) return undefined;
+    let vivo = true;
+    const leggi = () => notizieNuove().then(({ data }) => vivo && setN(Number(data) || 0)).catch(() => {});
+    leggi();
+    const t = setInterval(leggi, 120000);
+    const spegni = () => setN(0);
+    window.addEventListener("cwp-notizie-viste", spegni);
+    return () => {
+      vivo = false;
+      clearInterval(t);
+      window.removeEventListener("cwp-notizie-viste", spegni);
+    };
+  }, [attivo, percorso]);
+  return n;
+}
 
 // Voci di menu per ruolo: elenco di coppie [indirizzo, etichetta].
 // Qualunque ruolo diverso da admin e operatore (compreso un profilo
@@ -94,6 +117,7 @@ export default function Header() {
   const r = ruolo ? RUOLI[ruolo] : null;
   const location = useLocation();
   const principale = usePrincipale();
+  const notizie = useNotizieNuove(!!utente && ruolo === "admin", location.pathname);
 
   return (
     <header
@@ -159,9 +183,18 @@ export default function Header() {
                     padding: "6px 10px",
                     borderRadius: 7,
                     background: attiva ? C.greenSoft : "transparent",
+                    position: "relative",
                   }}
                 >
                   {label}
+                  {/* Pallino verde: notizie CO2 nuove dall'ultima visita (21/10/2026). */}
+                  {to === "/notizie-co2" && notizie > 0 && !attiva && (
+                    <span
+                      title={`${notizie} ${notizie === 1 ? "notizia nuova" : "notizie nuove"}`}
+                      aria-label={`${notizie} notizie nuove`}
+                      style={{ position: "absolute", top: 1, right: 1, width: 8, height: 8, borderRadius: "50%", background: "#2fb24c", boxShadow: "0 0 0 2px #fff, 0 0 4px rgba(47,178,76,0.7)" }}
+                    />
+                  )}
                 </Link>
               );
             })}

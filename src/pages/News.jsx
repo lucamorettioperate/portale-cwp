@@ -26,7 +26,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import Header from "../components/Header.jsx";
 import { useAuth } from "../lib/AuthContext.jsx";
-import { aggiornaNotizie, elencaNotizie, nascondiNotizia, ultimeRicercheNotizie } from "../lib/dati.js";
+import { aggiornaNotizie, elencaNotizie, nascondiNotizia, segnaNotizieViste, ultimeRicercheNotizie } from "../lib/dati.js";
 import { CATEGORIE } from "../lib/notizie.js";
 
 // Data breve in ora italiana: «oggi 14:07», «ieri», «18/10».
@@ -75,6 +75,9 @@ export default function News() {
       setErrore("");
       setNotizie(n.data || []);
       setRicerche(r.data || []);
+      // Chi è nella sezione ha visto le notizie: si spegne il pallino verde
+      // del menu (script 37; se lo script manca non succede nulla).
+      segnaNotizieViste().then(() => window.dispatchEvent(new Event("cwp-notizie-viste"))).catch(() => {});
     }
     setCaricamento(false);
   }

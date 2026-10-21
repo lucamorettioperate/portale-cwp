@@ -172,6 +172,7 @@ Ogni script del database è provato su una copia locale di Postgres 16 con tutti
 Ultime prove:
 
 - `t35.sql` del 20/10/2026: 11 rifiuti attesi, conferma ordinaria possibile e rieseguibilità con dati vecchi;
+- `t37.sql` del 21/10/2026 (pallino verde delle Notizie CO2): 2 notizie nuove mai visitata, 0 dopo la visita, 1 dopo una nuova notizia, scrittura diretta negata, Operatore 0;
 - `t36.sql` del 21/10/2026 (News): limite di una ricerca ogni 100 minuti (10 con l'Amministratore), doppioni rifiutati, l'Amministratore legge e nasconde, Operatore, Cliente e anonimo non vedono nulla, scrittura diretta e avvio della ricerca negati dal portale.
 
 **Prova di ripristino da backup (21/10/2026 11:15).**
@@ -205,3 +206,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 21/10/2026 11:57 | Nuove prove dell'osservatorio News (`notizie.test.mjs`, `t36.sql`); 15 serie |
 | 21/10/2026 12:25 | ISS-036: canali News da Google a Bing; prova Bing in `notizie.test.mjs` (8) |
 | 21/10/2026 12:45 | ISS-036: causa individuata (blocco di Google verso i server di Supabase), tramite per Google News; sezione rinominata «Notizie CO2» |
+| 21/10/2026 12:55 | Prova `t37.sql` (pallino verde delle Notizie CO2) |

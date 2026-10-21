@@ -316,6 +316,7 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 10.15d | Premete **Aggiorna ora**, poi subito di nuovo | La prima volta, dopo 20-60 secondi, «Ricerca completata: n lette, n nuove, n attinenti»; la seconda «Ultima ricerca meno di 10 minuti fa»; il Registro ricerche mostra la ricerca «Aggiorna ora» con esito ok |
 | 10.15e | **Nascondi** su una notizia, poi «Mostra le nascoste» e **Mostra di nuovo** | La notizia sparisce e ricompare |
 | 10.15f | [O] e [C] Scrivete /notizie-co2 nell'indirizzo | Nessuna voce Notizie CO2 nel menu; la pagina dice «Questa sezione è riservata agli amministratori» e non mostra notizie |
+| 10.15h | [A] Dopo una ricerca con notizie nuove (o «Aggiorna ora» da un altro Amministratore) guardate il menu, poi aprite Notizie CO2 | Pallino verde in alto a destra di «Notizie CO2»; aprendo la sezione si spegne e non ricompare finché non arrivano altre notizie; un altro Amministratore che non ha aperto la sezione lo vede ancora |
 | 10.15g | [A] Il giorno dopo aprite il Registro ricerche | Ricerche «Automatica» ogni 2 ore con esito ok |
 | 10.10b | [A] Dashboard: guardate la colonna Avanzamento della pratica di prova e passate il mouse sulle luci | Tante luci accese (ambra) quante le fasi completate, le altre spente; la fase in corso ha il contorno ambra; a pratica chiusa la settima luce è verde; il conteggio «n/7» corrisponde |
 

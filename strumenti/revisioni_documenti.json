@@ -401,7 +401,7 @@
     {
       "rev": "5.0",
       "data": "21/10/2026",
-      "descrizione": "«News» diventa «Notizie CO2»; Google News attraverso il tramite; barra a LED nell'elenco e nella pratica.",
+      "descrizione": "«News» diventa «Notizie CO2»; Google News attraverso il tramite; barra a LED nell'elenco e nella pratica. Pallino verde delle Notizie CO2 nuove.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -625,7 +625,7 @@
     {
       "rev": "3.16",
       "data": "21/10/2026",
-      "descrizione": "Prove 10.10d-10.10e (barra a LED, loghi); nomi Notizie CO2.",
+      "descrizione": "Prove 10.10d-10.10e (barra a LED, loghi); nomi Notizie CO2. Prova 10.15h (pallino verde).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -933,7 +933,7 @@
     {
       "rev": "6.0",
       "data": "21/10/2026",
-      "descrizione": "Barra a LED nelle pratiche, loghi, Notizie CO2, ISS-036 (Google News).",
+      "descrizione": "Barra a LED nelle pratiche, loghi, Notizie CO2, ISS-036 (Google News). Script 37: pallino verde delle Notizie CO2.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -995,7 +995,7 @@
     {
       "rev": "1.9",
       "data": "21/10/2026",
-      "descrizione": "Tramite per Google News delle Notizie CO2.",
+      "descrizione": "Tramite per Google News delle Notizie CO2. Script 37.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1131,7 +1131,7 @@
     {
       "rev": "1.6",
       "data": "21/10/2026",
-      "descrizione": "ISS-036: causa e tramite per Google News.",
+      "descrizione": "ISS-036: causa e tramite per Google News. Prova t37.sql.",
       "autore": "Fondazione Operate"
     }
   ]

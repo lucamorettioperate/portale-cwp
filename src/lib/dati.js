@@ -1176,3 +1176,13 @@ export async function aggiornaNotizie() {
   }
   return { data, error: null };
 }
+
+// Pallino verde delle Notizie CO2 (script 37): quante notizie attinenti
+// sono arrivate dopo l'ultima visita della sezione (0 per chi non è
+// Amministratore) e «segna come viste» all'apertura della sezione.
+export async function notizieNuove() {
+  return await supabase.rpc("notizie_nuove");
+}
+export async function segnaNotizieViste() {
+  return await supabase.rpc("notizie_segna_viste");
+}

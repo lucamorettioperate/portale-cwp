@@ -252,6 +252,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `32_utenti_online.sql` | Utenti online (backlog 38): tabella `presenza` (una riga per utente: ultima segnalazione, inizio del collegamento, pagina aperta; nessun IP, nessuno storico; RLS senza regole), `segnala_presenza(pagina)` e `presenza_uscita()` per ognuno solo per sé, `utenti_online()` (visti nelle ultime 24 ore, online se l'ultima segnalazione ha meno di 2 minuti) solo per l'Amministratore principale | 20/10/2026 — provato sul banco locale; **eseguito in produzione il 20/10** |
 | `33_audit_trail_user.sql` | Audit User (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **eseguito in produzione il 20/10** e provato dal vivo |
 | `34_sicurezza_avvisi.sql` | Sicurezza (backlog 14, 30): avvisi all'Amministratore principale (`cwp_avviso_sicurezza`, evento «sicurezza»): 5 accessi non riusciti in 15 minuti per email, 30 in un'ora in tutto, nuovo Amministratore (trigger `trg_profilo_avviso_admin`); `registra_uscita(p_motivo)` con l'uscita per inattività; rinforzi del Security Advisor: `search_path` fisso su tutte le funzioni, funzioni SECURITY DEFINER non eseguibili da anon (tranne `registra_accesso_fallito` e quelle usate nelle regole RLS) | 20/10/2026 — provato sul banco locale (`t34.sql`, regressioni `t33.sql`); **da eseguire in produzione** |
+| `37_notizie_viste.sql` | Pallino verde delle Notizie CO2 (21/10/2026, richiesta di Luca): tabella `notizie_visita` (ultima apertura della sezione per Amministratore, RLS sulla propria riga, scrittura solo dalle funzioni), `notizie_nuove()` (notizie attinenti e non nascoste trovate dopo l'ultima visita; 0 a chi non è Admin), `notizie_segna_viste()` | 21/10/2026 — provato sul banco locale (`t37.sql`: 2 nuove mai visitata, 0 dopo la visita, 1 dopo una nuova, scrittura diretta negata, Operatore 0 e nessuna riga) |
 | `36_notizie.sql` | Osservatorio News (21/10/2026, richiesta di Luca): tabelle `notizia` (url e titolo normalizzato unici, attinente, categoria, rilevanza, sintesi, prezzi, motivo, nascosta) e `notizie_esecuzione` (registro delle ricerche), lettura solo per gli Amministratori (RLS `app_is_admin`), scrittura solo dalla funzione del server; `notizie_puo_partire` (limite 100/10 minuti, una alla volta), `notizia_nascondi` (Admin), impostazione `url_notizie`, `richiedi_aggiornamento_notizie` (pg_net) e lavoro pg_cron `cwp_notizie` ogni 2 ore al minuto 7 | 21/10/2026 — provato sul banco locale (`t36.sql`: limiti di frequenza, doppioni rifiutati, Admin legge e nasconde, Operatore/Cliente/anonimo non vedono nulla, scrittura diretta e avvio negati); **eseguito in produzione il 21/10 alle 12:02** su incarico di Luca (2 tabelle, impostazione e lavoro `cwp_notizie` presenti) |
 | `35_controlli_collaudo.sql` | Collaudo V01 (20/10/2026): vincoli `NOT VALID` (valgono per i nuovi dati, quelli salvati restano com'erano) — `calcolo_conferimento_non_negativi` e `calcolo_riuso_non_negativi` (D07: niente svuotamenti, volumi, pesi, pezzi negativi; N. utenze > 0), `calcolo_crediti_valori_ammessi` (D02: buffer 0-80%, crediti non negativi); trigger `trg_calcolo_prerequisiti` (R05: niente conferma senza Banca Dati Utenze o con risultato bloccato); `cwp_numero_json` e trigger `trg_scenario_valida` sugli scenari (D01/D02/D03: popolazione e produzione > 0, secco e rifiuti ≥ 0, buffer 0-80%, valori economici ≥ 0); in fondo un conteggio in sola lettura dei dati già salvati che non rispettano le nuove regole | 20/10/2026 — provato sul banco locale (`t35.sql`: rifiuti attesi, conferma ordinaria ancora possibile, rieseguibile con dati vecchi non validi); **eseguito in produzione il 20/10** su incarico di Luca (conteggio finale: 0 dati salvati fuori regola; 3 vincoli e 2 trigger presenti) |
 
@@ -525,6 +526,11 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 21 ottobre 2026
+- **Pallino verde delle Notizie CO2** (richiesta di Luca): script
+  `37_notizie_viste.sql`; `Header.jsx` legge `notizie_nuove()` all'apertura,
+  a ogni cambio di pagina e ogni 2 minuti e mostra il pallino in alto a
+  destra della voce; la pagina `News.jsx` chiama `notizie_segna_viste()` e
+  spegne il pallino (evento `cwp-notizie-viste`). Verificato a schermo.
 - **Pratiche: barra a LED delle fasi negli elenchi e nel dettaglio**
   (richiesta di Luca) — in ogni riquadro dell'elenco delle pratiche
   (`BackOffice.jsx`, `AreaCliente.jsx`) e in alto a destra nella pratica
@@ -1711,7 +1717,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 150 file, 36.259 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 151 file, 36.363 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1740,7 +1746,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 150 file, 36.259 righe 
 | `src/pages/GestioneUtenti.jsx` | 763 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
 | `src/pages/Impostazioni.jsx` | 60 | parametri del Programma modificabili dagli Amministratori: - Durata delle fasi del Progetto e del Rapporto di Monitoraggio (script 13 e 21, componente DurateFasi); - Documenti richiesti per fase (script 21, componente… |
 | `src/pages/Login.jsx` | 275 | accesso con email e password; «Password dimenticata?» per farsi mandare il collegamento di reimpostazione; link alle pagine pubbliche (formato dei dati, consultazioni pubbliche, Manuale Utente in PDF). Dopo l'accesso riuscito… |
-| `src/pages/News.jsx` | 362 | Data breve in ora italiana: «oggi 14:07», «ieri», «18/10». |
+| `src/pages/News.jsx` | 365 | Data breve in ora italiana: «oggi 14:07», «ieri», «18/10». |
 | `src/pages/Profilo.jsx` | 66 | mostra i dati dell'account (nome, email di accesso, ruolo), il collegamento al cambio password («/password») e i documenti da scaricare per il proprio ruolo: Manuale Utente per tutti; Manuale Amministratore e Registro sviluppo e… |
 | `src/pages/Programma.jsx` | 249 | la parte pubblica della piattaforma online richiesta dalla Guida al Programma (cap. 3.7) e dallo Standard CWP (cap. 2.3, 5 e 6): - informazioni del Programma: soggetto promotore del programma, PEC, email e sito ufficiale (Guida… |
 | `src/pages/Reclami.jsx` | 271 | reclami e richieste di chiarimento (Politica di reclamo del Programma; Guida al Programma cap. 8; script 24). - Chiunque abbia un account invia un reclamo o una richiesta di chiarimento dal portale e ne segue lo stato e la… |
@@ -1760,7 +1766,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 150 file, 36.259 righe 
 | `src/components/CreditiEmessi.jsx` | 319 | crediti di carbonio emessi da un Rapporto di Monitoraggio registrato (Guida al Programma 6.3.2 e 6.3.3, Tabella 5; Standard 6.2; script 24): - emissione di un lotto con ID univoci (solo Amministratori), anche collegata a un… |
 | `src/components/DettaglioPratica.jsx` | 916 | pagina di dettaglio di una pratica (Progetto o Rapporto di Monitoraggio) con le sue 7 fasi (Guida al Programma 6.2 e 6.3.1). |
 | `src/components/Documenti.jsx` | 325 | gestione documentale di una pratica: elenco con versioni, caricamento di nuovi file e download. Lo staff sceglie anche tipologia e visibilità (Cliente, Pubblico) e può cambiarle dopo il caricamento. |
-| `src/components/Header.jsx` | 209 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
+| `src/components/Header.jsx` | 242 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
 | `src/components/Integrazioni.jsx` | 266 | richieste di integrazione di una fase (requisiti §4). Ciclo: l'Operatore richiede → il Cliente carica un documento e risponde → l'Operatore chiude la richiesta. Con la chiusura della fase la possibilità di integrare termina. La… |
 | `src/components/Messaggi.jsx` | 129 | conversazione tra Comune e Fondazione Operate dentro una pratica (backlog 26). Mostra i messaggi in ordine di data, quelli dell'utente a destra, e permette di scriverne di nuovi. |
 | `src/components/NoteFase.jsx` | 108 | note scritte sotto una delle fasi di una pratica (backlog 10). Lo staff legge tutte le note e ne aggiunge di nuove, interne (solo Fondazione) o condivise con il Comune; il Comune vede solo le condivise. |
@@ -1804,7 +1810,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 150 file, 36.259 righe 
 | `src/lib/csv.js` | 184 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
 | `src/lib/cwpProgram.js` | 185 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
 | `src/lib/date.js` | 81 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO (anche la data italiana, indipendente dal fuso del computer). |
-| `src/lib/dati.js` | 1178 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
+| `src/lib/dati.js` | 1188 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
 | `src/lib/fascicolo.js` | 357 | ZIP con: riepilogo PDF (Riepilogo.pdf, src/lib/fascicoloPdf.js), dati della pratica con l'Ente di Validazione, fasi, tutti i documenti in tutte le versioni (cartella Validazione per il rapporto dell'Ente; per i Rapporti anche il… |
 | `src/lib/fascicoloPdf.js` | 137 | un documento leggibile da stampare o archiviare insieme ai file del fascicolo: dati della pratica e dell'Ente di Validazione, fasi, elenco dei documenti (con l'impronta SHA-256), integrazioni, consultazioni pubbliche, pagamenti… |
 | `src/lib/file.js` | 158 | prima di inviare un file all'archivio controlla formato ammesso, dimensione, contenuto reale (primi byte, "firma" del formato) e prepara un nome sicuro per il percorso nell'archivio. Traduce anche gli errori dello Storage di… |
@@ -1856,6 +1862,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 150 file, 36.259 righe 
 | `supabase/34_sicurezza_avvisi.sql` | 203 | 34 — SICUREZZA: AVVISI, USCITA PER INATTIVITÀ, RINFORZI DEL DATABASE |
 | `supabase/35_controlli_collaudo.sql` | 216 | ripetere nel database i controlli aggiunti nel portale dopo il primo rapporto di collaudo (Andrea Valentini, Albina Ambrogio, Andrea Pavan, Gianluca Tapparini, Luca Belfiore). Anche se il portale avesse un errore, il database… |
 | `supabase/36_notizie.sql` | 169 | 36 — NEWS: OSSERVATORIO SUI CREDITI DI CARBONIO VOLONTARI |
+| `supabase/37_notizie_viste.sql` | 58 | 37 — NOTIZIE CO2: PALLINO VERDE DELLE NOTIZIE NUOVE |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**

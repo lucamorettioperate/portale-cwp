@@ -38,7 +38,7 @@ Il portale non ha un server proprio: è distribuito su sei servizi. Sapere che c
 
 | Servizio | Che cosa contiene | Se si perde |
 | --- | --- | --- |
-| **GitHub** (lucamorettioperate/portale-cwp) | Tutto il codice, gli script del database (01-36), le funzioni del server, i manuali e la loro storia | Si recupera dal ramo `snapshot-…` o dal file `.bundle` dell'archivio di backup |
+| **GitHub** (lucamorettioperate/portale-cwp) | Tutto il codice, gli script del database (01-37), le funzioni del server, i manuali e la loro storia | Si recupera dal ramo `snapshot-…` o dal file `.bundle` dell'archivio di backup |
 | **Vercel** (progetto portale-cwp) | Solo la pubblicazione del portale; nessun dato | Si ricrea in 10 minuti collegando di nuovo GitHub |
 | **Supabase** (organizzazione Fondazione Operate, progetto portale-cwp) | Database (pratiche, utenti, audit, impostazioni), file caricati, funzioni del server, lavori pianificati, chiavi | La struttura si ricrea dagli script; **i dati e i file solo da una copia** (capitolo «Copie di sicurezza») |
 | **Resend** | Invio delle email; chiave API e verifica del dominio | Nuovo account o nuova chiave, poi aggiornare Supabase |
@@ -117,7 +117,7 @@ Dal 21/10/2026 (richiesta di Luca) un programma in **Google Apps Script**, nell'
 
 | Cartella | Contenuto |
 | --- | --- |
-| `1_codice` | ZIP del codice da GitHub (ramo main): portale, script del database 01-36, funzioni del server, manuali, strumenti di ripristino; `commit.json` con il commit di riferimento |
+| `1_codice` | ZIP del codice da GitHub (ramo main): portale, script del database 01-37, funzioni del server, manuali, strumenti di ripristino; `commit.json` con il commit di riferimento |
 | `2_database` | Un file JSON per ogni tabella del database, `auth_utenti.json` (utenti con id ed email, **senza password**: non si possono esportare) e `conteggi.json` |
 | `3_file` | Tutti i file degli archivi `documenti`, `modelli` e `allegati-consultazione`, con le stesse sottocartelle, ed `elenco_file.json` |
 | `4_servizi` | Configurazione di Supabase, Vercel e Resend: nomi delle funzioni e dei segreti, impostazioni di Auth, variabili di Vercel, domini Resend. **Mai i valori segreti** |
@@ -148,7 +148,7 @@ Se la chiave service_role di Supabase cambia, aggiornate la proprietà dello scr
 Si usa quando dati o progetto Supabase sono persi. Serve un computer con Node 18+ e, per i dati grandi, `psql` (lo sviluppatore).
 
 1. **Scegliete il backup**: l'ultima cartella con `esito.json` → `"completo": true`. Scaricatela dal Drive (tasto destro → *Scarica*) e scompattate lo ZIP di `1_codice`.
-2. **Nuovo progetto Supabase** ed esecuzione degli script 01-36, come nel capitolo «Supabase: ricostruzione da zero», passi 1 e 2.
+2. **Nuovo progetto Supabase** ed esecuzione degli script 01-37, come nel capitolo «Supabase: ricostruzione da zero», passi 1 e 2.
 3. **Dati**: dalla cartella del codice scompattato eseguite
    `node strumenti/backup/genera_sql_ripristino.mjs <cartella 2_database> ripristino_dati.sql`,
    poi `psql "<stringa di connessione del nuovo progetto>" -f ripristino_dati.sql`. Se il file è piccolo si può incollare nel SQL Editor.
@@ -252,13 +252,13 @@ Se il progetto Supabase è stato cancellato, lo sviluppatore lo ricostruisce in 
 
 ### 2. Struttura del database (script)
 
-Nel *SQL Editor* eseguite gli script della cartella `supabase/` del repository, **uno alla volta e in ordine di numero**, da `01_schema.sql` a `36_notizie.sql`:
+Nel *SQL Editor* eseguite gli script della cartella `supabase/` del repository, **uno alla volta e in ordine di numero**, da `01_schema.sql` a `37_notizie_viste.sql`:
 
 - **non** eseguite `schema_completo.sql`: è una vecchia fotografia, superata dagli script numerati;
 - `03_dati_esempio.sql` crea solo dati di prova (Comune di Borgoval): eseguitelo solo per un ambiente di prova;
 - se compare l'avviso *Potential issue detected*, confermate con *Run this query*: gli script sono pensati per essere rieseguibili;
 - **prima** di `25_documenti_programma.sql` caricate gli 8 PDF della cartella `4-documenti-ufficiali-CWP` nella radice dell'archivio **modelli** (*Storage* › modelli › *Upload*), con gli stessi nomi di file;
-- gli script dal 28 al 35 aggiungono simulatore, Amministratore principale (29), eliminazione degli utenti mai attivi, assistente, utenti online, Audit User, avvisi di sicurezza (34) e i controlli dei dati chiesti dal collaudo (35) e l'osservatorio Notizie CO2 (36); il 35 termina con un conteggio di sola lettura che su un database nuovo vale 0 in tutte le righe;
+- gli script dal 28 al 35 aggiungono simulatore, Amministratore principale (29), eliminazione degli utenti mai attivi, assistente, utenti online, Audit User, avvisi di sicurezza (34) e i controlli dei dati chiesti dal collaudo (35) e l'osservatorio Notizie CO2 (36, 37 per il pallino delle notizie nuove); il 35 termina con un conteggio di sola lettura che su un database nuovo vale 0 in tutte le righe;
 - **dopo** `12_email_notifiche.sql` aggiornate l'indirizzo della funzione email con quello del nuovo progetto:
 
 ```sql

@@ -1029,6 +1029,8 @@ Ogni notizia nuova passa da un primo filtro sulle parole chiave e poi la control
 - certificati verdi o bianchi del GSE e garanzie d'origine, che sono strumenti dell'energia diversi dai crediti di carbonio;
 - notizie generiche su clima, energia o ESG.
 
+**Pallino verde.** Quando arrivano notizie nuove dall'ultima volta che avete aperto la sezione, nel menu compare un **pallino verde in alto a destra di «Notizie CO2»**; si spegne appena entrate nella sezione. Ogni Amministratore ha il suo pallino, uguale su ogni computer.
+
 **La pagina.**
 
 - In alto: la **data dell'ultima ricerca** e della prossima, il pulsante **Registro ricerche** (ultime ricerche con esito e numeri) e **Aggiorna ora**, che lancia subito una ricerca (al massimo una ogni 10 minuti; servono 20-60 secondi).
