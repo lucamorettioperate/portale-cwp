@@ -1739,7 +1739,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 151 file, 36.358 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 152 file, 36.455 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1885,6 +1885,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 151 file, 36.358 righe 
 | `supabase/35_controlli_collaudo.sql` | 216 | ripetere nel database i controlli aggiunti nel portale dopo il primo rapporto di collaudo (Andrea Valentini, Albina Ambrogio, Andrea Pavan, Gianluca Tapparini, Luca Belfiore). Anche se il portale avesse un errore, il database… |
 | `supabase/36_notizie.sql` | 169 | 36 — NEWS: OSSERVATORIO SUI CREDITI DI CARBONIO VOLONTARI |
 | `supabase/37_notizie_viste.sql` | 58 | 37 — NOTIZIE CO2: PALLINO VERDE DELLE NOTIZIE NUOVE |
+| `supabase/38_backup.sql` | 73 | 38 — BACKUP: TUTTO IL DATABASE IN UNA SOLA CHIAMATA |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
@@ -1930,7 +1931,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 151 file, 36.358 righe 
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1138 | — |
+| `strumenti/revisioni_documenti.json` | 1162 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
