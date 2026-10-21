@@ -355,6 +355,12 @@
       "data": "21/10/2026",
       "descrizione": "Collaudo V05: testo completo dei valori lunghi nell'Audit (Prima/Dopo, Tolto/Aggiunto), denominazione delle organizzazioni e ricerca sui valori cambiati; pagina «Account disattivato».",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.5",
+      "data": "21/10/2026",
+      "descrizione": "Nuovo documento «Registro issue e test» tra quelli scaricabili.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -542,6 +548,12 @@
       "rev": "3.10",
       "data": "21/10/2026",
       "descrizione": "Collaudo V05: prova 10.5 aggiornata (account disattivato) e nuova 10.5b (testi lunghi nell'Audit).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.11",
+      "data": "21/10/2026",
+      "descrizione": "Le segnalazioni del collaudo confluiscono nel Registro issue e test.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -809,6 +821,12 @@
       "data": "21/10/2026",
       "descrizione": "Integrazione V05 del collaudo: D05-R1 e O01 corretti e in produzione dal 21/10; D08 in carico a Luca (dominio email).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.4",
+      "data": "21/10/2026",
+      "descrizione": "Nuovo documento «Registro issue e test» e regola di aggiornamento a ogni variazione.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -920,6 +938,14 @@
       "rev": "2.9",
       "data": "21/10/2026",
       "descrizione": "Stato del collaudo con gli Amministratori collaudatori: correzioni dei rapporti V01 e V05 in produzione.",
+      "autore": "Fondazione Operate"
+    }
+  ],
+  "issue": [
+    {
+      "rev": "1.0",
+      "data": "21/10/2026",
+      "descrizione": "Prima emissione: segnalazioni dal 17/10 (ISS-001…ISS-034) e rilievi dei collaudi V01 e V05 con data e ora, azioni correttive, registro dei test.",
       "autore": "Fondazione Operate"
     }
   ]

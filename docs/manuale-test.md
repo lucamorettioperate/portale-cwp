@@ -306,6 +306,8 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 10.10c | [A] Dashboard: fate clic su «Organizzazione», poi di nuovo; in Pratiche e Utenti scegliete un campo in «Ordina per» e premete ▲/▼ | La tabella si ordina in modo crescente (▲) e poi decrescente (▼); gli elenchi a schede seguono il campo e il verso scelti; «ordine predefinito» torna all'ordine iniziale |
 | 10.10b | [A] Dashboard: guardate la colonna Avanzamento della pratica di prova e passate il mouse sulle luci | Tante luci accese (ambra) quante le fasi completate, le altre spente; la fase in corso ha il contorno ambra; a pratica chiusa la settima luce è verde; il conteggio «n/7» corrisponde |
 
+**Dove finiscono le segnalazioni.** Ogni segnalazione dei collaudatori entra nel **Registro issue e test** (Documentazione, solo Amministratori), con data e ora, azione correttiva e stato (per esempio «CORRETTO_DA_RITESTARE»). Le prove da ripetere sono indicate nel registro con il numero del caso di questo manuale.
+
 ## Limiti noti e funzioni in arrivo
 
 **Limiti noti oggi (non sono errori da segnalare).**

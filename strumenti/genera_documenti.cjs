@@ -33,7 +33,7 @@
    quello tipografico di impagina_pdf.py, se WeasyPrint è installato.
 
    Uso:  node strumenti/genera_documenti.cjs            (tutti)
-         node strumenti/genera_documenti.cjs registro   (uno solo: manuale | amministratore | test | registro | ripristino)
+         node strumenti/genera_documenti.cjs registro   (uno solo: manuale | amministratore | test | registro | issue | ripristino)
    Richiede la libreria "docx" (npm install --no-save docx), LibreOffice
    (numeri di pagina del sommario del Word) e pdftotext; il PDF finale è
    impaginato da strumenti/impagina_pdf.py (pip install weasyprint markdown).
@@ -109,6 +109,20 @@ const DOCUMENTI = {
     destinatari: "Amministratori del portale — documento riservato",
     numeraCapitoli: false,
     nota: (r) => `Fotografia del registro alla revisione ${r.rev} del ${r.data}. Il registro è aggiornato a ogni nuova funzione, servizio o rilascio; la versione corrente si scarica dall'area Documentazione del portale (solo Amministratori).`,
+  },
+  // Registro issue e test (richiesta di Luca del 21/10/2026): tutte le
+  // segnalazioni con data e ora, azioni correttive e prove; si aggiorna a
+  // ogni variazione di ogni tipo.
+  issue: {
+    sorgente: "docs/registro-issue-test.md",
+    uscita: "public/documentazione",
+    nome: "Registro_Issue_Test_Portale_CWP",
+    titolo: "REGISTRO ISSUE E TEST",
+    breve: "Registro issue e test",
+    sottotitolo: "Segnalazioni, azioni correttive, prove e collaudi",
+    destinatari: "Amministratori del portale — documento riservato",
+    numeraCapitoli: true,
+    nota: (r) => `Fotografia del registro alla revisione ${r.rev} del ${r.data}. Il registro si aggiorna a ogni variazione (segnalazione, correzione, ritest, rilascio); la versione corrente si scarica dall'area Documentazione del portale (solo Amministratori).`,
   },
   // Istruzioni di ripristino: copie di sicurezza e procedure per rimettere in
   // funzione GitHub, Vercel, Supabase, Resend e il progetto Claude.

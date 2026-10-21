@@ -70,6 +70,13 @@ const DOCUMENTI = [
     soloAdmin: true,
   },
   {
+    chiave: "issue",
+    titolo: "Registro issue e test",
+    descrizione: "Tutte le segnalazioni sul portale con data e ora, chi le ha fatte, causa, azione correttiva, prove e rilascio; in fondo il registro dei test e delle campagne di collaudo. Aggiornato a ogni variazione. Documento riservato agli Amministratori.",
+    percorso: "/documentazione/Registro_Issue_Test_Portale_CWP",
+    soloAdmin: true,
+  },
+  {
     chiave: "ripristino",
     titolo: "Istruzioni di ripristino",
     descrizione: "Dove stanno codice e dati, quali copie di sicurezza fare e come rimettere in funzione GitHub, Vercel, Supabase, Resend e il progetto Claude se qualcosa va perso. Documento riservato agli Amministratori.",

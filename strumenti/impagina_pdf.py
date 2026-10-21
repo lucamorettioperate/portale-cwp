@@ -24,7 +24,7 @@
 """
 Impaginazione tipografica in PDF dei documenti del portale (WeasyPrint).
 
-Uso:  python3 strumenti/impagina_pdf.py manuale|amministratore|test|registro|ripristino
+Uso:  python3 strumenti/impagina_pdf.py manuale|amministratore|test|registro|issue|ripristino
 Legge lo stesso testo e le stesse revisioni del Word (strumenti/genera_documenti.cjs)
 e scrive il PDF accanto al .docx, sostituendo quello convertito da LibreOffice.
 
@@ -101,6 +101,19 @@ DOCUMENTI = {
         "numera": False,
         "riservato": True,
         "intro": "Il registro descrive com'è fatto il portale e come è cambiato nel tempo: architettura, servizi, database, codice sorgente, procedure di rilascio, decisioni e lavori ancora aperti.",
+    },
+    # Registro issue e test (segnalazioni, azioni correttive, prove).
+    "issue": {
+        "sorgente": "docs/registro-issue-test.md",
+        "uscita": "public/documentazione/Registro_Issue_Test_Portale_CWP.pdf",
+        "sopratitolo": "Registro issue e test",
+        "titolo": "Portale Carbon WastePrint®",
+        "sottotitolo": "Segnalazioni, azioni correttive, prove e collaudi",
+        "breve": "Registro issue e test",
+        "destinatari": "Amministratori del portale — documento riservato",
+        "numera": True,
+        "riservato": True,
+        "intro": "Il registro raccoglie tutte le segnalazioni sul portale con data e ora, chi le ha fatte, la causa, l'azione correttiva, le prove e il rilascio, e in fondo il registro dei test e dei collaudi.",
     },
     # Istruzioni di ripristino (copie di sicurezza e procedure di recupero).
     "ripristino": {

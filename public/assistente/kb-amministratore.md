@@ -1396,6 +1396,7 @@ Dalla voce **Documentazione** del menu (e da **Il mio profilo**) l'Amministrator
 | Manuale Amministratore | solo Amministratori | Questo manuale: funzioni della Fondazione e calcolo dei crediti |
 | Manuale Test | solo Amministratori | Guida sintetica per chi collauda il portale: metodo CWP, ruolo del portale, percorso di prova con i risultati attesi |
 | Registro sviluppo e deploy | solo Amministratori | Architettura, servizi, database, codice, cronologia dei rilasci, decisioni e backlog |
+| Registro issue e test | solo Amministratori | Tutte le segnalazioni con data e ora, chi le ha fatte, azione correttiva, prove e rilascio; registro dei test e dei collaudi. Aggiornato a ogni variazione |
 | Istruzioni di ripristino | solo Amministratori | Copie di sicurezza e ripristino di GitHub, Vercel, Supabase, Resend e del progetto Claude |
 | Presentazione di riepilogo | solo Amministratori | Recap del portale in slide (PDF e PowerPoint): metodologia, funzioni, novità, punti aperti, simulatore, piani a pagamento, scelte da prendere |
 

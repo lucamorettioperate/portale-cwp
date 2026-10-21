@@ -373,7 +373,7 @@ fascicolo, file Excel del simulatore). Nessun server proprio: tutto passa da Sup
 | `/crediti`, `/crediti/:id` | Calcolo crediti CWP | Admin |
 | `/simulatore` | Simulatore di scenari: stima ex ante dei crediti di un Comune su 7, 10 o 21 anni | Operatore, Admin |
 | `/impostazioni` | Informazioni del Programma e metodologie, durata delle fasi (Progetto e Rapporto), documenti richiesti per fase, modelli di documento (anche pubblici) | Admin |
-| `/documentazione` | Documentazione (Admin: manuali, Registro, Istruzioni di ripristino, presentazione, documenti ufficiali del Programma); «Manuali» per gli enti, «Manuale» per gli Operatori | tutti (contenuto per ruolo) |
+| `/documentazione` | Documentazione (Admin: manuali, Registro, Istruzioni di ripristino, Registro issue e test, presentazione, documenti ufficiali del Programma); «Manuali» per gli enti, «Manuale» per gli Operatori | tutti (contenuto per ruolo) |
 
 **Menu per ruolo** (`vociMenu` in `src/components/Header.jsx`; ordini scelti da Luca il 20/10/2026)
 
@@ -489,6 +489,13 @@ Documentazione del portale.
   Documentazione. Data, revisione, versioni, script, funzioni e righe di
   codice si aggiornano da soli; i contenuti (novità, esempi, scelte) a
   mano.
+- **Dal 21/10 anche il Registro issue e test** (richiesta di Luca:
+  `docs/registro-issue-test.md`, chiave `issue`): ogni segnalazione con
+  data e ora, chi l'ha fatta, causa, azione correttiva, prove e rilascio;
+  si aggiorna **a ogni variazione di ogni tipo** (nuova segnalazione,
+  correzione, ritest, rilascio, cambio di stato, nuova prova) e si
+  rigenera con `node strumenti/genera_documenti.cjs issue`. Scaricabile
+  dagli Amministratori nella pagina Documentazione.
 - **Dal 19/10 anche la base di conoscenza dell'assistente virtuale:** dopo
   aver aggiornato manuali o tariffe (`docs/conoscenza/tariffe.md`) si
   esegue `node strumenti/genera_base_conoscenza.cjs`, che rigenera
@@ -515,6 +522,12 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 21 ottobre 2026
+- **Registro issue e test** (richiesta di Luca) — nuovo documento
+  `docs/registro-issue-test.md` (Word e PDF, solo Amministratori, pagina
+  Documentazione): 34 segnalazioni dal 17/10 ricostruite da conversazioni,
+  schermate, rapporti di collaudo e commit (ora della correzione dal
+  commit; ora della segnalazione quando disponibile), i rilievi dei collaudi
+  V01 e V05 e il registro dei test. Regola: si aggiorna a ogni variazione.
 - **Integrazione V05 del collaudo** (profili Cliente A/B e Operatore creati
   da Luca e provati dai collaudatori: separazione dei dati e dinieghi
   superati nei percorsi verificati) — ramo `correzioni-collaudo-v05`,
@@ -1149,6 +1162,7 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 | Manuale Utente (Comuni) | Claude Doc: https://claude.ai/code/artifact/e2dd2bd5-8042-4744-8d5a-54d34dc50153 (creato 18/10) | Prima stesura online, **superata** dal 18/10 (ferma alla Rev. 1.4, con avviso in testa): fa fede il Word/PDF generato da `docs/manuale-utente.md` |
 | Manuale Utente in Word/PDF (Rev. 1.0) | `public/manuali/Manuale_Utente_Portale_CWP.docx` e `.pdf`, online su `/manuali/…` | Versione rifinita e stampabile per i Comuni |
 | Registro sviluppo e deploy in Word/PDF | `public/documentazione/Registro_Dev_Deploy_Portale_CWP.docx` e `.pdf`, scaricabile da `/documentazione` (Admin) | Versione impaginata di questo registro |
+| Registro issue e test in Word/PDF | `docs/registro-issue-test.md` → `public/documentazione/Registro_Issue_Test_Portale_CWP.docx` e `.pdf`, scaricabile da `/documentazione` (Admin) + Progetto: `claude/registro-issue-test.md` | Segnalazioni con data e ora, azioni correttive, prove e collaudi; aggiornato a ogni variazione (dal 21/10) |
 | Manuale Amministratore in Word/PDF | `docs/manuale-amministratore.md` → `public/documentazione/Manuale_Amministratore_Portale_CWP.docx` e `.pdf`, scaricabile da `/documentazione` (Admin) | Versione impaginata e riservata del manuale per la Fondazione |
 | Manuale Amministratore online | Claude Doc: https://claude.ai/code/artifact/cc36ab09-61e6-4dad-aaf0-4082ea0a46da (creato 18/10) | Prima stesura online, **superata** dal 18/10 (avviso in testa): fa fede il Word/PDF generato da `docs/manuale-amministratore.md` |
 | Tracciato dati CWP v1.0 | `public/modelli/Tracciato_dati_CWP_v1.xlsx`, online su `/formato-dati` | Modello unico dei dati per il calcolo crediti |
@@ -1600,7 +1614,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 142 file, 33.690 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 142 file, 33.750 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1624,7 +1638,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 142 file, 33.690 righe 
 | `src/pages/Crediti.jsx` | 240 | sezione del calcolo dei crediti di CO₂eq (Metodologia Carbon WastePrint® v1.2). Due viste: - «Calcoli»: elenco di tutti i calcoli (titolo, pratica, anno e tipo, crediti netti, stato bozza/confermato) e modulo «+ Nuovo calcolo»… |
 | `src/pages/CreditiEmessiPagina.jsx` | 83 | elenco di tutti i lotti di crediti emessi dai Rapporti di Monitoraggio (Guida al Programma 6.3.2 e 6.3.3; script 24), con il totale emessi / attivi / ritirati e, per lo staff, le azioni su ogni lotto (caricamento sul registro,… |
 | `src/pages/Cruscotto.jsx` | 299 | (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso, in scadenza, scadute, in attesa del Cliente, integrazioni da verificare, consultazioni attive) e tabella di tutte le pratiche, Progetti e Rapporti, con ricerca e… |
-| `src/pages/Documentazione.jsx` | 212 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
+| `src/pages/Documentazione.jsx` | 219 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
 | `src/pages/FormatoDati.jsx` | 136 | spiega lo standard dei dati da inviare per il calcolo dei crediti e permette di scaricare il tracciato Excel. Il link si può mandare a Comuni e gestori anche senza credenziali. Contiene: elenco dei fogli del tracciato,… |
 | `src/pages/GestioneUtenti.jsx` | 763 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
 | `src/pages/Impostazioni.jsx` | 60 | parametri del Programma modificabili dagli Amministratori: - Durata delle fasi del Progetto e del Rapporto di Monitoraggio (script 13 e 21, componente DurateFasi); - Documenti richiesti per fase (script 21, componente… |
@@ -1776,13 +1790,13 @@ Inventario generato da `strumenti/inventario_codice.py`: 142 file, 33.690 righe 
 | File | Righe | Cosa contiene |
 |---|---|---|
 | `strumenti/genera_base_conoscenza.cjs` | 48 | unisce i testi dei manuali e delle tariffe in due file che la funzione del server «assistente» (supabase/functions/assistente) legge e passa a Claude come contesto: - public/assistente/kb-comune.md: per gli utenti degli enti… |
-| `strumenti/genera_documenti.cjs` | 569 | genera in Word (.docx) e PDF i documenti del portale, con copertina e loghi, registro delle revisioni, sommario con numeri di pagina, intestazione e piè di pagina: |
+| `strumenti/genera_documenti.cjs` | 583 | genera in Word (.docx) e PDF i documenti del portale, con copertina e loghi, registro delle revisioni, sommario con numeri di pagina, intestazione e piè di pagina: |
 | `strumenti/genera_esempi_tracciato.py` | 101 | genera i file di prova del tracciato dati per i test automatici (test/tracciato.test.mjs) e per il collaudo manuale (Manuale Test): - test/dati/tracciato_esempio.xlsx : tracciato compilato, Banca Dati con totali (foglio 5) -… |
 | `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
-| `strumenti/impagina_pdf.py` | 429 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
+| `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 926 | — |
+| `strumenti/revisioni_documenti.json` | 952 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
