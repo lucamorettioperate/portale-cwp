@@ -143,6 +143,22 @@ Il codice del programma è nel repository, `strumenti/backup/BackupCWP.gs`: si a
 
 Se la chiave service_role di Supabase cambia, aggiornate la proprietà dello script. Per fermare i backup cancellate i due attivatori.
 
+### Backup manuale (dal browser)
+
+Quando il backup automatico non è disponibile (il 21/10/2026 Google ha bloccato i programmi personali in Apps Script sull'account di Luca), Claude può fare un **backup manuale** nella cartella «Cwp» di Drive, in una cartella `Backup_CWP_aaaa-mm-gg_manuale`:
+
+- `database_completo.json`: tutte le tabelle, gli utenti dell'autenticazione (senza password), l'elenco dei file e dei lavori pianificati, letti dal SQL Editor di Supabase con l'accesso di Luca;
+- `portale-cwp-main.zip`: il codice da GitHub;
+- `Istruzioni_Ripristino_Portale_CWP.pdf`: questo documento;
+- `file_caricati/`: i file degli archivi Storage (documenti e modelli), con gli stessi percorsi;
+- `LEGGIMI.txt`: contenuto e ordine del ripristino.
+
+Il file `database_completo.json` si ripristina come un backup automatico, indicando il file al posto della cartella:
+
+```
+node strumenti/backup/genera_sql_ripristino.mjs database_completo.json ripristino_dati.sql
+```
+
 ### Ripristino da un backup automatico
 
 Si usa quando dati o progetto Supabase sono persi. Serve un computer con Node 18+ e, per i dati grandi, `psql` (lo sviluppatore).

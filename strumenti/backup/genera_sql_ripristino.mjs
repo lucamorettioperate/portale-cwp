@@ -5,6 +5,9 @@
 
    Uso (dalla cartella del repository, con Node 18 o più recente):
      node strumenti/backup/genera_sql_ripristino.mjs <cartella 2_database> [file.sql]
+   oppure, per un backup manuale fatto dal browser (un solo file con tutte
+   le tabelle, { tabelle: { nome: [righe] }, auth_utenti: [...] }):
+     node strumenti/backup/genera_sql_ripristino.mjs database_completo.json [file.sql]
    Produce ripristino_dati.sql (o il nome indicato), da eseguire DOPO gli
    script numerati (01 e seguenti) su un progetto Supabase nuovo e vuoto:
      psql "<stringa di connessione>" -f ripristino_dati.sql
@@ -38,9 +41,13 @@ import path from "node:path";
 
 const [cartella, uscita = "ripristino_dati.sql"] = process.argv.slice(2);
 if (!cartella || !fs.existsSync(cartella)) {
-  console.error("Uso: node strumenti/backup/genera_sql_ripristino.mjs <cartella 2_database> [file.sql]");
+  console.error("Uso: node strumenti/backup/genera_sql_ripristino.mjs <cartella 2_database | database_completo.json> [file.sql]");
   process.exit(1);
 }
+// Fonte dei dati: una cartella con un file JSON per tabella (backup
+// automatico) oppure un solo file con tutte le tabelle (backup manuale).
+const unico = fs.statSync(cartella).isFile() ? JSON.parse(fs.readFileSync(cartella, "utf8")) : null;
+const leggiTabella = (t) => (unico ? unico.tabelle[t] || [] : JSON.parse(fs.readFileSync(path.join(cartella, `${t}.json`), "utf8")));
 
 // Delimitatore dei testi JSON nel SQL (dollar quoting): non compare nei dati.
 const D = "$cwp_json$";
@@ -49,7 +56,7 @@ const righe = [];
 const scrivi = (s) => righe.push(s);
 
 scrivi("-- Ripristino dei dati del Portale CWP da un backup automatico");
-scrivi(`-- Generato il ${new Date().toISOString()} da ${path.basename(path.resolve(cartella, ".."))}`);
+scrivi(`-- Generato il ${new Date().toISOString()} da ${unico ? path.basename(cartella) : path.basename(path.resolve(cartella, ".."))}`);
 scrivi("-- Eseguire DOPO tutti gli script numerati (01 e seguenti), su un progetto nuovo.");
 scrivi("set session_replication_role = replica;");
 scrivi("");
@@ -87,11 +94,13 @@ end $f$;`);
 scrivi("");
 
 // Tabelle presenti nel backup.
-const tabelle = fs
-  .readdirSync(cartella)
-  .filter((f) => f.endsWith(".json") && !["auth_utenti.json", "conteggi.json"].includes(f))
-  .map((f) => f.replace(/\.json$/, ""))
-  .sort();
+const tabelle = (unico
+  ? Object.keys(unico.tabelle || {})
+  : fs
+      .readdirSync(cartella)
+      .filter((f) => f.endsWith(".json") && !["auth_utenti.json", "conteggi.json"].includes(f))
+      .map((f) => f.replace(/\.json$/, ""))
+).sort();
 // Il ripristino SOSTITUISCE il contenuto delle tabelle (anche le righe
 // predefinite create dagli script, come durate delle fasi e impostazioni,
 // che nel backup hanno i valori in uso). Per sicurezza si ferma se il
@@ -112,9 +121,9 @@ end $f$;`);
 scrivi("");
 
 // Utenti dell'autenticazione (prima di profilo e associazioni).
-const fileUtenti = path.join(cartella, "auth_utenti.json");
-if (fs.existsSync(fileUtenti)) {
-  const utenti = JSON.parse(fs.readFileSync(fileUtenti, "utf8"));
+const fileUtenti = unico ? null : path.join(cartella, "auth_utenti.json");
+if (unico ? Array.isArray(unico.auth_utenti) : fs.existsSync(fileUtenti)) {
+  const utenti = unico ? unico.auth_utenti : JSON.parse(fs.readFileSync(fileUtenti, "utf8"));
   scrivi(`-- Utenti dell'autenticazione: ${utenti.length} (senza password)`);
   scrivi(`insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data, banned_until)
 select '00000000-0000-0000-0000-000000000000', (u->>'id')::uuid, 'authenticated', 'authenticated', u->>'email', '',
@@ -137,7 +146,7 @@ select gen_random_uuid(), (u->>'id')::uuid, u->>'id', 'email',
 scrivi("");
 const attese = {};
 for (const t of tabelle) {
-  const dati = JSON.parse(fs.readFileSync(path.join(cartella, `${t}.json`), "utf8"));
+  const dati = leggiTabella(t);
   attese[t] = dati.length;
   if (!dati.length) continue;
   scrivi(`-- ${t}: ${dati.length} righe`);
