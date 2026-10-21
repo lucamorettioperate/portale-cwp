@@ -28,10 +28,10 @@ Nel portale la Fondazione lavora con due ruoli:
 | Audit trail | — | sì |
 | Impostazioni (pagina pubblica del Programma, metodologie, durata delle fasi, documenti richiesti, modelli) | — | sì |
 | Calcolo dei crediti CWP | — | sì |
-
-Gli **Amministratori** possono essere più di uno e hanno tutti accesso completo a tutti i dati. Un Amministratore può nominare altri Amministratori (capitolo «Gestione utenti»). L'**Amministratore principale** è luca.moretti@operate.it: nessuno lo può modificare, disattivare o cancellare.
 | Documentazione (Registro e questo manuale) | — | sì |
 | Notizie CO2: osservatorio sui crediti di carbonio volontari | — | sì |
+
+Gli **Amministratori** possono essere più di uno e hanno tutti accesso completo a tutti i dati. Un Amministratore può nominare altri Amministratori (capitolo «Gestione utenti»). L'**Amministratore principale** è luca.moretti@operate.it: nessuno lo può modificare, disattivare o cancellare.
 
 L'**Ente di Validazione** (RINA) non ha un accesso al portale: i suoi rapporti vengono caricati dall'Operatore nella pratica.
 
