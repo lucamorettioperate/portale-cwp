@@ -63,6 +63,8 @@ Un ripristino è possibile solo se esiste una copia. Questo è il calendario con
 
 | Quando | Che cosa | Chi |
 | --- | --- | --- |
+| **Ogni giorno alle 13 e alle 21** | **Backup automatico completo su Google Drive** (cartella «Cwp»: codice, database, file, configurazione; una cartella per backup) | Google Apps Script di Luca, da solo (capitolo «Backup automatico su Google Drive») |
+| Ogni settimana | Togliere a mano le cartelle di backup vecchie (tenerne almeno 14, cioè una settimana) | Luca |
 | A ogni rilascio importante | Archivio di backup completo (chiederlo a Claude) e ramo `snapshot-<data>` su GitHub | Claude, su richiesta |
 | Ogni settimana, appena ci sono dati reali | Copia del database e dei file (riquadri qui sotto) | Sviluppatore |
 | Ogni giorno, dopo il passaggio al piano Pro | Copia automatica del database, tenuta 7 giorni | Supabase, da solo |
@@ -108,6 +110,58 @@ Finché i file sono pochi si possono anche scaricare dalla dashboard: *Storage*,
 ### Chiavi e impostazioni
 
 Le chiavi non si copiano: si **rigenerano** nel servizio. Tenete invece aggiornato l'elenco del capitolo «Elenco di chiavi e impostazioni», così chi ripristina sa che cosa ricreare.
+
+## Backup automatico su Google Drive
+
+Dal 21/10/2026 (richiesta di Luca) un programma in **Google Apps Script**, nell'account Google di Luca, fa **ogni giorno due backup completi**, tra le 13 e le 14 e tra le 21 e le 22 (ora italiana). Ogni backup è una **nuova cartella** dentro la cartella **Cwp** del Drive di Luca, con il nome «Backup_CWP_aaaa-mm-gg_hhmm». Le cartelle vecchie non si cancellano da sole: le toglie Luca a mano.
+
+| Cartella | Contenuto |
+| --- | --- |
+| `1_codice` | ZIP del codice da GitHub (ramo main): portale, script del database 01-35, funzioni del server, manuali, strumenti di ripristino; `commit.json` con il commit di riferimento |
+| `2_database` | Un file JSON per ogni tabella del database, `auth_utenti.json` (utenti con id ed email, **senza password**: non si possono esportare) e `conteggi.json` |
+| `3_file` | Tutti i file degli archivi `documenti`, `modelli` e `allegati-consultazione`, con le stesse sottocartelle, ed `elenco_file.json` |
+| `4_servizi` | Configurazione di Supabase, Vercel e Resend: nomi delle funzioni e dei segreti, impostazioni di Auth, variabili di Vercel, domini Resend. **Mai i valori segreti** |
+| `LEGGIMI.txt`, PDF delle Istruzioni di ripristino, `esito.json` | Guida rapida, queste istruzioni aggiornate ed esito del backup |
+
+Se un backup non riesce o non finisce (Google concede al massimo 6 minuti per esecuzione), Luca riceve un'email «Backup CWP NON completo» con gli errori.
+
+**Il backup contiene dati personali** (email degli utenti, documenti delle pratiche): la cartella Cwp non va condivisa.
+
+### Installazione (una volta, la fa Luca: circa 10 minuti)
+
+Il codice del programma è nel repository, `strumenti/backup/BackupCWP.gs`: si apre in testo semplice all'indirizzo https://raw.githubusercontent.com/lucamorettioperate/portale-cwp/main/strumenti/backup/BackupCWP.gs. Nella cartella Cwp c'è anche il documento «Backup CWP — installazione» con questi passi.
+
+1. Aprite **script.google.com** con l'account Google che possiede la cartella Cwp → **Nuovo progetto**. Rinominatelo «Backup CWP».
+2. Aprite l'indirizzo del codice qui sopra, selezionate tutto (Cmd+A / Ctrl+A) e copiate. Nell'editor cancellate il contenuto del file `Codice.gs`, incollate e premete **Salva** (icona del dischetto).
+3. **Impostazioni progetto** (ingranaggio a sinistra):
+   - **Fuso orario**: «(GMT+01:00) Roma» (oppure «Europe/Rome»);
+   - **Proprietà dello script** → **Aggiungi proprietà dello script**, nome `SUPABASE_SERVICE_ROLE_KEY`. Il valore è in Supabase → *Project Settings* → *API Keys* → chiave **service_role**: copiatela e incollatela voi, non va mai scritta altrove;
+   - facoltative: `RESEND_API_KEY` (per salvare l'elenco dei domini Resend) e `VERCEL_TOKEN` (per salvare le impostazioni del progetto Vercel).
+4. Tornate all'editor, scegliete la funzione **installa** nel menu in alto e premete **Esegui**. Google chiede l'autorizzazione: scegliete l'account, *Avanzate* → *Vai a Backup CWP* → **Consenti** (servono Drive, connessioni esterne ed email).
+5. Scegliete la funzione **provaOra** e premete **Esegui**: dopo uno o due minuti nella cartella Cwp compare il primo «Backup_CWP_…». Aprite `esito.json`: deve dire `"completo": true`.
+6. In **Attivatori** (sveglia a sinistra) devono comparire due attivatori giornalieri di `eseguiBackup`, alle 13 e alle 21.
+
+Se la chiave service_role di Supabase cambia, aggiornate la proprietà dello script. Per fermare i backup cancellate i due attivatori.
+
+### Ripristino da un backup automatico
+
+Si usa quando dati o progetto Supabase sono persi. Serve un computer con Node 18+ e, per i dati grandi, `psql` (lo sviluppatore).
+
+1. **Scegliete il backup**: l'ultima cartella con `esito.json` → `"completo": true`. Scaricatela dal Drive (tasto destro → *Scarica*) e scompattate lo ZIP di `1_codice`.
+2. **Nuovo progetto Supabase** ed esecuzione degli script 01-35, come nel capitolo «Supabase: ricostruzione da zero», passi 1 e 2.
+3. **Dati**: dalla cartella del codice scompattato eseguite
+   `node strumenti/backup/genera_sql_ripristino.mjs <cartella 2_database> ripristino_dati.sql`,
+   poi `psql "<stringa di connessione del nuovo progetto>" -f ripristino_dati.sql`. Se il file è piccolo si può incollare nel SQL Editor.
+   - Il file rimette utenti, pratiche, documenti, calcoli, audit e impostazioni **identici**, con gli stessi codici, senza far partire notifiche o voci di audit nuove.
+   - Si ferma da solo se il database contiene già delle pratiche, così non si sovrascrive per errore il portale in uso.
+   - In fondo mostra, tabella per tabella, le righe nel backup e quelle ripristinate. Un «RIGA NON RIPRISTINATA» indica un dato vecchio che non rispetta un controllo attuale: va valutato a parte.
+4. **File**: `SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… node strumenti/backup/carica_file_ripristino.mjs <cartella 3_file>`. La chiave è quella del nuovo progetto e la inserisce chi esegue il ripristino.
+5. **Funzioni del server e segreti**: dalla cartella `supabase/functions` del codice, con i segreti elencati in `4_servizi/configurazione_servizi.json` (capitolo «Chiavi delle funzioni»).
+6. **Autenticazione**, **Vercel** e **Resend**: come nei capitoli di questo documento, con i valori di `4_servizi`.
+7. **Utenti**: tornano con lo stesso id, la stessa email e lo stesso ruolo, ma senza password. Ognuno, al primo accesso, usa «Password dimenticata?». In alternativa l'Amministratore usa «Reimposta password».
+8. **Verifica**: accesso dell'Amministratore principale, una pratica con i documenti, l'Audit, il calcolo dei crediti, una notifica.
+
+La procedura dei dati è stata provata il 21/10/2026 sul banco locale. Su un database ricostruito con gli script 01-35 sono state ripristinate 35 tabelle e 3 utenti, con dati identici al JSON. La prova si è fermata da sola alla seconda esecuzione; un dato vecchio non valido è stato segnalato e i contatori sono stati riallineati. Da ripetere ogni tre mesi su un progetto Supabase di prova (tabella «Copie di sicurezza»).
 
 ## GitHub e Vercel: tornare alla versione precedente
 

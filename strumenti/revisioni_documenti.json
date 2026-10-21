@@ -361,6 +361,12 @@
       "data": "21/10/2026",
       "descrizione": "Nuovo documento «Registro issue e test» tra quelli scaricabili.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.6",
+      "data": "21/10/2026",
+      "descrizione": "Capitolo «Backup automatico».",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -554,6 +560,12 @@
       "rev": "3.11",
       "data": "21/10/2026",
       "descrizione": "Le segnalazioni del collaudo confluiscono nel Registro issue e test.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.12",
+      "data": "21/10/2026",
+      "descrizione": "Prova 7.23: caratteri incorporati nei PDF (R08).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -827,6 +839,12 @@
       "data": "21/10/2026",
       "descrizione": "Nuovo documento «Registro issue e test» e regola di aggiornamento a ogni variazione.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.5",
+      "data": "21/10/2026",
+      "descrizione": "Backup automatico su Google Drive e strumenti di ripristino; R08 corretto.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -870,6 +888,12 @@
       "rev": "1.6",
       "data": "21/10/2026",
       "descrizione": "Ricostruzione del database con gli script da 01 a 35 (simulatore, Amministratore principale, assistente, utenti online, Audit User, avvisi di sicurezza, controlli del collaudo).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.7",
+      "data": "21/10/2026",
+      "descrizione": "Backup automatico su Google Drive alle 13 e alle 21 (installazione, contenuto) e ripristino da un backup automatico, provato sul banco locale.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -939,6 +963,12 @@
       "data": "21/10/2026",
       "descrizione": "Stato del collaudo con gli Amministratori collaudatori: correzioni dei rapporti V01 e V05 in produzione.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.0",
+      "data": "21/10/2026",
+      "descrizione": "Backup automatico su Google Drive tra i punti di sicurezza.",
+      "autore": "Fondazione Operate"
     }
   ],
   "issue": [
@@ -946,6 +976,12 @@
       "rev": "1.0",
       "data": "21/10/2026",
       "descrizione": "Prima emissione: segnalazioni dal 17/10 (ISS-001…ISS-034) e rilievi dei collaudi V01 e V05 con data e ora, azioni correttive, registro dei test.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.1",
+      "data": "21/10/2026",
+      "descrizione": "R08 corretto e da ritestare; prova di ripristino da backup.",
       "autore": "Fondazione Operate"
     }
   ]

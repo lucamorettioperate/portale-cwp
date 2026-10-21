@@ -522,6 +522,27 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 21 ottobre 2026
+- **Backup automatico su Google Drive** (richiesta di Luca: due volte al
+  giorno, alle 13 e alle 21, una cartella per backup nella cartella «Cwp»
+  del suo Drive). Programma Google Apps Script `strumenti/backup/BackupCWP.gs`
+  (account Google di Luca, orari Europe/Rome): codice da GitHub (ZIP e
+  commit), tutte le tabelle via API REST con la chiave service_role (nelle
+  proprietà dello script, inserita da Luca), utenti dell'autenticazione
+  senza password, file dei tre archivi, configurazione di Supabase, Vercel
+  e Resend senza segreti, LEGGIMI e PDF delle istruzioni, esito ed email
+  se qualcosa non riesce. Ripristino: `strumenti/backup/genera_sql_ripristino.mjs`
+  (SQL con `session_replication_role = replica`, controllo «database già
+  pieno», righe non valide segnalate, contatori riallineati) e
+  `strumenti/backup/carica_file_ripristino.mjs`; prova completa sul banco
+  locale (dati identici). Scelta tecnica: l'ambiente di sviluppo non
+  raggiunge Supabase né Google Drive per file grandi, quindi il backup gira
+  in Google con l'account di Luca. Nel Drive il documento «Backup CWP —
+  installazione». **Da fare (Luca):** installazione, circa 10 minuti
+  (Istruzioni di ripristino, capitolo «Backup automatico su Google Drive»).
+- **R08, carattere incorporato nei PDF** (commit 4920d2a) — Liberation Sans
+  (licenza OFL, stesse larghezze di Helvetica) incorporato in rapporto
+  crediti, simulatore e riepilogo del fascicolo (`src/lib/caratteriPdf.js`,
+  `public/caratteri/`); verificato con pdffonts e a schermo.
 - **Registro issue e test** (richiesta di Luca) — nuovo documento
   `docs/registro-issue-test.md` (Word e PDF, solo Amministratori, pagina
   Documentazione): 34 segnalazioni dal 17/10 ricostruite da conversazioni,
@@ -1162,6 +1183,7 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 | Manuale Utente (Comuni) | Claude Doc: https://claude.ai/code/artifact/e2dd2bd5-8042-4744-8d5a-54d34dc50153 (creato 18/10) | Prima stesura online, **superata** dal 18/10 (ferma alla Rev. 1.4, con avviso in testa): fa fede il Word/PDF generato da `docs/manuale-utente.md` |
 | Manuale Utente in Word/PDF (Rev. 1.0) | `public/manuali/Manuale_Utente_Portale_CWP.docx` e `.pdf`, online su `/manuali/…` | Versione rifinita e stampabile per i Comuni |
 | Registro sviluppo e deploy in Word/PDF | `public/documentazione/Registro_Dev_Deploy_Portale_CWP.docx` e `.pdf`, scaricabile da `/documentazione` (Admin) | Versione impaginata di questo registro |
+| Backup automatico | Google Apps Script «Backup CWP» (account Google di Luca) con codice in `strumenti/backup/BackupCWP.gs`; backup nella cartella «Cwp» del Drive di Luca | Due backup completi al giorno (13 e 21), una cartella per backup; strumenti di ripristino in `strumenti/backup/` |
 | Registro issue e test in Word/PDF | `docs/registro-issue-test.md` → `public/documentazione/Registro_Issue_Test_Portale_CWP.docx` e `.pdf`, scaricabile da `/documentazione` (Admin) + Progetto: `claude/registro-issue-test.md` | Segnalazioni con data e ora, azioni correttive, prove e collaudi; aggiornato a ogni variazione (dal 21/10) |
 | Manuale Amministratore in Word/PDF | `docs/manuale-amministratore.md` → `public/documentazione/Manuale_Amministratore_Portale_CWP.docx` e `.pdf`, scaricabile da `/documentazione` (Admin) | Versione impaginata e riservata del manuale per la Fondazione |
 | Manuale Amministratore online | Claude Doc: https://claude.ai/code/artifact/cc36ab09-61e6-4dad-aaf0-4082ea0a46da (creato 18/10) | Prima stesura online, **superata** dal 18/10 (avviso in testa): fa fede il Word/PDF generato da `docs/manuale-amministratore.md` |
@@ -1277,6 +1299,9 @@ completato (va barrato qui e annotato in Cronologia).
 aperte; il dettaglio è nei punti numerati qui sotto.
 
 *Azioni di Luca (Claude non le può fare: chiavi, pubblicazioni, account)*
+- **Installare il backup automatico su Google Drive** (circa 10 minuti,
+  Istruzioni di ripristino, capitolo «Backup automatico su Google Drive»;
+  documento «Backup CWP — installazione» nella cartella Cwp del Drive).
 - Eseguire lo script `34_sicurezza_avvisi.sql` (avvisi di sicurezza e rinforzi del database) o autorizzare Claude a farlo.
 - Attivare gli avvisi automatici di GitHub (Settings → Code security → Dependabot alerts) e decidere sul CAPTCHA delle pagine pubbliche.
 - ~~Eseguire gli script 32 e 33 e rieseguire lo script 30~~ — fatto il
@@ -1614,7 +1639,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 142 file, 33.750 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 143 file, 33.879 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1691,22 +1716,23 @@ Inventario generato da `strumenti/inventario_codice.py`: 142 file, 33.750 righe 
 |---|---|---|
 | `src/lib/AuthContext.jsx` | 221 | tiene in memoria la sessione Supabase Auth, il profilo applicativo (ruolo, organizzazione, flag password temporanea) e lo stato MFA. Espone le funzioni accedi, esci, richiediRecuperoPassword, cambiaPassword e caricaMfa. Ogni… |
 | `src/lib/auditDettaglio.js` | 182 | rendere riconoscibile, nelle pagine Audit e Audit User, QUALE oggetto è stato modificato e COSA è cambiato. Il database registra già tutto (trigger audit_registra, script 07/21): l'id dell'oggetto e, per le modifiche, ogni campo… |
+| `src/lib/caratteriPdf.js` | 75 | i PDF del portale usavano i caratteri standard «Helvetica» NON incorporati: ogni lettore li sostituiva con un carattere locale e, se le larghezze erano diverse, la spaziatura diventava irregolare e i glifi si sovrapponevano… |
 | `src/lib/crediti/archivio.js` | 258 | crea, legge, aggiorna ed elimina i calcoli (testata e dati in calcolo_crediti) e la loro Banca Dati Utenze (righe di conferimento e di riuso), anche quando le righe sono centinaia di migliaia (invio e lettura a blocchi). Crea le… |
 | `src/lib/crediti/calcolo.js` | 545 | funzioni pure (nessun accesso al database): ricevono i dati del calcolo e restituiscono risultati intermedi e finali, con il riferimento alla formula della Metodologia accanto a ogni passaggio. |
 | `src/lib/crediti/parametri.js` | 95 | tabelle numeriche della Metodologia usate come valori iniziali di ogni calcolo: fattori di emissione per tipologia di rifiuto (Tab. 3, 4, 7), pesi specifici (Tab. 8), beni a riuso (Tab. 5), buffer (Tab. 15 e Cap. 7), giorni… |
 | `src/lib/crediti/qualita.js` | 124 | indicatori di qualità dei dati di un calcolo dei crediti, oltre ai controlli di coerenza di tracciato.js: - soglia di scostamento ±30% (cap. 3.1.2) tra la produzione pro capite dei rifiuti del territorio e i valori medi del… |
-| `src/lib/crediti/rapportoPdf.js` | 369 | genera nel browser, con jsPDF e jspdf-autotable, il rapporto di un calcolo: scheda, sintesi dei crediti, buffer, dati di ingresso, risultati per tipologia e per classe, avvisi, controlli di coerenza e scelte interpretative. Il… |
+| `src/lib/crediti/rapportoPdf.js` | 374 | genera nel browser, con jsPDF e jspdf-autotable, il rapporto di un calcolo: scheda, sintesi dei crediti, buffer, dati di ingresso, risultati per tipologia e per classe, avvisi, controlli di coerenza e scelte interpretative. Il… |
 | `src/lib/crediti/scenari.js` | 75 | unico punto in cui il portale legge e scrive la tabella scenario_simulazione (supabase/28_simulatore.sql). |
 | `src/lib/crediti/simulatore.js` | 880 | dati i rifiuti dell'anno base (per tipologia) e, per ogni anno del periodo, gli obiettivi di produzione totale e di secco residuo pro capite, ricalcola la percentuale di raccolta differenziata e stima i crediti anno per anno con… |
 | `src/lib/crediti/simulatoreExport.js` | 273 | Nomi dei listini dei costi (come i pulsanti della pagina). |
-| `src/lib/crediti/simulatorePdf.js` | 219 | Colori RGB, uguali alla palette del portale e al rapporto di calcolo. |
+| `src/lib/crediti/simulatorePdf.js` | 224 | Colori RGB, uguali alla palette del portale e al rapporto di calcolo. |
 | `src/lib/crediti/tracciato.js` | 676 | legge il file del tracciato compilato dal Comune o dal gestore, blocca l'import se trova dati personali, converte i fogli nei dati del motore di calcolo (calcolo.js) e segnala le incoerenze. |
 | `src/lib/csv.js` | 184 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
 | `src/lib/cwpProgram.js` | 185 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
 | `src/lib/date.js` | 81 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO (anche la data italiana, indipendente dal fuso del computer). |
 | `src/lib/dati.js` | 1126 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
 | `src/lib/fascicolo.js` | 357 | ZIP con: riepilogo PDF (Riepilogo.pdf, src/lib/fascicoloPdf.js), dati della pratica con l'Ente di Validazione, fasi, tutti i documenti in tutte le versioni (cartella Validazione per il rapporto dell'Ente; per i Rapporti anche il… |
-| `src/lib/fascicoloPdf.js` | 129 | un documento leggibile da stampare o archiviare insieme ai file del fascicolo: dati della pratica e dell'Ente di Validazione, fasi, elenco dei documenti (con l'impronta SHA-256), integrazioni, consultazioni pubbliche, pagamenti… |
+| `src/lib/fascicoloPdf.js` | 137 | un documento leggibile da stampare o archiviare insieme ai file del fascicolo: dati della pratica e dell'Ente di Validazione, fasi, elenco dei documenti (con l'impronta SHA-256), integrazioni, consultazioni pubbliche, pagamenti… |
 | `src/lib/file.js` | 158 | prima di inviare un file all'archivio controlla formato ammesso, dimensione, contenuto reale (primi byte, "firma" del formato) e prepara un nome sicuro per il percorso nell'archivio. Traduce anche gli errori dello Storage di… |
 | `src/lib/inattivita.js` | 20 | un solo posto per i tempi usati da src/components/ UscitaInattivita.jsx (richiesta di Luca del 20/10/2026, sicurezza). - Operatori e Amministratori: 30 minuti senza attività; - utenti degli enti: 60 minuti; - l'avviso «Sei… |
 | `src/lib/ordinamento.js` | 37 | logica pura (senza React) usata dal componente src/components/Ordinamento.jsx. Numeri come numeri, booleani (falso prima di vero), date ISO e testi in ordine alfabetico italiano senza distinguere maiuscole e con i numeri nel… |
@@ -1796,7 +1822,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 142 file, 33.750 righe 
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 952 | — |
+| `strumenti/revisioni_documenti.json` | 988 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

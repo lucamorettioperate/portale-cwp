@@ -31,14 +31,14 @@ Dal 21/10/2026 ogni nuova voce riporta l'ora esatta della segnalazione.
 
 **Chi segnala:** Luca = Luca Moretti; Collaudo = Amministratori collaudatori (Andrea Valentini, Albina Ambrogio, Andrea Pavan, Gianluca Tapparini, Luca Belfiore); Revisione = rilettura del codice da parte dello sviluppo; Sviluppo = prova dello sviluppo o messaggio di errore di un servizio.
 
-## Riepilogo al 21/10/2026
+## Riepilogo al 21/10/2026 (ore 11:20)
 
 | Stato | Numero | Voci |
 |---|---|---|
 | CHIUSO | 32 | ISS-001 … ISS-034, tranne ISS-012 e ISS-020 |
-| CORRETTO_DA_RITESTARE | 11 | D01, D02, D03, D04, D05, D06, D07, R05, R07, D05-R1, O01 |
+| CORRETTO_DA_RITESTARE | 12 | D01, D02, D03, D04, D05, D06, D07, R05, R07, R08, D05-R1, O01 |
 | ATTESA_REGOLA | 6 | R01, R02, R03, R04, R06, riuso |
-| APERTO | 3 voci, 2 cause | ISS-012 e D08 (email ai destinatari diversi dal titolare), R08 (resa tipografica dei PDF) |
+| APERTO | 2 voci, 1 causa | ISS-012 e D08 (email ai destinatari diversi dal titolare) |
 | NON_RIPRODOTTO | 1 | ISS-020 |
 
 ISS-012 e D08 hanno la stessa causa, segnalata in più momenti (17/10, 18/10, 21/10).
@@ -97,7 +97,7 @@ Ordine cronologico. Una data senza ora vuol dire «ora della segnalazione non re
 | R05 | 20/10 16:40 | **Calcolo crediti** — «Conferma definitivamente» disponibile senza Banca Dati Utenze. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P0) | 20/10 17:05 (`66d253e`) e script 35; elenco dei prerequisiti da confermare |
 | R06 | 20/10 16:40 | **Pratiche** — Fase completata con un documento obbligatorio mancante. Segnalato da: Collaudo | ATTESA_REGOLA (P0) | — (oggi promemoria non bloccante per scelta) |
 | R07 | 20/10 16:40 | **Esportazioni** — Nel CSV di riepilogo P%UD era 1 invece di 100. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P2) | 20/10 17:05 (`66d253e`) |
-| R08 | 20/10 16:40 | **PDF** — Spaziatura irregolare e glifi sovrapposti nei PDF (lettore poppler). Segnalato da: Collaudo | APERTO (P2) | — (ipotesi: caratteri non incorporati; servono i PDF originali) |
+| R08 | 20/10 16:40 | **PDF** — Spaziatura irregolare e glifi sovrapposti nei PDF (lettore poppler). Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P2) | 21/10 11:05 (`4920d2a`): carattere Liberation Sans (stesse larghezze di Helvetica, licenza OFL) incorporato in rapporto crediti, simulatore e riepilogo del fascicolo; verificato con pdffonts (solo carattere incorporato in uso) e a schermo |
 | Riuso | 20/10 16:40 | **Metodologia** — Segno dell'effetto del riuso (formule 26 e 29). Segnalato da: Collaudo | ATTESA_REGOLA | — |
 | D08 | 21/10 10:42 (rapporto V05; creazione A del 20/10) | **Email** — Email delle credenziali non inviata («Email non inviata», Resend 403). Segnalato da: Collaudo | APERTO (P1) | Stessa causa di ISS-012 |
 | D05-R1 | 21/10 10:42 (osservato il 21/10 sugli eventi delle 09:20:41 e 09:21:21) | **Audit** — Nel dettaglio dell'Audit i testi lunghi restavano tagliati anche aprendo «1 modifica». Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P2) | 21/10 10:48 (`39c9bc8`); in produzione alle 10:50, verificato dal vivo alle 10:51 |
@@ -130,6 +130,8 @@ Le schede complete (riproduzione, causa, file modificati, prove, domande alla Fo
 
 **O01 — account disattivato.** Pagina «Account disattivato» con l'invito a scrivere alla Fondazione e il pulsante Esci.
 
+**R08 — PDF.** Causa probabile: i PDF usavano Helvetica non incorporata, che ogni lettore sostituisce con un carattere locale di larghezze diverse. Ora i tre generatori incorporano Liberation Sans (`src/lib/caratteriPdf.js`, file in `public/caratteri/` con la licenza OFL). Ha le stesse larghezze, quindi l'impaginazione non cambia. Se il carattere non si scarica si torna a Helvetica. Verifica: PDF di prova dei tre tipi con `pdffonts`, che risulta «incorporato: sì», ed esame a schermo. Da ritestare con il caso 7.23 su più lettori.
+
 **ISS-012 / D08 — email.** In modalità di prova Resend consegna solo al titolare dell'account. Per chiudere servono tre passi:
 1. Luca verifica un dominio della Fondazione su Resend (record DNS).
 2. Luca imposta il segreto `EMAIL_MITTENTE` in Supabase.
@@ -157,13 +159,23 @@ Si eseguono con `npm test` prima di ogni rilascio; l'ultimo esito è sempre «tu
 | `collaudo_v01.test.mjs` | 27 | D01-D07, R04, R05, casi ordinari S e C, R01/R02 fissati |
 | `collaudo_v05.test.mjs` | 4 | D05-R1: testi lunghi, aggiunta/rimozione, 80/81 caratteri, ricerca |
 
-**Ultima esecuzione:** 21/10/2026 10:53, 13 serie superate, prima della pubblicazione della documentazione.
+**Ultima esecuzione:** 21/10/2026 11:20, 13 serie superate.
 
 ### Prove del database (banco locale)
 
 Ogni script del database è provato su una copia locale di Postgres 16 con tutti gli script, prima dell'esecuzione in produzione. Le prove sono nei file `t8.sql` … `t35.sql`: permessi per ruolo, rifiuti attesi, immutabilità dell'audit, conferma dei calcoli, emissioni, avvisi di sicurezza, vincoli del collaudo.
 
 Ultima prova: `t35.sql` del 20/10/2026, con 11 rifiuti attesi, conferma ordinaria possibile e rieseguibilità con dati vecchi.
+
+**Prova di ripristino da backup (21/10/2026 11:15).**
+- **Procedura:** il banco, popolato con le prove, è stato esportato come un backup automatico (35 tabelle e 3 utenti). Il database è stato ricostruito con gli script 01-35 ed è stato eseguito `ripristino_dati.sql` generato da `strumenti/backup/genera_sql_ripristino.mjs`.
+- **Esito:**
+  - dati identici al backup;
+  - 1 riga segnalata come «RIGA NON RIPRISTINATA»: era un dato di prova negativo inserito di proposito per lo script 35;
+  - contatori riallineati: un nuovo calcolo e un nuovo evento di audit si creano senza conflitti;
+  - seconda esecuzione fermata dal controllo «database già pieno», senza nessuna modifica.
+
+Da ripetere ogni tre mesi su un progetto Supabase di prova.
 
 ### Campagne di collaudo
 
@@ -180,3 +192,4 @@ Ultima prova: `t35.sql` del 20/10/2026, con 11 rifiuti attesi, conferma ordinari
 | Data e ora | Variazione |
 |---|---|
 | 21/10/2026 10:55 | Prima emissione: ricostruite 34 segnalazioni dal 17/10 e i rilievi dei collaudi V01 e V05, con le azioni correttive e il registro dei test |
+| 21/10/2026 11:20 | R08 corretto e da ritestare; prova di ripristino da backup nel registro dei test |

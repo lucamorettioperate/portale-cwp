@@ -10,9 +10,8 @@ Questo file è autonomo: contiene priorità, dati sintetici, passi di riproduzio
 >
 > | Esito | ID |
 > |---|---|
-> | `CORRETTO_DA_RITESTARE` | D01, D02, D03, D04, D05, D06, D07, R05 (presidio), R07 |
+> | `CORRETTO_DA_RITESTARE` | D01, D02, D03, D04, D05, D06, D07, R05 (presidio), R07, R08 (dal 21/10) |
 > | `ATTESA_REGOLA` | R01, R02, R03, R04 (messaggio chiarito), R06, riuso |
-> | `APERTO` | R08 |
 
 ## 1. Stato e mandato dell’agente ricevente
 
@@ -577,15 +576,20 @@ Aggiornamento essenziale: il 20/10 la transizione è stata effettivamente ripetu
 
 **Verifica richiesta.** Aprire stessi byte in almeno due lettori e stampare; verificare font incorporati, numeri, titoli, tabelle e accessibilità del documento.
 
-> **Risposta dello sviluppo — 20/10/2026 · Stato: `APERTO`**
+> **Risposta dello sviluppo — aggiornata il 21/10/2026 · Stato: `CORRETTO_DA_RITESTARE`**
 >
-> **Diagnosi (ipotesi, non causa certa).** I PDF di jsPDF usano i caratteri standard Helvetica **non incorporati** (`pdffonts`: emb = no). Ogni lettore li sostituisce con un carattere locale: se le larghezze sono diverse, la spaziatura diventa irregolare e i glifi si sovrappongono, come nel render del collaudo.
+> **Diagnosi.** I PDF usavano i caratteri standard Helvetica **non incorporati** (`pdffonts`: emb = no). Ogni lettore li sostituiva con un carattere locale e, se le larghezze erano diverse, la spaziatura diventava irregolare e i glifi si sovrapponevano.
 >
-> Sul banco dello sviluppo (poppler con caratteri metricamente compatibili) lo stesso generatore produce un rapporto regolare. I caratteri fuori codifica (CO₂, →) sono già sostituiti da `pdfTesto` nel rapporto e nel simulatore, ma **non** nel riepilogo del fascicolo.
+> **Correzione** (commit `4920d2a`, in produzione dal 21/10):
+> - i tre generatori incorporano **Liberation Sans**, che ha le stesse larghezze di Helvetica e Arial e licenza SIL OFL 1.1: rapporto di calcolo dei crediti, PDF del simulatore e riepilogo del fascicolo;
+> - l'impaginazione resta identica;
+> - se il carattere non si scarica il PDF si crea comunque con Helvetica.
 >
-> **Proposta.** Incorporare un carattere a licenza libera (OFL) nei tre generatori PDF e applicare la stessa pulizia dei testi al fascicolo. I PDF diventano più pesanti di circa 200–300 KB. Prima serve l'OK di Luca.
+> File: `src/lib/caratteriPdf.js` (nuovo), `rapportoPdf.js`, `simulatorePdf.js`, `fascicoloPdf.js`, `public/caratteri/` (due file .ttf e la licenza).
 >
-> **Servono dal collaudo** i byte originali `rapporto_bozza.pdf` e `fascicolo_Riepilogo.pdf` e il nome del lettore usato, per confermare la causa.
+> **Verifica:** PDF di prova dei tre tipi generati nel browser. `pdffonts` mostra LiberationSans «incorporato: sì», ed è l'unico carattere usato nelle pagine. Esame a schermo con poppler: frecce, virgolette e apostrofi corretti nel fascicolo.
+>
+> **Per il ritest:** caso 7.23 del Manuale di test, aprendo gli stessi file in almeno due lettori e in stampa.
 
 ### Questione metodologica trasversale: riuso
 
@@ -702,7 +706,7 @@ Per la chiusura positiva servono P0/P1 del perimetro superati sulla release prev
 | R05 | `CORRETTO_DA_RITESTARE` | Errori di coerenza non bloccanti, conferma senza Banca Dati | `CalcoloCrediti.jsx`, `tracciato.js`, script 35 | «R05»; `t35.sql` |
 | R06 | `ATTESA_REGOLA` | Promemoria non bloccanti per disegno | — | — |
 | R07 | `CORRETTO_DA_RITESTARE` | Quote 0–1 con etichetta % | `CalcoloCrediti.jsx` | caso 7.21 |
-| R08 | `APERTO` | Ipotesi: caratteri non incorporati | — | servono i PDF originali |
+| R08 | `CORRETTO_DA_RITESTARE` | Caratteri non incorporati (Helvetica) | `caratteriPdf.js`, `rapportoPdf.js`, `simulatorePdf.js`, `fascicoloPdf.js` | pdffonts e verifica a schermo |
 | Riuso | `ATTESA_REGOLA` | Due opzioni documentate | — | — |
 
 **1. Revisione e build proposta.**
@@ -724,7 +728,7 @@ Per la chiusura positiva servono P0/P1 del perimetro superati sulla release prev
 - Invalidazione dei risultati e versionamento dei documenti non toccati.
 - Un'aspettativa cambiata, motivata da D01 (secco oltre il totale: da avviso a errore).
 
-**4. Punti aperti e domande metodologiche.** R01, R02, R03, R04 (solo la regola), R06, riuso e l'elenco completo dei prerequisiti di R05: le domande sono nelle schede, con lo spazio «Risposta della Fondazione». R08 resta aperto in attesa dei PDF originali.
+**4. Punti aperti e domande metodologiche.** R01, R02, R03, R04 (solo la regola), R06, riuso e l'elenco completo dei prerequisiti di R05: le domande sono nelle schede, con lo spazio «Risposta della Fondazione». R08 è corretto dal 21/10 (caratteri incorporati), da ritestare con il caso 7.23.
 
 **5. Utenti di prova.** Da creare da Luca Moretti (vedi la risposta al punto 8).
 

@@ -1386,6 +1386,19 @@ La pagina **Il Programma** (`/programma`) è la parte pubblica della piattaforma
 
 La pagina non mostra dati personali. Si scaricano solo i documenti segnati come pubblici, nella versione corrente; contratti con l'ente e versioni private non compaiono mai. Per far comparire o togliere un documento basta cambiare la casella **Pubblico** nella pratica o nel modello.
 
+## Backup automatico
+
+Ogni giorno, tra le 13 e le 14 e tra le 21 e le 22, un programma nell'account Google di Luca (Google Apps Script) copia tutto il portale in una nuova cartella **Backup_CWP_aaaa-mm-gg_hhmm**, dentro la cartella **Cwp** del suo Drive:
+- codice da GitHub;
+- tutte le tabelle del database e gli utenti, senza password;
+- tutti i file caricati;
+- la configurazione di Supabase, Vercel e Resend, senza le chiavi;
+- le Istruzioni di ripristino.
+
+Le cartelle vecchie le toglie Luca a mano. Se un backup non riesce, arriva un'email.
+
+Installazione e ripristino sono nelle **Istruzioni di ripristino**, capitolo «Backup automatico su Google Drive». Il ripristino rimette dati, file e utenti identici; dopo il ripristino gli utenti scelgono una nuova password con «Password dimenticata?».
+
 ## Documentazione e manuali
 
 Dalla voce **Documentazione** del menu (e da **Il mio profilo**) l'Amministratore scarica, in PDF o in Word e sempre nella revisione più recente:

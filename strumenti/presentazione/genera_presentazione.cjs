@@ -405,7 +405,7 @@ async function icona(Comp, colore) {
       "Fatto il 20/10: registro degli accessi e avvisi di sicurezza, uscita per inattività, intestazioni del sito, librerie aggiornate (0 vulnerabilità)",
       "Verifica in due passaggi per lo staff (pronta, spenta); CAPTCHA sulle pagine pubbliche",
       "Antivirus sui file; verifica OWASP, test di intrusione a fine sviluppo",
-      "Backup: archivio completo e istruzioni di ripristino fatti (19/10); da attivare copie automatiche di database e file, ambiente di prova, monitoraggio errori",
+      "Backup automatico completo su Google Drive alle 13 e alle 21 (pronto dal 21/10, da installare) e istruzioni di ripristino provate; da fare ambiente di prova e monitoraggio errori",
       "Piani a pagamento e repository privato (slide «Piani a pagamento»); dominio email verificato, che serve anche alle email con le credenziali",
     ] },
     { i: "server", t: "Avvio della piattaforma pubblica", r: [

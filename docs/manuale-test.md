@@ -218,6 +218,7 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 7.20 | [A] Collaudo V01, R05. Su una bozza senza Banca Dati Utenze: Calcola → Conferma calcolo | Nel riquadro l'elenco degli errori di coerenza (fra cui «Manca la Banca Dati Utenze») e **Conferma definitivamente** disattivato |
 | 7.21 | [A] Scarica il riepilogo (CSV) | Le voci «P%UD (%)» e «P%UnD (%)» sono in percentuale (100 e 0), come nella pagina e nel PDF |
 | 7.22 | [A] Collaudo V01, D06. In una bozza di prova importate un conferimento con codice utenza `=1+1`, premete Calcola, scaricate il dettaglio per utenza (CSV) e apritelo con Excel | La cella mostra il testo `'=1+1` (o `=1+1` come testo), non il risultato 2; i numeri negativi (es. ΔI) restano numeri |
+| 7.23 | [A] Collaudo V01, R08. Scaricate il rapporto di calcolo (PDF), il PDF del simulatore e un fascicolo; apriteli in due lettori diversi (per esempio Anteprima/Acrobat e il browser) e stampatene una pagina | Testo regolare, senza spazi strani né lettere sovrapposte; nelle proprietà del documento (Caratteri) compare LiberationSans «incorporato» |
 
 **File di esempio.** I tre file usati sopra si scaricano da `portale-cwp.vercel.app/documentazione/esempi/` (Tracciato_esempio_compilato.xlsx, Tracciato_esempio_letture.zip, Tracciato_esempio_dati_personali.xlsx) e contengono solo dati inventati, con anno 2025. Per prove proprie usate sempre codici anonimi (U0001, U0002…), mai dati reali di persone.
 
