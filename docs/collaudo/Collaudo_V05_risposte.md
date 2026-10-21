@@ -2,7 +2,7 @@
 
 V05 · avviato il 20 ottobre 2026 · aggiornato il 21 ottobre 2026 · campagna in corso · assistente AI escluso
 
-> **Risposte dello sviluppo (Claude, per Fondazione Operate) — 21/10/2026.** Le risposte sono inserite sotto D08, O01, D05-R1 e «Prosecuzione». Le correzioni di D05-R1 e O01 sono sul ramo `correzioni-collaudo-v05` del repository e passano in produzione solo con il mandato di Luca Moretti.
+> **Risposte dello sviluppo (Claude, per Fondazione Operate) — 21/10/2026.** Le risposte sono inserite sotto D08, O01, D05-R1 e «Prosecuzione». Le correzioni di D05-R1 e O01 sono **in produzione dal 21/10/2026 alle 10:50 circa (commit `39c9bc8`)**, su mandato di Luca Moretti; nessuno script del database. Verifica dal vivo: sulle due righe del 21/10 alle 09:20:41 e 09:21:21 «Testo completo» mostra rispettivamente «Aggiunto:» e «Tolto:» con la riga temporanea, e l'oggetto «Organizzazione «COLLAUDO AL V03 - COMUNE B - 20261020» (916f3283)».
 >
 > | ID | Stato | In breve |
 > |---|---|---|

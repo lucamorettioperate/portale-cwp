@@ -413,7 +413,7 @@ async function icona(Comp, colore) {
       "PEC del Programma per i reclami: operate@pec.it",
       "Da inserire: enti di validazione e verifica e registri riconosciuti, modulistica",
       "Accesso con SPID, CIE o CNS al feedback pubblico (adesione come fornitore di servizi)",
-      "Collaudo completo delle nuove funzioni (crediti emessi, reclami, tariffe)",
+      "Collaudo in corso con 5 Amministratori: correzioni dei rapporti V01 e V05 in produzione il 20-21/10; restano le regole metodologiche da confermare",
     ] },
     { i: "puzzle", t: "Qualità dei dati e completamenti", r: [
       "Dati ufficiali per i controlli: popolazione e cluster SOSE di ogni Comune",

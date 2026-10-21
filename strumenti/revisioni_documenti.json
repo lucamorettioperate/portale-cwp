@@ -137,6 +137,12 @@
       "data": "20/10/2026",
       "descrizione": "Uscita automatica per inattività.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.3",
+      "data": "21/10/2026",
+      "descrizione": "Domande frequenti: messaggio «Account disattivato».",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -801,7 +807,7 @@
     {
       "rev": "5.3",
       "data": "21/10/2026",
-      "descrizione": "Integrazione V05 del collaudo: D05-R1 e O01 corretti, D08 in carico a Luca (dominio email).",
+      "descrizione": "Integrazione V05 del collaudo: D05-R1 e O01 corretti e in produzione dal 21/10; D08 in carico a Luca (dominio email).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -840,6 +846,12 @@
       "rev": "1.5",
       "data": "20/10/2026",
       "descrizione": "Indirizzo Supabase nella Content-Security-Policy di vercel.json; script 01-34.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.6",
+      "data": "21/10/2026",
+      "descrizione": "Ricostruzione del database con gli script da 01 a 35 (simulatore, Amministratore principale, assistente, utenti online, Audit User, avvisi di sicurezza, controlli del collaudo).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -902,6 +914,12 @@
       "rev": "2.8",
       "data": "20/10/2026",
       "descrizione": "Punti aperti di sicurezza aggiornati.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.9",
+      "data": "21/10/2026",
+      "descrizione": "Stato del collaudo con gli Amministratori collaudatori: correzioni dei rapporti V01 e V05 in produzione.",
       "autore": "Fondazione Operate"
     }
   ]

@@ -517,7 +517,10 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 ### 21 ottobre 2026
 - **Integrazione V05 del collaudo** (profili Cliente A/B e Operatore creati
   da Luca e provati dai collaudatori: separazione dei dati e dinieghi
-  superati nei percorsi verificati) — ramo `correzioni-collaudo-v05`.
+  superati nei percorsi verificati) — ramo `correzioni-collaudo-v05`,
+  **rilasciato in produzione il 21/10 alle 10:50 circa** (commit 39c9bc8, OK
+  di Luca; nessuno script). Verifica dal vivo: le due modifiche delle Note
+  di B del 21/10 mostrano «Aggiunto» e «Tolto» con la riga temporanea.
   D05-R1: nel dettaglio dell'Audit i testi oltre 80 caratteri restavano
   accorciati anche aprendo «1 modifica»; ora «Testo completo» mostra Prima e
   Dopo interi e la parte tolta/aggiunta (`auditDettaglio.js`:
@@ -1286,8 +1289,7 @@ aperte; il dettaglio è nei punti numerati qui sotto.
   canale separato, MFA non disattivata).
 - Integrazione V05 (21/10): profili creati da Luca e provati (separazione
   A/B e dinieghi superati). D05-R1 (testi lunghi nell'Audit) e O01
-  (messaggio «Account disattivato») corretti sul ramo
-  `correzioni-collaudo-v05`; D08 (email ai nuovi utenti) richiede il
+  (messaggio «Account disattivato») corretti e in produzione dal 21/10; D08 (email ai nuovi utenti) richiede il
   dominio verificato su Resend (punto 17).
 
 *Sviluppo (Claude)*
@@ -1598,7 +1600,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 142 file, 33.672 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 142 file, 33.690 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1780,7 +1782,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 142 file, 33.672 righe 
 | `strumenti/impagina_pdf.py` | 429 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 908 | — |
+| `strumenti/revisioni_documenti.json` | 926 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

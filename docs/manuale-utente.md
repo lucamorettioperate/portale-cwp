@@ -427,6 +427,8 @@ Mentre avete il portale aperto, il portale registra **quando** siete collegati e
 
 **Un collega deve avere l'account al posto mio.** Ogni Organizzazione ha un solo account attivo, quello del rappresentante autorizzato. Chiedete alla Fondazione di disattivare il vostro account e di crearne uno nuovo per il collega (capitolo 1).
 
+**Entrando vedo «Account disattivato».** La Fondazione ha disattivato il vostro account (per esempio per un cambio di rappresentante): pratiche e documenti non sono consultabili. Se è un errore o vi serve di nuovo l'accesso, scrivete alla Fondazione Operate; quando l'account sarà riattivato basterà entrare di nuovo.
+
 **Non ricevo le email.** Controllate la cartella della posta indesiderata. Le notifiche restano comunque disponibili nella campanella del portale.
 
 **Il link dell'email apre la pagina di accesso.** Accedete con le vostre credenziali: subito dopo si apre la pratica indicata nell'email.
