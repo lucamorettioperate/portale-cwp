@@ -31,7 +31,7 @@ Dal 21/10/2026 ogni nuova voce riporta l'ora esatta della segnalazione.
 
 **Chi segnala:** Luca = Luca Moretti; Collaudo = Amministratori collaudatori (Andrea Valentini, Albina Ambrogio, Andrea Pavan, Gianluca Tapparini, Luca Belfiore); Revisione = rilettura del codice da parte dello sviluppo; Sviluppo = prova dello sviluppo o messaggio di errore di un servizio.
 
-## Riepilogo al 21/10/2026 (ore 12:45)
+## Riepilogo al 21/10/2026 (ore 12:46)
 
 | Stato | Numero | Voci |
 |---|---|---|
@@ -205,5 +205,5 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 21/10/2026 11:45 | ISS-035: PDF ed Excel della simulazione con tutti i dati e i grafici |
 | 21/10/2026 11:57 | Nuove prove dell'osservatorio News (`notizie.test.mjs`, `t36.sql`); 15 serie |
 | 21/10/2026 12:25 | ISS-036: canali News da Google a Bing; prova Bing in `notizie.test.mjs` (8) |
-| 21/10/2026 12:45 | ISS-036: causa individuata (blocco di Google verso i server di Supabase), tramite per Google News; sezione rinominata «Notizie CO2» |
-| 21/10/2026 12:55 | Prova `t37.sql` (pallino verde delle Notizie CO2) |
+| 21/10/2026 12:35 | ISS-036: causa individuata (blocco di Google verso i server di Supabase), tramite per Google News; sezione rinominata «Notizie CO2» |
+| 21/10/2026 12:46 | Prova `t37.sql` (pallino verde delle Notizie CO2) |
