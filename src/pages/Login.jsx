@@ -14,6 +14,8 @@
      sono volutamente generici: non dicono se l'email esiste. Password
      temporanea e verifica a due fattori sono gestite dopo l'accesso
      (Protetta in App.jsx).
+   Loghi: Carbon WastePrint con accanto, in piccolo, RINA e Carbon Credit
+     (dal 21/10/2026); sotto, Fondazione Operate.
    Registro sviluppo e deploy: capitolo «Portale (frontend)».
    ========================================================================= */
 import React, { useState } from "react";
@@ -72,11 +74,16 @@ export default function Login() {
           padding: "32px 28px",
         }}
       >
-        <img
-          src="/loghi/carbonwasteprint.png"
-          alt="Carbon WastePrint"
-          style={{ height: 96, width: "auto", display: "block", marginBottom: 14 }}
-        />
+        {/* Logo del Programma e, accanto in piccolo, RINA (Certification
+            Digital Partner) e Carbon Credit, come nell'intestazione
+            (richiesta di Luca del 21/10/2026). */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 14 }}>
+          <img src="/loghi/carbonwasteprint.png" alt="Carbon WastePrint" style={{ height: 96, width: "auto", display: "block" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <img src="/loghi/rina.png" alt="RINA — Certification Digital Partner" style={{ height: 42, width: "auto", display: "block" }} />
+            <img src="/loghi/carbon-credit.svg" alt="Carbon Credit" style={{ height: 42, width: "auto", display: "block" }} />
+          </div>
+        </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
           <span style={{ fontSize: 12, color: C.grafite }}>Programma di</span>
           <img

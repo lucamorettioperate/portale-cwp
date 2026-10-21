@@ -22,7 +22,8 @@
 //  funzione non riceve dati da salvare: legge solo i canali pubblici
 //  (elenco CANALI) e scrive con la chiave di servizio.
 //
-//  Passi: 1) legge i canali RSS (Google News e siti specializzati);
+//  Passi: 1) legge i canali RSS (Bing News e siti specializzati; dal
+//  21/10 Bing al posto di Google News, che rifiuta i server di Supabase);
 //  2) toglie le notizie già viste (stesso indirizzo o stesso titolo) e
 //  quelle più vecchie di 10 giorni; 3) pre-filtro sulle parole chiave;
 //  4) Claude valuta a gruppi di 25 (massimo 100 notizie per ricerca, le
@@ -57,32 +58,34 @@ const MASSIMO = 100; // notizie valutate per ricerca
 const GIORNI = 10; // notizie più vecchie: ignorate
 
 // INIZIO funzioni notizie
-// Ricerca su Google News (feed RSS pubblico): ultimi 7 giorni.
-const googleNews = (q, lingua) =>
-  lingua === "it"
-    ? `https://news.google.com/rss/search?q=${encodeURIComponent(q + " when:7d")}&hl=it&gl=IT&ceid=IT:it`
-    : `https://news.google.com/rss/search?q=${encodeURIComponent(q + " when:7d")}&hl=en-US&gl=US&ceid=US:en`;
+// Ricerca su Bing News (feed RSS pubblico), ultima settimana. Dal
+// 21/10/2026 al posto di Google News, che risponde 503 alle richieste dai
+// server di Supabase (prima ricerca in produzione).
+const bingNews = (q, lingua) =>
+  `https://www.bing.com/news/search?q=${encodeURIComponent(q)}&qft=${encodeURIComponent('interval="7"')}&format=rss` +
+  (lingua === "it" ? "&setlang=it-IT&cc=IT" : "&setlang=en-US&cc=US");
 
 // Canali dell'osservatorio: { nome, url, lingua }. Le ricerche coprono i
 // temi chiesti da Luca: mercato volontario, marketplace e borse, prezzi dei
 // crediti scambiati o venduti, standard e registri, regole, progetti
 // (anche rifiuti ed economia circolare, il settore del Programma CWP).
 const CANALI = [
-  { nome: "Google News · crediti di carbonio", lingua: "it", url: googleNews('"crediti di carbonio"', "it") },
-  { nome: "Google News · mercato volontario del carbonio", lingua: "it", url: googleNews('"mercato volontario" carbonio', "it") },
-  { nome: "Google News · prezzo dei crediti di carbonio", lingua: "it", url: googleNews('"crediti di carbonio" prezzo OR prezzi OR valore', "it") },
-  { nome: "Google News · crediti di carbonio e rifiuti", lingua: "it", url: googleNews('"crediti di carbonio" rifiuti OR riciclo OR "economia circolare"', "it") },
-  { nome: "Google News · registro dei crediti di carbonio", lingua: "it", url: googleNews('"registro" "crediti di carbonio" OR "certificati di carbonio"', "it") },
-  { nome: "Google News · voluntary carbon market", lingua: "en", url: googleNews('"voluntary carbon market"', "en") },
-  { nome: "Google News · carbon credit prices", lingua: "en", url: googleNews('"carbon credit" OR "carbon credits" price OR prices OR traded', "en") },
-  { nome: "Google News · carbon credit marketplaces", lingua: "en", url: googleNews('"carbon credit" marketplace OR exchange OR platform', "en") },
-  { nome: "Google News · standards and registries", lingua: "en", url: googleNews('Verra OR "Gold Standard" OR ICVCM OR VCMI "carbon credits"', "en") },
-  { nome: "Google News · carbon removal credits", lingua: "en", url: googleNews('"carbon removal credits" OR "removal credits"', "en") },
-  { nome: "Google News · Article 6 and CORSIA", lingua: "en", url: googleNews('"Article 6" OR CORSIA "carbon credits"', "en") },
-  { nome: "Google News · waste carbon credits", lingua: "en", url: googleNews('"carbon credits" waste OR recycling OR landfill OR composting', "en") },
+  { nome: "Bing News · crediti di carbonio", lingua: "it", url: bingNews('"crediti di carbonio"', "it") },
+  { nome: "Bing News · mercato volontario del carbonio", lingua: "it", url: bingNews('"mercato volontario" carbonio', "it") },
+  { nome: "Bing News · prezzo dei crediti di carbonio", lingua: "it", url: bingNews('"crediti di carbonio" prezzo', "it") },
+  { nome: "Bing News · crediti di carbonio e rifiuti", lingua: "it", url: bingNews('"crediti di carbonio" rifiuti', "it") },
+  { nome: "Bing News · registro dei crediti di carbonio", lingua: "it", url: bingNews('registro "crediti di carbonio"', "it") },
+  { nome: "Bing News · voluntary carbon market", lingua: "en", url: bingNews('"voluntary carbon market"', "en") },
+  { nome: "Bing News · carbon credit prices", lingua: "en", url: bingNews('"carbon credits" price', "en") },
+  { nome: "Bing News · carbon credit marketplaces", lingua: "en", url: bingNews('"carbon credit" marketplace OR exchange', "en") },
+  { nome: "Bing News · standards and registries", lingua: "en", url: bingNews('Verra OR "Gold Standard" OR ICVCM "carbon credits"', "en") },
+  { nome: "Bing News · carbon removal credits", lingua: "en", url: bingNews('"carbon removal credits"', "en") },
+  { nome: "Bing News · Article 6 and CORSIA", lingua: "en", url: bingNews('"Article 6" OR CORSIA "carbon credits"', "en") },
+  { nome: "Bing News · waste carbon credits", lingua: "en", url: bingNews('"carbon credits" waste OR recycling OR landfill', "en") },
   { nome: "Carbon Herald", lingua: "en", url: "https://carbonherald.com/feed/" },
-  { nome: "Ecosystem Marketplace", lingua: "en", url: "https://www.ecosystemmarketplace.com/feed/" },
   { nome: "CarbonCredits.com", lingua: "en", url: "https://carboncredits.com/feed/" },
+  { nome: "Ecosystem Marketplace", lingua: "en", url: "https://www.ecosystemmarketplace.com/feed/" },
+  { nome: "Verra", lingua: "en", url: "https://verra.org/feed/" },
 ];
 
 // Categorie (stessi valori del vincolo della tabella notizia, script 36).
@@ -122,6 +125,18 @@ function tag(blocco, nome) {
   return m ? m[1] : "";
 }
 
+// I link di Bing News passano da un rimando (bing.com/news/apiclick.aspx
+// ?…&url=<indirizzo>): si tiene l'indirizzo dell'articolo.
+function indirizzoVero(link) {
+  try {
+    const u = new URL(link);
+    const vero = u.hostname.endsWith("bing.com") ? u.searchParams.get("url") : null;
+    return vero && /^https?:\/\//i.test(vero) ? vero : link;
+  } catch {
+    return link;
+  }
+}
+
 /* Legge un feed RSS 2.0. Parametri: xml (testo), canale ({ nome, lingua }).
    Restituisce [{ titolo, url, fonte, pubblicata_il (ISO o null), estratto,
    lingua, ricerca }]. Nei feed di Google News il titolo finisce con
@@ -131,10 +146,11 @@ function leggiRss(xml, canale = {}) {
   const blocchi = String(xml || "").match(/<item[\s>][\s\S]*?<\/item>/gi) || [];
   for (const b of blocchi) {
     let titolo = testoPulito(tag(b, "title"));
-    const url = testoPulito(tag(b, "link")) || testoPulito(tag(b, "guid"));
+    const url = indirizzoVero(testoPulito(tag(b, "link")) || testoPulito(tag(b, "guid")));
     if (!titolo || !/^https?:\/\//i.test(url)) continue;
-    // Testata: dal tag <source> di Google News, altrimenti il nome del sito.
-    const sorgente = testoPulito(tag(b, "source"));
+    // Testata: dal tag <source> (Google News) o <News:Source> (Bing News),
+    // altrimenti il nome del sito.
+    const sorgente = testoPulito(tag(b, "source")) || testoPulito(tag(b, "News:Source"));
     const fonte = sorgente || canale.nome || "";
     if (sorgente) {
       const suffisso = ` - ${fonte}`;
@@ -291,22 +307,23 @@ async function cerca(admin: ReturnType<typeof createClient>, esecuzione: number)
     const MODELLO = Deno.env.get("NOTIZIE_MODELLO") || "claude-haiku-5-5";
     if (!CHIAVE) throw new Error("Manca la chiave ANTHROPIC_API_KEY nei segreti del server.");
 
-    // 1) Canali, in parallelo (un canale che non risponde si salta).
-    const letture = await Promise.all(
-      CANALI.map(async (c) => {
-        try {
-          const r = await fetch(c.url, { headers: { "User-Agent": "Mozilla/5.0 (Portale CWP osservatorio News)" }, signal: AbortSignal.timeout(15000) });
-          if (!r.ok) {
-            console.warn("canale", c.nome, r.status);
-            return [];
-          }
-          return leggiRss(await r.text(), c);
-        } catch (e) {
-          console.warn("canale", c.nome, String(e));
+    // 1) Canali, 4 alla volta (un canale che non risponde si salta; molte
+    // richieste insieme allo stesso sito vengono rifiutate).
+    const leggi = async (c: any) => {
+      try {
+        const r = await fetch(c.url, { headers: { "User-Agent": "Mozilla/5.0 (Portale CWP osservatorio News)", Accept: "application/rss+xml, application/xml, text/xml" }, signal: AbortSignal.timeout(15000) });
+        if (!r.ok) {
+          console.warn("canale", c.nome, r.status);
           return [];
         }
-      })
-    );
+        return leggiRss(await r.text(), c);
+      } catch (e) {
+        console.warn("canale", c.nome, String(e));
+        return [];
+      }
+    };
+    const letture: any[][] = [];
+    for (let i = 0; i < CANALI.length; i += 4) letture.push(...(await Promise.all(CANALI.slice(i, i + 4).map(leggi))));
     const tutte = letture.flat();
     riepilogo.lette = tutte.length;
 

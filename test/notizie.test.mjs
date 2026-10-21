@@ -3,7 +3,8 @@
    copia in supabase/functions/notizie/index.ts; richiesta di Luca del
    21/10/2026).
    Scopo: verificare che
-   - un feed di Google News e uno di un sito (WordPress) si leggano con
+   - un feed di Google News, uno di Bing News e uno di un sito (WordPress)
+     si leggano con
      titolo senza testata, indirizzo, fonte, data ed estratto senza HTML;
    - la stessa notizia da due ricerche dia la stessa chiave;
    - il pre-filtro tenga le notizie sui crediti di carbonio e scarti le altre;
@@ -46,6 +47,16 @@ prova("feed di un sito: CDATA, entità e nome del sito come fonte", () => {
   assert.equal(r[0].titolo, "Verra & Gold Standard: new rules for removal credits");
   assert.equal(r[0].fonte, "Carbon Herald");
   assert.equal(r[0].estratto, "Two registries align their rules…");
+});
+const bing = `<rss xmlns:News="https://www.bing.com/news/search?q=x&amp;format=rss"><channel><item><title>Carbon credit prices climb on CBL</title>
+<link>http://www.bing.com/news/apiclick.aspx?ref=FexRss&amp;aid=&amp;tid=1&amp;url=https%3a%2f%2fwww.reuters.com%2fcarbon%2f&amp;c=1&amp;mkt=en-us</link>
+<description>Prices for nature-based credits rose…</description><pubDate>Tue, 20 Oct 2026 09:00:00 GMT</pubDate><News:Source>Reuters</News:Source></item></channel></rss>`;
+prova("feed di Bing News: indirizzo vero dell'articolo e testata", () => {
+  const r = leggiRss(bing, { nome: "Bing News · prova", lingua: "en" });
+  assert.equal(r.length, 1);
+  assert.equal(r[0].url, "https://www.reuters.com/carbon/");
+  assert.equal(r[0].fonte, "Reuters");
+  assert.equal(r[0].titolo, "Carbon credit prices climb on CBL");
 });
 prova("stessa notizia, stessa chiave", () => {
   assert.equal(chiaveTitolo("Crediti di Carbonio: è record!"), chiaveTitolo("crediti di carbonio – e record"));
