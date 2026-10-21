@@ -114,8 +114,11 @@ export default function Header() {
         <div className="loghi-colonna">
           <img className="logo-fondazione" src="/loghi/fondazione-operate.png" alt="Fondazione Operate" />
           <div className="loghi-partner">
-            <img src="/loghi/rina.png" alt="RINA — Certification Digital Partner" />
-            <img src="/loghi/carbon-credit.svg" alt="Carbon Credit" />
+            {/* RINA un po' più alto: nel file il cerchio occupa l'88% dell'altezza
+                (in alto sporgono i quadratini), nel Carbon Credit il 96%; così i
+                due cerchi risultano uguali (21/10/2026). */}
+            <img className="logo-rina" src="/loghi/rina.png" alt="RINA — Certification Digital Partner" />
+            <img className="logo-carbon-credit" src="/loghi/carbon-credit.svg" alt="Carbon Credit" />
           </div>
         </div>
       </Link>

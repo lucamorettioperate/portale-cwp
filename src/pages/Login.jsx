@@ -74,14 +74,16 @@ export default function Login() {
           padding: "32px 28px",
         }}
       >
-        {/* Logo del Programma e, accanto in piccolo, RINA (Certification
-            Digital Partner) e Carbon Credit, come nell'intestazione
-            (richiesta di Luca del 21/10/2026). */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 14 }}>
+        {/* Logo del Programma e, sulla stessa riga allineati in basso e a
+            destra, in piccolo e della stessa misura, RINA (Certification
+            Digital Partner) e Carbon Credit (richiesta di Luca del
+            21/10/2026). RINA è un po' più alto perché nel file il cerchio
+            occupa l'88% dell'altezza (Carbon Credit il 96%). */}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
           <img src="/loghi/carbonwasteprint.png" alt="Carbon WastePrint" style={{ height: 96, width: "auto", display: "block" }} />
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <img src="/loghi/rina.png" alt="RINA — Certification Digital Partner" style={{ height: 42, width: "auto", display: "block" }} />
-            <img src="/loghi/carbon-credit.svg" alt="Carbon Credit" style={{ height: 42, width: "auto", display: "block" }} />
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 6 }}>
+            <img src="/loghi/rina.png" alt="RINA — Certification Digital Partner" style={{ height: 31, width: "auto", display: "block" }} />
+            <img src="/loghi/carbon-credit.svg" alt="Carbon Credit" style={{ height: 28, width: "auto", display: "block" }} />
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>

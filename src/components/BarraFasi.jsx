@@ -7,7 +7,9 @@
      ambra, così si vede dove è arrivata la pratica. Accanto, il conteggio
      «n/7». Passando il mouse su una luce compaiono numero, nome e stato
      della fase.
-   Usato da: src/pages/Cruscotto.jsx (Dashboard), colonna «Avanzamento».
+   Usato da: src/pages/Cruscotto.jsx (Dashboard), colonna «Avanzamento»;
+     dal 21/10/2026 anche negli elenchi delle pratiche (BackOffice.jsx,
+     AreaCliente.jsx) e in alto a destra nel dettaglio (DettaglioPratica.jsx).
    Props:
      - fasi: elenco delle fasi della pratica, ognuna { numero, nome, stato }
        (tabella fase, script 01); stato = non_iniziata | in_corso |

@@ -22,6 +22,7 @@ import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
 import Badge from "../components/Badge.jsx";
 import DettaglioPratica from "../components/DettaglioPratica.jsx";
+import BarraFasi from "../components/BarraFasi.jsx";
 import { elencaProgetti } from "../lib/dati.js";
 import { useOrdinamento, SceltaOrdinamento } from "../components/Ordinamento.jsx";
 
@@ -125,11 +126,15 @@ export default function AreaCliente() {
                       <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: 15 }}>
                         {p.titolo || "Progetto"}
                       </span>
-                      <Badge bg={st.bg} fg={st.fg}>{st.label}</Badge>
+                      {/* Barra a LED delle 7 fasi in alto a destra (21/10/2026). */}
+                      <BarraFasi fasi={p.fasi || []} />
                     </div>
-                    <div style={{ fontSize: 12.5, color: C.grafite, marginTop: 3 }}>
-                      {p.codice || "senza codice"}
-                      {p.organizzazione?.denominazione ? ` · ${p.organizzazione.denominazione}` : ""}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginTop: 3 }}>
+                      <span style={{ fontSize: 12.5, color: C.grafite }}>
+                        {p.codice || "senza codice"}
+                        {p.organizzazione?.denominazione ? ` · ${p.organizzazione.denominazione}` : ""}
+                      </span>
+                      <Badge bg={st.bg} fg={st.fg}>{st.label}</Badge>
                     </div>
                   </button>
                 );

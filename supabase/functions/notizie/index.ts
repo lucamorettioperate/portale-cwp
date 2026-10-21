@@ -259,6 +259,13 @@ Deno.serve(async (req) => {
     const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
+    // Diagnosi dei canali (21/10/2026, ISS-036): con { "diagnosi": true }
+    // la funzione prova a leggere alcuni indirizzi con intestazioni diverse
+    // e restituisce esito HTTP e inizio della risposta. Non usa Claude e non
+    // scrive nulla nel database.
+    const corpo = await req.clone().json().catch(() => ({}));
+    if (corpo?.diagnosi === true) return json(await diagnosiCanali());
+
     // Chi chiama: con un token valido di Amministratore (verifica a due
     // fattori compresa, app_is_admin) è una richiesta manuale.
     let utenteId: string | null = null;
@@ -415,6 +422,34 @@ async function cerca(admin: ReturnType<typeof createClient>, esecuzione: number)
     .update({ ...riepilogo, conclusa_il: new Date().toISOString() })
     .eq("id", esecuzione);
   return riepilogo;
+}
+
+// Prova di lettura dei canali con intestazioni diverse (vedi «diagnosi»).
+async function diagnosiCanali() {
+  const browser = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36",
+    Accept: "application/rss+xml, application/xml;q=0.9, */*;q=0.8",
+    "Accept-Language": "it-IT,it;q=0.9,en;q=0.8",
+  };
+  const prove = [
+    ["google ricerca, intestazioni attuali", "https://news.google.com/rss/search?q=%22crediti%20di%20carbonio%22%20when%3A7d&hl=it&gl=IT&ceid=IT:it", { "User-Agent": "Mozilla/5.0 (Portale CWP osservatorio News)" }],
+    ["google ricerca, intestazioni da browser", "https://news.google.com/rss/search?q=%22crediti%20di%20carbonio%22%20when%3A7d&hl=it&gl=IT&ceid=IT:it", browser],
+    ["google ricerca senza when, browser", "https://news.google.com/rss/search?q=%22crediti%20di%20carbonio%22&hl=it&gl=IT&ceid=IT:it", browser],
+    ["google prima pagina, browser", "https://news.google.com/rss?hl=it&gl=IT&ceid=IT:it", browser],
+    ["google senza intestazioni", "https://news.google.com/rss/search?q=carbon%20credits&hl=en-US&gl=US&ceid=US:en", {}],
+    ["bing ricerca", CANALI[0].url, browser],
+  ];
+  const esiti = [];
+  for (const [nome, url, intestazioni] of prove) {
+    try {
+      const r = await fetch(url as string, { headers: intestazioni as Record<string, string>, redirect: "manual", signal: AbortSignal.timeout(15000) });
+      const testo = await r.text();
+      esiti.push({ nome, stato: r.status, tipo: r.headers.get("content-type"), posizione: r.headers.get("location"), voci: (testo.match(/<item[\s>]/g) || []).length, inizio: testo.slice(0, 300) });
+    } catch (e) {
+      esiti.push({ nome, errore: String(e) });
+    }
+  }
+  return { esiti };
 }
 
 function json(payload: unknown, status = 200) {

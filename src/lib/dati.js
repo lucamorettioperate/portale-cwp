@@ -84,10 +84,12 @@ export async function elencaPraticheAnagrafiche() {
 // Elenca i progetti (pratiche di tipo 'progetto') con la loro organizzazione.
 // Dal più recente. Tabella `pratica` (01_schema.sql); RLS pratica_select
 // (06_utente_multi_org.sql): il cliente vede solo le pratiche delle sue organizzazioni.
+// Con lo stato delle 7 fasi (tabella `fase`) per la barra a LED dell'elenco
+// (dal 21/10/2026).
 export async function elencaProgetti() {
   return await supabase
     .from("pratica")
-    .select("*, organizzazione:organizzazione_id (denominazione, tipo)")
+    .select("*, organizzazione:organizzazione_id (denominazione, tipo), fasi:fase (numero, nome, stato)")
     .eq("tipo", "progetto")
     .order("creato_il", { ascending: false });
 }

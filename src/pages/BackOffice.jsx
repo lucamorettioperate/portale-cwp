@@ -23,6 +23,7 @@ import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
 import Badge from "../components/Badge.jsx";
 import DettaglioPratica from "../components/DettaglioPratica.jsx";
+import BarraFasi from "../components/BarraFasi.jsx";
 import NuovoProgetto from "../components/NuovoProgetto.jsx";
 import { elencaProgetti } from "../lib/dati.js";
 import { useOrdinamento, SceltaOrdinamento } from "../components/Ordinamento.jsx";
@@ -188,14 +189,19 @@ export default function BackOffice() {
                   marginBottom: 9,
                 }}
               >
+                {/* In alto a destra la barra a LED delle 7 fasi (21/10/2026);
+                    lo stato della pratica sulla riga sotto. */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                   <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: 13.5, color: C.ink }}>
                     {p.organizzazione?.denominazione || "—"}
                   </span>
-                  <Badge bg={st.bg} fg={st.fg}>{st.label}</Badge>
+                  <BarraFasi fasi={p.fasi || []} />
                 </div>
-                <div style={{ fontSize: 12, color: C.grafite, marginTop: 3 }}>
-                  {p.codice || "senza codice"} · {p.titolo || "—"}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginTop: 3 }}>
+                  <span style={{ fontSize: 12, color: C.grafite }}>
+                    {p.codice || "senza codice"} · {p.titolo || "—"}
+                  </span>
+                  <Badge bg={st.bg} fg={st.fg}>{st.label}</Badge>
                 </div>
               </button>
             );

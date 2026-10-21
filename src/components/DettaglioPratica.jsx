@@ -45,6 +45,7 @@ import React, { useEffect, useState } from "react";
 import { COLORI as C, STATI_PRATICA, STATI_FASE, PERIODI_RIFERIMENTO, FASI_VERIFICA_DOCUMENTALE, statoProgramma } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Badge from "./Badge.jsx";
+import BarraFasi from "./BarraFasi.jsx";
 import Documenti from "./Documenti.jsx";
 import Consultazione from "./Consultazione.jsx";
 import Integrazioni from "./Integrazioni.jsx";
@@ -172,6 +173,9 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
             )}
           </div>
           <div style={{ textAlign: "right", display: "grid", gap: 8, justifyItems: "end", alignContent: "start" }}>
+            {/* In alto a destra, in piccolo, la barra a LED delle 7 fasi
+                (richiesta di Luca del 21/10/2026), come nella Dashboard. */}
+            <BarraFasi fasi={fasi} />
             <Badge bg={st.bg} fg={st.fg}>{st.label}</Badge>
             {/* Stato nel Programma con i nomi della Guida (Tabelle 3 e 4) */}
             <span style={{ fontSize: 12, color: C.grafite }}>

@@ -63,11 +63,15 @@ a {
 .loghi-separatore { width: 1px; align-self: stretch; margin: 10px 0; background: #d9d4c5; }
 .loghi-colonna { display: grid; gap: 10px; justify-items: start; }
 .logo-fondazione { height: 68px; width: auto; display: block; }
-.loghi-partner { display: flex; align-items: center; gap: 12px; }
+.loghi-partner { display: flex; align-items: flex-end; gap: 12px; }
 .loghi-partner img { height: 56px; width: auto; display: block; }
+/* Cerchi di RINA e Carbon Credit della stessa misura (21/10/2026): nel file
+   di RINA il cerchio è l'88% dell'altezza, nel Carbon Credit il 96%. */
+.loghi-partner img.logo-rina { height: 61px; }
 @media (max-width: 640px) {
   .logo-cwp { height: 84px; }
   .logo-fondazione { height: 47px; }
   .loghi-partner img { height: 40px; }
+  .loghi-partner img.logo-rina { height: 44px; }
   .loghi-header { gap: 12px; }
 }
