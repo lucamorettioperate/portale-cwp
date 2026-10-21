@@ -17,16 +17,19 @@
    il rapporto esce senza loghi. L'archiviazione nella pratica la fa la
    pagina (caricaDocumento di src/lib/dati.js, archivio `documenti`).
 
-   Nota sui caratteri: si usa il font standard "helvetica" del PDF, che
-   copre solo Latin-1. Ogni testo passa da pdfTesto(), che converte o toglie
-   i simboli non stampabili (CO₂, Δ, ≤ …). Per aggiungere testi nuovi usare
-   sempre pdfTesto().
+   Nota sui caratteri: dal 21/10/2026 il PDF incorpora Liberation Sans
+   (caratteriPdf.js, rilievo R08 del collaudo: prima Helvetica non
+   incorporata dava spaziature irregolari in alcuni lettori); se il
+   carattere non si scarica si torna a Helvetica. Ogni testo passa comunque
+   da pdfTesto(), che converte i simboli (CO₂ → CO2, Δ, ≤ …): così il testo
+   è identico nei due casi. Per aggiungere testi nuovi usare sempre pdfTesto().
 
    Registro sviluppo e deploy: capitolo 15 «Calcolo crediti»; capitolo 6
    «Portale (frontend)».
    ========================================================================= */
 import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
+import { caratteriPdf } from "../caratteriPdf.js";
 import { TIPOLOGIE_RIFIUTO } from "./parametri.js";
 
 // Colori RGB del rapporto, uguali alla palette COLORI di cwpProgram.js.
@@ -105,6 +108,8 @@ async function immagine(url) {
    filigrana «BOZZA» e il nome del file finisce con _BOZZA. */
 export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza = [], qualita = null, confermatoDa = null }) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
+  // Carattere incorporato (R08): stessa resa in ogni lettore PDF.
+  const FONT = await caratteriPdf(doc);
   const W = doc.internal.pageSize.getWidth();
   const M = 16; // margine
   const confermato = calcolo.stato === "confermato";
@@ -114,7 +119,7 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
   const codice = calcolo.pratica?.codice || "pratica";
   const tabellaBase = {
     theme: "grid",
-    styles: { font: "helvetica", fontSize: 8, cellPadding: 1.6, textColor: INK, lineColor: LINEA, lineWidth: 0.15 },
+    styles: { font: FONT, fontSize: 8, cellPadding: 1.6, textColor: INK, lineColor: LINEA, lineWidth: 0.15 },
     headStyles: { fillColor: VERDE, textColor: 255, fontStyle: "bold" },
     alternateRowStyles: { fillColor: [250, 249, 245] },
     margin: { left: M, right: M, top: 22, bottom: 18 },
@@ -135,9 +140,9 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
     doc.addImage(logoFo.dataUrl, "PNG", W - M - w, 14, w, 10);
   }
   doc.setDrawColor(...VERDE).setLineWidth(0.6).line(M, 32, W - M, 32);
-  doc.setFont("helvetica", "bold").setFontSize(17).setTextColor(...VERDE);
+  doc.setFont(FONT, "bold").setFontSize(17).setTextColor(...VERDE);
   doc.text("Rapporto di calcolo dei crediti CWP", M, 42);
-  doc.setFont("helvetica", "normal").setFontSize(9.5).setTextColor(...GRAFITE);
+  doc.setFont(FONT, "normal").setFontSize(9.5).setTextColor(...GRAFITE);
   doc.text(pdfTesto(`Programma Carbon WastePrint® · Metodologia v${r.versioneMetodologia || "1.2"} · ${calcolo.pratica?.organizzazione?.denominazione || ""}`), M, 48);
   y = 54;
 
@@ -168,12 +173,12 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
   // Entrambi vanno a pagina nuova se manca spazio in fondo.
   const titolo = (t) => {
     if (y > 240) { doc.addPage(); y = 24; }
-    doc.setFont("helvetica", "bold").setFontSize(12).setTextColor(...VERDE).text(pdfTesto(t), M, y);
+    doc.setFont(FONT, "bold").setFontSize(12).setTextColor(...VERDE).text(pdfTesto(t), M, y);
     doc.setDrawColor(...LINEA).setLineWidth(0.3).line(M, y + 1.8, W - M, y + 1.8);
     y += 7;
   };
   const paragrafo = (t, colore = GRAFITE) => {
-    doc.setFont("helvetica", "normal").setFontSize(8.5).setTextColor(...colore);
+    doc.setFont(FONT, "normal").setFontSize(8.5).setTextColor(...colore);
     const righe = doc.splitTextToSize(pdfTesto(t), W - 2 * M);
     if (y + righe.length * 4 > 280) { doc.addPage(); y = 24; }
     doc.text(righe, M, y);
@@ -188,8 +193,8 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
   riquadri.forEach(([et, val, col], i) => {
     const x = M + i * (lb + 4);
     doc.setFillColor(...VERDE_CHIARO).setDrawColor(...LINEA).roundedRect(x, y, lb, 20, 2, 2, "FD");
-    doc.setFont("helvetica", "normal").setFontSize(8).setTextColor(...GRAFITE).text(pdfTesto(et), x + 4, y + 6);
-    doc.setFont("helvetica", "bold").setFontSize(13).setTextColor(...col).text(pdfTesto(val), x + 4, y + 15);
+    doc.setFont(FONT, "normal").setFontSize(8).setTextColor(...GRAFITE).text(pdfTesto(et), x + 4, y + 6);
+    doc.setFont(FONT, "bold").setFontSize(13).setTextColor(...col).text(pdfTesto(val), x + 4, y + 15);
   });
   y += 26;
   paragrafo(
@@ -349,16 +354,16 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
     if (!confermato) {
       doc.saveGraphicsState();
       doc.setGState(new doc.GState({ opacity: 0.08 }));
-      doc.setFont("helvetica", "bold").setFontSize(80).setTextColor(...OCRA);
+      doc.setFont(FONT, "bold").setFontSize(80).setTextColor(...OCRA);
       doc.text("BOZZA", W / 2, 170, { align: "center", angle: 35 });
       doc.restoreGraphicsState();
     }
     if (i > 1) {
-      doc.setFont("helvetica", "normal").setFontSize(7.5).setTextColor(...GRAFITE);
+      doc.setFont(FONT, "normal").setFontSize(7.5).setTextColor(...GRAFITE);
       doc.text(pdfTesto(`Rapporto di calcolo dei crediti CWP · ${codice} · anno ${calcolo.anno}`), M, 12);
       doc.setDrawColor(...LINEA).setLineWidth(0.2).line(M, 14, W - M, 14);
     }
-    doc.setFont("helvetica", "normal").setFontSize(7.5).setTextColor(...GRAFITE);
+    doc.setFont(FONT, "normal").setFontSize(7.5).setTextColor(...GRAFITE);
     doc.text(pdfTesto(`Fondazione Operate · Portale Carbon WastePrint · generato il ${dataOraIt(new Date().toISOString())}`), M, 289);
     doc.text(`Pagina ${i} di ${pagine}`, W - M, 289, { align: "right" });
   }

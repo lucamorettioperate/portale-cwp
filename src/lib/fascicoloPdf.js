@@ -9,14 +9,20 @@
    ultimi due solo nell'export del back-office). Non contiene dati
    personali degli autori delle osservazioni.
 
+   Caratteri: dal 21/10/2026 il PDF incorpora Liberation Sans
+   (caratteriPdf.js, rilievo R08 del collaudo), che contiene anche lettere
+   accentate, frecce e simboli dei testi scritti dagli utenti; se il
+   carattere non si scarica si usa Helvetica (solo Latin-1).
+
    Usato da: src/lib/fascicolo.js, con import dinamico (jsPDF si scarica
-   solo quando serve).
+   solo quando serve); la funzione è asincrona (scarica il carattere).
    Dati/servizi coinvolti: nessuna chiamata; riceve i dati già letti.
    Registro sviluppo e deploy: capitolo 6 «Portale (frontend)»; capitolo 7
    «Funzionalità per area» (Export fascicolo).
    ========================================================================= */
 import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
+import { caratteriPdf } from "./caratteriPdf.js";
 
 const VERDE = [47, 93, 58];
 const INK = [27, 33, 24];
@@ -33,13 +39,15 @@ const stato = (s) => STATI[s] || s || "—";
    nomeFase { id: "N - nome" }, documenti, integrazioni, consultazioni
    [{ ...consultazione, commenti, errata }], pagamenti, audit, nomi
    { utente_id: nome }, staff (bool), esportatoIl (testo). */
-export function generaRiepilogoPdf({ pratica, fasi, nomeFase, documenti, integrazioni, consultazioni, pagamenti, audit, nomi, staff, esportatoIl }) {
+export async function generaRiepilogoPdf({ pratica, fasi, nomeFase, documenti, integrazioni, consultazioni, pagamenti, audit, nomi, staff, esportatoIl }) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
+  // Carattere incorporato (R08): stessa resa in ogni lettore PDF.
+  const FONT = await caratteriPdf(doc);
   const W = doc.internal.pageSize.getWidth();
   const M = 16;
   const base = {
     theme: "grid",
-    styles: { font: "helvetica", fontSize: 7.8, cellPadding: 1.5, textColor: INK, lineColor: LINEA, lineWidth: 0.15, overflow: "linebreak" },
+    styles: { font: FONT, fontSize: 7.8, cellPadding: 1.5, textColor: INK, lineColor: LINEA, lineWidth: 0.15, overflow: "linebreak" },
     headStyles: { fillColor: VERDE, textColor: 255, fontStyle: "bold" },
     margin: { left: M, right: M, top: 18, bottom: 16 },
   };
@@ -49,7 +57,7 @@ export function generaRiepilogoPdf({ pratica, fasi, nomeFase, documenti, integra
   // orfani in fondo alla pagina).
   const titolo = (t) => {
     if (y > 250) { doc.addPage(); y = 18; }
-    doc.setFont("helvetica", "bold"); doc.setFontSize(11.5); doc.setTextColor(...VERDE);
+    doc.setFont(FONT, "bold"); doc.setFontSize(11.5); doc.setTextColor(...VERDE);
     doc.text(t, M, y); y += 4;
   };
   const tabella = (head, body) => {
@@ -58,9 +66,9 @@ export function generaRiepilogoPdf({ pratica, fasi, nomeFase, documenti, integra
   };
 
   // Intestazione
-  doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(...INK);
+  doc.setFont(FONT, "bold"); doc.setFontSize(16); doc.setTextColor(...INK);
   doc.text(`Fascicolo ${pratica.codice || ""}`, M, y); y += 6;
-  doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(90, 94, 84);
+  doc.setFont(FONT, "normal"); doc.setFontSize(9); doc.setTextColor(90, 94, 84);
   doc.text(`Programma Carbon WastePrint · Fondazione Operate · esportato il ${esportatoIl}`, M, y); y += 8;
 
   titolo("Dati della pratica");
@@ -122,7 +130,7 @@ export function generaRiepilogoPdf({ pratica, fasi, nomeFase, documenti, integra
   const n = doc.getNumberOfPages();
   for (let p = 1; p <= n; p++) {
     doc.setPage(p);
-    doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); doc.setTextColor(120);
+    doc.setFont(FONT, "normal"); doc.setFontSize(7.5); doc.setTextColor(120);
     doc.text(`Fascicolo ${pratica.codice || ""} · pagina ${p} di ${n}`, W - M, 290, { align: "right" });
   }
   return doc.output("blob");

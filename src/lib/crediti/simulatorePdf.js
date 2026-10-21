@@ -10,12 +10,15 @@
      jsPDF si scarica solo quando serve.
    Nessun dato letto o scritto nel database; i loghi si leggono da
      public/loghi/ (se mancano il PDF esce senza loghi).
-   Caratteri: il font standard «helvetica» copre solo Latin-1, quindi ogni
-     testo passa da pdfTesto() (CO₂ → CO2, ® resta, simboli tolti).
+   Caratteri: dal 21/10/2026 il PDF incorpora Liberation Sans
+     (caratteriPdf.js, rilievo R08); se non si scarica si usa Helvetica.
+     Ogni testo passa comunque da pdfTesto() (CO₂ → CO2, ® resta, simboli
+     tolti), così il testo è identico nei due casi.
    Registro sviluppo e deploy: capitolo 15 «Calcolo crediti» (simulatore).
    ========================================================================= */
 import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
+import { caratteriPdf } from "../caratteriPdf.js";
 
 // Colori RGB, uguali alla palette del portale e al rapporto di calcolo.
 const VERDE = [47, 93, 58];
@@ -76,12 +79,14 @@ function valoreSintesi(v, unita) {
 export async function generaPdfSimulazione(contenuto, nomeFile) {
   const c = contenuto;
   const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "landscape" });
+  // Carattere incorporato (R08): stessa resa in ogni lettore PDF.
+  const FONT = await caratteriPdf(doc);
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
   const M = 14;
   const base = {
     theme: "grid",
-    styles: { font: "helvetica", fontSize: 7.8, cellPadding: 1.4, textColor: INK, lineColor: LINEA, lineWidth: 0.15 },
+    styles: { font: FONT, fontSize: 7.8, cellPadding: 1.4, textColor: INK, lineColor: LINEA, lineWidth: 0.15 },
     headStyles: { fillColor: VERDE, textColor: 255, fontStyle: "bold", valign: "middle" },
     alternateRowStyles: { fillColor: [250, 249, 245] },
     margin: { left: M, right: M, top: 20, bottom: 16 },
@@ -94,12 +99,12 @@ export async function generaPdfSimulazione(contenuto, nomeFile) {
   };
   const titolo = (t) => {
     if (y > H - 40) { doc.addPage(); y = 22; }
-    doc.setFont("helvetica", "bold").setFontSize(11.5).setTextColor(...VERDE).text(pdfTesto(t), M, y);
+    doc.setFont(FONT, "bold").setFontSize(11.5).setTextColor(...VERDE).text(pdfTesto(t), M, y);
     doc.setDrawColor(...LINEA).setLineWidth(0.3).line(M, y + 1.8, W - M, y + 1.8);
     y += 6.5;
   };
   const paragrafo = (t, colore = GRAFITE, dimensione = 8.2) => {
-    doc.setFont("helvetica", "normal").setFontSize(dimensione).setTextColor(...colore);
+    doc.setFont(FONT, "normal").setFontSize(dimensione).setTextColor(...colore);
     const righe = doc.splitTextToSize(pdfTesto(t), W - 2 * M);
     if (y + righe.length * 3.8 > H - 16) { doc.addPage(); y = 22; }
     doc.text(righe, M, y);
@@ -114,14 +119,14 @@ export async function generaPdfSimulazione(contenuto, nomeFile) {
     doc.addImage(logoFo.dataUrl, "PNG", W - M - w, 12, w, 9);
   }
   doc.setDrawColor(...VERDE).setLineWidth(0.6).line(M, 28, W - M, 28);
-  doc.setFont("helvetica", "bold").setFontSize(16).setTextColor(...VERDE);
+  doc.setFont(FONT, "bold").setFontSize(16).setTextColor(...VERDE);
   doc.text(pdfTesto(c.titolo), M, 37);
-  doc.setFont("helvetica", "normal").setFontSize(10).setTextColor(...GRAFITE);
+  doc.setFont(FONT, "normal").setFontSize(10).setTextColor(...GRAFITE);
   doc.text(pdfTesto(c.sottotitolo), M, 43);
   y = 48;
 
   // Avvertenza in un riquadro ocra.
-  doc.setFont("helvetica", "normal").setFontSize(8.2);
+  doc.setFont(FONT, "normal").setFontSize(8.2);
   const avv = doc.splitTextToSize(pdfTesto(c.avvertenza), W - 2 * M - 8);
   doc.setFillColor(...OCRA_CHIARO).setDrawColor(...OCRA).setLineWidth(0.3);
   doc.roundedRect(M, y, W - 2 * M, avv.length * 3.8 + 4, 1.5, 1.5, "FD");
@@ -207,11 +212,11 @@ export async function generaPdfSimulazione(contenuto, nomeFile) {
   for (let i = 1; i <= pagine; i++) {
     doc.setPage(i);
     if (i > 1) {
-      doc.setFont("helvetica", "normal").setFontSize(7.5).setTextColor(...GRAFITE);
+      doc.setFont(FONT, "normal").setFontSize(7.5).setTextColor(...GRAFITE);
       doc.text(pdfTesto(`${c.titolo} · ${c.sottotitolo}`), M, 11);
       doc.setDrawColor(...LINEA).setLineWidth(0.2).line(M, 13, W - M, 13);
     }
-    doc.setFont("helvetica", "normal").setFontSize(7.5).setTextColor(...GRAFITE);
+    doc.setFont(FONT, "normal").setFontSize(7.5).setTextColor(...GRAFITE);
     doc.text(pdfTesto("Fondazione Operate · Portale Carbon WastePrint · stima ex ante non certificabile"), M, H - 7);
     doc.text(`Pagina ${i} di ${pagine}`, W - M, H - 7, { align: "right" });
   }

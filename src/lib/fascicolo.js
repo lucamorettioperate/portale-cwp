@@ -312,7 +312,7 @@ export async function esportaFascicolo(praticaId, { staff, onAvanzamento = () =>
   // Riepilogo PDF (jsPDF si scarica solo ora).
   onAvanzamento("Riepilogo PDF…");
   const { generaRiepilogoPdf } = await import("./fascicoloPdf.js");
-  radice.file("Riepilogo.pdf", generaRiepilogoPdf({
+  radice.file("Riepilogo.pdf", await generaRiepilogoPdf({
     pratica, fasi, nomeFase, documenti, integrazioni, consultazioni, pagamenti, audit, nomi, staff, esportatoIl: oggi,
   }));
   radice.file(
