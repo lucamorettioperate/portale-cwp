@@ -27,6 +27,8 @@ const TIPI = {
   documento: "Documento",
   profilo: "Utente",
   organizzazione: "Organizzazione",
+  ente_validazione: "Ente di validazione e verifica",
+  registro: "Registro",
 };
 
 // Nomi leggibili dei campi (primo livello e dentro i dati dello scenario).
@@ -82,6 +84,51 @@ export function valoreBreve(v) {
   return s.length > 80 ? s.slice(0, 77) + "…" : s;
 }
 
+// Soglia oltre la quale un valore si mostra accorciato nella tabella
+// (il testo completo resta disponibile con «Testo completo», D05-R1).
+export const LUNGHEZZA_BREVE = 80;
+
+// Testo completo di un valore registrato: le stringhe così come sono (con
+// gli a capo), oggetti e liste come JSON leggibile. Vuoto = "".
+export function valoreCompleto(v) {
+  if (v === null || v === undefined) return "";
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return JSON.stringify(v, null, 2);
+  return String(v);
+}
+
+// true se il valore nella tabella viene accorciato o ha più righe: allora
+// serve il pulsante «Testo completo» (collaudo V05, D05-R1).
+export function valoreLungo(v) {
+  if (v === null || v === undefined) return false;
+  if (typeof v === "object") return JSON.stringify(v).length > 60;
+  const t = String(v);
+  return t.length > LUNGHEZZA_BREVE || t.includes("\n");
+}
+
+/* Parte che cambia tra due testi (collaudo V05, D05-R1): si toglie
+   l'inizio e la fine in comune e restano il pezzo tolto e quello aggiunto.
+   Esempio: "Nota. Riga di prova." → "Nota." dà tolto " Riga di prova.",
+   aggiunto "". Serve quando due testi lunghi hanno lo stesso inizio e nella
+   tabella sembrerebbero uguali. Restituisce { inizio, tolto, aggiunto, fine }
+   (inizio e fine = lunghezze in caratteri della parte comune). */
+export function differenzaTesto(da, a) {
+  const x = valoreCompleto(da);
+  const y = valoreCompleto(a);
+  let i = 0;
+  while (i < x.length && i < y.length && x[i] === y[i]) i++;
+  let j = 0;
+  while (j < x.length - i && j < y.length - i && x[x.length - 1 - j] === y[y.length - 1 - j]) j++;
+  return { inizio: i, tolto: x.slice(i, x.length - j), aggiunto: y.slice(i, y.length - j), fine: j };
+}
+
+/* Testo su cui cercare nell'audit: oggetto, campi cambiati e valori
+   completi (così si trova anche una riga aggiunta a metà di una nota). */
+export function testoRicercaEvento(e, nomi = {}) {
+  const m = modificheEvento(e).map((x) => `${x.campo} ${valoreCompleto(x.da)} ${valoreCompleto(x.a)}`);
+  return [etichettaOggetto(e, nomi), e?.oggetto_id, ...m].filter(Boolean).join(" ");
+}
+
 /* Differenze tra due valori JSON, come elenco [{ campo, da, a }].
    Gli array di anni ({ anno, … }) si confrontano per anno, gli altri per
    posizione. percorso: etichette già raccolte (uso interno). */
@@ -127,7 +174,9 @@ export function modificheEvento(e) {
 export function etichettaOggetto(e, nomi = {}) {
   const tipo = TIPI[e?.oggetto_tipo] || (e?.oggetto_tipo || "—").replace(/_/g, " ");
   const d = e?.dettaglio || {};
-  const nome = (eCambio(d.nome) ? d.nome.a : null) || (typeof d.nome === "string" ? d.nome : null) || (typeof d.titolo === "string" ? d.titolo : null) || (e?.oggetto_id && nomi[e.oggetto_id]) || null;
+  // Anche la denominazione (organizzazioni, enti): collaudo V05, D05-R1.
+  const testo = (k) => (eCambio(d[k]) && typeof d[k].a === "string" ? d[k].a : typeof d[k] === "string" ? d[k] : null);
+  const nome = testo("nome") || testo("denominazione") || testo("titolo") || (e?.oggetto_id && nomi[e.oggetto_id]) || null;
   const codice = e?.oggetto_id ? String(e.oggetto_id).slice(0, 8) : null;
   return [tipo, nome ? `«${nome}»` : null, codice ? `(${codice})` : null].filter(Boolean).join(" ");
 }

@@ -22,12 +22,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import { COLORI as C, RUOLI } from "../lib/cwpProgram.js";
 import Header from "../components/Header.jsx";
 import { usePrincipale } from "../components/UtentiOnline.jsx";
-import { auditOperazioniUtente, auditRegistroAccessi, auditUtentiStato } from "../lib/dati.js";
+import { auditOperazioniUtente, auditRegistroAccessi, auditUtentiStato, elencaOrganizzazioni } from "../lib/dati.js";
 import { durata, nomePagina } from "../lib/presenza.js";
 import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
 import { scaricaTesto, scriviCsv } from "../lib/csv.js";
 import { elencaScenari } from "../lib/crediti/scenari.js";
-import { etichettaOggetto, modificheEvento, valoreBreve } from "../lib/auditDettaglio.js";
+import { etichettaOggetto, modificheEvento, valoreCompleto, testoRicercaEvento } from "../lib/auditDettaglio.js";
 import OggettoEModifiche from "../components/OggettoEModifiche.jsx";
 
 // Nomi leggibili degli eventi di accesso.
@@ -368,7 +368,10 @@ function SchedaOperazioni({ utente, dal, al }) {
   // Nomi attuali degli scenari del simulatore (collaudo V01, D05).
   const [nomiScenari, setNomiScenari] = useState({});
   useEffect(() => {
-    elencaScenari().then(({ data }) => setNomiScenari(Object.fromEntries((data || []).map((x) => [x.id, x.nome]))));
+    // Nomi di scenari e organizzazioni (D05, D05-R1).
+    Promise.all([elencaScenari(), elencaOrganizzazioni()]).then(([sc, org]) =>
+      setNomiScenari(Object.fromEntries([...(sc.data || []).map((x) => [x.id, x.nome]), ...(org.data || []).map((x) => [x.id, x.denominazione])]))
+    );
   }, []);
   useEffect(() => {
     setRighe(null);
@@ -382,7 +385,7 @@ function SchedaOperazioni({ utente, dal, al }) {
     const q = testo.trim().toLowerCase();
     const r = righe || [];
     if (!q) return r;
-    return r.filter((e) => [e.operazione, e.oggetto_tipo, e.pratica, e.stato_precedente, e.stato_successivo, e.motivazione, e.nome_completo, e.email, etichettaOggetto(e, nomiScenari), e.oggetto_id].some((v) => (v || "").toLowerCase().includes(q)));
+    return r.filter((e) => [e.operazione, e.oggetto_tipo, e.pratica, e.stato_precedente, e.stato_successivo, e.motivazione, e.nome_completo, e.email, testoRicercaEvento(e, nomiScenari)].some((v) => (v || "").toLowerCase().includes(q)));
   }, [righe, testo, nomiScenari]);
   const ord = useOrdinamento(filtrate, {
     data: (e) => e.avvenuto_il, utente: (e) => e.nome_completo || e.email || "sistema", operazione: (e) => e.operazione,
@@ -397,7 +400,8 @@ function SchedaOperazioni({ utente, dal, al }) {
         ord.ordinate.map((e) => [
           dataOra(e.avvenuto_il), e.nome_completo || "", e.email || (e.utente_id ? "" : "sistema"), e.ruolo || "", e.operazione,
           etichettaOggetto(e, nomiScenari), e.oggetto_id || "",
-          modificheEvento(e).map((m) => `${m.campo}: ${valoreBreve(m.da)} → ${valoreBreve(m.a)}`).join(" | "),
+          // Nel CSV i valori interi, non accorciati (D05-R1).
+          modificheEvento(e).map((m) => `${m.campo}: ${valoreCompleto(m.da) || "—"} → ${valoreCompleto(m.a) || "—"}`).join(" | "),
           e.pratica || "", e.stato_precedente || "", e.stato_successivo || "", e.motivazione || "",
         ])
       )

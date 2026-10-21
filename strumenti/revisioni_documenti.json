@@ -343,6 +343,12 @@
       "data": "20/10/2026",
       "descrizione": "Correzioni del collaudo V01: import CSV della Banca Dati «tutto o niente» senza valori negativi, calcolo bloccato con dati non ammessi, buffer manuale 0-80%, conferma definitiva solo senza errori di coerenza, dati non ammessi nel simulatore e zero esplicito nei prezzi, colonna «Oggetto e modifiche» nell'Audit.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.4",
+      "data": "21/10/2026",
+      "descrizione": "Collaudo V05: testo completo dei valori lunghi nell'Audit (Prima/Dopo, Tolto/Aggiunto), denominazione delle organizzazioni e ricerca sui valori cambiati; pagina «Account disattivato».",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -524,6 +530,12 @@
       "rev": "3.9",
       "data": "20/10/2026",
       "descrizione": "Prove del collaudo V01: 7.17-7.22 (negativi, date inesistenti, buffer, conferma senza Banca Dati, percentuali nel CSV, formule nei CSV) e 8b.5-8b.5e, 8b.9b (simulatore e audit degli scenari).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.10",
+      "data": "21/10/2026",
+      "descrizione": "Collaudo V05: prova 10.5 aggiornata (account disattivato) e nuova 10.5b (testi lunghi nell'Audit).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -784,6 +796,12 @@
       "rev": "5.2",
       "data": "20/10/2026",
       "descrizione": "Correzioni del collaudo V01 sul ramo correzioni-collaudo-v01, script 35_controlli_collaudo.sql (da eseguire), domande metodologiche aperte, azioni per Luca.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.3",
+      "data": "21/10/2026",
+      "descrizione": "Integrazione V05 del collaudo: D05-R1 e O01 corretti, D08 in carico a Luca (dominio email).",
       "autore": "Fondazione Operate"
     }
   ],

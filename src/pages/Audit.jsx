@@ -25,10 +25,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
-import { elencaAudit, elencaUtenti, leggiCruscotto } from "../lib/dati.js";
+import { elencaAudit, elencaUtenti, leggiCruscotto, elencaOrganizzazioni } from "../lib/dati.js";
 import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
 import { elencaScenari } from "../lib/crediti/scenari.js";
-import { etichettaOggetto } from "../lib/auditDettaglio.js";
+import { etichettaOggetto, testoRicercaEvento } from "../lib/auditDettaglio.js";
 import OggettoEModifiche from "../components/OggettoEModifiche.jsx";
 
 /* Pagina dell'audit. Nessuna prop.
@@ -51,8 +51,10 @@ export default function Audit() {
     if (ruolo !== "admin") return;
     (async () => {
       setCaricamento(true);
-      const [a, u, p, sc] = await Promise.all([elencaAudit({ limite }), elencaUtenti(), leggiCruscotto(), elencaScenari()]);
-      setNomiOggetti(Object.fromEntries((sc.data || []).map((x) => [x.id, x.nome])));
+      const [a, u, p, sc, org] = await Promise.all([elencaAudit({ limite }), elencaUtenti(), leggiCruscotto(), elencaScenari(), elencaOrganizzazioni()]);
+      // Nomi attuali di scenari e organizzazioni, per riconoscere l'oggetto
+      // anche quando la modifica non riguarda il nome (D05, D05-R1).
+      setNomiOggetti(Object.fromEntries([...(sc.data || []).map((x) => [x.id, x.nome]), ...(org.data || []).map((x) => [x.id, x.denominazione])]));
       if (a.error) setErrore(a.error.message);
       setEventi(a.data || []);
       // Dizionari id → testo leggibile, usati nella tabella e nella ricerca.
@@ -69,7 +71,7 @@ export default function Audit() {
     const q = testo.trim().toLowerCase();
     if (!q) return eventi;
     return eventi.filter((e) =>
-      [e.operazione, e.oggetto_tipo, e.stato_precedente, e.stato_successivo, e.motivazione, utenti[e.utente_id], pratiche[e.pratica_id], etichettaOggetto(e, nomiOggetti), e.oggetto_id]
+      [e.operazione, e.oggetto_tipo, e.stato_precedente, e.stato_successivo, e.motivazione, utenti[e.utente_id], pratiche[e.pratica_id], testoRicercaEvento(e, nomiOggetti)]
         .some((v) => (v || "").toLowerCase().includes(q))
     );
   }, [eventi, testo, utenti, pratiche, nomiOggetti]);

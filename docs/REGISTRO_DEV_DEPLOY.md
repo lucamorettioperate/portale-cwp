@@ -514,6 +514,24 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
+### 21 ottobre 2026
+- **Integrazione V05 del collaudo** (profili Cliente A/B e Operatore creati
+  da Luca e provati dai collaudatori: separazione dei dati e dinieghi
+  superati nei percorsi verificati) — ramo `correzioni-collaudo-v05`.
+  D05-R1: nel dettaglio dell'Audit i testi oltre 80 caratteri restavano
+  accorciati anche aprendo «1 modifica»; ora «Testo completo» mostra Prima e
+  Dopo interi e la parte tolta/aggiunta (`auditDettaglio.js`:
+  `valoreCompleto`, `valoreLungo`, `differenzaTesto`,
+  `testoRicercaEvento`; `OggettoEModifiche.jsx`), il nome delle
+  organizzazioni compare nell'oggetto, la ricerca legge anche i valori
+  cambiati e il CSV di Audit User riporta i valori interi. O01: pagina
+  «Account disattivato» (`AccountDisattivato.jsx`, in `Protetta` di
+  `App.jsx`) al posto degli elenchi vuoti. Prove
+  `test/collaudo_v05.test.mjs` (4). D08 (email ai nuovi utenti non
+  consegnate: Resend in prova consegna solo al titolare) resta un'azione di
+  Luca: dominio verificato su Resend e segreto `EMAIL_MITTENTE`. Risposte
+  nel documento `docs/collaudo/Collaudo_V05_risposte.md`.
+
 ### 20 ottobre 2026
 - **Correzioni del collaudo V01** (rapporto «Carbon WastePrint — criticità e
   consegna all'agente di correzione» dei collaudatori A. Valentini, A.
@@ -1266,6 +1284,11 @@ aperte; il dettaglio è nei punti numerati qui sotto.
   documento `docs/collaudo/Collaudo_V01_risposte.md`. **Per Luca:** creare i tre utenti
   di prova «COLLAUDO V03 Cliente A / Cliente B / Operatore» (password per
   canale separato, MFA non disattivata).
+- Integrazione V05 (21/10): profili creati da Luca e provati (separazione
+  A/B e dinieghi superati). D05-R1 (testi lunghi nell'Audit) e O01
+  (messaggio «Account disattivato») corretti sul ramo
+  `correzioni-collaudo-v05`; D08 (email ai nuovi utenti) richiede il
+  dominio verificato su Resend (punto 17).
 
 *Sviluppo (Claude)*
 - ~~Utenti online (punto 38)~~, ~~messaggi d'errore dell'assistente in
@@ -1575,13 +1598,13 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 140 file, 33.436 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 142 file, 33.672 righe in tutto.
 
 **Avvio e instradamento**
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `src/App.jsx` | 254 | associa ogni indirizzo alla sua pagina e decide chi può aprirla. Le pagine riservate passano dal componente Protetta, che nell'ordine chiede: sessione attiva, eventuale nuova password (link di recupero o password temporanea),… |
+| `src/App.jsx` | 258 | associa ogni indirizzo alla sua pagina e decide chi può aprirla. Le pagine riservate passano dal componente Protetta, che nell'ordine chiede: sessione attiva, eventuale nuova password (link di recupero o password temporanea),… |
 | `src/main.jsx` | 32 | monta l'applicazione nell'elemento #root di index.html e la avvolge nei contesti globali: StrictMode (controlli di React in sviluppo), BrowserRouter (indirizzi /pratiche, /crediti, …) e AuthProvider (sessione, ruolo, MFA).… |
 
 **Pagine (src/pages)**
@@ -1590,8 +1613,8 @@ Inventario generato da `strumenti/inventario_codice.py`: 140 file, 33.436 righe 
 |---|---|---|
 | `src/pages/Anagrafiche.jsx` | 214 | censimento di Organizzazioni ed Enti di Validazione (requisiti §3: l'Operatore «censisce Organizzazioni ed Enti di Validazione»). - Organizzazioni: elenco con ricerca, dati essenziali (tipo, codice fiscale, partita IVA, PEC,… |
 | `src/pages/AreaCliente.jsx` | 148 | il Comune/azienda vede l'elenco dei propri Progetti (schede compatte con stato) e, sotto, il dettaglio della pratica selezionata: fasi, documenti, integrazioni, messaggi. Link al Manuale Utente in PDF. |
-| `src/pages/Audit.jsx` | 167 | tabella degli eventi registrati (data, utente, operazione, pratica, passaggio di stato, motivazione), con ricerca testuale e pulsante per caricare eventi meno recenti (requisiti §10). Ogni colonna si ordina con un clic… |
-| `src/pages/AuditUtenti.jsx` | 473 | Nomi leggibili degli eventi di accesso. |
+| `src/pages/Audit.jsx` | 169 | tabella degli eventi registrati (data, utente, operazione, pratica, passaggio di stato, motivazione), con ricerca testuale e pulsante per caricare eventi meno recenti (requisiti §10). Ogni colonna si ordina con un clic… |
+| `src/pages/AuditUtenti.jsx` | 477 | Nomi leggibili degli eventi di accesso. |
 | `src/pages/BackOffice.jsx` | 240 | a sinistra l'elenco dei Progetti (con ricerca oltre 4 voci), a destra il dettaglio della pratica scelta con le sue fasi, documenti, integrazioni, consultazione, pagamenti, rapporti. Pulsante «+ Nuovo progetto» per registrare un… |
 | `src/pages/CalcoloCrediti.jsx` | 1548 | editor di un calcolo dei crediti di CO₂eq secondo la Metodologia CWP v1.2, a passi (menu a sinistra): import del tracciato dati, impostazioni, rifiuti del territorio, delibera tariffaria, fattori di emissione, Banca Dati Utenze,… |
 | `src/pages/CambiaPassword.jsx` | 163 | scegliere una nuova password, con le regole di src/lib/password.js. - "obbligatorio": primo accesso con password temporanea (o reimpostata dall'Amministratore): finché non la cambia l'utente non entra; - "volontario": l'utente… |
@@ -1615,6 +1638,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 140 file, 33.436 righe 
 
 | File | Righe | Cosa contiene |
 |---|---|---|
+| `src/components/AccountDisattivato.jsx` | 39 | Nessuna prop: legge email ed esci() da useAuth(). |
 | `src/components/AssistenteVirtuale.jsx` | 196 | pulsante «Assistente» in basso a destra che apre una finestra di conversazione. Le domande vanno alla funzione del server «assistente» (supabase/functions/assistente), che risponde con Claude usando solo la base di conoscenza… |
 | `src/components/Badge.jsx` | 37 | etichetta colorata compatta per mostrare uno stato (pratica, fase, documento, pagamento, calcolo…). Solo grafica. |
 | `src/components/BarraFasi.jsx` | 72 | barra orizzontale di 7 «luci», una per fase (richiesta di Luca del 19/10/2026). Le fasi completate sono accese, quelle ancora da fare spente. Le luci accese delle fasi 1-6 sono ambra; la settima (Chiusura) è verde. La fase in… |
@@ -1628,7 +1652,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 140 file, 33.436 righe 
 | `src/components/NoteFase.jsx` | 108 | note scritte sotto una delle fasi di una pratica (backlog 10). Lo staff legge tutte le note e ne aggiunge di nuove, interne (solo Fondazione) o condivise con il Comune; il Comune vede solo le condivise. |
 | `src/components/Notifiche.jsx` | 205 | campanella delle notifiche interne (requisiti §9) nell'intestazione. Mostra il numero delle non lette, apre un elenco a tendina delle ultime 50 notifiche, segna come lette e porta alla pratica collegata. |
 | `src/components/NuovoProgetto.jsx` | 291 | finestra (sovrapposta alla pagina) per creare un nuovo Progetto. Si sceglie un'organizzazione esistente o se ne crea una nuova, si indicano codice (facoltativo, è l'ID univoco del progetto), titolo, territorio (codici ISTAT dei… |
-| `src/components/OggettoEModifiche.jsx` | 39 | Oggetto dell'evento e, se è una modifica, l'elenco dei campi cambiati |
+| `src/components/OggettoEModifiche.jsx` | 84 | Oggetto dell'evento e, se è una modifica, l'elenco dei campi cambiati |
 | `src/components/Ordinamento.jsx` | 110 | richiesta di Luca del 19/10/2026: ogni informazione tabellare del portale si deve poter ordinare per ciascun campo. Tre elementi: - useOrdinamento(righe, colonne, iniziale): restituisce le righe ordinate e lo stato (colonna e… |
 | `src/components/Pagamenti.jsx` | 306 | riquadro «Pagamenti» di una pratica (requisiti §7). Nessun incasso online: il back-office censisce il piano previsto (più voci con scadenze diverse) e registra a mano gli incassi. Mostra totali, incassato, da incassare e lo… |
 | `src/components/Rapporti.jsx` | 134 | elenco dei Rapporti di Monitoraggio annuali di un Progetto (requisiti §2): uno per anno, in sequenza, fino a 10 con il periodo di riferimento di 10 anni o fino a 21 con 7 anni rinnovabili 3 volte (Standard 4.3.8, script 23).… |
@@ -1650,7 +1674,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 140 file, 33.436 righe 
 | File | Righe | Cosa contiene |
 |---|---|---|
 | `src/lib/AuthContext.jsx` | 221 | tiene in memoria la sessione Supabase Auth, il profilo applicativo (ruolo, organizzazione, flag password temporanea) e lo stato MFA. Espone le funzioni accedi, esci, richiediRecuperoPassword, cambiaPassword e caricaMfa. Ogni… |
-| `src/lib/auditDettaglio.js` | 133 | rendere riconoscibile, nelle pagine Audit e Audit User, QUALE oggetto è stato modificato e COSA è cambiato. Il database registra già tutto (trigger audit_registra, script 07/21): l'id dell'oggetto e, per le modifiche, ogni campo… |
+| `src/lib/auditDettaglio.js` | 182 | rendere riconoscibile, nelle pagine Audit e Audit User, QUALE oggetto è stato modificato e COSA è cambiato. Il database registra già tutto (trigger audit_registra, script 07/21): l'id dell'oggetto e, per le modifiche, ogni campo… |
 | `src/lib/crediti/archivio.js` | 258 | crea, legge, aggiorna ed elimina i calcoli (testata e dati in calcolo_crediti) e la loro Banca Dati Utenze (righe di conferimento e di riuso), anche quando le righe sono centinaia di migliaia (invio e lettura a blocchi). Crea le… |
 | `src/lib/crediti/calcolo.js` | 545 | funzioni pure (nessun accesso al database): ricevono i dati del calcolo e restituiscono risultati intermedi e finali, con il riferimento alla formula della Metodologia accanto a ogni passaggio. |
 | `src/lib/crediti/parametri.js` | 95 | tabelle numeriche della Metodologia usate come valori iniziali di ogni calcolo: fattori di emissione per tipologia di rifiuto (Tab. 3, 4, 7), pesi specifici (Tab. 8), beni a riuso (Tab. 5), buffer (Tab. 15 e Cap. 7), giorni… |
@@ -1731,7 +1755,8 @@ Inventario generato da `strumenti/inventario_codice.py`: 140 file, 33.436 righe 
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `test/collaudo_v01.test.mjs` | 291 | una prova per ogni difetto corretto (D01-D07) con i valori esatti del rapporto, i casi limite chiesti nella «Verifica dopo la correzione» e i casi ordinari S e C, che devono restare identici (netto 292,8 tCO₂eq/anno; 0,2928… |
+| `test/collaudo_v01.test.mjs` | 301 | una prova per ogni difetto corretto (D01-D07) con i valori esatti del rapporto, i casi limite chiesti nella «Verifica dopo la correzione» e i casi ordinari S e C, che devono restare identici (netto 292,8 tCO₂eq/anno; 0,2928… |
+| `test/collaudo_v05.test.mjs` | 65 | Le due note reali del collaudo (OP09): testo originale e testo con la riga temporanea. |
 | `test/crediti.test.mjs` | 144 | verifica del motore di calcolo con un esempio calcolato a mano (un piccolo Comune con 2 classi domestiche e 1 non domestica). Controlla le formule 1-17, 19-22 e 28-32 (non la 18: peso specifico a consuntivo), i buffer delle… |
 | `test/csv.test.mjs` | 53 | verifica che i CSV salvati da Excel in italiano (BOM, separatore ";", virgola decimale, punto delle migliaia, testi tra virgolette con ";" dentro, righe vuote) siano letti correttamente; che intestazioni con maiuscole/accenti… |
 | `test/date.test.mjs` | 31 | verificare le date in ora italiana usate per aprire le consultazioni (30 giorni) e per i nomi dei file: oggiItalia() deve dare sempre aaaa-mm-gg in fuso Europe/Rome, aggiungiGiorni() deve contare i giorni sul calendario (fine… |
@@ -1755,7 +1780,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 140 file, 33.436 righe 
 | `strumenti/impagina_pdf.py` | 429 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 890 | — |
+| `strumenti/revisioni_documenti.json` | 908 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

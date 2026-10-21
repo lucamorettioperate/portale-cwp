@@ -42,6 +42,7 @@ import { ElencoConsultazioni, PaginaConsultazione, ConfermaOsservazione } from "
 import FormatoDati from "./pages/FormatoDati.jsx";
 import Documentazione from "./pages/Documentazione.jsx";
 import CambiaPassword from "./pages/CambiaPassword.jsx";
+import AccountDisattivato from "./components/AccountDisattivato.jsx";
 import Profilo from "./pages/Profilo.jsx";
 import Programma from "./pages/Programma.jsx";
 import Reclami from "./pages/Reclami.jsx";
@@ -71,7 +72,7 @@ function HomePerRuolo() {
 // L'ordine dei controlli conta: recupero e password temporanea vengono prima
 // della MFA, così l'utente non resta bloccato con una password da cambiare.
 function Protetta({ children }) {
-  const { autenticato, caricamento, backendPronto, mfa, passwordDaCambiare, recupero } = useAuth();
+  const { autenticato, caricamento, backendPronto, mfa, passwordDaCambiare, recupero, profilo } = useAuth();
   const location = useLocation();
   if (caricamento) return <Caricamento />;
   // Senza Supabase configurato (sviluppo locale senza .env) non c'è login:
@@ -79,6 +80,9 @@ function Protetta({ children }) {
   if (!backendPronto) return children;
   // Senza sessione: al login, ricordando la pagina richiesta (es. link di un'email).
   if (!autenticato) return <Navigate to="/login" replace state={{ da: location }} />;
+  // Account disattivato da un Amministratore: messaggio esplicito invece di
+  // archivi vuoti (collaudo V05, O01). Il database blocca comunque i dati.
+  if (profilo && profilo.attivo === false) return <AccountDisattivato />;
   // Arrivato da un link "password dimenticata": prima la nuova password.
   if (recupero) return <Navigate to="/reimposta-password" replace />;
   // Password temporanea: va cambiata prima di tutto il resto.

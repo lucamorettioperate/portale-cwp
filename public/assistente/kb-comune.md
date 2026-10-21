@@ -1,4 +1,4 @@
-# Base di conoscenza del Portale Carbon WastePrint — utenti degli enti (generata il 20/10/2026)
+# Base di conoscenza del Portale Carbon WastePrint — utenti degli enti (generata il 21/10/2026)
 
 === DOCUMENTO: Manuale Utente ===
 
