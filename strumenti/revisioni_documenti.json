@@ -935,6 +935,12 @@
       "data": "21/10/2026",
       "descrizione": "Barra a LED nelle pratiche, loghi, Notizie CO2, ISS-036 (Google News). Script 37: pallino verde delle Notizie CO2. ISS-036: Google News sostituito da 8 siti di notizie ambientali. ISS-036: Google News sostituito da 8 siti di notizie ambientali.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.1",
+      "data": "21/10/2026",
+      "descrizione": "Script 38 e backup dal Mac; tolto BackupCWP.gs.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -996,6 +1002,12 @@
       "rev": "1.9",
       "data": "21/10/2026",
       "descrizione": "Tramite per Google News delle Notizie CO2. Script 37. Tolto il tramite per Google News. Tolto il tramite per Google News.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.0",
+      "data": "21/10/2026",
+      "descrizione": "Backup giornaliero alle 20:00 dal Mac in Cwp › backup › data (Google blocca Apps Script); backup manuale; script 38.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1089,6 +1101,12 @@
       "data": "21/10/2026",
       "descrizione": "Notizie CO2.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.4",
+      "data": "21/10/2026",
+      "descrizione": "Backup giornaliero alle 20 dal Mac.",
+      "autore": "Fondazione Operate"
     }
   ],
   "issue": [
@@ -1132,6 +1150,12 @@
       "rev": "1.6",
       "data": "21/10/2026",
       "descrizione": "ISS-036: causa e tramite per Google News. Prova t37.sql. ISS-036: tramite bloccato da Google, siti ambientali. ISS-036: tramite bloccato da Google, siti ambientali.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.7",
+      "data": "21/10/2026",
+      "descrizione": "ISS-037: backup dal Mac.",
       "autore": "Fondazione Operate"
     }
   ]

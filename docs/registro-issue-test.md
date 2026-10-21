@@ -31,12 +31,12 @@ Dal 21/10/2026 ogni nuova voce riporta l'ora esatta della segnalazione.
 
 **Chi segnala:** Luca = Luca Moretti; Collaudo = Amministratori collaudatori (Andrea Valentini, Albina Ambrogio, Andrea Pavan, Gianluca Tapparini, Luca Belfiore); Revisione = rilettura del codice da parte dello sviluppo; Sviluppo = prova dello sviluppo o messaggio di errore di un servizio.
 
-## Riepilogo al 21/10/2026 (ore 14:15)
+## Riepilogo al 21/10/2026 (ore 14:45)
 
 | Stato | Numero | Voci |
 |---|---|---|
 | CHIUSO | 33 | ISS-001 … ISS-034 tranne ISS-012 e ISS-020; ISS-036 |
-| CORRETTO_DA_RITESTARE | 13 | D01, D02, D03, D04, D05, D06, D07, R05, R07, R08, D05-R1, O01, ISS-035 |
+| CORRETTO_DA_RITESTARE | 14 | D01, D02, D03, D04, D05, D06, D07, R05, R07, R08, D05-R1, O01, ISS-035, ISS-037 |
 | ATTESA_REGOLA | 6 | R01, R02, R03, R04, R06, riuso |
 | APERTO | 2 voci, 1 causa | ISS-012 e D08 (email ai destinatari diversi dal titolare) |
 | NON_RIPRODOTTO | 1 | ISS-020 |
@@ -84,6 +84,7 @@ Ordine cronologico. Una data senza ora vuol dire «ora della segnalazione non re
 | ISS-033 | 20/10 14:52 | **Funzioni** — Pubblicazione della funzione non riuscita: «Unterminated regexp literal» (codice incollato a mano rovinato). Segnalato da: Luca | CHIUSO (P1) | 20/10 14:59 (`2f5fe1c`): codice caricato dal repository, tre funzioni ripubblicate con Verify JWT |
 | ISS-034 | 20/10 pomeriggio | **Menu** — La voce «Audit» si accendeva anche sulla pagina Audit User. Segnalato da: Sviluppo | CHIUSO (P3) | 20/10 15:13 (`be97c16`) |
 | ISS-036 | 21/10 12:07 (log della funzione); 12:23 richiesta di Luca «identifica e sistema» | **Notizie CO2** — Google News non interrogato: alla prima ricerca i canali Google rispondevano 503 e arrivavano solo notizie da due siti. Segnalato da: Sviluppo e Luca | CHIUSO (P2) | Causa (diagnosi delle 12:26): Google risponde 503 con la pagina «Sorry…» a ogni richiesta dai server di Supabase, con qualunque intestazione (blocco dei centri dati); Bing risponde 200. Correzioni: 12:10 (`5e88cf6`) canali Bing News e Verra; 12:29 (`3275547`) Google News attraverso il tramite in Google Apps Script (`ProxyGoogleNews.gs`, impostazione `url_proxy_google_news`), autorizzazione bloccata da Google alle 13:54 («Questa app è bloccata»); con l'OK di Luca tramite tolto e al suo posto 8 siti di notizie ambientali (13:57, `56596c9`). Verifiche: ricerca delle 12:18 con Bing (76 notizie lette, 41 nuove, 11 attinenti); diagnosi delle 14:12: 12 siti su 14 rispondono (Rinnovabili.it 403 e GreenReport 404 si saltano), Google sempre 503. Progetto Apps Script «Notizie CO2 – Google News» spostato nel cestino di Drive su richiesta di Luca |
+| ISS-037 | 21/10 13:57 | **Backup** — Il backup automatico in Google Apps Script non si attiva: Google blocca l'autorizzazione («Questa app è bloccata… informazioni sensibili», protezione dell'account). Segnalato da: Luca | CORRETTO_DA_RITESTARE (P1) | 21/10 (COMMIT_ISS037): backup giornaliero alle 20:00 dal Mac in Google Drive per desktop › Cwp › backup › <data> (script 38, `backup_cwp_mac.sh`, `installa_backup_mac.sh`); backup manuale del 21/10 in Cwp › backup › 2026-10-21. Da verificare dopo l'installazione sul Mac |
 | ISS-035 | 21/10 circa 11:30 | **Simulatore** — Il PDF scaricato da una simulazione non riportava tutti i dati della pagina né i grafici («inserisci tutti i dati completi della simulazione con costo e grafici»). Segnalato da: Luca | CORRETTO_DA_RITESTARE (P2) | 21/10 11:43 (`e6ed26c`): PDF con grafici e sezioni 1-5 complete, Excel con il foglio «Dati inseriti»; verificato su due scenari di prova (10 anni Caso 1; 21 anni per utenza senza economia) |
 | D07 | 20/10 16:40 (rapporto V01; prima prova 19-20/10) | **Calcolo crediti** — Il CSV diretto della Banca Dati accettava pesi negativi e salvava crediti gonfiati. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P0) | 20/10 17:05 (`66d253e`); in produzione circa alle 17:15 con lo script 35 |
 | D01 | 20/10 16:40 (prima prova V02 del 19/10) | **Simulatore** — Produzione e secco negativi accettati, differenziata oltre il 100%, scenario salvabile. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P0) | 20/10 17:05 (`66d253e`); in produzione circa alle 17:15 |
@@ -172,6 +173,7 @@ Ogni script del database è provato su una copia locale di Postgres 16 con tutti
 Ultime prove:
 
 - `t35.sql` del 20/10/2026: 11 rifiuti attesi, conferma ordinaria possibile e rieseguibilità con dati vecchi;
+- `backup_completo()` (script 38) del 21/10/2026: 38 tabelle, 3 utenti, 2 file nell'elenco; il JSON ripristinato in un database nuovo con `genera_sql_ripristino.mjs` dà righe identiche; negata al ruolo authenticated;
 - `t37.sql` del 21/10/2026 (pallino verde delle Notizie CO2): 2 notizie nuove mai visitata, 0 dopo la visita, 1 dopo una nuova notizia, scrittura diretta negata, Operatore 0;
 - `t36.sql` del 21/10/2026 (News): limite di una ricerca ogni 100 minuti (10 con l'Amministratore), doppioni rifiutati, l'Amministratore legge e nasconde, Operatore, Cliente e anonimo non vedono nulla, scrittura diretta e avvio della ricerca negati dal portale.
 
@@ -209,3 +211,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 21/10/2026 12:46 | Prova `t37.sql` (pallino verde delle Notizie CO2) |
 | 21/10/2026 14:05 | ISS-036: tramite per Google News bloccato da Google; sostituito da 8 siti di notizie ambientali |
 | 21/10/2026 14:15 | ISS-036 chiuso: Bing e 12 siti verificati |
+| 21/10/2026 14:45 | ISS-037: backup dal Mac al posto di Apps Script; prova di `backup_completo()` |
