@@ -74,7 +74,7 @@ La pagina elenca i Progetti della vostra organizzazione (o delle organizzazioni 
 
 **Ordinare gli elenchi.** Con più pratiche o documenti, in alto compare **Ordina per**: scegliete il campo (titolo, codice, stato, data…) e con il pulsante ▲/▼ l'ordine crescente o decrescente. Nelle tabelle basta fare clic sull'intestazione della colonna.
 
-Ogni riquadro mostra il titolo del progetto, lo stato e il codice della pratica con il nome dell'ente.
+Ogni riquadro mostra il titolo del progetto, lo stato e il codice della pratica con il nome dell'ente. In alto a destra c'è la **barra di avanzamento a LED**: 7 luci, una per fase; le fasi completate sono accese (ambra, la settima verde), quella in corso ha il contorno ambra, accanto il conteggio (es. «4/7»). Passando il mouse su una luce compaiono nome e stato della fase. La stessa barra compare in alto a destra nella pratica aperta.
 
 | Stato | Significato |
 | --- | --- |
@@ -458,7 +458,7 @@ Nel portale la Fondazione lavora con due ruoli:
 
 Gli **Amministratori** possono essere più di uno e hanno tutti accesso completo a tutti i dati. Un Amministratore può nominare altri Amministratori (capitolo «Gestione utenti»). L'**Amministratore principale** è luca.moretti@operate.it: nessuno lo può modificare, disattivare o cancellare.
 | Documentazione (Registro e questo manuale) | — | sì |
-| News: osservatorio sui crediti di carbonio volontari | — | sì |
+| Notizie CO2: osservatorio sui crediti di carbonio volontari | — | sì |
 
 L'**Ente di Validazione** (RINA) non ha un accesso al portale: i suoi rapporti vengono caricati dall'Operatore nella pratica.
 
@@ -477,7 +477,7 @@ Si accede da [portale-cwp.vercel.app](https://portale-cwp.vercel.app) con **Emai
 | Ruolo | Voci di menu |
 | --- | --- |
 | Operatore | Dashboard, Pratiche, Anagrafiche, Simulatore, Crediti emessi, Reclami, Manuale |
-| Amministratore | Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, Audit User (solo l'Amministratore principale), Documentazione, News; **Marketplaces** in grigio, non cliccabile (sezione in arrivo) |
+| Amministratore | Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, Audit User (solo l'Amministratore principale), Documentazione, Notizie CO2; **Marketplaces** in grigio, non cliccabile (sezione in arrivo) |
 
 **Ordinare tabelle ed elenchi.** Ogni tabella del portale si ordina per qualsiasi colonna: fate clic sull'intestazione per l'ordine crescente (freccia ▲) e di nuovo per il decrescente (▼); le colonne non ordinate mostrano ↕. Vale per Dashboard, Audit, Calcolo crediti, Registro dei crediti, Simulatore (scenari, risultati, costi e parte economica) e per le tabelle del calcolo. Gli elenchi a schede (Pratiche, Utenti, Organizzazioni, Enti di Validazione, Registri, Reclami, Crediti emessi, documenti, pagamenti e Rapporti di una pratica) hanno in alto il menu **Ordina per** con il pulsante ▲/▼ del verso; «ordine predefinito» torna all'ordine iniziale. I valori vuoti restano sempre in fondo. Le tabelle in cui si inseriscono i dati anno per anno restano in ordine di anno.
 
@@ -499,7 +499,7 @@ Si accede da [portale-cwp.vercel.app](https://portale-cwp.vercel.app) con **Emai
 
 La **Dashboard** è la pagina iniziale dello staff: mostra in un'unica tabella tutte le pratiche, Progetti e Rapporti, con l'avanzamento, la fase corrente, la scadenza e ciò che c'è da fare.
 
-**Barra di avanzamento a LED.** La colonna **Avanzamento** mostra per ogni pratica (quindi per ogni Comune) una barra di 7 luci, una per fase. Le fasi **completate sono accese** (ambra), quelle **ancora da fare sono spente**. La **settima luce**, la Chiusura, si accende in **verde**. La fase in corso è spenta ma ha un contorno ambra, così si vede subito dove è arrivata la pratica. Accanto c'è il conteggio, ad esempio «4/7». Passando il mouse su una luce compaiono numero, nome e stato della fase.
+**Barra di avanzamento a LED.** La colonna **Avanzamento** mostra per ogni pratica (quindi per ogni Comune) una barra di 7 luci, una per fase. Le fasi **completate sono accese** (ambra), quelle **ancora da fare sono spente**. La **settima luce**, la Chiusura, si accende in **verde**. La fase in corso è spenta ma ha un contorno ambra, così si vede subito dove è arrivata la pratica. Accanto c'è il conteggio, ad esempio «4/7». Passando il mouse su una luce compaiono numero, nome e stato della fase. La stessa barra, in piccolo, compare **nell'elenco delle pratiche** a sinistra della pagina Pratiche (in alto a destra di ogni riquadro, con lo stato sotto) e **in alto a destra nella pratica aperta**.
 
 **Riquadri in alto.** Ogni riquadro conta le pratiche e, se cliccato, filtra la tabella. Si clicca di nuovo per togliere il filtro.
 
@@ -1425,9 +1425,9 @@ Dalla voce **Documentazione** del menu (e da **Il mio profilo**) l'Amministrator
 
 Gli Operatori trovano il Manuale Utente nella voce **Manuale** del menu, i Comuni nella voce **Manuali**; i Comuni anche in **I tuoi documenti**. Ogni documento riporta in copertina il numero di revisione e la data; a ogni nuova funzione si aggiornano insieme i manuali, il Registro e la Presentazione di riepilogo. Per la presentazione il secondo pulsante è **Scarica PowerPoint**.
 
-## News: osservatorio sui crediti di carbonio volontari
+## Notizie CO2: osservatorio sui crediti di carbonio volontari
 
-La voce **News** del menu, riservata agli Amministratori, raccoglie le notizie dal mondo dei **crediti di carbonio volontari**:
+La voce **Notizie CO2** del menu, riservata agli Amministratori, raccoglie le notizie dal mondo dei **crediti di carbonio volontari**:
 
 - mercato volontario;
 - marketplace e borse di scambio;
@@ -1438,8 +1438,10 @@ La voce **News** del menu, riservata agli Amministratori, raccoglie le notizie d
 
 **Come funziona.** Ogni 2 ore (al minuto 7 delle ore pari, ora del server) il portale cerca le notizie degli ultimi 7 giorni:
 
-- su Bing News, con 12 ricerche mirate in italiano e in inglese;
+- su Bing News e su Google News, con ricerche mirate in italiano e in inglese;
 - su quattro siti specializzati: Carbon Herald, CarbonCredits.com, Ecosystem Marketplace e Verra.
+
+Google News non accetta richieste dai server del portale: le sue ricerche passano da un piccolo programma nell'account Google di Luca («Notizie CO2 – Google News», Google Apps Script). Se il programma non è installato, le notizie arrivano comunque da Bing News e dai siti.
 
 Ogni notizia nuova passa da un primo filtro sulle parole chiave e poi la controlla **Claude**, che decide se è **attinente** al mondo dei crediti di carbonio volontari, oggetto del portale, e prepara:
 

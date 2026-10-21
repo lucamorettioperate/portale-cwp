@@ -74,7 +74,7 @@ La pagina elenca i Progetti della vostra organizzazione (o delle organizzazioni 
 
 **Ordinare gli elenchi.** Con più pratiche o documenti, in alto compare **Ordina per**: scegliete il campo (titolo, codice, stato, data…) e con il pulsante ▲/▼ l'ordine crescente o decrescente. Nelle tabelle basta fare clic sull'intestazione della colonna.
 
-Ogni riquadro mostra il titolo del progetto, lo stato e il codice della pratica con il nome dell'ente.
+Ogni riquadro mostra il titolo del progetto, lo stato e il codice della pratica con il nome dell'ente. In alto a destra c'è la **barra di avanzamento a LED**: 7 luci, una per fase; le fasi completate sono accese (ambra, la settima verde), quella in corso ha il contorno ambra, accanto il conteggio (es. «4/7»). Passando il mouse su una luce compaiono nome e stato della fase. La stessa barra compare in alto a destra nella pratica aperta.
 
 | Stato | Significato |
 | --- | --- |
