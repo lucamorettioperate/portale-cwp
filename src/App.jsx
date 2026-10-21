@@ -13,7 +13,7 @@
 
    Sicurezza: questi controlli servono all'esperienza d'uso (cosa mostrare).
    Il controllo del ruolo per le pagine Admin (/utenti, /audit, /crediti,
-   /impostazioni) e per le pagine dello staff /anagrafiche e /simulatore è fatto anche
+   /impostazioni, /news) e per le pagine dello staff /anagrafiche e /simulatore è fatto anche
    dentro le pagine e, soprattutto, dal database con RLS e funzioni: una
    rotta aperta per errore non espone dati.
 
@@ -28,6 +28,7 @@ import { useAuth } from "./lib/AuthContext.jsx";
 import Login from "./pages/Login.jsx";
 import BackOffice from "./pages/BackOffice.jsx";
 import AreaCliente from "./pages/AreaCliente.jsx";
+import News from "./pages/News.jsx";
 import GestioneUtenti from "./pages/GestioneUtenti.jsx";
 import Cruscotto from "./pages/Cruscotto.jsx";
 import TuoiDocumenti from "./pages/TuoiDocumenti.jsx";
@@ -249,6 +250,14 @@ export default function App() {
         element={
           <Protetta>
             <GestioneUtenti />
+          </Protetta>
+        }
+      />
+      <Route
+        path="/news"
+        element={
+          <Protetta>
+            <News />
           </Protetta>
         }
       />

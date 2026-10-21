@@ -365,7 +365,7 @@ async function icona(Comp, colore) {
   // ---------------------------------------------------------------- Novità del 19 ottobre
   pres.addSection({ title: "Novità" });
   s = pres.addSlide({ masterName: "CONTENUTO", sectionTitle: "Novità" });
-  s.addText("Novità del 19 e 20 ottobre", { placeholder: "title" });
+  s.addText("Novità dal 19 al 21 ottobre", { placeholder: "title" });
   s.addImage({ path: IMMAGINI + "dashboard_led.png", x: 0.6, y: 1.3, w: 7.6, h: 7.6 * 1000 / 2400, altText: "Dashboard con la barra a LED delle 7 fasi per ogni pratica (dati di prova)", objectName: "Schermata Dashboard" });
   s.addText("Dashboard con dati di prova", { x: 0.6, y: 4.5, w: 7.6, h: 0.25, fontSize: 10, italic: true, color: C.accent6, margin: 0, isTextBox: true });
   [
@@ -387,7 +387,7 @@ async function icona(Comp, colore) {
     ["Credenziali per email", "al nuovo utente arrivano indirizzo, email e password temporanea (a tutti dopo la verifica del dominio)"],
     ["Assistente virtuale", "«✦ Assistente» con Claude per enti e Amministratori, dai manuali e dalle tariffe; attivo dal 19/10, errori in italiano dal 20/10"],
     ["Simulatore", "metodo «per utenza, solo utenze virtuose» come nell'Allegato A EsaCom; dal 20/10 PDF impaginato ed export Excel; dal 21/10 il PDF riporta tutti i dati inseriti, i costi e quattro grafici"],
-    ["Menu e documenti", "menu riordinati per ruolo, «Marketplaces» in arrivo; 8 documenti ufficiali v1.2 e questa presentazione per gli Amministratori"],
+    ["Menu e documenti", "menu per ruolo; dal 21/10 «News», osservatorio sui crediti volontari aggiornato ogni 2 ore (Admin); «Marketplaces» in arrivo; 8 documenti ufficiali v1.2"],
     ["Decisione", "qualificazione ACN non necessaria (parere legale da confermare)"],
   ];
   s.addText(novita.flatMap(([t, d], j) => [

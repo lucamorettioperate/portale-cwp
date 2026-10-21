@@ -458,6 +458,7 @@ Nel portale la Fondazione lavora con due ruoli:
 
 Gli **Amministratori** possono essere più di uno e hanno tutti accesso completo a tutti i dati. Un Amministratore può nominare altri Amministratori (capitolo «Gestione utenti»). L'**Amministratore principale** è luca.moretti@operate.it: nessuno lo può modificare, disattivare o cancellare.
 | Documentazione (Registro e questo manuale) | — | sì |
+| News: osservatorio sui crediti di carbonio volontari | — | sì |
 
 L'**Ente di Validazione** (RINA) non ha un accesso al portale: i suoi rapporti vengono caricati dall'Operatore nella pratica.
 
@@ -476,7 +477,7 @@ Si accede da [portale-cwp.vercel.app](https://portale-cwp.vercel.app) con **Emai
 | Ruolo | Voci di menu |
 | --- | --- |
 | Operatore | Dashboard, Pratiche, Anagrafiche, Simulatore, Crediti emessi, Reclami, Manuale |
-| Amministratore | Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, Audit User (solo l'Amministratore principale), Documentazione; **Marketplaces** in grigio, non cliccabile (sezione in arrivo) |
+| Amministratore | Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, Audit User (solo l'Amministratore principale), Documentazione, News; **Marketplaces** in grigio, non cliccabile (sezione in arrivo) |
 
 **Ordinare tabelle ed elenchi.** Ogni tabella del portale si ordina per qualsiasi colonna: fate clic sull'intestazione per l'ordine crescente (freccia ▲) e di nuovo per il decrescente (▼); le colonne non ordinate mostrano ↕. Vale per Dashboard, Audit, Calcolo crediti, Registro dei crediti, Simulatore (scenari, risultati, costi e parte economica) e per le tabelle del calcolo. Gli elenchi a schede (Pratiche, Utenti, Organizzazioni, Enti di Validazione, Registri, Reclami, Crediti emessi, documenti, pagamenti e Rapporti di una pratica) hanno in alto il menu **Ordina per** con il pulsante ▲/▼ del verso; «ordine predefinito» torna all'ordine iniziale. I valori vuoti restano sempre in fondo. Le tabelle in cui si inseriscono i dati anno per anno restano in ordine di anno.
 

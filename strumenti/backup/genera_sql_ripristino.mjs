@@ -6,7 +6,7 @@
    Uso (dalla cartella del repository, con Node 18 o più recente):
      node strumenti/backup/genera_sql_ripristino.mjs <cartella 2_database> [file.sql]
    Produce ripristino_dati.sql (o il nome indicato), da eseguire DOPO gli
-   script 01-35 su un progetto Supabase nuovo e vuoto:
+   script numerati (01 e seguenti) su un progetto Supabase nuovo e vuoto:
      psql "<stringa di connessione>" -f ripristino_dati.sql
    (oppure, se piccolo, incollato nel SQL Editor di Supabase).
 
@@ -50,7 +50,7 @@ const scrivi = (s) => righe.push(s);
 
 scrivi("-- Ripristino dei dati del Portale CWP da un backup automatico");
 scrivi(`-- Generato il ${new Date().toISOString()} da ${path.basename(path.resolve(cartella, ".."))}`);
-scrivi("-- Eseguire DOPO gli script 01-35, su un progetto nuovo.");
+scrivi("-- Eseguire DOPO tutti gli script numerati (01 e seguenti), su un progetto nuovo.");
 scrivi("set session_replication_role = replica;");
 scrivi("");
 // Funzione temporanea: inserisce le righe di una tabella se la tabella esiste.
@@ -100,7 +100,7 @@ scrivi(`do $f$
 declare elenco text;
 begin
   if exists (select 1 from public.pratica) then
-    raise warning 'RIPRISTINO NON ESEGUITO: il database contiene già delle pratiche. Si ripristina solo su un progetto Supabase NUOVO (script 01-35 appena eseguiti). Nessuna modifica fatta.';
+    raise warning 'RIPRISTINO NON ESEGUITO: il database contiene già delle pratiche. Si ripristina solo su un progetto Supabase NUOVO (script numerati appena eseguiti). Nessuna modifica fatta.';
     return;
   end if;
   select string_agg(format('public.%I', tablename), ', ') into elenco

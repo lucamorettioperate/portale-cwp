@@ -57,6 +57,8 @@ function vociMenu(ruolo, principale = false) {
       ["/audit", "Audit"],
       ...(principale ? [["/audit-utenti", "Audit User"]] : []),
       ["/documentazione", "Documentazione"],
+      // Osservatorio sui crediti di carbonio volontari (21/10/2026, script 36).
+      ["/news", "News"],
       [null, "Marketplaces"],
     ];
   }

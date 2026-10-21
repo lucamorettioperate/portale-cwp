@@ -252,6 +252,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `32_utenti_online.sql` | Utenti online (backlog 38): tabella `presenza` (una riga per utente: ultima segnalazione, inizio del collegamento, pagina aperta; nessun IP, nessuno storico; RLS senza regole), `segnala_presenza(pagina)` e `presenza_uscita()` per ognuno solo per sé, `utenti_online()` (visti nelle ultime 24 ore, online se l'ultima segnalazione ha meno di 2 minuti) solo per l'Amministratore principale | 20/10/2026 — provato sul banco locale; **eseguito in produzione il 20/10** |
 | `33_audit_trail_user.sql` | Audit User (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **eseguito in produzione il 20/10** e provato dal vivo |
 | `34_sicurezza_avvisi.sql` | Sicurezza (backlog 14, 30): avvisi all'Amministratore principale (`cwp_avviso_sicurezza`, evento «sicurezza»): 5 accessi non riusciti in 15 minuti per email, 30 in un'ora in tutto, nuovo Amministratore (trigger `trg_profilo_avviso_admin`); `registra_uscita(p_motivo)` con l'uscita per inattività; rinforzi del Security Advisor: `search_path` fisso su tutte le funzioni, funzioni SECURITY DEFINER non eseguibili da anon (tranne `registra_accesso_fallito` e quelle usate nelle regole RLS) | 20/10/2026 — provato sul banco locale (`t34.sql`, regressioni `t33.sql`); **da eseguire in produzione** |
+| `36_notizie.sql` | Osservatorio News (21/10/2026, richiesta di Luca): tabelle `notizia` (url e titolo normalizzato unici, attinente, categoria, rilevanza, sintesi, prezzi, motivo, nascosta) e `notizie_esecuzione` (registro delle ricerche), lettura solo per gli Amministratori (RLS `app_is_admin`), scrittura solo dalla funzione del server; `notizie_puo_partire` (limite 100/10 minuti, una alla volta), `notizia_nascondi` (Admin), impostazione `url_notizie`, `richiedi_aggiornamento_notizie` (pg_net) e lavoro pg_cron `cwp_notizie` ogni 2 ore al minuto 7 | 21/10/2026 — provato sul banco locale (`t36.sql`: limiti di frequenza, doppioni rifiutati, Admin legge e nasconde, Operatore/Cliente/anonimo non vedono nulla, scrittura diretta e avvio negati); **da eseguire in produzione** |
 | `35_controlli_collaudo.sql` | Collaudo V01 (20/10/2026): vincoli `NOT VALID` (valgono per i nuovi dati, quelli salvati restano com'erano) — `calcolo_conferimento_non_negativi` e `calcolo_riuso_non_negativi` (D07: niente svuotamenti, volumi, pesi, pezzi negativi; N. utenze > 0), `calcolo_crediti_valori_ammessi` (D02: buffer 0-80%, crediti non negativi); trigger `trg_calcolo_prerequisiti` (R05: niente conferma senza Banca Dati Utenze o con risultato bloccato); `cwp_numero_json` e trigger `trg_scenario_valida` sugli scenari (D01/D02/D03: popolazione e produzione > 0, secco e rifiuti ≥ 0, buffer 0-80%, valori economici ≥ 0); in fondo un conteggio in sola lettura dei dati già salvati che non rispettano le nuove regole | 20/10/2026 — provato sul banco locale (`t35.sql`: rifiuti attesi, conferma ordinaria ancora possibile, rieseguibile con dati vecchi non validi); **eseguito in produzione il 20/10** su incarico di Luca (conteggio finale: 0 dati salvati fuori regola; 3 vincoli e 2 trigger presenti) |
 
 `schema_completo.sql` è la fotografia iniziale (01+02) ed è superata dagli
@@ -337,6 +338,7 @@ autenticazione, dal SQL Editor:
 | `reimposta-password` | L'Amministratore assegna una password temporanea a un Cliente o Operatore; il flag obbliga al cambio al primo accesso; audit; dal 19/10 email all'utente con la nuova password temporanea (Resend), esito restituito al portale | Verifica `sono_admin`; esclusi amministratori e sé stessi | Dashboard Supabase (editor web), 18/10; Verify JWT attivo; versione 19/10 con l'email **ripubblicata il 20/10** |
 | `consultazione-pubblica` | Pagine pubbliche del feedback pubblico (data di «oggi» in ora italiana dal 18/10; numero delle osservazioni dallo script 21; dalla sera del 18/10 anche i Rapporti di Monitoraggio, ripubblicata; azioni `programma` e `file` per la pagina pubblica /programma, script 24, ripubblicata la sera del 18/10, Verify JWT spento): elenco, dettaglio (documento, errata corrige, osservazioni ammesse), invio di un'osservazione con allegato facoltativo ed email di conferma, conferma dell'email (l'osservazione diventa *Ricevuto*) | Verify JWT **disattivato** di proposito (pubblico senza account): nessun dato personale restituito, 3 invii/ora per indirizzo e 100/ora per consultazione, campo trappola anti-robot, allegati max 10 MB con controllo del contenuto, token monouso 48 ore salvato come SHA-256 | Dashboard Supabase (editor web), 18/10 |
 | `recupera-password` | «Password dimenticata?»: genera il collegamento di recupero (`auth.admin.generateLink`) e spedisce con Resend l'email in italiano «Portale Carbon WastePrint (CWP) — Richiesta di reimpostazione della password», al posto del modello email di Supabase | Verify JWT **disattivato** di proposito (la chiama chi non ha fatto l'accesso): risponde sempre `ok` senza rivelare se l'indirizzo esiste; niente email agli utenti disattivati; massimo una richiesta ogni 2 minuti per indirizzo; il collegamento porta solo al portale | Dashboard Supabase (editor web), 18/10 |
+| `notizie` | Osservatorio News (21/10/2026): legge 15 canali RSS (12 ricerche Google News in italiano e inglese, Carbon Herald, Ecosystem Marketplace, CarbonCredits.com), toglie doppioni e notizie già viste o più vecchie di 10 giorni, pre-filtro sulle parole chiave, valutazione di Claude a gruppi di 25 (massimo 100 per ricerca; attinente, categoria, rilevanza 1-5, titolo e sintesi in italiano, prezzi citati, motivo), salva in `notizia` e chiude `notizie_esecuzione`; modello `claude-haiku-5-5` (`NOTIZIE_MODELLO`); funzioni pure copiate identiche da `src/lib/notizie.js` | Verify JWT **disattivato** di proposito (la chiama pg_cron senza token): nessun dato ricevuto viene salvato; `notizie_puo_partire` (script 36) ammette una ricerca ogni 100 minuti senza token di Amministratore, ogni 10 minuti con il token (`app_is_admin`, MFA compresa); scrive con la chiave di servizio | **Da pubblicare** (dashboard Supabase, Verify JWT disattivato) dopo lo script 36 |
 | `invia-email-notifica` | Spedisce per email una notifica interna (pulsante "Apri nel portale") tramite Resend | Verify JWT **disattivato** di proposito: usa solo l'id ricevuto e rilegge tutto dal database; ogni notifica parte una volta sola | Dashboard Supabase; prima pubblicazione 17/10, aggiornata 17/10 (pulsante per tema scuro) |
 
 Sorgenti in `supabase/functions/<nome>/index.ts`. Si pubblicano dalla
@@ -369,6 +371,7 @@ fascicolo, file Excel del simulatore). Nessun server proprio: tutto passa da Sup
 | `/documenti` | I tuoi documenti, modelli generali, manuale | Cliente |
 | `/utenti` | Gestione utenti | Admin |
 | `/audit` | Audit trail | Admin |
+| `/news` | **News**: osservatorio sui crediti di carbonio volontari (notizie cercate ogni 2 ore e filtrate da Claude, prezzi citati, filtri, «Aggiorna ora», registro delle ricerche; script 36, funzione `notizie`) | Admin |
 | `/audit-utenti` | **Audit User**: utenti e stato online, registro degli accessi, operazioni per utente (script 33) | solo Amministratore principale |
 | `/crediti`, `/crediti/:id` | Calcolo crediti CWP | Admin |
 | `/simulatore` | Simulatore di scenari: stima ex ante dei crediti di un Comune su 7, 10 o 21 anni | Operatore, Admin |
@@ -379,7 +382,7 @@ fascicolo, file Excel del simulatore). Nessun server proprio: tutto passa da Sup
 
 | Ruolo | Voci, nell'ordine |
 |---|---|
-| Amministratore principale | Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, **Audit User**, Documentazione, *Marketplaces* (grigia, non cliccabile) |
+| Amministratore principale | Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, **Audit User**, Documentazione, **News** (dal 21/10), *Marketplaces* (grigia, non cliccabile) |
 | Amministratore | come sopra, senza Audit User |
 | Operatore | Dashboard, Pratiche, Anagrafiche, Simulatore, Crediti emessi, Reclami, Manuale |
 | Utente dell'ente (cliente) | Le mie pratiche, I tuoi documenti, Reclami, Formato dati, Il Programma CWP, Manuali, *Marketplaces* (grigia, non cliccabile) |
@@ -522,6 +525,21 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 21 ottobre 2026
+- **News: osservatorio sui crediti di carbonio volontari** (richiesta di
+  Luca: sezione solo per gli Amministratori, ricerca ogni 2 ore, solo
+  notizie attinenti ai crediti volontari: mercato, marketplace, prezzi
+  scambiati o venduti, standard e registri, regole, progetti). Script
+  `36_notizie.sql`, funzione del server `notizie` (Verify JWT disattivato,
+  limite di frequenza nel database), modulo `src/lib/notizie.js` (canali,
+  lettura RSS, chiave dei titoli, pre-filtro, lettura della risposta di
+  Claude; copia identica nella funzione), pagina `src/pages/News.jsx`
+  (voce «News» nel menu dell'Amministratore, rotta `/news`), funzioni in
+  `dati.js`. Filtro: Claude Haiku con istruzioni che escludono il solo EU
+  ETS, i certificati del GSE e le garanzie d'origine. Prove
+  `test/notizie.test.mjs` (7) e `t36.sql`; pagina verificata a schermo su
+  computer e telefono con dati di prova. **Da fare per l'attivazione:**
+  script 36 in produzione e pubblicazione della funzione `notizie` (stessa
+  chiave `ANTHROPIC_API_KEY` dell'assistente).
 - **Simulatore: PDF ed Excel con tutti i dati** (ISS-035, richiesta di Luca:
   «nel report inserisci tutti i dati completi della simulazione con costo e
   grafici, in pratica cosa hai nella forma») — `contenutoSimulazione`
@@ -1663,13 +1681,13 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 145 file, 34.745 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 150 file, 36.038 righe in tutto.
 
 **Avvio e instradamento**
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `src/App.jsx` | 258 | associa ogni indirizzo alla sua pagina e decide chi può aprirla. Le pagine riservate passano dal componente Protetta, che nell'ordine chiede: sessione attiva, eventuale nuova password (link di recupero o password temporanea),… |
+| `src/App.jsx` | 267 | associa ogni indirizzo alla sua pagina e decide chi può aprirla. Le pagine riservate passano dal componente Protetta, che nell'ordine chiede: sessione attiva, eventuale nuova password (link di recupero o password temporanea),… |
 | `src/main.jsx` | 32 | monta l'applicazione nell'elemento #root di index.html e la avvolge nei contesti globali: StrictMode (controlli di React in sviluppo), BrowserRouter (indirizzi /pratiche, /crediti, …) e AuthProvider (sessione, ruolo, MFA).… |
 
 **Pagine (src/pages)**
@@ -1692,6 +1710,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 145 file, 34.745 righe 
 | `src/pages/GestioneUtenti.jsx` | 763 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
 | `src/pages/Impostazioni.jsx` | 60 | parametri del Programma modificabili dagli Amministratori: - Durata delle fasi del Progetto e del Rapporto di Monitoraggio (script 13 e 21, componente DurateFasi); - Documenti richiesti per fase (script 21, componente… |
 | `src/pages/Login.jsx` | 266 | accesso con email e password; «Password dimenticata?» per farsi mandare il collegamento di reimpostazione; link alle pagine pubbliche (formato dei dati, consultazioni pubbliche, Manuale Utente in PDF). Dopo l'accesso riuscito… |
+| `src/pages/News.jsx` | 361 | Data breve in ora italiana: «oggi 14:07», «ieri», «18/10». |
 | `src/pages/Profilo.jsx` | 66 | mostra i dati dell'account (nome, email di accesso, ruolo), il collegamento al cambio password («/password») e i documenti da scaricare per il proprio ruolo: Manuale Utente per tutti; Manuale Amministratore e Registro sviluppo e… |
 | `src/pages/Programma.jsx` | 249 | la parte pubblica della piattaforma online richiesta dalla Guida al Programma (cap. 3.7) e dallo Standard CWP (cap. 2.3, 5 e 6): - informazioni del Programma: soggetto promotore del programma, PEC, email e sito ufficiale (Guida… |
 | `src/pages/Reclami.jsx` | 271 | reclami e richieste di chiarimento (Politica di reclamo del Programma; Guida al Programma cap. 8; script 24). - Chiunque abbia un account invia un reclamo o una richiesta di chiarimento dal portale e ne segue lo stato e la… |
@@ -1711,7 +1730,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 145 file, 34.745 righe 
 | `src/components/CreditiEmessi.jsx` | 319 | crediti di carbonio emessi da un Rapporto di Monitoraggio registrato (Guida al Programma 6.3.2 e 6.3.3, Tabella 5; Standard 6.2; script 24): - emissione di un lotto con ID univoci (solo Amministratori), anche collegata a un… |
 | `src/components/DettaglioPratica.jsx` | 912 | pagina di dettaglio di una pratica (Progetto o Rapporto di Monitoraggio) con le sue 7 fasi (Guida al Programma 6.2 e 6.3.1). |
 | `src/components/Documenti.jsx` | 325 | gestione documentale di una pratica: elenco con versioni, caricamento di nuovi file e download. Lo staff sceglie anche tipologia e visibilità (Cliente, Pubblico) e può cambiarle dopo il caricamento. |
-| `src/components/Header.jsx` | 203 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
+| `src/components/Header.jsx` | 205 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
 | `src/components/Integrazioni.jsx` | 266 | richieste di integrazione di una fase (requisiti §4). Ciclo: l'Operatore richiede → il Cliente carica un documento e risponde → l'Operatore chiude la richiesta. Con la chiusura della fase la possibilità di integrare termina. La… |
 | `src/components/Messaggi.jsx` | 129 | conversazione tra Comune e Fondazione Operate dentro una pratica (backlog 26). Mostra i messaggi in ordine di data, quelli dell'utente a destra, e permette di scriverne di nuovi. |
 | `src/components/NoteFase.jsx` | 108 | note scritte sotto una delle fasi di una pratica (backlog 10). Lo staff legge tutte le note e ne aggiunge di nuove, interne (solo Fondazione) o condivise con il Comune; il Comune vede solo le condivise. |
@@ -1755,11 +1774,12 @@ Inventario generato da `strumenti/inventario_codice.py`: 145 file, 34.745 righe 
 | `src/lib/csv.js` | 184 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
 | `src/lib/cwpProgram.js` | 185 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
 | `src/lib/date.js` | 81 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO (anche la data italiana, indipendente dal fuso del computer). |
-| `src/lib/dati.js` | 1128 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
+| `src/lib/dati.js` | 1176 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
 | `src/lib/fascicolo.js` | 357 | ZIP con: riepilogo PDF (Riepilogo.pdf, src/lib/fascicoloPdf.js), dati della pratica con l'Ente di Validazione, fasi, tutti i documenti in tutte le versioni (cartella Validazione per il rapporto dell'Ente; per i Rapporti anche il… |
 | `src/lib/fascicoloPdf.js` | 137 | un documento leggibile da stampare o archiviare insieme ai file del fascicolo: dati della pratica e dell'Ente di Validazione, fasi, elenco dei documenti (con l'impronta SHA-256), integrazioni, consultazioni pubbliche, pagamenti… |
 | `src/lib/file.js` | 158 | prima di inviare un file all'archivio controlla formato ammesso, dimensione, contenuto reale (primi byte, "firma" del formato) e prepara un nome sicuro per il percorso nell'archivio. Traduce anche gli errori dello Storage di… |
 | `src/lib/inattivita.js` | 20 | un solo posto per i tempi usati da src/components/ UscitaInattivita.jsx (richiesta di Luca del 20/10/2026, sicurezza). - Operatori e Amministratori: 30 minuti senza attività; - utenti degli enti: 60 minuti; - l'avviso «Sei… |
+| `src/lib/notizie.js` | 181 | funzioni pure usate dalla funzione del server «notizie» (supabase/functions/notizie) e dalla pagina /news: - CANALI: dove si cercano le notizie (Google News in italiano e in inglese con ricerche mirate, più tre siti… |
 | `src/lib/ordinamento.js` | 37 | logica pura (senza React) usata dal componente src/components/Ordinamento.jsx. Numeri come numeri, booleani (falso prima di vero), date ISO e testi in ordine alfabetico italiano senza distinguere maiuscole e con i numeri nel… |
 | `src/lib/password.js` | 70 | controllo delle regole della password prima dell'invio, generazione della password temporanea assegnata dall'Amministratore, traduzione in italiano degli errori di Supabase Auth. |
 | `src/lib/presenza.js` | 52 | trasformare i dati della presenza (script 32) in testi leggibili: nome della pagina aperta e da quanto tempo un utente è collegato. |
@@ -1805,6 +1825,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 145 file, 34.745 righe 
 | `supabase/33_audit_trail_user.sql` | 268 | 33 — AUDIT USER (solo Amministratore principale; sezione chiamata |
 | `supabase/34_sicurezza_avvisi.sql` | 203 | 34 — SICUREZZA: AVVISI, USCITA PER INATTIVITÀ, RINFORZI DEL DATABASE |
 | `supabase/35_controlli_collaudo.sql` | 216 | ripetere nel database i controlli aggiunti nel portale dopo il primo rapporto di collaudo (Andrea Valentini, Albina Ambrogio, Andrea Pavan, Gianluca Tapparini, Luca Belfiore). Anche se il portale avesse un errore, il database… |
+| `supabase/36_notizie.sql` | 169 | 36 — NEWS: OSSERVATORIO SUI CREDITI DI CARBONIO VOLONTARI |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
@@ -1815,6 +1836,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 145 file, 34.745 righe 
 | `supabase/functions/consultazione-pubblica/index.ts` | 432 | servizio della pagina pubblica delle consultazioni (requisiti §6, decisioni B e D del 18/10/2026). Chiunque, senza account, può: - "elenco": vedere le consultazioni aperte; - "dettaglio": leggere documento, errata corrige e… |
 | `supabase/functions/crea-utente/index.ts` | 263 | crea un nuovo utente con password temporanea e imposta ruolo + organizzazione. All'utente parte un'email con indirizzo del portale, email di accesso e password temporanea (Resend, funzione inviaEmailAccesso in fondo al file); se… |
 | `supabase/functions/invia-email-notifica/index.ts` | 160 | invia per email ogni nuova notifica del portale (requisiti §9: "email + notifica interna"). |
+| `supabase/functions/notizie/index.ts` | 405 | osservatorio News per gli Amministratori (richiesta di Luca Moretti del 21/10/2026). Ogni 2 ore cerca notizie sul mondo dei crediti di carbonio volontari (mercato volontario, marketplace e borse, prezzi dei crediti scambiati o… |
 | `supabase/functions/recupera-password/index.ts` | 155 | «Password dimenticata?» — genera il collegamento di recupero di Supabase Auth e spedisce l'email in italiano con Resend (stessa grafica delle notifiche), invece del modello email di Supabase. |
 | `supabase/functions/reimposta-password/index.ts` | 218 | l'Amministratore assegna una nuova password temporanea a un utente (Cliente od Operatore) che l'ha dimenticata. Al primo accesso il portale obbliga l'utente a sceglierne una personale (script 15). |
 
@@ -1829,6 +1851,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 145 file, 34.745 righe 
 | `test/csv.test.mjs` | 53 | verifica che i CSV salvati da Excel in italiano (BOM, separatore ";", virgola decimale, punto delle migliaia, testi tra virgolette con ";" dentro, righe vuote) siano letti correttamente; che intestazioni con maiuscole/accenti… |
 | `test/date.test.mjs` | 31 | verificare le date in ora italiana usate per aprire le consultazioni (30 giorni) e per i nomi dei file: oggiItalia() deve dare sempre aaaa-mm-gg in fuso Europe/Rome, aggiungiGiorni() deve contare i giorni sul calendario (fine… |
 | `test/inattivita.test.mjs` | 24 | — |
+| `test/notizie.test.mjs` | 81 | verificare che - un feed di Google News e uno di un sito (WordPress) si leggano con titolo senza testata, indirizzo, fonte, data ed estratto senza HTML; - la stessa notizia da due ricerche dia la stessa chiave; - il pre-filtro… |
 | `test/ordinamento.test.mjs` | 36 | — |
 | `test/presenza.test.mjs` | 33 | — |
 | `test/qualita.test.mjs` | 43 | verificare il confronto con la Tabella 3 dello Standard CWP (soglia ±30%) e gli indicatori di completezza, unicità, letture a buon fine e tempestività. |
@@ -1841,14 +1864,14 @@ Inventario generato da `strumenti/inventario_codice.py`: 145 file, 34.745 righe 
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `strumenti/genera_base_conoscenza.cjs` | 87 | unisce i testi dei manuali e delle tariffe in due file che la funzione del server «assistente» (supabase/functions/assistente) legge e passa a Claude come contesto: - public/assistente/kb-comune.md: per gli utenti degli enti… |
+| `strumenti/genera_base_conoscenza.cjs` | 88 | unisce i testi dei manuali e delle tariffe in due file che la funzione del server «assistente» (supabase/functions/assistente) legge e passa a Claude come contesto: - public/assistente/kb-comune.md: per gli utenti degli enti… |
 | `strumenti/genera_documenti.cjs` | 583 | genera in Word (.docx) e PDF i documenti del portale, con copertina e loghi, registro delle revisioni, sommario con numeri di pagina, intestazione e piè di pagina: |
 | `strumenti/genera_esempi_tracciato.py` | 101 | genera i file di prova del tracciato dati per i test automatici (test/tracciato.test.mjs) e per il collaudo manuale (Manuale Test): - test/dati/tracciato_esempio.xlsx : tracciato compilato, Banca Dati con totali (foglio 5) -… |
 | `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1048 | — |
+| `strumenti/revisioni_documenti.json` | 1084 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

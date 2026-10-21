@@ -31,6 +31,7 @@ Nel portale la Fondazione lavora con due ruoli:
 
 Gli **Amministratori** possono essere più di uno e hanno tutti accesso completo a tutti i dati. Un Amministratore può nominare altri Amministratori (capitolo «Gestione utenti»). L'**Amministratore principale** è luca.moretti@operate.it: nessuno lo può modificare, disattivare o cancellare.
 | Documentazione (Registro e questo manuale) | — | sì |
+| News: osservatorio sui crediti di carbonio volontari | — | sì |
 
 L'**Ente di Validazione** (RINA) non ha un accesso al portale: i suoi rapporti vengono caricati dall'Operatore nella pratica.
 
@@ -49,7 +50,7 @@ Si accede da [portale-cwp.vercel.app](https://portale-cwp.vercel.app) con **Emai
 | Ruolo | Voci di menu |
 | --- | --- |
 | Operatore | Dashboard, Pratiche, Anagrafiche, Simulatore, Crediti emessi, Reclami, Manuale |
-| Amministratore | Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, Audit User (solo l'Amministratore principale), Documentazione; **Marketplaces** in grigio, non cliccabile (sezione in arrivo) |
+| Amministratore | Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, Audit User (solo l'Amministratore principale), Documentazione, News; **Marketplaces** in grigio, non cliccabile (sezione in arrivo) |
 
 **Ordinare tabelle ed elenchi.** Ogni tabella del portale si ordina per qualsiasi colonna: fate clic sull'intestazione per l'ordine crescente (freccia ▲) e di nuovo per il decrescente (▼); le colonne non ordinate mostrano ↕. Vale per Dashboard, Audit, Calcolo crediti, Registro dei crediti, Simulatore (scenari, risultati, costi e parte economica) e per le tabelle del calcolo. Gli elenchi a schede (Pratiche, Utenti, Organizzazioni, Enti di Validazione, Registri, Reclami, Crediti emessi, documenti, pagamenti e Rapporti di una pratica) hanno in alto il menu **Ordina per** con il pulsante ▲/▼ del verso; «ordine predefinito» torna all'ordine iniziale. I valori vuoti restano sempre in fondo. Le tabelle in cui si inseriscono i dati anno per anno restano in ordine di anno.
 
@@ -996,6 +997,49 @@ Dalla voce **Documentazione** del menu (e da **Il mio profilo**) l'Amministrator
 **Documenti ufficiali del Programma.** In fondo alla pagina Documentazione ci sono gli **8 documenti ufficiali del Programma Carbon WastePrint® versione 1.2** (04/09/2025): 0. Guida al Programma, 1. Definizioni, 2. Normativa di riferimento, 3. Standard, 4. Metodologia, 5. Politica di reclamo, 6. Schema tariffario, 7. Gestione della qualità dei dati. **Apri PDF** li apre in una nuova scheda, **Scarica** li salva. Sono gli stessi pubblicati sulla pagina pubblica del Programma e si aggiornano da Impostazioni → Modelli (categoria «programma»).
 
 Gli Operatori trovano il Manuale Utente nella voce **Manuale** del menu, i Comuni nella voce **Manuali**; i Comuni anche in **I tuoi documenti**. Ogni documento riporta in copertina il numero di revisione e la data; a ogni nuova funzione si aggiornano insieme i manuali, il Registro e la Presentazione di riepilogo. Per la presentazione il secondo pulsante è **Scarica PowerPoint**.
+
+## News: osservatorio sui crediti di carbonio volontari
+
+La voce **News** del menu, riservata agli Amministratori, raccoglie le notizie dal mondo dei **crediti di carbonio volontari**:
+
+- mercato volontario;
+- marketplace e borse di scambio;
+- prezzi e valori unitari dei crediti scambiati o venduti;
+- standard e registri;
+- regole e politiche;
+- progetti, in particolare nel settore dei rifiuti e dell'economia circolare.
+
+**Come funziona.** Ogni 2 ore (al minuto 7 delle ore pari, ora del server) il portale cerca le notizie degli ultimi 7 giorni:
+
+- su Google News, con 12 ricerche mirate in italiano e in inglese;
+- su tre siti specializzati: Carbon Herald, Ecosystem Marketplace, CarbonCredits.com.
+
+Ogni notizia nuova passa da un primo filtro sulle parole chiave e poi la controlla **Claude**, che decide se è **attinente** al mondo dei crediti di carbonio volontari, oggetto del portale, e prepara:
+
+- il titolo e una sintesi di 2-3 frasi in italiano;
+- la categoria;
+- la rilevanza da 1 a 5 per il Programma CWP (5 = impatto diretto: crediti dal settore dei rifiuti, mercato italiano, prezzi di crediti simili);
+- i prezzi citati.
+
+**Cosa non è attinente:**
+
+- il solo mercato regolato EU ETS, senza legame con i crediti volontari;
+- certificati verdi o bianchi del GSE e garanzie d'origine, che sono strumenti dell'energia diversi dai crediti di carbonio;
+- notizie generiche su clima, energia o ESG.
+
+**La pagina.**
+
+- In alto: la **data dell'ultima ricerca** e della prossima, il pulsante **Registro ricerche** (ultime ricerche con esito e numeri) e **Aggiorna ora**, che lancia subito una ricerca (al massimo una ogni 10 minuti; servono 20-60 secondi).
+- Il riquadro **Prezzi citati negli ultimi 30 giorni** raccoglie i valori unitari trovati negli articoli. Sono valori riportati dalle fonti e non verificati: controllate sempre l'articolo.
+- **Filtri:** categoria (Prezzi e scambi, Marketplace e borse, Standard e registri, Regole e politiche, Progetti, Mercato e domanda, Altro), ricerca libera, periodo e rilevanza minima.
+- Ogni notizia si apre nella fonte originale con il titolo. **Nascondi** la toglie dall'elenco per tutti gli Amministratori; con «Mostra le nascoste» si rimette.
+- **Mostra le scartate dal filtro** fa vedere anche le notizie giudicate non attinenti, con il motivo: serve a controllare il filtro. Se una notizia utile è stata scartata, segnalatelo per correggere le istruzioni del filtro.
+
+**Costi e sicurezza.**
+
+- Il controllo usa la stessa chiave Claude dell'assistente (`ANTHROPIC_API_KEY`) con il modello Haiku: legge solo titoli ed estratti brevi, con una spesa di pochi centesimi al giorno.
+- Le notizie e il registro delle ricerche si leggono solo con un accesso da Amministratore (regole del database, script 36).
+- La funzione del server accetta al massimo una ricerca ogni 100 minuti da chi non è Amministratore: una chiamata esterna non può far spendere crediti.
 
 ## Assistente virtuale
 

@@ -160,14 +160,18 @@ Si eseguono con `npm test` prima di ogni rilascio; l'ultimo esito è sempre «tu
 | `collaudo_v01.test.mjs` | 27 | D01-D07, R04, R05, casi ordinari S e C, R01/R02 fissati |
 | `collaudo_v05.test.mjs` | 4 | D05-R1: testi lunghi, aggiunta/rimozione, 80/81 caratteri, ricerca |
 | `assistente.test.mjs` | 4 | Riepilogo della pratica per l'assistente, copia identica nella funzione del server, base di conoscenza degli Operatori |
+| `notizie.test.mjs` | 7 | Osservatorio News: lettura dei feed RSS (Google News e siti), chiave dei titoli, pre-filtro, lettura della risposta di Claude, categorie uguali allo script 36, copia identica nella funzione del server |
 
-**Ultima esecuzione:** 21/10/2026 11:42, 14 serie superate.
+**Ultima esecuzione:** 21/10/2026 11:55, 15 serie superate.
 
 ### Prove del database (banco locale)
 
 Ogni script del database è provato su una copia locale di Postgres 16 con tutti gli script, prima dell'esecuzione in produzione. Le prove sono nei file `t8.sql` … `t35.sql`: permessi per ruolo, rifiuti attesi, immutabilità dell'audit, conferma dei calcoli, emissioni, avvisi di sicurezza, vincoli del collaudo.
 
-Ultima prova: `t35.sql` del 20/10/2026, con 11 rifiuti attesi, conferma ordinaria possibile e rieseguibilità con dati vecchi.
+Ultime prove:
+
+- `t35.sql` del 20/10/2026: 11 rifiuti attesi, conferma ordinaria possibile e rieseguibilità con dati vecchi;
+- `t36.sql` del 21/10/2026 (News): limite di una ricerca ogni 100 minuti (10 con l'Amministratore), doppioni rifiutati, l'Amministratore legge e nasconde, Operatore, Cliente e anonimo non vedono nulla, scrittura diretta e avvio della ricerca negati dal portale.
 
 **Prova di ripristino da backup (21/10/2026 11:15).**
 - **Procedura:** il banco, popolato con le prove, è stato esportato come un backup automatico (35 tabelle e 3 utenti). Il database è stato ricostruito con gli script 01-35 ed è stato eseguito `ripristino_dati.sql` generato da `strumenti/backup/genera_sql_ripristino.mjs`.
@@ -197,3 +201,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 21/10/2026 11:20 | R08 corretto e da ritestare; prova di ripristino da backup nel registro dei test |
 | 21/10/2026 11:40 | Nuova serie di prove dell'assistente (14 serie) |
 | 21/10/2026 11:45 | ISS-035: PDF ed Excel della simulazione con tutti i dati e i grafici |
+| 21/10/2026 11:57 | Nuove prove dell'osservatorio News (`notizie.test.mjs`, `t36.sql`); 15 serie |

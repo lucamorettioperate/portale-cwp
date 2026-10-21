@@ -21,7 +21,8 @@
    - RPC definite in 05, 06, 07, 08, 09, 10, 13, 17;
    - archivi Storage `documenti` (04_storage.sql, limiti in 14),
      `modelli` e `allegati-consultazione` (17_pratiche.sql);
-   - Edge Functions crea-utente, reimposta-password, consultazione-pubblica.
+   - Edge Functions crea-utente, reimposta-password, consultazione-pubblica,
+     notizie (osservatorio News, script 36).
 
    Sicurezza: il browser usa solo la chiave anon con la sessione
    dell'utente. Chi può fare cosa lo decide il database (RLS, trigger,
@@ -1125,4 +1126,51 @@ export async function salvaReclamo({ id, pratica, ...campi }) {
 // Utenti dello staff (per assegnare il gestore di un reclamo).
 export async function elencaStaff() {
   return await supabase.from("profilo").select("id, nome_completo, ruolo").in("ruolo", ["operatore", "admin"]).eq("attivo", true).order("nome_completo");
+}
+
+// ---- News: osservatorio sui crediti di carbonio volontari (script 36) ----
+// Solo Amministratori: le regole RLS di notizia e notizie_esecuzione
+// restituiscono zero righe a tutti gli altri.
+
+// Notizie, le più recenti prima. scartate = true per vedere anche quelle
+// giudicate non attinenti (controllo del filtro); nascoste comprese a
+// richiesta. Al massimo «limite» righe.
+export async function elencaNotizie({ scartate = false, nascoste = false, limite = 600 } = {}) {
+  let q = supabase
+    .from("notizia")
+    .select("id, url, titolo, titolo_it, fonte, pubblicata_il, trovata_il, ricerca, lingua, attinente, categoria, rilevanza, sintesi, prezzi, motivo, nascosta")
+    .order("pubblicata_il", { ascending: false, nullsFirst: false })
+    .order("id", { ascending: false })
+    .limit(limite);
+  if (!scartate) q = q.eq("attinente", true);
+  if (!nascoste) q = q.eq("nascosta", false);
+  return await q;
+}
+
+// Ultime ricerche (quando, esito, quante notizie): tabella notizie_esecuzione.
+export async function ultimeRicercheNotizie(limite = 12) {
+  return await supabase.from("notizie_esecuzione").select("*").order("avviata_il", { ascending: false }).limit(limite);
+}
+
+// Nasconde o rimette una notizia: RPC notizia_nascondi.
+export async function nascondiNotizia(id, nascosta = true) {
+  return await supabase.rpc("notizia_nascondi", { p_id: id, p_nascosta: nascosta });
+}
+
+// «Aggiorna ora»: chiama la funzione del server «notizie» con il token
+// dell'Amministratore. Restituisce { data: { esito, lette, nuove,
+// attinenti } | { saltata, motivo }, error }.
+export async function aggiornaNotizie() {
+  const { data, error } = await supabase.functions.invoke("notizie", { body: { origine: "manuale" } });
+  if (error) {
+    let motivo = error.message;
+    try {
+      const corpo = await error.context?.json();
+      if (corpo?.error) motivo = corpo.error;
+    } catch {
+      /* corpo non leggibile: resta il messaggio generico */
+    }
+    return { data: null, error: { message: motivo } };
+  }
+  return { data, error: null };
 }

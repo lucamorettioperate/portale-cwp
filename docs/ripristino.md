@@ -38,7 +38,7 @@ Il portale non ha un server proprio: è distribuito su sei servizi. Sapere che c
 
 | Servizio | Che cosa contiene | Se si perde |
 | --- | --- | --- |
-| **GitHub** (lucamorettioperate/portale-cwp) | Tutto il codice, gli script del database (01-35), le funzioni del server, i manuali e la loro storia | Si recupera dal ramo `snapshot-…` o dal file `.bundle` dell'archivio di backup |
+| **GitHub** (lucamorettioperate/portale-cwp) | Tutto il codice, gli script del database (01-36), le funzioni del server, i manuali e la loro storia | Si recupera dal ramo `snapshot-…` o dal file `.bundle` dell'archivio di backup |
 | **Vercel** (progetto portale-cwp) | Solo la pubblicazione del portale; nessun dato | Si ricrea in 10 minuti collegando di nuovo GitHub |
 | **Supabase** (organizzazione Fondazione Operate, progetto portale-cwp) | Database (pratiche, utenti, audit, impostazioni), file caricati, funzioni del server, lavori pianificati, chiavi | La struttura si ricrea dagli script; **i dati e i file solo da una copia** (capitolo «Copie di sicurezza») |
 | **Resend** | Invio delle email; chiave API e verifica del dominio | Nuovo account o nuova chiave, poi aggiornare Supabase |
@@ -117,7 +117,7 @@ Dal 21/10/2026 (richiesta di Luca) un programma in **Google Apps Script**, nell'
 
 | Cartella | Contenuto |
 | --- | --- |
-| `1_codice` | ZIP del codice da GitHub (ramo main): portale, script del database 01-35, funzioni del server, manuali, strumenti di ripristino; `commit.json` con il commit di riferimento |
+| `1_codice` | ZIP del codice da GitHub (ramo main): portale, script del database 01-36, funzioni del server, manuali, strumenti di ripristino; `commit.json` con il commit di riferimento |
 | `2_database` | Un file JSON per ogni tabella del database, `auth_utenti.json` (utenti con id ed email, **senza password**: non si possono esportare) e `conteggi.json` |
 | `3_file` | Tutti i file degli archivi `documenti`, `modelli` e `allegati-consultazione`, con le stesse sottocartelle, ed `elenco_file.json` |
 | `4_servizi` | Configurazione di Supabase, Vercel e Resend: nomi delle funzioni e dei segreti, impostazioni di Auth, variabili di Vercel, domini Resend. **Mai i valori segreti** |
@@ -148,7 +148,7 @@ Se la chiave service_role di Supabase cambia, aggiornate la proprietà dello scr
 Si usa quando dati o progetto Supabase sono persi. Serve un computer con Node 18+ e, per i dati grandi, `psql` (lo sviluppatore).
 
 1. **Scegliete il backup**: l'ultima cartella con `esito.json` → `"completo": true`. Scaricatela dal Drive (tasto destro → *Scarica*) e scompattate lo ZIP di `1_codice`.
-2. **Nuovo progetto Supabase** ed esecuzione degli script 01-35, come nel capitolo «Supabase: ricostruzione da zero», passi 1 e 2.
+2. **Nuovo progetto Supabase** ed esecuzione degli script 01-36, come nel capitolo «Supabase: ricostruzione da zero», passi 1 e 2.
 3. **Dati**: dalla cartella del codice scompattato eseguite
    `node strumenti/backup/genera_sql_ripristino.mjs <cartella 2_database> ripristino_dati.sql`,
    poi `psql "<stringa di connessione del nuovo progetto>" -f ripristino_dati.sql`. Se il file è piccolo si può incollare nel SQL Editor.
@@ -252,19 +252,27 @@ Se il progetto Supabase è stato cancellato, lo sviluppatore lo ricostruisce in 
 
 ### 2. Struttura del database (script)
 
-Nel *SQL Editor* eseguite gli script della cartella `supabase/` del repository, **uno alla volta e in ordine di numero**, da `01_schema.sql` a `35_controlli_collaudo.sql`:
+Nel *SQL Editor* eseguite gli script della cartella `supabase/` del repository, **uno alla volta e in ordine di numero**, da `01_schema.sql` a `36_notizie.sql`:
 
 - **non** eseguite `schema_completo.sql`: è una vecchia fotografia, superata dagli script numerati;
 - `03_dati_esempio.sql` crea solo dati di prova (Comune di Borgoval): eseguitelo solo per un ambiente di prova;
 - se compare l'avviso *Potential issue detected*, confermate con *Run this query*: gli script sono pensati per essere rieseguibili;
 - **prima** di `25_documenti_programma.sql` caricate gli 8 PDF della cartella `4-documenti-ufficiali-CWP` nella radice dell'archivio **modelli** (*Storage* › modelli › *Upload*), con gli stessi nomi di file;
-- gli script dal 28 al 35 aggiungono simulatore, Amministratore principale (29), eliminazione degli utenti mai attivi, assistente, utenti online, Audit User, avvisi di sicurezza (34) e i controlli dei dati chiesti dal collaudo (35); il 35 termina con un conteggio di sola lettura che su un database nuovo vale 0 in tutte le righe;
+- gli script dal 28 al 35 aggiungono simulatore, Amministratore principale (29), eliminazione degli utenti mai attivi, assistente, utenti online, Audit User, avvisi di sicurezza (34) e i controlli dei dati chiesti dal collaudo (35) e l'osservatorio News (36); il 35 termina con un conteggio di sola lettura che su un database nuovo vale 0 in tutte le righe;
 - **dopo** `12_email_notifiche.sql` aggiornate l'indirizzo della funzione email con quello del nuovo progetto:
 
 ```sql
 update impostazione
    set valore = 'https://<nuovo-progetto>.supabase.co/functions/v1/invia-email-notifica'
  where chiave = 'url_email_notifiche';
+```
+
+- **dopo** `36_notizie.sql`, allo stesso modo, l'indirizzo della funzione delle News:
+
+```sql
+update impostazione
+   set valore = 'https://<nuovo-progetto>.supabase.co/functions/v1/notizie'
+ where chiave = 'url_notizie';
 ```
 
 ### 3. Dati e file (se esiste una copia)
@@ -288,7 +296,7 @@ Senza una copia dei dati il portale riparte vuoto: struttura, impostazioni e pag
 
 ### 4. Funzioni del server (Edge Functions)
 
-Create le sei funzioni con lo **stesso nome**, incollate il codice da `supabase/functions/<nome>/index.ts` e premete *Deploy*. Dopo la pubblicazione controllate l'impostazione **Verify JWT**:
+Create le sette funzioni con lo **stesso nome**, incollate il codice da `supabase/functions/<nome>/index.ts` e premete *Deploy*. Dopo la pubblicazione controllate l'impostazione **Verify JWT**:
 
 | Funzione | Verify JWT |
 | --- | --- |
@@ -298,6 +306,7 @@ Create le sei funzioni con lo **stesso nome**, incollate il codice da `supabase/
 | `consultazione-pubblica` | **Disattivato** (pagina pubblica senza accesso) |
 | `recupera-password` | **Disattivato** (chi l'ha dimenticata non è entrato) |
 | `invia-email-notifica` | **Disattivato** (la chiama il database) |
+| `notizie` | **Disattivato** (la chiama il lavoro pianificato ogni 2 ore; si protegge da sola: al massimo una ricerca ogni 100 minuti senza accesso di un Amministratore) |
 
 ### 5. Chiavi delle funzioni (le inserisce Luca)
 
@@ -306,7 +315,7 @@ Create le sei funzioni con lo **stesso nome**, incollate il codice da `supabase/
 - `RESEND_API_KEY`: chiave API di Resend;
 - `EMAIL_MITTENTE`: il mittente sul dominio verificato (dopo la verifica del dominio);
 - `PORTALE_URL`: l'indirizzo del portale, se diverso da portale-cwp.vercel.app;
-- `ANTHROPIC_API_KEY`: chiave della Claude Console per l'assistente virtuale. Deve essere legata a **un solo spazio di lavoro** (workspace): una chiave «per tutti gli spazi di lavoro» viene rifiutata. L'organizzazione della Console deve avere credito (crediti mensili del piano Max collegato oppure crediti acquistati).
+- `ANTHROPIC_API_KEY`: chiave della Claude Console per l'assistente virtuale e per il filtro delle News. Deve essere legata a **un solo spazio di lavoro** (workspace): una chiave «per tutti gli spazi di lavoro» viene rifiutata. L'organizzazione della Console deve avere credito (crediti mensili del piano Max collegato oppure crediti acquistati).
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY` le fornisce Supabase da solo.
 
@@ -334,11 +343,11 @@ Gli altri utenti li crea poi l'Amministratore dal portale (*Gestione utenti*).
 ### 8. Collegare il portale e verificare
 
 1. Su Vercel aggiornate `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` con i valori del nuovo progetto. Nel file `vercel.json` del repository sostituite l'indirizzo del vecchio progetto (`ajxrnofgunynkynozmrn.supabase.co`, 4 volte) con quello nuovo, nella regola `Content-Security-Policy`: altrimenti il browser blocca i collegamenti al database e il portale non funziona. Poi ripubblicate (*Deployments* › *Redeploy*).
-2. Verifiche: accesso come Amministratore principale, con il menu completo (fino ad Audit User) e la scheda Accessi di Audit User che registra l'accesso appena fatto; la pagina /programma mostra gli 8 documenti, la PEC e il soggetto promotore; un utente di prova riceve l'email; l'assistente risponde; i lavori pianificati sono tre:
+2. Verifiche: accesso come Amministratore principale, con il menu completo (fino ad Audit User) e la scheda Accessi di Audit User che registra l'accesso appena fatto; la pagina /programma mostra gli 8 documenti, la PEC e il soggetto promotore; un utente di prova riceve l'email; l'assistente risponde; nella pagina News «Aggiorna ora» completa una ricerca; i lavori pianificati sono quattro:
 
 ```sql
 select jobname, schedule from cron.job order by jobname;
--- attesi: cwp_avvisi_crediti, cwp_notifiche_scadenze, cwp_riprova_email
+-- attesi: cwp_avvisi_crediti, cwp_notifiche_scadenze, cwp_notizie, cwp_riprova_email
 ```
 
 Infine annotate il ripristino nel **Registro sviluppo e deploy** (cronologia), con data, causa e copia usata.
