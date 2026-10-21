@@ -8,7 +8,11 @@
        Utente + tariffe e costi);
      - public/assistente/kb-amministratore.md: per gli Amministratori
        (Manuale Utente + Manuale Amministratore + tariffe e costi + note sul
-       calcolo dei crediti e sul simulatore).
+       calcolo dei crediti e sul simulatore);
+     - public/assistente/kb-operatore.md (dal 21/10/2026): per gli
+       Operatori (Manuale Utente + Manuale Amministratore SENZA i capitoli
+       delle funzioni riservate agli Amministratori, elencati in
+       CAPITOLI_SOLO_ADMIN + tariffe e costi).
    I commenti HTML dei sorgenti (<!-- … -->) si tolgono.
    Uso: node strumenti/genera_base_conoscenza.cjs (a ogni rilascio, dopo
      aver aggiornato i manuali; è nella regola di rilascio del Registro).
@@ -40,9 +44,44 @@ const amministratore = [
   parte("Note sul calcolo dei crediti e sul simulatore", leggi("docs/crediti-cwp.md")),
 ].join("");
 
+// Capitoli del Manuale Amministratore che riguardano funzioni riservate agli
+// Amministratori: non entrano nella base di conoscenza degli Operatori.
+// Se si aggiunge un capitolo «solo Amministratori» al manuale, va aggiunto qui.
+const CAPITOLI_SOLO_ADMIN = [
+  "Gestione utenti",
+  "Audit User",
+  "Audit trail",
+  "Impostazioni",
+  "Calcolo dei crediti CWP",
+  "Backup automatico",
+  "Documentazione e manuali",
+  "Sicurezza",
+  "Manutenzione ed emergenze",
+];
+// Toglie dal testo Markdown i capitoli «## …» il cui titolo inizia con uno
+// di quelli indicati (fino al capitolo successivo).
+function senzaCapitoli(testo, titoli) {
+  return testo
+    .split(/\n(?=## )/)
+    .filter((blocco) => !titoli.some((t) => blocco.startsWith("## " + t)))
+    .join("\n");
+}
+
+const operatore = [
+  `# Base di conoscenza del Portale Carbon WastePrint — Operatori di back-office (generata il ${oggi})`,
+  parte("Manuale Utente", leggi("docs/manuale-utente.md")),
+  parte("Manuale Amministratore (capitoli per l'Operatore)", senzaCapitoli(leggi("docs/manuale-amministratore.md"), CAPITOLI_SOLO_ADMIN)),
+  parte("Tariffe e costi", leggi("docs/conoscenza/tariffe.md")),
+].join("");
+
 const uscita = path.join(RADICE, "public", "assistente");
 fs.mkdirSync(uscita, { recursive: true });
 fs.writeFileSync(path.join(uscita, "kb-comune.md"), comune);
 fs.writeFileSync(path.join(uscita, "kb-amministratore.md"), amministratore);
+fs.writeFileSync(path.join(uscita, "kb-operatore.md"), operatore);
 console.log(`kb-comune.md: ${comune.length.toLocaleString("it-IT")} caratteri`);
 console.log(`kb-amministratore.md: ${amministratore.length.toLocaleString("it-IT")} caratteri`);
+console.log(`kb-operatore.md: ${operatore.length.toLocaleString("it-IT")} caratteri`);
+
+// Per le prove (test/assistente.test.mjs).
+module.exports = { senzaCapitoli, CAPITOLI_SOLO_ADMIN };

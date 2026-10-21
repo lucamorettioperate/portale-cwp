@@ -405,7 +405,7 @@ In basso a destra di ogni pagina trovate il pulsante **✦ Assistente**: apre un
 2. Scrivete la domanda, oppure scegliete uno degli esempi, e premete **Invio**. Mentre prepara la risposta compare «Un attimo…»: di solito bastano pochi secondi.
 3. Con **Nuova** ricominciate da capo; con **✕** chiudete la finestra.
 
-L'assistente risponde solo con le informazioni di questo manuale e delle tariffe del Programma; **non vede le vostre pratiche** e non fa operazioni al posto vostro. Le risposte possono contenere errori: in caso di dubbio vale il manuale, oppure scrivete a Fondazione Operate con i Messaggi della pratica. Le domande e le risposte non vengono salvate; c'è un limite di domande al giorno.
+L'assistente risponde con le informazioni di questo manuale e delle tariffe del Programma e non fa operazioni al posto vostro. **Se lo aprite dalla pagina di una vostra pratica** vede anche un riepilogo di quella pratica: stato, fasi e scadenze, documenti richiesti non ancora caricati, integrazioni aperte, pagamenti da saldare. Potete chiedere, per esempio, «A che punto è questa pratica?» o «Quali documenti mancano?». Dalle altre pagine non vede le vostre pratiche. Le risposte possono contenere errori: in caso di dubbio vale il manuale, oppure scrivete a Fondazione Operate con i Messaggi della pratica. Le domande e le risposte non vengono salvate; c'è un limite di domande al giorno.
 
 ## Collegamento al portale
 

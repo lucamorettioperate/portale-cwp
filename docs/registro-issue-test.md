@@ -158,8 +158,9 @@ Si eseguono con `npm test` prima di ogni rilascio; l'ultimo esito è sempre «tu
 | `inattivita.test.mjs` | 3 | Uscita per inattività |
 | `collaudo_v01.test.mjs` | 27 | D01-D07, R04, R05, casi ordinari S e C, R01/R02 fissati |
 | `collaudo_v05.test.mjs` | 4 | D05-R1: testi lunghi, aggiunta/rimozione, 80/81 caratteri, ricerca |
+| `assistente.test.mjs` | 4 | Riepilogo della pratica per l'assistente, copia identica nella funzione del server, base di conoscenza degli Operatori |
 
-**Ultima esecuzione:** 21/10/2026 11:20, 13 serie superate.
+**Ultima esecuzione:** 21/10/2026 11:40, 14 serie superate.
 
 ### Prove del database (banco locale)
 
@@ -193,3 +194,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 |---|---|
 | 21/10/2026 10:55 | Prima emissione: ricostruite 34 segnalazioni dal 17/10 e i rilievi dei collaudi V01 e V05, con le azioni correttive e il registro dei test |
 | 21/10/2026 11:20 | R08 corretto e da ritestare; prova di ripristino da backup nel registro dei test |
+| 21/10/2026 11:40 | Nuova serie di prove dell'assistente (14 serie) |

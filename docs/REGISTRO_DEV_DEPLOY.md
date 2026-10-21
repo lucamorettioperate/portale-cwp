@@ -522,6 +522,16 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 21 ottobre 2026
+- **Assistente, seconda fase** (backlog 21) — aperto agli **Operatori** con
+  una base di conoscenza propria (`kb-operatore.md`: Manuale Utente +
+  Manuale Amministratore senza i capitoli riservati agli Amministratori,
+  elenco `CAPITOLI_SOLO_ADMIN` in `strumenti/genera_base_conoscenza.cjs`) e
+  **riepilogo della pratica aperta**: dalla pagina di una pratica il portale
+  manda l'id e la funzione `assistente` legge stato, fasi e scadenze,
+  documenti richiesti mancanti, integrazioni, pagamenti e feedback pubblico
+  con i permessi di chi chiede (`riassuntoPratica` in
+  `src/lib/contestoPratica.js`, copia identica nella funzione); prove
+  `test/assistente.test.mjs` (4). Funzione da ripubblicare.
 - **Backup automatico su Google Drive** (richiesta di Luca: due volte al
   giorno, alle 13 e alle 21, una cartella per backup nella cartella «Cwp»
   del suo Drive). Programma Google Apps Script `strumenti/backup/BackupCWP.gs`
@@ -1335,7 +1345,7 @@ aperte; il dettaglio è nei punti numerati qui sotto.
 - ~~Utenti online (punto 38)~~, ~~messaggi d'errore dell'assistente in
   italiano (punto 39)~~ e ~~PDF ed Excel del simulatore (punto 37)~~ —
   fatti il 20/10 e attivi in produzione.
-- Assistente: Operatori e aiuto sulla singola pratica (punto 21).
+- ~~Assistente: Operatori e aiuto sulla singola pratica (punto 21)~~ — fatto il 21/10.
 - Simulatore: conferma del modello ed eventuale visione da parte del Comune
   (punto 37).
 - Sicurezza (punti 14-18 e 30) e passaggio ai piani a pagamento (punto 29).
@@ -1639,7 +1649,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 143 file, 33.879 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 145 file, 34.252 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1680,7 +1690,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 143 file, 33.879 righe 
 | File | Righe | Cosa contiene |
 |---|---|---|
 | `src/components/AccountDisattivato.jsx` | 39 | Nessuna prop: legge email ed esci() da useAuth(). |
-| `src/components/AssistenteVirtuale.jsx` | 196 | pulsante «Assistente» in basso a destra che apre una finestra di conversazione. Le domande vanno alla funzione del server «assistente» (supabase/functions/assistente), che risponde con Claude usando solo la base di conoscenza… |
+| `src/components/AssistenteVirtuale.jsx` | 218 | pulsante «Assistente» in basso a destra che apre una finestra di conversazione. Le domande vanno alla funzione del server «assistente» (supabase/functions/assistente), che risponde con Claude usando solo la base di conoscenza… |
 | `src/components/Badge.jsx` | 37 | etichetta colorata compatta per mostrare uno stato (pratica, fase, documento, pagamento, calcolo…). Solo grafica. |
 | `src/components/BarraFasi.jsx` | 72 | barra orizzontale di 7 «luci», una per fase (richiesta di Luca del 19/10/2026). Le fasi completate sono accese, quelle ancora da fare spente. Le luci accese delle fasi 1-6 sono ambra; la settima (Chiusura) è verde. La fase in… |
 | `src/components/Consultazione.jsx` | 435 | riquadro «Feedback pubblico» (il termine della Guida al Programma, cap. 3.9) di un Progetto o di un Rapporto di Monitoraggio (fase 3, requisiti §6; per i Rapporti Guida 6.3.1, script 23). Lo staff apre il feedback pubblicando un… |
@@ -1717,6 +1727,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 143 file, 33.879 righe 
 | `src/lib/AuthContext.jsx` | 221 | tiene in memoria la sessione Supabase Auth, il profilo applicativo (ruolo, organizzazione, flag password temporanea) e lo stato MFA. Espone le funzioni accedi, esci, richiediRecuperoPassword, cambiaPassword e caricaMfa. Ogni… |
 | `src/lib/auditDettaglio.js` | 182 | rendere riconoscibile, nelle pagine Audit e Audit User, QUALE oggetto è stato modificato e COSA è cambiato. Il database registra già tutto (trigger audit_registra, script 07/21): l'id dell'oggetto e, per le modifiche, ogni campo… |
 | `src/lib/caratteriPdf.js` | 75 | i PDF del portale usavano i caratteri standard «Helvetica» NON incorporati: ogni lettore li sostituiva con un carattere locale e, se le larghezze erano diverse, la spaziatura diventava irregolare e i glifi si sovrapponevano… |
+| `src/lib/contestoPratica.js` | 82 | trasformare i dati di UNA pratica (letti dalla funzione del server «assistente» con i permessi di chi fa la domanda) in un breve testo che l'assistente usa per rispondere a domande come «a che punto è la mia pratica?», «cosa… |
 | `src/lib/crediti/archivio.js` | 258 | crea, legge, aggiorna ed elimina i calcoli (testata e dati in calcolo_crediti) e la loro Banca Dati Utenze (righe di conferimento e di riuso), anche quando le righe sono centinaia di migliaia (invio e lettura a blocchi). Crea le… |
 | `src/lib/crediti/calcolo.js` | 545 | funzioni pure (nessun accesso al database): ricevono i dati del calcolo e restituiscono risultati intermedi e finali, con il riferimento alla formula della Metodologia accanto a ogni passaggio. |
 | `src/lib/crediti/parametri.js` | 95 | tabelle numeriche della Metodologia usate come valori iniziali di ogni calcolo: fattori di emissione per tipologia di rifiuto (Tab. 3, 4, 7), pesi specifici (Tab. 8), beni a riuso (Tab. 5), buffer (Tab. 15 e Cap. 7), giorni… |
@@ -1730,7 +1741,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 143 file, 33.879 righe 
 | `src/lib/csv.js` | 184 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
 | `src/lib/cwpProgram.js` | 185 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
 | `src/lib/date.js` | 81 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO (anche la data italiana, indipendente dal fuso del computer). |
-| `src/lib/dati.js` | 1126 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
+| `src/lib/dati.js` | 1128 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
 | `src/lib/fascicolo.js` | 357 | ZIP con: riepilogo PDF (Riepilogo.pdf, src/lib/fascicoloPdf.js), dati della pratica con l'Ente di Validazione, fasi, tutti i documenti in tutte le versioni (cartella Validazione per il rapporto dell'Ente; per i Rapporti anche il… |
 | `src/lib/fascicoloPdf.js` | 137 | un documento leggibile da stampare o archiviare insieme ai file del fascicolo: dati della pratica e dell'Ente di Validazione, fasi, elenco dei documenti (con l'impronta SHA-256), integrazioni, consultazioni pubbliche, pagamenti… |
 | `src/lib/file.js` | 158 | prima di inviare un file all'archivio controlla formato ammesso, dimensione, contenuto reale (primi byte, "firma" del formato) e prepara un nome sicuro per il percorso nell'archivio. Traduce anche gli errori dello Storage di… |
@@ -1786,7 +1797,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 143 file, 33.879 righe 
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `supabase/functions/assistente/index.ts` | 210 | assistente virtuale del portale basato su Claude (Anthropic). Risponde alle domande sul funzionamento del portale e del Programma usando SOLO una base di conoscenza: manuali e tariffe (file public/assistente/kb-*.md, generati da… |
+| `supabase/functions/assistente/index.ts` | 332 | assistente virtuale del portale basato su Claude (Anthropic). Risponde alle domande sul funzionamento del portale e del Programma usando SOLO una base di conoscenza: manuali e tariffe (file public/assistente/kb-*.md, generati da… |
 | `supabase/functions/consultazione-pubblica/index.ts` | 432 | servizio della pagina pubblica delle consultazioni (requisiti §6, decisioni B e D del 18/10/2026). Chiunque, senza account, può: - "elenco": vedere le consultazioni aperte; - "dettaglio": leggere documento, errata corrige e… |
 | `supabase/functions/crea-utente/index.ts` | 263 | crea un nuovo utente con password temporanea e imposta ruolo + organizzazione. All'utente parte un'email con indirizzo del portale, email di accesso e password temporanea (Resend, funzione inviaEmailAccesso in fondo al file); se… |
 | `supabase/functions/invia-email-notifica/index.ts` | 160 | invia per email ogni nuova notifica del portale (requisiti §9: "email + notifica interna"). |
@@ -1797,6 +1808,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 143 file, 33.879 righe 
 
 | File | Righe | Cosa contiene |
 |---|---|---|
+| `test/assistente.test.mjs` | 76 | — |
 | `test/collaudo_v01.test.mjs` | 301 | una prova per ogni difetto corretto (D01-D07) con i valori esatti del rapporto, i casi limite chiesti nella «Verifica dopo la correzione» e i casi ordinari S e C, che devono restare identici (netto 292,8 tCO₂eq/anno; 0,2928… |
 | `test/collaudo_v05.test.mjs` | 65 | Le due note reali del collaudo (OP09): testo originale e testo con la riga temporanea. |
 | `test/crediti.test.mjs` | 144 | verifica del motore di calcolo con un esempio calcolato a mano (un piccolo Comune con 2 classi domestiche e 1 non domestica). Controlla le formule 1-17, 19-22 e 28-32 (non la 18: peso specifico a consuntivo), i buffer delle… |
@@ -1815,14 +1827,14 @@ Inventario generato da `strumenti/inventario_codice.py`: 143 file, 33.879 righe 
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `strumenti/genera_base_conoscenza.cjs` | 48 | unisce i testi dei manuali e delle tariffe in due file che la funzione del server «assistente» (supabase/functions/assistente) legge e passa a Claude come contesto: - public/assistente/kb-comune.md: per gli utenti degli enti… |
+| `strumenti/genera_base_conoscenza.cjs` | 87 | unisce i testi dei manuali e delle tariffe in due file che la funzione del server «assistente» (supabase/functions/assistente) legge e passa a Claude come contesto: - public/assistente/kb-comune.md: per gli utenti degli enti… |
 | `strumenti/genera_documenti.cjs` | 583 | genera in Word (.docx) e PDF i documenti del portale, con copertina e loghi, registro delle revisioni, sommario con numeri di pagina, intestazione e piè di pagina: |
 | `strumenti/genera_esempi_tracciato.py` | 101 | genera i file di prova del tracciato dati per i test automatici (test/tracciato.test.mjs) e per il collaudo manuale (Manuale Test): - test/dati/tracciato_esempio.xlsx : tracciato compilato, Banca Dati con totali (foglio 5) -… |
 | `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 988 | — |
+| `strumenti/revisioni_documenti.json` | 1018 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

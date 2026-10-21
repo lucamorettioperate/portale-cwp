@@ -48,7 +48,7 @@ Si accede da [portale-cwp.vercel.app](https://portale-cwp.vercel.app) con **Emai
 
 | Ruolo | Voci di menu |
 | --- | --- |
-| Operatore | Dashboard, Pratiche, Anagrafiche, Crediti emessi, Reclami, Manuale |
+| Operatore | Dashboard, Pratiche, Anagrafiche, Simulatore, Crediti emessi, Reclami, Manuale |
 | Amministratore | Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, Audit User (solo l'Amministratore principale), Documentazione; **Marketplaces** in grigio, non cliccabile (sezione in arrivo) |
 
 **Ordinare tabelle ed elenchi.** Ogni tabella del portale si ordina per qualsiasi colonna: fate clic sull'intestazione per l'ordine crescente (freccia ▲) e di nuovo per il decrescente (▼); le colonne non ordinate mostrano ↕. Vale per Dashboard, Audit, Calcolo crediti, Registro dei crediti, Simulatore (scenari, risultati, costi e parte economica) e per le tabelle del calcolo. Gli elenchi a schede (Pratiche, Utenti, Organizzazioni, Enti di Validazione, Registri, Reclami, Crediti emessi, documenti, pagamenti e Rapporti di una pratica) hanno in alto il menu **Ordina per** con il pulsante ▲/▼ del verso; «ordine predefinito» torna all'ordine iniziale. I valori vuoti restano sempre in fondo. Le tabelle in cui si inseriscono i dati anno per anno restano in ordine di anno.
@@ -992,9 +992,24 @@ Gli Operatori trovano il Manuale Utente nella voce **Manuale** del menu, i Comun
 
 ## Assistente virtuale
 
-In basso a destra di ogni pagina c'è il pulsante **✦ Assistente**: apre una chat con un assistente basato su **Claude** (Anthropic) che risponde alle domande sul funzionamento del portale e del Programma. Per ora è disponibile per gli **Amministratori** e per gli **utenti degli enti**.
+In basso a destra di ogni pagina c'è il pulsante **✦ Assistente**: apre una chat con un assistente basato su **Claude** (Anthropic) che risponde alle domande sul funzionamento del portale e del Programma. È disponibile per **Amministratori**, **Operatori** (dal 21/10/2026) e **utenti degli enti**.
 
-**Cosa sa.** Risponde solo dalla sua base di conoscenza: per gli Amministratori il Manuale Utente, questo manuale, le tariffe (Schema tariffario v1.2 e costi Caso 1 e Caso 2 del 28/07/2026) e le note sul calcolo dei crediti; per gli enti il Manuale Utente e le tariffe. Se una cosa non c'è lo dice e invita a scrivere alla Fondazione. **Non vede i dati delle pratiche** e non fa operazioni: spiega dove e come farle.
+**Cosa sa.** Risponde solo dalla sua base di conoscenza, diversa per ruolo:
+- **Amministratori:** il Manuale Utente, questo manuale, le tariffe (Schema tariffario v1.2 e costi Caso 1 e Caso 2 del 28/07/2026) e le note sul calcolo dei crediti.
+- **Operatori:** il Manuale Utente, questo manuale senza i capitoli delle funzioni riservate agli Amministratori (utenti, audit, impostazioni, calcolo dei crediti, backup, sicurezza) e le tariffe.
+- **Enti:** il Manuale Utente e le tariffe.
+
+Se una cosa non c'è lo dice e invita a scrivere alla Fondazione. Non fa operazioni nel portale: spiega dove e come farle.
+
+**Domande sulla pratica aperta** (dal 21/10/2026). Se si apre l'assistente dalla pagina di una pratica (in «Pratiche» o in «Le mie pratiche»), l'assistente riceve anche un riepilogo di **quella** pratica, letto in quel momento con i permessi di chi chiede:
+- stato;
+- fasi con scadenze e giorni mancanti;
+- documenti richiesti non ancora caricati nelle fasi aperte;
+- integrazioni aperte;
+- pagamenti non saldati o scaduti;
+- feedback pubblico.
+
+Si possono chiedere cose come «A che punto è questa pratica?» o «Quali documenti mancano?». Un utente del Comune ottiene il riepilogo solo delle sue pratiche e conta solo i documenti che può vedere. Altrove l'assistente non vede i dati delle pratiche.
 
 **Come si usa.** Si scrive la domanda (o si sceglie un esempio) e si preme **Invio** o **Invia**; mentre l'assistente prepara la risposta compare «Un attimo…» (di solito pochi secondi); **Nuova** ricomincia la conversazione, **✕** chiude la finestra. La conversazione resta solo nella pagina: il portale non salva domande né risposte, conta solo quante domande fa ogni utente e i token usati (limite predefinito 40 domande al giorno per utente). Le risposte sono generate da un'intelligenza artificiale: in caso di dubbio vale il manuale.
 

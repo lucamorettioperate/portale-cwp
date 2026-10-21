@@ -197,7 +197,7 @@ export default function Header() {
       {/* Uscita automatica dopo un periodo senza attività (script 34). */}
       {backendPronto && utente && <UscitaInattivita />}
       {/* Assistente virtuale (Claude): per ora Amministratori ed enti. */}
-      {backendPronto && utente && !passwordDaCambiare && (ruolo === "admin" || ruolo === "cliente") && <AssistenteVirtuale ruolo={ruolo} />}
+      {backendPronto && utente && !passwordDaCambiare && (ruolo === "admin" || ruolo === "operatore" || ruolo === "cliente") && <AssistenteVirtuale ruolo={ruolo} />}
     </header>
   );
 }

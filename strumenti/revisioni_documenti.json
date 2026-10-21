@@ -143,6 +143,12 @@
       "data": "21/10/2026",
       "descrizione": "Domande frequenti: messaggio «Account disattivato».",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.4",
+      "data": "21/10/2026",
+      "descrizione": "Assistente: domande sulla pratica aperta.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -367,6 +373,12 @@
       "data": "21/10/2026",
       "descrizione": "Capitolo «Backup automatico».",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.7",
+      "data": "21/10/2026",
+      "descrizione": "Assistente per gli Operatori e domande sulla pratica aperta; menu dell'Operatore con il Simulatore.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -566,6 +578,12 @@
       "rev": "3.12",
       "data": "21/10/2026",
       "descrizione": "Prova 7.23: caratteri incorporati nei PDF (R08).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.13",
+      "data": "21/10/2026",
+      "descrizione": "Prove 10.11e (pratica aperta) e 10.11f (Operatore).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -845,6 +863,12 @@
       "data": "21/10/2026",
       "descrizione": "Backup automatico su Google Drive e strumenti di ripristino; R08 corretto.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.6",
+      "data": "21/10/2026",
+      "descrizione": "Assistente, seconda fase: Operatori e pratica aperta.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -982,6 +1006,12 @@
       "rev": "1.1",
       "data": "21/10/2026",
       "descrizione": "R08 corretto e da ritestare; prova di ripristino da backup.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.2",
+      "data": "21/10/2026",
+      "descrizione": "Nuova serie di prove dell'assistente.",
       "autore": "Fondazione Operate"
     }
   ]

@@ -4,8 +4,13 @@
      conversazione. Le domande vanno alla funzione del server «assistente»
      (supabase/functions/assistente), che risponde con Claude usando solo
      la base di conoscenza del portale (manuali e tariffe).
-   Chi lo vede: per ora Amministratori e utenti degli enti (ruolo cliente);
-     il controllo vero del ruolo lo fa la funzione del server.
+   Chi lo vede: Amministratori, Operatori (dal 21/10/2026) e utenti degli
+     enti; il controllo vero del ruolo lo fa la funzione del server.
+   Pratica aperta (dal 21/10/2026): se la pagina mostra una pratica
+     (indirizzo con «?id=…» in «Le mie pratiche» o in «Pratiche»), il suo id
+     va alla funzione, che risponde anche su stato, fasi, scadenze, documenti
+     mancanti, integrazioni e pagamenti di QUELLA pratica, con i permessi
+     dell'utente.
    Dati: chiediAssistente() di src/lib/dati.js. La conversazione resta solo
      nella pagina (si perde ricaricando o con «Nuova conversazione»); il
      server non salva i testi, conta solo domande e token (script 31).
@@ -16,6 +21,7 @@
    Registro sviluppo e deploy: capitolo «Portale (frontend)»; backlog 21.
    ========================================================================= */
 import React, { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import { chiediAssistente } from "../lib/dati.js";
 
@@ -23,7 +29,18 @@ import { chiediAssistente } from "../lib/dati.js";
 const ESEMPI = {
   cliente: ["Come carico un documento nella mia pratica?", "Cosa devo fare quando ricevo una richiesta di integrazione?", "Quanto costa la registrazione di un progetto?"],
   admin: ["Come creo un nuovo utente amministratore?", "Come funziona il calcolo dei crediti?", "Quali sono i costi del Caso 1 per un Comune di 20.000 abitanti?"],
+  operatore: ["Come apro la fase successiva di una pratica?", "Come chiedo un'integrazione al Comune?", "Come registro un pagamento?"],
 };
+// Domande di esempio quando è aperta una pratica.
+const ESEMPI_PRATICA = ["A che punto è questa pratica?", "Quali documenti mancano nella fase in corso?", "Ci sono scadenze o pagamenti da fare?"];
+
+// Id della pratica aperta nella pagina: «?id=…» su «/» (Le mie pratiche) o
+// su «/pratiche» (back-office); altrimenti null.
+function praticaAperta(location) {
+  if (location.pathname !== "/" && location.pathname !== "/pratiche") return null;
+  const id = new URLSearchParams(location.search).get("id");
+  return id && /^[0-9a-f-]{36}$/i.test(id) ? id : null;
+}
 
 /* Pulsante e finestra della chat. Props: ruolo («admin» o «cliente»). */
 export default function AssistenteVirtuale({ ruolo }) {
@@ -34,6 +51,7 @@ export default function AssistenteVirtuale({ ruolo }) {
   const [attesa, setAttesa] = useState(false);
   const [uso, setUso] = useState(null); // { domande_oggi, limite }
   const fondo = useRef(null);
+  const praticaId = praticaAperta(useLocation());
 
   // Scorre in fondo a ogni nuovo messaggio.
   useEffect(() => {
@@ -49,7 +67,7 @@ export default function AssistenteVirtuale({ ruolo }) {
     setMessaggi(nuovi);
     setTesto("");
     setAttesa(true);
-    const { data, error } = await chiediAssistente(nuovi.filter((m) => !m.errore).slice(-12).map(({ ruolo: r, testo: t }) => ({ ruolo: r, testo: t })));
+    const { data, error } = await chiediAssistente(nuovi.filter((m) => !m.errore).slice(-12).map(({ ruolo: r, testo: t }) => ({ ruolo: r, testo: t })), praticaId);
     setAttesa(false);
     if (error) setMessaggi((m) => [...m, { ruolo: "assistente", testo: error.message, errore: true }]);
     else {
@@ -70,7 +88,7 @@ export default function AssistenteVirtuale({ ruolo }) {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", background: C.green, color: C.white }}>
             <div>
               <div style={{ fontWeight: 700, fontSize: 14 }}>Assistente virtuale</div>
-              <div style={{ fontSize: 11, opacity: 0.85 }}>Risponde sul portale e sul Programma, dai manuali</div>
+              <div style={{ fontSize: 11, opacity: 0.85 }}>{praticaId ? "Sul portale, sul Programma e sulla pratica aperta" : "Risponde sul portale e sul Programma, dai manuali"}</div>
             </div>
             <div style={{ display: "flex", gap: 6 }}>
               {messaggi.length > 0 && (
@@ -84,9 +102,13 @@ export default function AssistenteVirtuale({ ruolo }) {
             {messaggi.length === 0 && (
               <div style={{ fontSize: 13, color: C.grafite, lineHeight: 1.5 }}>
                 Ciao! Posso aiutarti a usare il portale: come si fa un'operazione, cosa significa una fase, quanto costa una voce del
-                Programma. Non vedo i dati delle tue pratiche. Prova con una domanda:
+                Programma.{" "}
+                {praticaId
+                  ? "Vedo anche il riepilogo della pratica aperta in questa pagina (stato, fasi, documenti mancanti, pagamenti)."
+                  : "Se apri una pratica e mi scrivi da lì, posso rispondere anche su quella pratica."}{" "}
+                Prova con una domanda:
                 <div style={{ display: "grid", gap: 6, marginTop: 10 }}>
-                  {(ESEMPI[ruolo] || ESEMPI.cliente).map((e) => (
+                  {(praticaId ? ESEMPI_PRATICA : ESEMPI[ruolo] || ESEMPI.cliente).map((e) => (
                     <button key={e} onClick={() => invia(e)} style={esempio}>{e}</button>
                   ))}
                 </div>

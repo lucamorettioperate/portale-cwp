@@ -952,8 +952,10 @@ export async function urlModello(path) {
 // conversazione. Restituisce { data: { testo, domande_oggi, limite } } oppure
 // { error: { message } } con il motivo scritto dalla funzione (limite
 // giornaliero, assistente non attivo, ruolo non abilitato…).
-export async function chiediAssistente(messaggi) {
-  const { data, error } = await supabase.functions.invoke("assistente", { body: { messaggi } });
+export async function chiediAssistente(messaggi, praticaId = null) {
+  // praticaId (facoltativo): la pratica aperta nella pagina; la funzione ne
+  // legge il riepilogo con i permessi dell'utente (dal 21/10/2026).
+  const { data, error } = await supabase.functions.invoke("assistente", { body: { messaggi, pratica_id: praticaId || undefined } });
   if (error) {
     let motivo = error.message;
     try {
