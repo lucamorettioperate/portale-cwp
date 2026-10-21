@@ -535,7 +535,7 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   (crediti netti, differenziata con soglia 65%, margine netto, margine
   cumulato), tabelle corte che non si spezzano tra due pagine. Nell'Excel il
   nuovo foglio «Dati inseriti». Prove `test/simulatoreExport.test.mjs` (7);
-  PDF verificati a schermo su due scenari di prova.
+  PDF verificati a schermo su due scenari di prova (commit e6ed26c).
 - **Assistente, seconda fase** (backlog 21) — aperto agli **Operatori** con
   una base di conoscenza propria (`kb-operatore.md`: Manuale Utente +
   Manuale Amministratore senza i capitoli riservati agli Amministratori,
