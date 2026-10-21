@@ -31,7 +31,7 @@ Dal 21/10/2026 ogni nuova voce riporta l'ora esatta della segnalazione.
 
 **Chi segnala:** Luca = Luca Moretti; Collaudo = Amministratori collaudatori (Andrea Valentini, Albina Ambrogio, Andrea Pavan, Gianluca Tapparini, Luca Belfiore); Revisione = rilettura del codice da parte dello sviluppo; Sviluppo = prova dello sviluppo o messaggio di errore di un servizio.
 
-## Riepilogo al 21/10/2026 (ore 12:46)
+## Riepilogo al 21/10/2026 (ore 14:05)
 
 | Stato | Numero | Voci |
 |---|---|---|
@@ -83,7 +83,7 @@ Ordine cronologico. Una data senza ora vuol dire «ora della segnalazione non re
 | ISS-032 | 20/10 | **Simulatore** — Sul telefono la pagina del simulatore scorreva di lato. Segnalato da: Sviluppo | CHIUSO (P2) | 20/10 14:07 (`9f0043e`) |
 | ISS-033 | 20/10 14:52 | **Funzioni** — Pubblicazione della funzione non riuscita: «Unterminated regexp literal» (codice incollato a mano rovinato). Segnalato da: Luca | CHIUSO (P1) | 20/10 14:59 (`2f5fe1c`): codice caricato dal repository, tre funzioni ripubblicate con Verify JWT |
 | ISS-034 | 20/10 pomeriggio | **Menu** — La voce «Audit» si accendeva anche sulla pagina Audit User. Segnalato da: Sviluppo | CHIUSO (P3) | 20/10 15:13 (`be97c16`) |
-| ISS-036 | 21/10 12:07 (log della funzione); 12:23 richiesta di Luca «identifica e sistema» | **Notizie CO2** — Google News non interrogato: alla prima ricerca i canali Google rispondevano 503 e arrivavano solo notizie da due siti. Segnalato da: Sviluppo e Luca | CORRETTO_DA_RITESTARE (P2) | Causa (diagnosi delle 12:26): Google risponde 503 con la pagina «Sorry…» a ogni richiesta dai server di Supabase, con qualunque intestazione (blocco dei centri dati); Bing risponde 200. Correzioni: 12:10 (`5e88cf6`) canali Bing News e Verra; 12:29 (`3275547`) Google News attraverso il tramite in Google Apps Script (`ProxyGoogleNews.gs`, impostazione `url_proxy_google_news`), da installare. Da verificare con la prima ricerca dopo l'installazione |
+| ISS-036 | 21/10 12:07 (log della funzione); 12:23 richiesta di Luca «identifica e sistema» | **Notizie CO2** — Google News non interrogato: alla prima ricerca i canali Google rispondevano 503 e arrivavano solo notizie da due siti. Segnalato da: Sviluppo e Luca | CORRETTO_DA_RITESTARE (P2) | Causa (diagnosi delle 12:26): Google risponde 503 con la pagina «Sorry…» a ogni richiesta dai server di Supabase, con qualunque intestazione (blocco dei centri dati); Bing risponde 200. Correzioni: 12:10 (`5e88cf6`) canali Bing News e Verra; 12:29 (`3275547`) Google News attraverso il tramite in Google Apps Script (`ProxyGoogleNews.gs`, impostazione `url_proxy_google_news`), autorizzazione bloccata da Google alle 13:54 («Questa app è bloccata»); con l'OK di Luca tramite tolto e al suo posto 8 siti di notizie ambientali (COMMIT_ISS036B). Da verificare con le prossime ricerche |
 | ISS-035 | 21/10 circa 11:30 | **Simulatore** — Il PDF scaricato da una simulazione non riportava tutti i dati della pagina né i grafici («inserisci tutti i dati completi della simulazione con costo e grafici»). Segnalato da: Luca | CORRETTO_DA_RITESTARE (P2) | 21/10 11:43 (`e6ed26c`): PDF con grafici e sezioni 1-5 complete, Excel con il foglio «Dati inseriti»; verificato su due scenari di prova (10 anni Caso 1; 21 anni per utenza senza economia) |
 | D07 | 20/10 16:40 (rapporto V01; prima prova 19-20/10) | **Calcolo crediti** — Il CSV diretto della Banca Dati accettava pesi negativi e salvava crediti gonfiati. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P0) | 20/10 17:05 (`66d253e`); in produzione circa alle 17:15 con lo script 35 |
 | D01 | 20/10 16:40 (prima prova V02 del 19/10) | **Simulatore** — Produzione e secco negativi accettati, differenziata oltre il 100%, scenario salvabile. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P0) | 20/10 17:05 (`66d253e`); in produzione circa alle 17:15 |
@@ -207,3 +207,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 21/10/2026 12:25 | ISS-036: canali News da Google a Bing; prova Bing in `notizie.test.mjs` (8) |
 | 21/10/2026 12:35 | ISS-036: causa individuata (blocco di Google verso i server di Supabase), tramite per Google News; sezione rinominata «Notizie CO2» |
 | 21/10/2026 12:46 | Prova `t37.sql` (pallino verde delle Notizie CO2) |
+| 21/10/2026 14:05 | ISS-036: tramite per Google News bloccato da Google; sostituito da 8 siti di notizie ambientali |

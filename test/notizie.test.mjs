@@ -66,6 +66,10 @@ prova("pre-filtro: tiene i crediti di carbonio, scarta il resto", () => {
   assert.equal(preFiltro({ titolo: "Voluntary carbon market grows" }), true);
   assert.equal(preFiltro({ titolo: "Nuovo bando", estratto: "compensazione delle emissioni con crediti" }), true);
   assert.equal(preFiltro({ titolo: "Ricetta della torta di mele" }), false);
+  // Siti di notizie ambientali: servono parole più strette.
+  assert.equal(preFiltro({ titolo: "Emissioni di CO2 in calo nel 2025", generale: true }), false);
+  assert.equal(preFiltro({ titolo: "Nuovi crediti di carbonio dai Comuni", generale: true }), true);
+  assert.ok(CANALI.some((c) => c.generale) && !CANALI.some((c) => c.url.includes("news.google.com")));
 });
 prova("risposta di Claude letta anche con testo intorno e valori fuori elenco", () => {
   const v = leggiValutazioni('Ecco: {"valutazioni":[{"i":0,"attinente":true,"categoria":"prezzi","rilevanza":9,"titolo_it":"T","sintesi":"S","prezzi":"5 €/t","motivo":"M"},{"i":1,"attinente":"sì","categoria":"boh","rilevanza":0},{"x":2}]} fine');

@@ -5,9 +5,9 @@
 
    Scopo: funzioni pure usate dalla funzione del server «notizie»
    (supabase/functions/notizie) e dalla pagina /news:
-   - CANALI: dove si cercano le notizie (Bing News e Google News in
-     italiano e in inglese con ricerche mirate, più quattro siti
-     specializzati);
+   - CANALI: dove si cercano le notizie (Bing News in italiano e in
+     inglese con ricerche mirate, quattro siti specializzati e otto siti
+     di notizie ambientali);
    - leggiRss: legge un feed RSS (testo XML) e restituisce le notizie;
    - chiaveTitolo: titolo normalizzato per riconoscere la stessa notizia
      trovata da due ricerche;
@@ -27,24 +27,18 @@
    ========================================================================= */
 
 // INIZIO funzioni notizie
-// Ricerca su Google News (feed RSS pubblico), ultimi 7 giorni. Google
-// blocca le richieste dai server di Supabase (503, pagina «Sorry…»,
-// ISS-036): questi canali si leggono attraverso il tramite in Google Apps
-// Script (strumenti/notizie/ProxyGoogleNews.gs, impostazione
-// url_proxy_google_news). Senza tramite si saltano.
-const googleNews = (q, lingua) =>
-  lingua === "it"
-    ? `https://news.google.com/rss/search?q=${encodeURIComponent(q + " when:7d")}&hl=it&gl=IT&ceid=IT:it`
-    : `https://news.google.com/rss/search?q=${encodeURIComponent(q + " when:7d")}&hl=en-US&gl=US&ceid=US:en`;
-
-// Ricerca su Bing News (feed RSS pubblico), ultima settimana: si legge
-// direttamente dai server di Supabase.
+// Ricerca su Bing News (feed RSS pubblico), ultima settimana. Google News
+// non si usa: blocca ogni richiesta dai server di Supabase (503, pagina
+// «Sorry…») e il tramite in Google Apps Script è stato bloccato dalla
+// protezione dell'account Google (ISS-036, 21/10/2026).
 const bingNews = (q, lingua) =>
   `https://www.bing.com/news/search?q=${encodeURIComponent(q)}&qft=${encodeURIComponent('interval="7"')}&format=rss` +
   (lingua === "it" ? "&setlang=it-IT&cc=IT" : "&setlang=en-US&cc=US");
 
-// Canali dell'osservatorio: { nome, url, lingua, via? } (via = "google":
-// si legge attraverso il tramite). Le ricerche coprono i
+// Canali dell'osservatorio: { nome, url, lingua, generale? }. «generale» =
+// sito di notizie ambientali in genere: passa al filtro di Claude solo ciò
+// che parla espressamente di crediti o mercati del carbonio (PAROLE_STRETTE).
+// Le ricerche coprono i
 // temi chiesti da Luca: mercato volontario, marketplace e borse, prezzi dei
 // crediti scambiati o venduti, standard e registri, regole, progetti
 // (anche rifiuti ed economia circolare, il settore del Programma CWP).
@@ -61,19 +55,19 @@ const CANALI = [
   { nome: "Bing News · carbon removal credits", lingua: "en", url: bingNews('"carbon removal credits"', "en") },
   { nome: "Bing News · Article 6 and CORSIA", lingua: "en", url: bingNews('"Article 6" OR CORSIA "carbon credits"', "en") },
   { nome: "Bing News · waste carbon credits", lingua: "en", url: bingNews('"carbon credits" waste OR recycling OR landfill', "en") },
-  { nome: "Google News · crediti di carbonio", lingua: "it", via: "google", url: googleNews('"crediti di carbonio"', "it") },
-  { nome: "Google News · mercato volontario del carbonio", lingua: "it", via: "google", url: googleNews('"mercato volontario" carbonio', "it") },
-  { nome: "Google News · prezzo dei crediti di carbonio", lingua: "it", via: "google", url: googleNews('"crediti di carbonio" prezzo OR prezzi OR valore', "it") },
-  { nome: "Google News · crediti di carbonio e rifiuti", lingua: "it", via: "google", url: googleNews('"crediti di carbonio" rifiuti OR riciclo OR "economia circolare"', "it") },
-  { nome: "Google News · voluntary carbon market", lingua: "en", via: "google", url: googleNews('"voluntary carbon market"', "en") },
-  { nome: "Google News · carbon credit prices", lingua: "en", via: "google", url: googleNews('"carbon credit" OR "carbon credits" price OR prices OR traded', "en") },
-  { nome: "Google News · carbon credit marketplaces", lingua: "en", via: "google", url: googleNews('"carbon credit" marketplace OR exchange OR platform', "en") },
-  { nome: "Google News · standards and registries", lingua: "en", via: "google", url: googleNews('Verra OR "Gold Standard" OR ICVCM OR VCMI "carbon credits"', "en") },
-  { nome: "Google News · waste carbon credits", lingua: "en", via: "google", url: googleNews('"carbon credits" waste OR recycling OR landfill OR composting', "en") },
   { nome: "Carbon Herald", lingua: "en", url: "https://carbonherald.com/feed/" },
   { nome: "CarbonCredits.com", lingua: "en", url: "https://carboncredits.com/feed/" },
   { nome: "Ecosystem Marketplace", lingua: "en", url: "https://www.ecosystemmarketplace.com/feed/" },
   { nome: "Verra", lingua: "en", url: "https://verra.org/feed/" },
+  // Siti di notizie ambientali (dal 21/10/2026, al posto di Google News).
+  { nome: "Rinnovabili.it", lingua: "it", generale: true, url: "https://www.rinnovabili.it/feed/" },
+  { nome: "QualEnergia", lingua: "it", generale: true, url: "https://www.qualenergia.it/feed/" },
+  { nome: "GreenReport", lingua: "it", generale: true, url: "https://greenreport.it/feed/" },
+  { nome: "ESGnews", lingua: "it", generale: true, url: "https://www.esgnews.it/feed/" },
+  { nome: "LifeGate", lingua: "it", generale: true, url: "https://www.lifegate.it/feed" },
+  { nome: "Climate Home News", lingua: "en", generale: true, url: "https://www.climatechangenews.com/feed/" },
+  { nome: "edie", lingua: "en", generale: true, url: "https://www.edie.net/feed/" },
+  { nome: "BusinessGreen", lingua: "en", generale: true, url: "https://www.businessgreen.com/feeds/rss" },
 ];
 
 // Categorie (stessi valori del vincolo della tabella notizia, script 36).
@@ -153,6 +147,7 @@ function leggiRss(xml, canale = {}) {
       estratto: testoPulito(tag(b, "description")).slice(0, 400),
       lingua: canale.lingua || null,
       ricerca: canale.nome || null,
+      generale: !!canale.generale,
     });
   }
   return out;
@@ -176,9 +171,16 @@ const PAROLE_CHIAVE = [
   "carbon", "carbonio", "co2", "credit", "crediti", "offset", "compensazion", "verra", "gold standard", "icvcm", "vcmi",
   "corsia", "article 6", "articolo 6", "removal", "assorbiment", "net zero", "net-zero", "emission", "emissioni", "puro.earth", "isometric",
 ];
+// Per i siti di notizie ambientali in genere (canali «generale») servono
+// parole più strette: crediti, compensazioni, mercati del carbonio.
+const PAROLE_STRETTE = [
+  "carbon credit", "crediti di carbonio", "credito di carbonio", "carbon market", "mercato del carbonio", "mercati del carbonio",
+  "offset", "compensazion", "verra", "gold standard", "icvcm", "vcmi", "corsia", "article 6", "articolo 6", "removal credit",
+  "crediti volontari", "voluntary carbon", "carbon removal", "assorbimenti di carbonio", "crcf",
+];
 function preFiltro(n) {
   const t = `${n.titolo || ""} ${n.estratto || ""}`.toLowerCase();
-  return PAROLE_CHIAVE.some((p) => t.includes(p));
+  return (n.generale ? PAROLE_STRETTE : PAROLE_CHIAVE).some((p) => t.includes(p));
 }
 
 /* Legge la risposta di Claude: un oggetto JSON { valutazioni: [...] }

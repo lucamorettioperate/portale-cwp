@@ -275,7 +275,6 @@ update impostazione
  where chiave = 'url_notizie';
 ```
 
-- l'impostazione `url_proxy_google_news` (tramite per Google News) torna con i dati del backup; il programma «Notizie CO2 – Google News» resta in Google Apps Script nell'account di Luca e non va reinstallato (`strumenti/notizie/ProxyGoogleNews.gs`, se servisse).
 
 ### 3. Dati e file (se esiste una copia)
 

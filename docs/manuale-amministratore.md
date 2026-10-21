@@ -1011,10 +1011,11 @@ La voce **Notizie CO2** del menu, riservata agli Amministratori, raccoglie le no
 
 **Come funziona.** Ogni 2 ore (al minuto 7 delle ore pari, ora del server) il portale cerca le notizie degli ultimi 7 giorni:
 
-- su Bing News e su Google News, con ricerche mirate in italiano e in inglese;
-- su quattro siti specializzati: Carbon Herald, CarbonCredits.com, Ecosystem Marketplace e Verra.
+- su Bing News, con 12 ricerche mirate in italiano e in inglese;
+- su quattro siti specializzati: Carbon Herald, CarbonCredits.com, Ecosystem Marketplace e Verra;
+- su otto siti di notizie ambientali: Rinnovabili.it, QualEnergia, GreenReport, ESGnews, LifeGate, Climate Home News, edie, BusinessGreen. Da questi passano al controllo solo le notizie che parlano espressamente di crediti, compensazioni o mercati del carbonio.
 
-Google News non accetta richieste dai server del portale: le sue ricerche passano da un piccolo programma nell'account Google di Luca («Notizie CO2 – Google News», Google Apps Script). Se il programma non è installato, le notizie arrivano comunque da Bing News e dai siti.
+Google News non si usa: blocca ogni richiesta che arriva dai server del portale.
 
 Ogni notizia nuova passa da un primo filtro sulle parole chiave e poi la controlla **Claude**, che decide se è **attinente** al mondo dei crediti di carbonio volontari, oggetto del portale, e prepara:
 

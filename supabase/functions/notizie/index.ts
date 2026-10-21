@@ -22,10 +22,10 @@
 //  funzione non riceve dati da salvare: legge solo i canali pubblici
 //  (elenco CANALI) e scrive con la chiave di servizio.
 //
-//  Passi: 1) legge i canali RSS (Bing News, siti specializzati e Google
-//  News; Google rifiuta i server di Supabase con 503, quindi i suoi canali
-//  passano dal tramite in Google Apps Script, impostazione
-//  url_proxy_google_news, strumenti/notizie/ProxyGoogleNews.gs; ISS-036);
+//  Passi: 1) legge i canali RSS (Bing News, siti specializzati e siti di
+//  notizie ambientali; Google News non si usa: rifiuta i server di
+//  Supabase con 503 e il tramite in Google Apps Script è bloccato
+//  dall'account Google, ISS-036);
 //  2) toglie le notizie già viste (stesso indirizzo o stesso titolo) e
 //  quelle più vecchie di 10 giorni; 3) pre-filtro sulle parole chiave;
 //  4) Claude valuta a gruppi di 25 (massimo 100 notizie per ricerca, le
@@ -60,24 +60,18 @@ const MASSIMO = 100; // notizie valutate per ricerca
 const GIORNI = 10; // notizie più vecchie: ignorate
 
 // INIZIO funzioni notizie
-// Ricerca su Google News (feed RSS pubblico), ultimi 7 giorni. Google
-// blocca le richieste dai server di Supabase (503, pagina «Sorry…»,
-// ISS-036): questi canali si leggono attraverso il tramite in Google Apps
-// Script (strumenti/notizie/ProxyGoogleNews.gs, impostazione
-// url_proxy_google_news). Senza tramite si saltano.
-const googleNews = (q, lingua) =>
-  lingua === "it"
-    ? `https://news.google.com/rss/search?q=${encodeURIComponent(q + " when:7d")}&hl=it&gl=IT&ceid=IT:it`
-    : `https://news.google.com/rss/search?q=${encodeURIComponent(q + " when:7d")}&hl=en-US&gl=US&ceid=US:en`;
-
-// Ricerca su Bing News (feed RSS pubblico), ultima settimana: si legge
-// direttamente dai server di Supabase.
+// Ricerca su Bing News (feed RSS pubblico), ultima settimana. Google News
+// non si usa: blocca ogni richiesta dai server di Supabase (503, pagina
+// «Sorry…») e il tramite in Google Apps Script è stato bloccato dalla
+// protezione dell'account Google (ISS-036, 21/10/2026).
 const bingNews = (q, lingua) =>
   `https://www.bing.com/news/search?q=${encodeURIComponent(q)}&qft=${encodeURIComponent('interval="7"')}&format=rss` +
   (lingua === "it" ? "&setlang=it-IT&cc=IT" : "&setlang=en-US&cc=US");
 
-// Canali dell'osservatorio: { nome, url, lingua, via? } (via = "google":
-// si legge attraverso il tramite). Le ricerche coprono i
+// Canali dell'osservatorio: { nome, url, lingua, generale? }. «generale» =
+// sito di notizie ambientali in genere: passa al filtro di Claude solo ciò
+// che parla espressamente di crediti o mercati del carbonio (PAROLE_STRETTE).
+// Le ricerche coprono i
 // temi chiesti da Luca: mercato volontario, marketplace e borse, prezzi dei
 // crediti scambiati o venduti, standard e registri, regole, progetti
 // (anche rifiuti ed economia circolare, il settore del Programma CWP).
@@ -94,19 +88,19 @@ const CANALI = [
   { nome: "Bing News · carbon removal credits", lingua: "en", url: bingNews('"carbon removal credits"', "en") },
   { nome: "Bing News · Article 6 and CORSIA", lingua: "en", url: bingNews('"Article 6" OR CORSIA "carbon credits"', "en") },
   { nome: "Bing News · waste carbon credits", lingua: "en", url: bingNews('"carbon credits" waste OR recycling OR landfill', "en") },
-  { nome: "Google News · crediti di carbonio", lingua: "it", via: "google", url: googleNews('"crediti di carbonio"', "it") },
-  { nome: "Google News · mercato volontario del carbonio", lingua: "it", via: "google", url: googleNews('"mercato volontario" carbonio', "it") },
-  { nome: "Google News · prezzo dei crediti di carbonio", lingua: "it", via: "google", url: googleNews('"crediti di carbonio" prezzo OR prezzi OR valore', "it") },
-  { nome: "Google News · crediti di carbonio e rifiuti", lingua: "it", via: "google", url: googleNews('"crediti di carbonio" rifiuti OR riciclo OR "economia circolare"', "it") },
-  { nome: "Google News · voluntary carbon market", lingua: "en", via: "google", url: googleNews('"voluntary carbon market"', "en") },
-  { nome: "Google News · carbon credit prices", lingua: "en", via: "google", url: googleNews('"carbon credit" OR "carbon credits" price OR prices OR traded', "en") },
-  { nome: "Google News · carbon credit marketplaces", lingua: "en", via: "google", url: googleNews('"carbon credit" marketplace OR exchange OR platform', "en") },
-  { nome: "Google News · standards and registries", lingua: "en", via: "google", url: googleNews('Verra OR "Gold Standard" OR ICVCM OR VCMI "carbon credits"', "en") },
-  { nome: "Google News · waste carbon credits", lingua: "en", via: "google", url: googleNews('"carbon credits" waste OR recycling OR landfill OR composting', "en") },
   { nome: "Carbon Herald", lingua: "en", url: "https://carbonherald.com/feed/" },
   { nome: "CarbonCredits.com", lingua: "en", url: "https://carboncredits.com/feed/" },
   { nome: "Ecosystem Marketplace", lingua: "en", url: "https://www.ecosystemmarketplace.com/feed/" },
   { nome: "Verra", lingua: "en", url: "https://verra.org/feed/" },
+  // Siti di notizie ambientali (dal 21/10/2026, al posto di Google News).
+  { nome: "Rinnovabili.it", lingua: "it", generale: true, url: "https://www.rinnovabili.it/feed/" },
+  { nome: "QualEnergia", lingua: "it", generale: true, url: "https://www.qualenergia.it/feed/" },
+  { nome: "GreenReport", lingua: "it", generale: true, url: "https://greenreport.it/feed/" },
+  { nome: "ESGnews", lingua: "it", generale: true, url: "https://www.esgnews.it/feed/" },
+  { nome: "LifeGate", lingua: "it", generale: true, url: "https://www.lifegate.it/feed" },
+  { nome: "Climate Home News", lingua: "en", generale: true, url: "https://www.climatechangenews.com/feed/" },
+  { nome: "edie", lingua: "en", generale: true, url: "https://www.edie.net/feed/" },
+  { nome: "BusinessGreen", lingua: "en", generale: true, url: "https://www.businessgreen.com/feeds/rss" },
 ];
 
 // Categorie (stessi valori del vincolo della tabella notizia, script 36).
@@ -186,6 +180,7 @@ function leggiRss(xml, canale = {}) {
       estratto: testoPulito(tag(b, "description")).slice(0, 400),
       lingua: canale.lingua || null,
       ricerca: canale.nome || null,
+      generale: !!canale.generale,
     });
   }
   return out;
@@ -209,9 +204,16 @@ const PAROLE_CHIAVE = [
   "carbon", "carbonio", "co2", "credit", "crediti", "offset", "compensazion", "verra", "gold standard", "icvcm", "vcmi",
   "corsia", "article 6", "articolo 6", "removal", "assorbiment", "net zero", "net-zero", "emission", "emissioni", "puro.earth", "isometric",
 ];
+// Per i siti di notizie ambientali in genere (canali «generale») servono
+// parole più strette: crediti, compensazioni, mercati del carbonio.
+const PAROLE_STRETTE = [
+  "carbon credit", "crediti di carbonio", "credito di carbonio", "carbon market", "mercato del carbonio", "mercati del carbonio",
+  "offset", "compensazion", "verra", "gold standard", "icvcm", "vcmi", "corsia", "article 6", "articolo 6", "removal credit",
+  "crediti volontari", "voluntary carbon", "carbon removal", "assorbimenti di carbonio", "crcf",
+];
 function preFiltro(n) {
   const t = `${n.titolo || ""} ${n.estratto || ""}`.toLowerCase();
-  return PAROLE_CHIAVE.some((p) => t.includes(p));
+  return (n.generale ? PAROLE_STRETTE : PAROLE_CHIAVE).some((p) => t.includes(p));
 }
 
 /* Legge la risposta di Claude: un oggetto JSON { valutazioni: [...] }
@@ -337,16 +339,9 @@ async function cerca(admin: ReturnType<typeof createClient>, esecuzione: number)
 
     // 1) Canali, 4 alla volta (un canale che non risponde si salta; molte
     // richieste insieme allo stesso sito vengono rifiutate).
-    // Tramite per Google News (impostazione url_proxy_google_news, ISS-036):
-    // senza tramite i canali di Google si saltano.
-    const { data: imp } = await admin.from("impostazione").select("valore").eq("chiave", "url_proxy_google_news").maybeSingle();
-    const tramite = (imp?.valore || "").trim();
-    if (!tramite) console.warn("Google News saltato: manca l'impostazione url_proxy_google_news");
     const leggi = async (c: any) => {
-      if (c.via === "google" && !tramite) return [];
-      const indirizzo = c.via === "google" ? `${tramite}?url=${encodeURIComponent(c.url)}` : c.url;
       try {
-        const r = await fetch(indirizzo, { headers: { "User-Agent": "Mozilla/5.0 (Portale CWP osservatorio News)", Accept: "application/rss+xml, application/xml, text/xml" }, signal: AbortSignal.timeout(15000) });
+        const r = await fetch(c.url, { headers: { "User-Agent": "Mozilla/5.0 (Portale CWP osservatorio News)", Accept: "application/rss+xml, application/xml, text/xml" }, signal: AbortSignal.timeout(15000) });
         if (!r.ok) {
           console.warn("canale", c.nome, r.status);
           return [];
@@ -462,21 +457,15 @@ async function diagnosiCanali() {
     Accept: "application/rss+xml, application/xml;q=0.9, */*;q=0.8",
     "Accept-Language": "it-IT,it;q=0.9,en;q=0.8",
   };
-  const prove = [
-    ["google ricerca, intestazioni attuali", "https://news.google.com/rss/search?q=%22crediti%20di%20carbonio%22%20when%3A7d&hl=it&gl=IT&ceid=IT:it", { "User-Agent": "Mozilla/5.0 (Portale CWP osservatorio News)" }],
-    ["google ricerca, intestazioni da browser", "https://news.google.com/rss/search?q=%22crediti%20di%20carbonio%22%20when%3A7d&hl=it&gl=IT&ceid=IT:it", browser],
-    ["google ricerca senza when, browser", "https://news.google.com/rss/search?q=%22crediti%20di%20carbonio%22&hl=it&gl=IT&ceid=IT:it", browser],
-    ["google prima pagina, browser", "https://news.google.com/rss?hl=it&gl=IT&ceid=IT:it", browser],
-    ["google senza intestazioni", "https://news.google.com/rss/search?q=carbon%20credits&hl=en-US&gl=US&ceid=US:en", {}],
-    ["bing ricerca", CANALI.find((c) => c.nome.startsWith("Bing"))?.url, browser],
+  const prove: [string, string, Record<string, string>][] = [
+    ["google ricerca (controllo del blocco)", "https://news.google.com/rss/search?q=carbon%20credits&hl=en-US&gl=US&ceid=US:en", browser],
+    ...CANALI.filter((c) => !c.nome.startsWith("Bing")).map((c) => [c.nome, c.url, browser] as [string, string, Record<string, string>]),
+    ["bing ricerca", CANALI[0].url, browser],
   ];
-  const { data: imp } = await createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!)
-    .from("impostazione").select("valore").eq("chiave", "url_proxy_google_news").maybeSingle();
-  if (imp?.valore) prove.push(["google attraverso il tramite", `${imp.valore}?url=${encodeURIComponent(CANALI.find((c) => c.via === "google")!.url)}`, {}]);
   const esiti = [];
   for (const [nome, url, intestazioni] of prove) {
     try {
-      const r = await fetch(url as string, { headers: intestazioni as Record<string, string>, redirect: nome === "google attraverso il tramite" ? "follow" : "manual", signal: AbortSignal.timeout(20000) });
+      const r = await fetch(url as string, { headers: intestazioni as Record<string, string>, redirect: "follow", signal: AbortSignal.timeout(20000) });
       const testo = await r.text();
       esiti.push({ nome, stato: r.status, tipo: r.headers.get("content-type"), posizione: r.headers.get("location"), voci: (testo.match(/<item[\s>]/g) || []).length, inizio: testo.slice(0, 300) });
     } catch (e) {
