@@ -1724,7 +1724,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 151 file, 36.363 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 151 file, 36.358 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1822,7 +1822,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 151 file, 36.363 righe 
 | `src/lib/fascicoloPdf.js` | 137 | un documento leggibile da stampare o archiviare insieme ai file del fascicolo: dati della pratica e dell'Ente di Validazione, fasi, elenco dei documenti (con l'impronta SHA-256), integrazioni, consultazioni pubbliche, pagamenti… |
 | `src/lib/file.js` | 158 | prima di inviare un file all'archivio controlla formato ammesso, dimensione, contenuto reale (primi byte, "firma" del formato) e prepara un nome sicuro per il percorso nell'archivio. Traduce anche gli errori dello Storage di… |
 | `src/lib/inattivita.js` | 20 | un solo posto per i tempi usati da src/components/ UscitaInattivita.jsx (richiesta di Luca del 20/10/2026, sicurezza). - Operatori e Amministratori: 30 minuti senza attività; - utenti degli enti: 60 minuti; - l'avviso «Sei… |
-| `src/lib/notizie.js` | 216 | funzioni pure usate dalla funzione del server «notizie» (supabase/functions/notizie) e dalla pagina /news: - CANALI: dove si cercano le notizie (Bing News e Google News in italiano e in inglese con ricerche mirate, più quattro… |
+| `src/lib/notizie.js` | 218 | funzioni pure usate dalla funzione del server «notizie» (supabase/functions/notizie) e dalla pagina /news: - CANALI: dove si cercano le notizie (Bing News in italiano e in inglese con ricerche mirate, quattro siti specializzati… |
 | `src/lib/ordinamento.js` | 37 | logica pura (senza React) usata dal componente src/components/Ordinamento.jsx. Numeri come numeri, booleani (falso prima di vero), date ISO e testi in ordine alfabetico italiano senza distinguere maiuscole e con i numeri nel… |
 | `src/lib/password.js` | 70 | controllo delle regole della password prima dell'invio, generazione della password temporanea assegnata dall'Amministratore, traduzione in italiano degli errori di Supabase Auth. |
 | `src/lib/presenza.js` | 52 | trasformare i dati della presenza (script 32) in testi leggibili: nome della pagina aperta e da quanto tempo un utente è collegato. |
@@ -1880,7 +1880,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 151 file, 36.363 righe 
 | `supabase/functions/consultazione-pubblica/index.ts` | 432 | servizio della pagina pubblica delle consultazioni (requisiti §6, decisioni B e D del 18/10/2026). Chiunque, senza account, può: - "elenco": vedere le consultazioni aperte; - "dettaglio": leggere documento, errata corrige e… |
 | `supabase/functions/crea-utente/index.ts` | 263 | crea un nuovo utente con password temporanea e imposta ruolo + organizzazione. All'utente parte un'email con indirizzo del portale, email di accesso e password temporanea (Resend, funzione inviaEmailAccesso in fondo al file); se… |
 | `supabase/functions/invia-email-notifica/index.ts` | 160 | invia per email ogni nuova notifica del portale (requisiti §9: "email + notifica interna"). |
-| `supabase/functions/notizie/index.ts` | 491 | osservatorio News per gli Amministratori (richiesta di Luca Moretti del 21/10/2026). Ogni 2 ore cerca notizie sul mondo dei crediti di carbonio volontari (mercato volontario, marketplace e borse, prezzi dei crediti scambiati o… |
+| `supabase/functions/notizie/index.ts` | 480 | osservatorio News per gli Amministratori (richiesta di Luca Moretti del 21/10/2026). Ogni 2 ore cerca notizie sul mondo dei crediti di carbonio volontari (mercato volontario, marketplace e borse, prezzi dei crediti scambiati o… |
 | `supabase/functions/recupera-password/index.ts` | 155 | «Password dimenticata?» — genera il collegamento di recupero di Supabase Auth e spedisce l'email in italiano con Resend (stessa grafica delle notifiche), invece del modello email di Supabase. |
 | `supabase/functions/reimposta-password/index.ts` | 218 | l'Amministratore assegna una nuova password temporanea a un utente (Cliente od Operatore) che l'ha dimenticata. Al primo accesso il portale obbliga l'utente a sceglierne una personale (script 15). |
 
@@ -1895,7 +1895,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 151 file, 36.363 righe 
 | `test/csv.test.mjs` | 53 | verifica che i CSV salvati da Excel in italiano (BOM, separatore ";", virgola decimale, punto delle migliaia, testi tra virgolette con ";" dentro, righe vuote) siano letti correttamente; che intestazioni con maiuscole/accenti… |
 | `test/date.test.mjs` | 31 | verificare le date in ora italiana usate per aprire le consultazioni (30 giorni) e per i nomi dei file: oggiItalia() deve dare sempre aaaa-mm-gg in fuso Europe/Rome, aggiungiGiorni() deve contare i giorni sul calendario (fine… |
 | `test/inattivita.test.mjs` | 24 | — |
-| `test/notizie.test.mjs` | 92 | verificare che - un feed di Google News, uno di Bing News e uno di un sito (WordPress) si leggano con titolo senza testata, indirizzo, fonte, data ed estratto senza HTML; - la stessa notizia da due ricerche dia la stessa chiave;… |
+| `test/notizie.test.mjs` | 96 | verificare che - un feed di Google News, uno di Bing News e uno di un sito (WordPress) si leggano con titolo senza testata, indirizzo, fonte, data ed estratto senza HTML; - la stessa notizia da due ricerche dia la stessa chiave;… |
 | `test/ordinamento.test.mjs` | 36 | — |
 | `test/presenza.test.mjs` | 33 | — |
 | `test/qualita.test.mjs` | 43 | verificare il confronto con la Tabella 3 dello Standard CWP (soglia ±30%) e gli indicatori di completezza, unicità, letture a buon fine e tempestività. |
