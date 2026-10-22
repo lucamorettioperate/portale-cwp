@@ -173,7 +173,7 @@ Si eseguono con `npm test` prima di ogni rilascio; l'ultimo esito è sempre «tu
 | `assistente.test.mjs` | 4 | Riepilogo della pratica per l'assistente, copia identica nella funzione del server, base di conoscenza degli Operatori |
 | `notizie.test.mjs` | 8 | Osservatorio News: lettura dei feed RSS (Google News, Bing News e siti), chiave dei titoli, pre-filtro, lettura della risposta di Claude, categorie uguali allo script 36, copia identica nella funzione del server |
 | `rilievi_n.test.mjs` | 13 | N01 (Caso 1 a 16.735 abitanti: 16.232,95 €/anno; 10 anni senza avviso, 7 e 12 anni stima), N04 (data assente, passata, oggi, +7, +8, pratiche non attive), N05 (formato dell'avviso), N06 (cinque frazioni + legno + metallo + RAEE a zero contro un calcolo indipendente, denominatore nullo) |
-| `bancaDatiUtenze.test.mjs` | 5 | Banca Dati Utenze per utenza: file di prova con 20 + 20 utenze, righe sbagliate con foglio e riga, codice doppio, svuotamenti senza kg, virgola e categoria numerica, colonna mancante, controllo del modulo |
+| `bancaDatiUtenze.test.mjs` | 6 | Banca Dati Utenze per utenza: file di prova con 20 + 20 utenze, righe sbagliate con foglio e riga, codice doppio, svuotamenti senza kg, virgola e categoria numerica, colonna mancante, controllo del modulo, riassunto degli eventi delle utenze nell'Audit |
 
 **Ultima esecuzione:** 22/10/2026 17:40 (ramo `banca-dati-utenze`), 17 serie superate.
 

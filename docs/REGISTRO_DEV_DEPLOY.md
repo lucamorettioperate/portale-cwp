@@ -555,6 +555,14 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
     file di prova con 20 + 20 utenze inventate
     (`strumenti/genera_utenze_casuali.py`). Verificato a schermo su
     computer e telefono con dati finti.
+  - In produzione alle 17:30-17:45: script 40 eseguito, portale
+    pubblicato; creato il calcolo di prova «PROVA Banca Dati Utenze - dati
+    casuali (non confermare)» su CWP-2026-003 (Comune di del col) e
+    caricato dal portale il file di prova (20 + 20 utenze, 4 senza
+    categoria); provato il modulo su PROVA-UD-008 (categoria tariffaria 2,
+    simulazione proposta 2). Nell'Audit gli eventi delle utenze mostrano
+    codice, numeri e campi cambiati (`riassuntoUtenze` in
+    `auditDettaglio.js`).
   - Da fare: collegamento al motore di calcolo.
 - **Rilascio in produzione (14:25-14:50, OK di Luca delle 13:25).** Script
   38 (verifica: 38 tabelle) e 39 (6 funzioni aggiornate) eseguiti nel SQL
@@ -1820,7 +1828,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 163 file, 38.939 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 163 file, 38.994 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1875,7 +1883,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 163 file, 38.939 righe 
 | `src/components/NoteFase.jsx` | 108 | note scritte sotto una delle fasi di una pratica (backlog 10). Lo staff legge tutte le note e ne aggiunge di nuove, interne (solo Fondazione) o condivise con il Comune; il Comune vede solo le condivise. |
 | `src/components/Notifiche.jsx` | 205 | campanella delle notifiche interne (requisiti §9) nell'intestazione. Mostra il numero delle non lette, apre un elenco a tendina delle ultime 50 notifiche, segna come lette e porta alla pratica collegata. |
 | `src/components/NuovoProgetto.jsx` | 302 | finestra (sovrapposta alla pagina) per creare un nuovo Progetto. Si sceglie un'organizzazione esistente o se ne crea una nuova, si indicano codice (facoltativo, è l'ID univoco del progetto), titolo, territorio (codici ISTAT dei… |
-| `src/components/OggettoEModifiche.jsx` | 84 | Oggetto dell'evento e, se è una modifica, l'elenco dei campi cambiati |
+| `src/components/OggettoEModifiche.jsx` | 87 | Oggetto dell'evento e, se è una modifica, l'elenco dei campi cambiati |
 | `src/components/Ordinamento.jsx` | 110 | richiesta di Luca del 19/10/2026: ogni informazione tabellare del portale si deve poter ordinare per ciascun campo. Tre elementi: - useOrdinamento(righe, colonne, iniziale): restituisce le righe ordinate e lo stato (colonna e… |
 | `src/components/Pagamenti.jsx` | 306 | riquadro «Pagamenti» di una pratica (requisiti §7). Nessun incasso online: il back-office censisce il piano previsto (più voci con scadenze diverse) e registra a mano gli incassi. Mostra totali, incassato, da incassare e lo… |
 | `src/components/Rapporti.jsx` | 134 | elenco dei Rapporti di Monitoraggio annuali di un Progetto (requisiti §2): uno per anno, in sequenza, fino a 10 con il periodo di riferimento di 10 anni o fino a 21 con 7 anni rinnovabili 3 volte (Standard 4.3.8, script 23).… |
@@ -1898,7 +1906,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 163 file, 38.939 righe 
 | File | Righe | Cosa contiene |
 |---|---|---|
 | `src/lib/AuthContext.jsx` | 221 | tiene in memoria la sessione Supabase Auth, il profilo applicativo (ruolo, organizzazione, flag password temporanea) e lo stato MFA. Espone le funzioni accedi, esci, richiediRecuperoPassword, cambiaPassword e caricaMfa. Ogni… |
-| `src/lib/auditDettaglio.js` | 182 | rendere riconoscibile, nelle pagine Audit e Audit User, QUALE oggetto è stato modificato e COSA è cambiato. Il database registra già tutto (trigger audit_registra, script 07/21): l'id dell'oggetto e, per le modifiche, ogni campo… |
+| `src/lib/auditDettaglio.js` | 201 | rendere riconoscibile, nelle pagine Audit e Audit User, QUALE oggetto è stato modificato e COSA è cambiato. Il database registra già tutto (trigger audit_registra, script 07/21): l'id dell'oggetto e, per le modifiche, ogni campo… |
 | `src/lib/caratteriPdf.js` | 75 | i PDF del portale usavano i caratteri standard «Helvetica» NON incorporati: ogni lettore li sostituiva con un carattere locale e, se le larghezze erano diverse, la spaziatura diventava irregolare e i glifi si sovrapponevano… |
 | `src/lib/contestoPratica.js` | 82 | trasformare i dati di UNA pratica (letti dalla funzione del server «assistente» con i permessi di chi fa la domanda) in un breve testo che l'assistente usa per rispondere a domande come «a che punto è la mia pratica?», «cosa… |
 | `src/lib/crediti/archivio.js` | 258 | crea, legge, aggiorna ed elimina i calcoli (testata e dati in calcolo_crediti) e la loro Banca Dati Utenze (righe di conferimento e di riuso), anche quando le righe sono centinaia di migliaia (invio e lettura a blocchi). Crea le… |
@@ -1993,7 +2001,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 163 file, 38.939 righe 
 | File | Righe | Cosa contiene |
 |---|---|---|
 | `test/assistente.test.mjs` | 76 | — |
-| `test/bancaDatiUtenze.test.mjs` | 104 | Riga con kg di indifferenziato e organico e svuotamenti dell'indifferenziato. |
+| `test/bancaDatiUtenze.test.mjs` | 113 | Riga con kg di indifferenziato e organico e svuotamenti dell'indifferenziato. |
 | `test/collaudo_v01.test.mjs` | 301 | una prova per ogni difetto corretto (D01-D07) con i valori esatti del rapporto, i casi limite chiesti nella «Verifica dopo la correzione» e i casi ordinari S e C, che devono restare identici (netto 292,8 tCO₂eq/anno; 0,2928… |
 | `test/collaudo_v05.test.mjs` | 65 | Le due note reali del collaudo (OP09): testo originale e testo con la riga temporanea. |
 | `test/crediti.test.mjs` | 144 | verifica del motore di calcolo con un esempio calcolato a mano (un piccolo Comune con 2 classi domestiche e 1 non domestica). Controlla le formule 1-17, 19-22 e 28-32 (non la 18: peso specifico a consuntivo), i buffer delle… |
@@ -2023,7 +2031,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 163 file, 38.939 righe 
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1318 | — |
+| `strumenti/revisioni_documenti.json` | 1342 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

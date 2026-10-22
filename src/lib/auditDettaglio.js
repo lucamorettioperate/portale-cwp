@@ -180,3 +180,22 @@ export function etichettaOggetto(e, nomi = {}) {
   const codice = e?.oggetto_id ? String(e.oggetto_id).slice(0, 8) : null;
   return [tipo, nome ? `«${nome}»` : null, codice ? `(${codice})` : null].filter(Boolean).join(" ");
 }
+
+/* Riassunto degli eventi della Banca Dati Utenze (script 40): il dettaglio
+   non ha la forma «da → a» ma numeri, codice e nomi dei campi cambiati.
+   Restituisce un testo breve o null per gli altri eventi. Nessun dato
+   personale: l'audit di queste operazioni non li contiene. */
+export function riassuntoUtenze(e) {
+  const d = e?.dettaglio;
+  if (!d || typeof d !== "object" || !/utenz/.test(e?.operazione || "")) return null;
+  const tipo = d.tipo === "UD" ? "domestica" : d.tipo === "UnD" ? "non domestica" : null;
+  const parti = [];
+  if (d.codice) parti.push(`utenza ${d.codice}${tipo ? ` (${tipo})` : ""}`);
+  if (Number.isFinite(d.utenze)) {
+    parti.push(`${d.utenze} utenze` + (Number.isFinite(d.domestiche) ? ` (${d.domestiche} domestiche, ${d.non_domestiche} non domestiche)` : ""));
+  }
+  if (Array.isArray(d.campi) && !d.campi.includes("nuova utenza")) parti.push(`campi: ${d.campi.map((c) => String(c).replace(/_/g, " ")).join(", ")}`);
+  if (d.ricerca) parti.push(`ricerca «${d.ricerca}»`);
+  if (d.tipo && !d.codice) parti.push(d.tipo === "UD" ? "solo domestiche" : "solo non domestiche");
+  return parti.length ? parti.join(" · ") : null;
+}

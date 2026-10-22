@@ -15,6 +15,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { leggiBancaDati, interpretaBancaDati, controllaUtenza, FRAZIONI_BDU } from "../src/lib/crediti/bancaDatiUtenze.js";
+import { riassuntoUtenze } from "../src/lib/auditDettaglio.js";
 
 let n = 0;
 const prova = async (nome, f) => { await f(); n++; console.log("✓", nome); };
@@ -99,6 +100,14 @@ await prova("modulo: componenti su non domestica, totale diverso, senza categori
   assert.ok(a.avvisi.some((x) => /senza categoria/.test(x)));
   assert.deepEqual(controllaUtenza({ ...base, tipo: "UD", categoria_simulazione: "2" }).avvisi, []);
   assert.ok(controllaUtenza({ ...base, tipo: "UD", frazioni: { indifferenziato: { kg: 10, svuotamenti: 1.5 } } }).errori.some((e) => /svuotamenti/.test(e)));
+});
+
+await prova("audit: riassunto degli eventi delle utenze", () => {
+  assert.equal(riassuntoUtenze({ operazione: "modifica utenza", dettaglio: { codice: "PROVA-UD-008", tipo: "UD", campi: ["categoria_simulazione", "categoria_tariffaria"] } }),
+    "utenza PROVA-UD-008 (domestica) · campi: categoria simulazione, categoria tariffaria");
+  assert.equal(riassuntoUtenze({ operazione: "caricamento utenze", dettaglio: { utenze: 40, domestiche: 20, non_domestiche: 20 } }), "40 utenze (20 domestiche, 20 non domestiche)");
+  assert.equal(riassuntoUtenze({ operazione: "consultazione utenze", dettaglio: { ricerca: "rossi" } }), "ricerca «rossi»");
+  assert.equal(riassuntoUtenze({ operazione: "apertura fase", dettaglio: { codice: "x" } }), null);
 });
 
 console.log(`\n${n} prove superate (Banca Dati Utenze).`);

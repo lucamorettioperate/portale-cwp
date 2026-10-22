@@ -1161,7 +1161,9 @@ Il calcolo dei crediti passerà a un formato **per utenza**: ogni anno il Comune
 4. Toccate il **codice** di un'utenza per aprire il suo modulo: tutti i campi, le frazioni con kg e svuotamenti, gli errori e gli avvisi in fondo. La **categoria di simulazione** segue la tariffaria finché non la cambiate a mano. Il pulsante **= somma delle frazioni** riporta la produzione totale alla somma. **Salva**, oppure **Elimina utenza**.
 5. **+ Nuova utenza domestica / non domestica** apre lo stesso modulo vuoto. **Svuota l'elenco** toglie tutte le utenze.
 
-Ogni modifica azzera il risultato della bozza (va premuto di nuovo **Calcola**). In un calcolo confermato il passo è in sola lettura.
+Ogni modifica azzera il risultato della bozza (va premuto di nuovo **Calcola**). In un calcolo confermato il passo è in sola lettura. Nell'**Audit** le operazioni compaiono come «caricamento utenze» (con il numero di utenze), «consultazione utenze» (con la ricerca), «inserimento», «modifica» e «cancellazione utenza» (con il codice e i campi cambiati), senza nomi né indirizzi.
+
+**Calcolo di prova.** Dal 22/10/2026 c'è il calcolo «PROVA Banca Dati Utenze - dati casuali (non confermare)» sul Progetto CWP-2026-003, con 20 utenze domestiche e 20 non domestiche inventate (codici PROVA-…): serve a provare il passo 5a e si può eliminare quando non serve più.
 
 **Stato al 22/10/2026.** Il motore di calcolo usa ancora i conferimenti del passo **5b. Conferimenti (tracciato)**: il collegamento della Banca Dati per utenza al calcolo è il prossimo passo.
 

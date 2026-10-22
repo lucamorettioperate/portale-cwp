@@ -13,16 +13,19 @@
    ========================================================================= */
 import React, { useState } from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
-import { etichettaOggetto, modificheEvento, valoreBreve, valoreCompleto, valoreLungo, differenzaTesto } from "../lib/auditDettaglio.js";
+import { etichettaOggetto, modificheEvento, valoreBreve, valoreCompleto, valoreLungo, differenzaTesto, riassuntoUtenze } from "../lib/auditDettaglio.js";
 
 /* Oggetto dell'evento e, se è una modifica, l'elenco dei campi cambiati
    (chiuso: si apre con un clic). Props: evento, nomi { id: nome }.
 */
 export default function OggettoEModifiche({ evento, nomi }) {
   const modifiche = modificheEvento(evento);
+  // Banca Dati Utenze (22/10/2026): codice, numeri o campi cambiati.
+  const utenze = riassuntoUtenze(evento);
   return (
     <div style={{ minWidth: 200 }}>
       <div>{etichettaOggetto(evento, nomi)}</div>
+      {utenze && <div style={{ fontSize: 11.5, color: C.grafite, marginTop: 2 }}>{utenze}</div>}
       {modifiche.length > 0 && (
         <details style={{ marginTop: 3 }}>
           <summary style={{ cursor: "pointer", color: C.green, fontWeight: 600, fontSize: 12 }}>

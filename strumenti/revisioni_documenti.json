@@ -451,6 +451,12 @@
       "data": "22/10/2026",
       "descrizione": "Gestione delle utenze nel passo 5a del calcolo: caricamento, schede, modulo; categorie tariffaria e di simulazione.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.5",
+      "data": "22/10/2026",
+      "descrizione": "Audit delle utenze; calcolo di prova.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -1043,6 +1049,12 @@
       "data": "22/10/2026",
       "descrizione": "Banca Dati Utenze: categorie, moduli di gestione, caricamento.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.8",
+      "data": "22/10/2026",
+      "descrizione": "Banca Dati Utenze in produzione, calcolo di prova caricato.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1318,6 +1330,12 @@
       "rev": "1.12",
       "data": "22/10/2026",
       "descrizione": "Serie bancaDatiUtenze.test.mjs; t40.sql esteso.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.13",
+      "data": "22/10/2026",
+      "descrizione": "Riassunto degli eventi delle utenze nell'Audit (6 prove).",
       "autore": "Fondazione Operate"
     }
   ]
