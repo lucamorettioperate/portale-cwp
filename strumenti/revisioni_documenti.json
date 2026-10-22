@@ -1123,6 +1123,12 @@
       "data": "22/10/2026",
       "descrizione": "Stato del backup al 22/10: script 38 in produzione, installazione sul Mac da fare.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.3",
+      "data": "22/10/2026",
+      "descrizione": "Script 01-40 (Banca Dati Utenze).",
+      "autore": "Fondazione Operate"
     }
   ],
   "presentazione": [

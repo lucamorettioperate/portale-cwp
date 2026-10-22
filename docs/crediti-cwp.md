@@ -96,7 +96,7 @@ Da completare: DPIA e accordo sul trattamento con i Comuni (art. 28 GDPR).
 Questa Banca Dati sostituirà i fogli 5_Conferimenti e 6_Letture del tracciato,
 che oggi bloccano i dati personali.
 
-**Stato.** Fatti: struttura del database (script 40, provato con `t40.sql`),
+**Stato.** In produzione dal 22/10/2026 (script 40 alle 17:30). Fatti: struttura del database (provata con `t40.sql`),
 modello Excel, caricamento e moduli di gestione nel portale. Da fare: il
 collegamento al motore di calcolo (categoria di simulazione → classe della
 delibera e rifiuti attesi; kg misurati al posto di svuotamenti × volume ×
