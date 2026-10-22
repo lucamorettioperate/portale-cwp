@@ -386,7 +386,7 @@ Da eseguire solo con decisione di Luca o della Fondazione, uno per uno, con moti
 
 ### 4.8 Rilascio
 
-Sul ramo `correzioni-rilievi-n01-n06`. Per andare in produzione servono l'OK di Luca e il mandato del collaudo:
+**Aggiornamento 22/10/2026 14:50: rilasciato in produzione con l'OK di Luca.** Script 38 e 39 eseguiti alle 14:25-14:27; portale alla revisione `b296195` (poi `e607fa1`, solo Notizie CO2). Passi eseguiti:
 1. script `supabase/39_rilievi_n02_n03.sql` nel SQL Editor (si può rieseguire);
 2. unione del ramo in main, con pubblicazione automatica su Vercel.
 

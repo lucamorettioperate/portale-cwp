@@ -36,7 +36,7 @@ Dal 21/10/2026 ogni nuova voce riporta l'ora esatta della segnalazione.
 | Stato | Numero | Voci |
 |---|---|---|
 | CHIUSO | 33 | ISS-001 … ISS-034 tranne ISS-012 e ISS-020; ISS-036 |
-| CORRETTO_DA_RITESTARE | 19 | D01, D02, D03, D04, D05, D06, D07, R05, R07, R08, D05-R1, O01, ISS-035, ISS-037, ISS-038, N01, N02, N03, N04 (N01-N04 sul ramo `correzioni-rilievi-n01-n06`, non ancora in produzione; ciascuno con una domanda residua alla Fondazione) |
+| CORRETTO_DA_RITESTARE | 19 | D01, D02, D03, D04, D05, D06, D07, R05, R07, R08, D05-R1, O01, ISS-035, ISS-037, ISS-038, N01, N02, N03, N04 (N01-N04 e ISS-038 in produzione dal 22/10 alle 14:30; N01-N04 con una domanda residua alla Fondazione) |
 | ATTESA_REGOLA | 8 | R01, R02, R03, R04, R06, riuso, N05, N06 |
 | APERTO | 2 voci, 1 causa | ISS-012 e D08 (email ai destinatari diversi dal titolare) |
 | NON_RIPRODOTTO | 1 | ISS-020 |
@@ -105,13 +105,13 @@ Ordine cronologico. Una data senza ora vuol dire «ora della segnalazione non re
 | D08 | 21/10 10:42 (rapporto V05; creazione A del 20/10) | **Email** — Email delle credenziali non inviata («Email non inviata», Resend 403). Segnalato da: Collaudo | APERTO (P1) | Stessa causa di ISS-012 |
 | D05-R1 | 21/10 10:42 (osservato il 21/10 sugli eventi delle 09:20:41 e 09:21:21) | **Audit** — Nel dettaglio dell'Audit i testi lunghi restavano tagliati anche aprendo «1 modifica». Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P2) | 21/10 10:48 (`39c9bc8`); in produzione alle 10:50, verificato dal vivo alle 10:51 |
 | O01 | 21/10 10:42 (osservato il 20/10 su B disattivato) | **Accesso** — Account disattivato: elenchi vuoti invece di un messaggio esplicito. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P3) | 21/10 10:48 (`39c9bc8`); in produzione alle 10:50 |
-| ISS-038 | 22/10 13:26 | **Telefono** — Navigazione da smartphone da ottimizzare (intestazione di 304 px su 844, simulatore più largo dello schermo, campi che fanno ingrandire l'iPhone). Segnalato da: Luca | CORRETTO_DA_RITESTARE (P2) | 22/10 (ramo `ottimizzazione-smartphone`): menu a pannello, schede al posto delle tabelle in Dashboard e Audit, elenco e dettaglio delle pratiche uno alla volta, campi a 16 px; prove 10.10g-10.10l |
-| N01 | 21/10 (terza sessione, file ricevuto il 22/10 07:46) | **Simulatore** — Voci «una tantum» del Caso 1/2 ripetute in tutti gli anni; correttezza economica da verificare. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P2); durate ≠ 10 anni ATTESA_REGOLA | 22/10 08:04 (`18a4653`, ramo): rate annuali di un corrispettivo unico (contratti di consulenza e partecipazione); etichette e nota in pagina, PDF ed Excel; durate diverse da 10 anni segnalate come stima |
-| N02 | 21/10 (terza sessione) | **Feedback pubblico** — Borgoval: fase 3 chiusa il 17/10 e consultazione chiusa il 18/10, prima del termine del 16/11. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P1) | 22/10 08:04 (`18a4653`, ramo, script 39 non eseguito): chiusura solo dal giorno dopo il termine e insieme alla fase 3; prima del termine solo per pratica annullata/ritirata/chiusa con motivazione; Borgoval non toccato |
-| N03 | 21/10 (terza sessione) | **Pratiche** — Borgoval: fase 5 in corso con ente non assegnato. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P1); dati del contratto ATTESA_REGOLA | 22/10 08:04 (`18a4653`, ramo, script 39): fase 5 solo con un ente attivo assegnato; ente non rimovibile a fase 5 aperta; dato di Borgoval da decidere a parte |
-| N04 | 21/10 (terza sessione) | **Dashboard** — Tutte le scadenze «—», contatori a zero. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P2); calcolo per decorrenze della Tabella 3 ATTESA_REGOLA | 22/10 08:04 (`18a4653`, ramo): riquadro «Fase aperta senza scadenza»; causa delle date mancanti: fasi aperte il 17/10 con la scrittura diretta tolta il 18/10 (`fa5afac`); fase 1 senza scadenza per costruzione |
-| N05 | 21/10 (terza sessione) | **Pratiche** — Codici progetto in formati diversi (`CWP-2026-0001`, `CWP-2026-003`, `cwp-026-005`). Segnalato da: Collaudo | ATTESA_REGOLA (P3) | 22/10 08:04 (`18a4653`, ramo): solo avviso non bloccante per i codici scritti a mano fuori formato; due codici scritti a mano (il generatore produce sempre 4 cifre maiuscole); nessuna rinomina |
-| N06 | 21/10 (terza sessione) | **Metodologia** — Paniere del fattore dell'indifferenziato più ampio delle cinque frazioni nominate al cap. 5. Segnalato da: Collaudo | ATTESA_REGOLA (P1) | 22/10 08:04 (`18a4653`, ramo): solo trasparenza (quota, tonnellate, FE, frazioni oltre le cinque ed escluse) nei risultati e nel PDF; formula invariata |
+| ISS-038 | 22/10 13:26 | **Telefono** — Navigazione da smartphone da ottimizzare (intestazione di 304 px su 844, simulatore più largo dello schermo, campi che fanno ingrandire l'iPhone). Segnalato da: Luca | CORRETTO_DA_RITESTARE (P2) | 22/10, in produzione alle 14:30: menu a pannello, schede al posto delle tabelle in Dashboard e Audit, elenco e dettaglio delle pratiche uno alla volta, campi a 16 px; prove 10.10g-10.10l |
+| N01 | 21/10 (terza sessione, file ricevuto il 22/10 07:46) | **Simulatore** — Voci «una tantum» del Caso 1/2 ripetute in tutti gli anni; correttezza economica da verificare. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P2); durate ≠ 10 anni ATTESA_REGOLA | 22/10 08:04 (`18a4653`; in produzione il 22/10): rate annuali di un corrispettivo unico (contratti di consulenza e partecipazione); etichette e nota in pagina, PDF ed Excel; durate diverse da 10 anni segnalate come stima |
+| N02 | 21/10 (terza sessione) | **Feedback pubblico** — Borgoval: fase 3 chiusa il 17/10 e consultazione chiusa il 18/10, prima del termine del 16/11. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P1) | 22/10 08:04 (`18a4653`; in produzione il 22/10 alle 14:30, script 39): chiusura solo dal giorno dopo il termine e insieme alla fase 3; prima del termine solo per pratica annullata/ritirata/chiusa con motivazione; Borgoval non toccato |
+| N03 | 21/10 (terza sessione) | **Pratiche** — Borgoval: fase 5 in corso con ente non assegnato. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P1); dati del contratto ATTESA_REGOLA | 22/10 08:04 (`18a4653`; in produzione il 22/10, script 39): fase 5 solo con un ente attivo assegnato; ente non rimovibile a fase 5 aperta; dato di Borgoval da decidere a parte |
+| N04 | 21/10 (terza sessione) | **Dashboard** — Tutte le scadenze «—», contatori a zero. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P2); calcolo per decorrenze della Tabella 3 ATTESA_REGOLA | 22/10 08:04 (`18a4653`; in produzione il 22/10): riquadro «Fase aperta senza scadenza»; causa delle date mancanti: fasi aperte il 17/10 con la scrittura diretta tolta il 18/10 (`fa5afac`); fase 1 senza scadenza per costruzione |
+| N05 | 21/10 (terza sessione) | **Pratiche** — Codici progetto in formati diversi (`CWP-2026-0001`, `CWP-2026-003`, `cwp-026-005`). Segnalato da: Collaudo | ATTESA_REGOLA (P3) | 22/10 08:04 (`18a4653`; in produzione il 22/10): solo avviso non bloccante per i codici scritti a mano fuori formato; due codici scritti a mano (il generatore produce sempre 4 cifre maiuscole); nessuna rinomina |
+| N06 | 21/10 (terza sessione) | **Metodologia** — Paniere del fattore dell'indifferenziato più ampio delle cinque frazioni nominate al cap. 5. Segnalato da: Collaudo | ATTESA_REGOLA (P1) | 22/10 08:04 (`18a4653`; in produzione il 22/10): solo trasparenza (quota, tonnellate, FE, frazioni oltre le cinque ed escluse) nei risultati e nel PDF; formula invariata |
 
 ## Schede delle segnalazioni del collaudo
 
@@ -147,7 +147,7 @@ Le schede complete (riproduzione, causa, file modificati, prove, domande alla Fo
 2. Luca imposta il segreto `EMAIL_MITTENTE` in Supabase.
 3. Prova con una casella di prova controllata.
 
-**N01-N06 — terza sessione di collaudo.** Le schede complete sono in `docs/collaudo/Rilievi_N01-N06_risposte.md`. Le correzioni sono sul ramo `correzioni-rilievi-n01-n06`, non in produzione. Lo script 39 si esegue solo con l'OK di Luca e il mandato del collaudo. Nessun dato storico è stato modificato; gli interventi sui dati (Borgoval, scadenze mancanti, codici) sono proposti a parte. Conseguenza per il collaudo: il percorso di prova non chiude più il feedback il giorno stesso (Manuale di test, nota dopo la prova 4.9d).
+**N01-N06 — terza sessione di collaudo.** Le schede complete sono in `docs/collaudo/Rilievi_N01-N06_risposte.md`. Le correzioni sono in produzione dal 22/10/2026 alle 14:30 (script 39 eseguito con l'OK di Luca). Nessun dato storico è stato modificato; gli interventi sui dati (Borgoval, scadenze mancanti, codici) sono proposti a parte. Conseguenza per il collaudo: il percorso di prova non chiude più il feedback il giorno stesso (Manuale di test, nota dopo la prova 4.9d).
 
 ## Registro dei test
 
@@ -217,7 +217,7 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | V05 (integrazione) | 20-21/10, ricevuta il 21/10 alle 10:42 | Collaudatori, con i profili creati da Luca | Separazione dei dati A/B e dinieghi superati (A00-A10, B01-B16, OP01-OP15); nuovi rilievi D08, D05-R1, O01 |
 | Terza sessione (nuovi rilievi V01) | 21/10, in sola lettura; file ricevuto da Luca il 22/10 alle 07:46 | Luca Belfiore / AltraLeonia | Sei rilievi N01-N06 (da una mail di Rocío e da lettura di portale, audit e sorgente), senza scritture sul portale |
 
-**Prossimi ritest richiesti al collaudo:** D01-D07, R05, R07 (Manuale di test 7.17-7.22, 8b.5-8b.5e, 8b.9b), D05-R1, O01 (10.5, 10.5b) e ISS-035 (8b.7, 8b.7b). Dopo il rilascio del ramo `correzioni-rilievi-n01-n06`: N01 (8b.7d, 8b.7f), N02 (4.1, 4.9-4.9d), N03 (5.0, 5.1c), N04 (10.10f), N05 (1.2d), N06 (7.24).
+**Prossimi ritest richiesti al collaudo:** D01-D07, R05, R07 (Manuale di test 7.17-7.22, 8b.5-8b.5e, 8b.9b), D05-R1, O01 (10.5, 10.5b) e ISS-035 (8b.7, 8b.7b). In produzione dal 22/10: N01 (8b.7d, 8b.7f), N02 (4.1, 4.9-4.9d), N03 (5.0, 5.1c), N04 (10.10f), N05 (1.2d), N06 (7.24).
 
 ## Storico delle revisioni di questo registro
 
@@ -236,3 +236,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 21/10/2026 14:45 | ISS-037: backup dal Mac al posto di Apps Script; prova di `backup_completo()` |
 | 22/10/2026 08:15 | Rilievi N01-N06 della terza sessione: N01-N04 corretti sul ramo e da ritestare, N05 e N06 in attesa di regola; prove `rilievi_n.test.mjs` (16 serie) e `t39.sql` |
 | 22/10/2026 13:40 | ISS-038: navigazione da smartphone |
+| 22/10/2026 14:50 | Rilascio in produzione di N01-N04, ISS-038 e script 38-39 |

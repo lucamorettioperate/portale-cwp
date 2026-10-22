@@ -989,6 +989,12 @@
       "data": "22/10/2026",
       "descrizione": "Navigazione da smartphone (ramo ottimizzazione-smartphone).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.4",
+      "data": "22/10/2026",
+      "descrizione": "Rilascio in produzione di N01-N06, script 38-39 e navigazione da smartphone; Notizie CO2 via Bing.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1228,6 +1234,12 @@
       "rev": "1.9",
       "data": "22/10/2026",
       "descrizione": "ISS-038: navigazione da smartphone.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.10",
+      "data": "22/10/2026",
+      "descrizione": "N01-N04 e ISS-038 in produzione.",
       "autore": "Fondazione Operate"
     }
   ]
