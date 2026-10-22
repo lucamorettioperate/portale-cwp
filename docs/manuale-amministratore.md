@@ -648,6 +648,43 @@ I dati arrivano dal Comune e dal soggetto gestore nel **tracciato dati standard 
 
 Il Comune carica il tracciato tra i documenti della sua pratica: il file Excel (.xlsx) oppure, se è molto grande, uno ZIP con i fogli salvati in CSV (es. `6_Letture.csv`).
 
+### Banca Dati Utenze per utenza (nuovo formato, in arrivo)
+
+Il calcolo dei crediti passerà a un formato **per utenza**: ogni anno il Comune o il gestore compila il modello **Banca dati utenze CWP** con l'elenco **completo** delle utenze dell'anno, domestiche e non domestiche, e lo carica nel calcolo di quell'anno. Nessun dato si riprende dall'anno precedente, perché le utenze cambiano di continuo.
+
+**Foglio Utenze_domestiche** — una riga per ogni utenza domestica attiva nell'anno.
+
+| Colonna | Obbligatoria | Cosa contiene |
+| --- | --- | --- |
+| Codice utenza | sì | Codice dell'utenza nel sistema del Comune o del gestore (es. codice TARI); unico nel file |
+| Nome capofamiglia | sì | Nome e cognome dell'intestatario |
+| Indirizzo | sì | Via, numero civico ed eventuale interno |
+| N. componenti | no | Componenti del nucleo familiare: colloca l'utenza nella classe della delibera (Kb); se manca si usano i valori medi |
+| Mq abitazione | no | Superficie dell'abitazione in m² |
+| Produzione totale (kg) | sì | Rifiuti prodotti nell'anno, somma di tutte le frazioni |
+| Indifferenziato (kg) | sì | Secco residuo dell'anno, anche 0 |
+| Organico, Carta e cartone, Plastica, Vetro, Metallo, Verde, Legno, Tessili, RAEE, Ingombranti, Inerti (kg) | no | Kg di ciascuna frazione nell'anno; vuoto = frazione non raccolta o non misurata (vuoto è diverso da 0) |
+| Svuotamenti (una colonna per frazione) | no | Numero di svuotamenti o conferimenti della frazione nell'anno, intero |
+
+**Foglio Utenze_non_domestiche** — una riga per ogni attività, ente o ufficio. Stesse colonne, con queste differenze:
+
+| Colonna | Obbligatoria | Cosa contiene |
+| --- | --- | --- |
+| Ragione sociale | sì | Al posto del nome del capofamiglia |
+| Categoria | sì | Numero della categoria tariffaria della delibera TARI (DPR 158/1999, es. 22 = ristoranti): serve per i rifiuti attesi (Kd). Il foglio Categorie ha l'elenco di riferimento |
+| Mq locali | no | Superficie tassata dei locali in m² (al posto dei mq dell'abitazione); se manca si usano i valori medi della categoria |
+| N. componenti | — | Non c'è: vale solo per le domestiche |
+
+**Regole.**
+- Ogni anno si carica l'**elenco completo** delle utenze, domestiche e non domestiche: le utenze cambiano di continuo e nessun dato si riprende dall'anno prima.
+- Numeri senza unità di misura; decimali con la virgola.
+- La produzione totale deve corrispondere alla somma delle frazioni: il portale segnala le differenze oltre l'1%.
+- Oltre 1 milione di righe o 50 MB: un CSV per foglio, con lo stesso nome, dentro uno ZIP.
+
+**Dati personali.** Questo modello contiene nomi e indirizzi, a differenza del tracciato attuale. Nel portale li vedono solo Operatori e Amministratori. Ogni consultazione dell'elenco finisce nell'Audit («consultazione utenze»), così come ogni caricamento («caricamento utenze», con il solo numero di utenze) e ogni cancellazione. Nomi e indirizzi non compaiono nei rapporti di calcolo, nei fascicoli né nelle pagine pubbliche. Prima dell'uso con dati reali servono la valutazione d'impatto (DPIA) e l'accordo sul trattamento con ogni Comune.
+
+**Stato al 22/10/2026.** Il modello Excel è pronto e la struttura del database è provata. Il caricamento nel portale e il collegamento al calcolo sono in preparazione: fino ad allora si usa il tracciato con i fogli 5_Conferimenti o 6_Letture.
+
 ### Importare il tracciato nel calcolo
 
 Il primo passo del calcolo, **Importa il tracciato**, legge il file e compila in un colpo solo i passi 2, 3 e 5. Si apre da solo quando il calcolo è ancora vuoto.

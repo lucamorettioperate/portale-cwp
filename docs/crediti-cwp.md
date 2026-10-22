@@ -21,6 +21,71 @@ script `supabase/11_crediti.sql`.
 Tutti i file si importano in CSV (anche salvati da Excel); ogni passo offre il
 modello da scaricare.
 
+## Banca Dati Utenze per utenza (dal 22/10/2026, in costruzione)
+
+Richiesta di Luca Moretti del 22/10/2026: il simulatore lavora su dati
+aggregati, mentre il **calcolo dei crediti è per utenza**. Ogni calcolo
+carica obbligatoriamente l'elenco **completo** delle utenze dell'anno,
+domestiche e non domestiche, perché le utenze cambiano di continuo
+(nessuna anagrafe riusata da un anno all'altro).
+
+**Modello da compilare:** `public/modelli/Banca_dati_utenze_CWP_v1.xlsx`
+(generato da `strumenti/genera_banca_dati_utenze.py`), con i fogli
+Istruzioni, Utenze_domestiche, Utenze_non_domestiche e Categorie.
+
+**Foglio Utenze_domestiche** — una riga per ogni utenza domestica attiva nell'anno.
+
+| Colonna | Obbligatoria | Cosa contiene |
+| --- | --- | --- |
+| Codice utenza | sì | Codice dell'utenza nel sistema del Comune o del gestore (es. codice TARI); unico nel file |
+| Nome capofamiglia | sì | Nome e cognome dell'intestatario |
+| Indirizzo | sì | Via, numero civico ed eventuale interno |
+| N. componenti | no | Componenti del nucleo familiare: colloca l'utenza nella classe della delibera (Kb); se manca si usano i valori medi |
+| Mq abitazione | no | Superficie dell'abitazione in m² |
+| Produzione totale (kg) | sì | Rifiuti prodotti nell'anno, somma di tutte le frazioni |
+| Indifferenziato (kg) | sì | Secco residuo dell'anno, anche 0 |
+| Organico, Carta e cartone, Plastica, Vetro, Metallo, Verde, Legno, Tessili, RAEE, Ingombranti, Inerti (kg) | no | Kg di ciascuna frazione nell'anno; vuoto = frazione non raccolta o non misurata (vuoto è diverso da 0) |
+| Svuotamenti (una colonna per frazione) | no | Numero di svuotamenti o conferimenti della frazione nell'anno, intero |
+
+**Foglio Utenze_non_domestiche** — una riga per ogni attività, ente o ufficio. Stesse colonne, con queste differenze:
+
+| Colonna | Obbligatoria | Cosa contiene |
+| --- | --- | --- |
+| Ragione sociale | sì | Al posto del nome del capofamiglia |
+| Categoria | sì | Numero della categoria tariffaria della delibera TARI (DPR 158/1999, es. 22 = ristoranti): serve per i rifiuti attesi (Kd). Il foglio Categorie ha l'elenco di riferimento |
+| Mq locali | no | Superficie tassata dei locali in m² (al posto dei mq dell'abitazione); se manca si usano i valori medi della categoria |
+| N. componenti | — | Non c'è: vale solo per le domestiche |
+
+**Regole.**
+- Ogni anno si carica l'**elenco completo** delle utenze, domestiche e non domestiche: le utenze cambiano di continuo e nessun dato si riprende dall'anno prima.
+- Numeri senza unità di misura; decimali con la virgola.
+- La produzione totale deve corrispondere alla somma delle frazioni: il portale segnala le differenze oltre l'1%.
+- Oltre 1 milione di righe o 50 MB: un CSV per foglio, con lo stesso nome, dentro uno ZIP.
+
+**Dove finiscono i dati.** Tabella `calcolo_utenza` (script 40): una riga per
+utenza con codice, tipo (UD/UnD), nominativo, indirizzo, componenti, mq,
+categoria, produzione totale e un campo JSON con kg e svuotamenti per
+frazione (codici di `parametri.js`). Il database rifiuta: indifferenziato
+mancante, kg negativi, svuotamenti non interi, frazioni sconosciute, codice
+doppio nello stesso calcolo, utenza non domestica senza categoria, componenti
+su un'utenza non domestica.
+
+**Dati personali (scelta di Luca: salvati e visibili allo staff).** Nessuna
+lettura diretta della tabella: Operatori e Amministratori la consultano con
+`staff_elenco_utenze`, che scrive nell'audit ogni consultazione; il motore di
+calcolo legge con `admin_utenze_calcolo`, senza nomi e indirizzi. Caricamento
+e cancellazione solo dell'Amministratore, con una voce di audit per
+caricamento (numero di utenze, nessun nome). Il Comune non vede la tabella.
+Da completare: DPIA e accordo sul trattamento con i Comuni (art. 28 GDPR).
+Questa Banca Dati sostituirà i fogli 5_Conferimenti e 6_Letture del tracciato,
+che oggi bloccano i dati personali.
+
+**Stato.** Fatti struttura del database (script 40, provato sul banco con
+`t40.sql`, non ancora eseguito in produzione) e modello Excel. Da fare:
+caricamento nel portale con i controlli riga per riga ed elenco consultabile;
+collegamento al motore di calcolo (classe dalla delibera, rifiuti attesi,
+kg misurati al posto di svuotamenti × volume × peso specifico).
+
 ## Corrispondenza con le formule
 
 | Formula | Dove |

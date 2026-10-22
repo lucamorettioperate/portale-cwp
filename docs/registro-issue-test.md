@@ -182,6 +182,14 @@ Ogni script del database è provato su una copia locale di Postgres 16 con tutti
 
 Ultime prove:
 
+- `t40.sql` del 22/10/2026 (Banca Dati Utenze, script 40):
+  - caricamento valido di 2 utenze domestiche e 1 non domestica;
+  - rifiutati: senza indifferenziato, kg negativo, frazione sconosciuta, svuotamenti decimali, non domestica senza categoria, componenti su non domestica, codice doppio;
+  - nessuna lettura diretta; elenco e ricerca con voce di audit; lettura per il calcolo senza nomi e indirizzi;
+  - Operatore consulta ma non carica né svuota; Comune e anonimo nulla;
+  - una sola voce di audit per caricamento (con il numero di utenze);
+  - il caricamento azzera il risultato della bozza; la nuova versione copia le utenze; calcolo confermato immutabile;
+  - lo script si riesegue senza errori.
 - `t39.sql` del 22/10/2026 (rilievi N02 e N03, script 39), tutte come attese:
   - fase 3 senza feedback: chiusura rifiutata;
   - apertura del feedback: 30 giorni, fase 3 aperta con scadenza allineata;
@@ -237,3 +245,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 22/10/2026 08:15 | Rilievi N01-N06 della terza sessione: N01-N04 corretti sul ramo e da ritestare, N05 e N06 in attesa di regola; prove `rilievi_n.test.mjs` (16 serie) e `t39.sql` |
 | 22/10/2026 13:40 | ISS-038: navigazione da smartphone |
 | 22/10/2026 14:50 | Rilascio in produzione di N01-N04, ISS-038 e script 38-39 |
+| 22/10/2026 16:50 | Prova `t40.sql` (Banca Dati Utenze) |

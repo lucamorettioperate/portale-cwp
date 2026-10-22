@@ -252,6 +252,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `32_utenti_online.sql` | Utenti online (backlog 38): tabella `presenza` (una riga per utente: ultima segnalazione, inizio del collegamento, pagina aperta; nessun IP, nessuno storico; RLS senza regole), `segnala_presenza(pagina)` e `presenza_uscita()` per ognuno solo per sé, `utenti_online()` (visti nelle ultime 24 ore, online se l'ultima segnalazione ha meno di 2 minuti) solo per l'Amministratore principale | 20/10/2026 — provato sul banco locale; **eseguito in produzione il 20/10** |
 | `33_audit_trail_user.sql` | Audit User (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **eseguito in produzione il 20/10** e provato dal vivo |
 | `34_sicurezza_avvisi.sql` | Sicurezza (backlog 14, 30): avvisi all'Amministratore principale (`cwp_avviso_sicurezza`, evento «sicurezza»): 5 accessi non riusciti in 15 minuti per email, 30 in un'ora in tutto, nuovo Amministratore (trigger `trg_profilo_avviso_admin`); `registra_uscita(p_motivo)` con l'uscita per inattività; rinforzi del Security Advisor: `search_path` fisso su tutte le funzioni, funzioni SECURITY DEFINER non eseguibili da anon (tranne `registra_accesso_fallito` e quelle usate nelle regole RLS) | 20/10/2026 — provato sul banco locale (`t34.sql`, regressioni `t33.sql`); **da eseguire in produzione** |
+| `40_utenze_calcolo.sql` | Banca Dati Utenze per utenza (22/10/2026, richiesta di Luca; ramo `banca-dati-utenze`, **non ancora eseguito in produzione**): tabella `calcolo_utenza` (codice unico nel calcolo, tipo UD/UnD, nominativo, indirizzo, componenti solo UD, mq, categoria obbligatoria per UnD, produzione totale, `frazioni` JSON con kg e svuotamenti, indifferenziato obbligatorio; controlli `cwp_tipologie_rifiuto()` e `cwp_frazioni_errore()`); nessuna regola di lettura: consultazione con `staff_elenco_utenze` (staff, voce di audit «consultazione utenze»), lettura per il motore con `admin_utenze_calcolo` (Admin, senza nomi e indirizzi), `admin_svuota_utenze` (Admin, audit «cancellazione utenze»); inserimento solo Admin con una voce di audit per caricamento; immutabile a calcolo confermato, azzera il risultato della bozza, copiata da `admin_nuova_versione_calcolo` (ora security definer). Prova `t40.sql` |
 | `39_rilievi_n02_n03.sql` | Rilievi N02 e N03 della terza sessione di collaudo (22/10/2026, **eseguito in produzione il 22/10/2026 alle 14:27** con l'OK di Luca): `cwp_oggi()` (data in ora italiana); colonne `consultazione.chiusa_il`, `chiusura_tipo` («ordinaria» o «pratica_non_attiva»), `motivazione_chiusura`; `staff_chiudi_consultazione(p_consultazione, p_motivazione)` (sostituisce la firma a un parametro): chiusura ordinaria solo dal giorno dopo `data_chiusura` e completamento della fase 3, prima del termine solo per pratica annullata/ritirata/chiusa con motivazione; `staff_chiudi_fase`: fase 3 rifiutata senza feedback o con il feedback nel periodo, a termine passato chiude anche il feedback; `staff_apri_consultazione`: rifiutata con la fase 3 completata, apre la fase 3 se non iniziata; trigger `trg_consultazione_scadenza_fase3` (scadenza della fase 3 = termine del feedback, anche dopo l'errata corrige); `staff_apri_fase`: fase 5 solo con un ente attivo assegnato; `staff_imposta_ente_validazione`: l'ente non si toglie con la fase 5 aperta. Nessun dato storico modificato. Prova `t39.sql` |
 | `38_backup.sql` | Backup (21/10/2026): funzione `backup_completo()` (security definer, solo service_role) che restituisce in un JSON tutte le tabelle public, gli utenti dell'autenticazione senza password, l'elenco dei file degli archivi e i lavori pg_cron; stesso formato del backup manuale, ripristinabile con `genera_sql_ripristino.mjs database_completo.json` | 21/10/2026 — provato sul banco locale (38 tabelle, 3 utenti, 2 file; ripristino in un database nuovo con righe identiche; negata al ruolo authenticated) |
 | `37_notizie_viste.sql` | Pallino verde delle Notizie CO2 (21/10/2026, richiesta di Luca): tabella `notizie_visita` (ultima apertura della sezione per Amministratore, RLS sulla propria riga, scrittura solo dalle funzioni), `notizie_nuove()` (notizie attinenti e non nascoste trovate dopo l'ultima visita; 0 a chi non è Admin), `notizie_segna_viste()` | 21/10/2026 — provato sul banco locale (`t37.sql`: 2 nuove mai visitata, 0 dopo la visita, 1 dopo una nuova, scrittura diretta negata, Operatore 0 e nessuna riga); **eseguito in produzione il 21/10 alle 12:45** su incarico di Luca (tabella presente) |
@@ -531,6 +532,21 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 22 ottobre 2026
+- **Banca Dati Utenze per utenza (prima parte)**, richiesta di Luca delle
+  15:06 e 16:21-16:22: ogni calcolo carica obbligatoriamente l'elenco
+  completo delle utenze dell'anno (domestiche e non domestiche); nome e
+  indirizzo salvati e visibili allo staff. Ramo `banca-dati-utenze`.
+  - Script `40_utenze_calcolo.sql` (non eseguito in produzione), provato
+    con `t40.sql`.
+  - Modello `public/modelli/Banca_dati_utenze_CWP_v1.xlsx` (generato da
+    `strumenti/genera_banca_dati_utenze.py`): Istruzioni con la spiegazione
+    di ogni colonna, Utenze_domestiche e Utenze_non_domestiche (30 colonne:
+    anagrafica, produzione totale, 12 frazioni in kg, 12 svuotamenti),
+    Categorie DPR 158/1999 di riferimento.
+  - Documenti: spiegazione dei campi in crediti-cwp.md, manuale
+    amministratore e manuale utente.
+  - Da fare: caricamento nel portale ed elenco consultabile; collegamento
+    al motore di calcolo.
 - **Rilascio in produzione (14:25-14:50, OK di Luca delle 13:25).** Script
   38 (verifica: 38 tabelle) e 39 (6 funzioni aggiornate) eseguiti nel SQL
   Editor; main portato a `b296195` (rilievi N01-N06 e navigazione da
@@ -1720,6 +1736,7 @@ main.jsx → App.jsx (route, Protetta: accesso, password temporanea, MFA)
 | `staff_autori_commenti` | 17 | staff | Nome ed email degli autori delle osservazioni |
 | `staff_errata_corrige` | 17 | staff | Errata corrige, eventuale ripartenza dei 30 giorni |
 | `staff_imposta_ente_validazione` | 17, 39 | staff | Ente di Validazione della pratica (non si toglie con la fase 5 aperta) |
+| `staff_elenco_utenze`, `admin_utenze_calcolo`, `admin_svuota_utenze` | 40 | staff / admin | Banca Dati Utenze del calcolo: consultazione registrata nell'audit, lettura per il motore senza dati personali, svuotamento prima di un nuovo caricamento |
 | `admin_elenco_utenti`, `admin_aggiorna_utente`, `admin_imposta_organizzazioni`, `admin_imposta_attivo` | 05, 06, 10 | admin | Gestione utenti |
 | `admin_imposta_durata_fase` | 13 | admin | Durata delle fasi con motivazione |
 | `admin_registro_crediti` | 18 | admin | Registro dei crediti (valido / sostituito) |
@@ -1794,7 +1811,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 156 file, 37.272 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 158 file, 37.845 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1944,6 +1961,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 156 file, 37.272 righe 
 | `supabase/37_notizie_viste.sql` | 58 | 37 — NOTIZIE CO2: PALLINO VERDE DELLE NOTIZIE NUOVE |
 | `supabase/38_backup.sql` | 73 | 38 — BACKUP: TUTTO IL DATABASE IN UNA SOLA CHIAMATA |
 | `supabase/39_rilievi_n02_n03.sql` | 289 | correzioni dei rilievi N02 e N03 (terza sessione di collaudo, CWP_NUOVI_RILIEVI_A_MORETTI_V01_20261021, risposte in docs/collaudo/Rilievi_N01-N06_risposte.md). |
+| `supabase/40_utenze_calcolo.sql` | 292 | 40 — UTENZE DEL CALCOLO DEI CREDITI (UNA RIGA PER UTENZA) |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
@@ -1983,6 +2001,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 156 file, 37.272 righe 
 
 | File | Righe | Cosa contiene |
 |---|---|---|
+| `strumenti/genera_banca_dati_utenze.py` | 257 | genera public/modelli/Banca_dati_utenze_CWP_v1.xlsx, il file che il Comune o il gestore compila OGNI ANNO con l'elenco COMPLETO delle utenze (richiesta di Luca Moretti del 22/10/2026: il calcolo dei crediti è per utenza e le… |
 | `strumenti/genera_base_conoscenza.cjs` | 88 | unisce i testi dei manuali e delle tariffe in due file che la funzione del server «assistente» (supabase/functions/assistente) legge e passa a Claude come contesto: - public/assistente/kb-comune.md: per gli utenti degli enti… |
 | `strumenti/genera_documenti.cjs` | 583 | genera in Word (.docx) e PDF i documenti del portale, con copertina e loghi, registro delle revisioni, sommario con numeri di pagina, intestazione e piè di pagina: |
 | `strumenti/genera_esempi_tracciato.py` | 101 | genera i file di prova del tracciato dati per i test automatici (test/tracciato.test.mjs) e per il collaudo manuale (Manuale Test): - test/dati/tracciato_esempio.xlsx : tracciato compilato, Banca Dati con totali (foglio 5) -… |
@@ -1990,7 +2009,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 156 file, 37.272 righe 
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1264 | — |
+| `strumenti/revisioni_documenti.json` | 1288 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

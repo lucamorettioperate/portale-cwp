@@ -362,6 +362,41 @@ I dati per il calcolo dei crediti si inviano con un unico modello Excel, il **Tr
 
 **File molto grandi.** Oltre 50 MB o oltre 1 milione di righe: salvate ogni foglio come file CSV con le stesse intestazioni (ad esempio `6_Letture.csv`), raccoglieteli in un archivio ZIP e caricate lo ZIP.
 
+### Banca Dati Utenze: il nuovo formato per utenza (in arrivo)
+
+Il calcolo dei crediti sta passando a un formato **per utenza**. Quando la Fondazione ve lo comunicherà, ogni anno compilerete il modello **Banca dati utenze CWP** con l'**elenco completo** delle utenze dell'anno, domestiche e non domestiche, anche se poche sono cambiate: nessun dato si riprende dall'anno precedente.
+
+**Foglio Utenze_domestiche** — una riga per ogni utenza domestica attiva nell'anno.
+
+| Colonna | Obbligatoria | Cosa contiene |
+| --- | --- | --- |
+| Codice utenza | sì | Codice dell'utenza nel sistema del Comune o del gestore (es. codice TARI); unico nel file |
+| Nome capofamiglia | sì | Nome e cognome dell'intestatario |
+| Indirizzo | sì | Via, numero civico ed eventuale interno |
+| N. componenti | no | Componenti del nucleo familiare: colloca l'utenza nella classe della delibera (Kb); se manca si usano i valori medi |
+| Mq abitazione | no | Superficie dell'abitazione in m² |
+| Produzione totale (kg) | sì | Rifiuti prodotti nell'anno, somma di tutte le frazioni |
+| Indifferenziato (kg) | sì | Secco residuo dell'anno, anche 0 |
+| Organico, Carta e cartone, Plastica, Vetro, Metallo, Verde, Legno, Tessili, RAEE, Ingombranti, Inerti (kg) | no | Kg di ciascuna frazione nell'anno; vuoto = frazione non raccolta o non misurata (vuoto è diverso da 0) |
+| Svuotamenti (una colonna per frazione) | no | Numero di svuotamenti o conferimenti della frazione nell'anno, intero |
+
+**Foglio Utenze_non_domestiche** — una riga per ogni attività, ente o ufficio. Stesse colonne, con queste differenze:
+
+| Colonna | Obbligatoria | Cosa contiene |
+| --- | --- | --- |
+| Ragione sociale | sì | Al posto del nome del capofamiglia |
+| Categoria | sì | Numero della categoria tariffaria della delibera TARI (DPR 158/1999, es. 22 = ristoranti): serve per i rifiuti attesi (Kd). Il foglio Categorie ha l'elenco di riferimento |
+| Mq locali | no | Superficie tassata dei locali in m² (al posto dei mq dell'abitazione); se manca si usano i valori medi della categoria |
+| N. componenti | — | Non c'è: vale solo per le domestiche |
+
+**Regole.**
+- Ogni anno si carica l'**elenco completo** delle utenze, domestiche e non domestiche: le utenze cambiano di continuo e nessun dato si riprende dall'anno prima.
+- Numeri senza unità di misura; decimali con la virgola.
+- La produzione totale deve corrispondere alla somma delle frazioni: il portale segnala le differenze oltre l'1%.
+- Oltre 1 milione di righe o 50 MB: un CSV per foglio, con lo stesso nome, dentro uno ZIP.
+
+**Dati personali.** A differenza del tracciato, questo modello contiene nomi e indirizzi. Il Comune ne è titolare e la Fondazione li tratta per suo conto solo per il calcolo dei crediti, secondo l'accordo sul trattamento dei dati. Il file si carica **solo nel portale**, mai per email. Nel portale lo vedono solo gli Operatori e gli Amministratori della Fondazione, ogni consultazione è registrata e nomi e indirizzi non compaiono nei rapporti né nelle pagine pubbliche. Non aggiungete altri dati personali (codice fiscale, telefono, email).
+
 **Simulazione dei crediti.** La Fondazione può preparare per il vostro Comune uno o più **scenari** su 7, 10 o 21 anni. Partendo dai dati di raccolta attuali e dagli obiettivi che indicate per ogni anno (produzione di rifiuti totale e pro capite, secco residuo pro capite), il simulatore calcola la percentuale di raccolta differenziata e **stima i crediti** che il Comune potrebbe generare anno per anno. Lo scenario comprende anche una **stima economica**: ricavi dalla vendita dei crediti (con il valore del credito anno per anno) e costi a carico del Comune secondo le tabelle della Fondazione per progetti volontari (Caso 1) o obbligatori da bando di gara (Caso 2). Chiedetelo alla Fondazione: oggi gli scenari li vede solo lo staff. È una stima a scopo di pianificazione: i crediti veri si calcolano a consuntivo, con i dati del tracciato.
 
 ## Reclami e richieste di chiarimento

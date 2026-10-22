@@ -167,6 +167,12 @@
       "data": "22/10/2026",
       "descrizione": "Uso dal telefono: menu, elenco e dettaglio delle pratiche.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.8",
+      "data": "22/10/2026",
+      "descrizione": "Banca Dati Utenze per utenza: spiegazione dei campi (nuovo formato in arrivo).",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -426,6 +432,12 @@
       "rev": "5.2",
       "data": "22/10/2026",
       "descrizione": "Uso dal telefono: menu a pannello, schede in Dashboard e Audit, elenco e dettaglio delle pratiche.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.3",
+      "data": "22/10/2026",
+      "descrizione": "Banca Dati Utenze per utenza: campi, regole, dati personali.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1001,6 +1013,12 @@
       "data": "22/10/2026",
       "descrizione": "Funzionalità per area al 22/10; menu sul telefono.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.6",
+      "data": "22/10/2026",
+      "descrizione": "Script 40 e modello Banca dati utenze (ramo banca-dati-utenze).",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1258,6 +1276,12 @@
       "rev": "1.10",
       "data": "22/10/2026",
       "descrizione": "N01-N04 e ISS-038 in produzione.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.11",
+      "data": "22/10/2026",
+      "descrizione": "Prova t40.sql (Banca Dati Utenze).",
       "autore": "Fondazione Operate"
     }
   ]
