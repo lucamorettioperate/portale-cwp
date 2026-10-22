@@ -1020,7 +1020,7 @@ La voce **Notizie CO2** del menu, riservata agli Amministratori, raccoglie le no
 
 - su Bing News, con 12 ricerche mirate in italiano e in inglese;
 - su quattro siti specializzati: Carbon Herald, CarbonCredits.com, Ecosystem Marketplace e Verra;
-- su otto siti di notizie ambientali: Rinnovabili.it, QualEnergia, GreenReport, ESGnews, LifeGate, Climate Home News, edie, BusinessGreen. Da questi passano al controllo solo le notizie che parlano espressamente di crediti, compensazioni o mercati del carbonio.
+- su otto siti di notizie ambientali: Rinnovabili.it, QualEnergia, GreenReport, ESGnews, LifeGate, Climate Home News, edie, BusinessGreen (Rinnovabili.it e GreenReport attraverso Bing News, perché non si leggono direttamente). Da questi passano al controllo solo le notizie che parlano espressamente di crediti, compensazioni o mercati del carbonio.
 
 Google News non si usa: blocca ogni richiesta che arriva dai server del portale.
 

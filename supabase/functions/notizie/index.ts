@@ -93,9 +93,12 @@ const CANALI = [
   { nome: "Ecosystem Marketplace", lingua: "en", url: "https://www.ecosystemmarketplace.com/feed/" },
   { nome: "Verra", lingua: "en", url: "https://verra.org/feed/" },
   // Siti di notizie ambientali (dal 21/10/2026, al posto di Google News).
-  { nome: "Rinnovabili.it", lingua: "it", generale: true, url: "https://www.rinnovabili.it/feed/" },
+  // Rinnovabili.it rifiuta i server (403) e il feed di GreenReport non
+  // esiste più (404): i due siti si leggono attraverso Bing News, che dai
+  // server di Supabase risponde (22/10/2026).
+  { nome: "Rinnovabili.it (via Bing)", lingua: "it", generale: true, url: bingNews("site:rinnovabili.it carbonio OR emissioni OR CO2", "it") },
   { nome: "QualEnergia", lingua: "it", generale: true, url: "https://www.qualenergia.it/feed/" },
-  { nome: "GreenReport", lingua: "it", generale: true, url: "https://greenreport.it/feed/" },
+  { nome: "GreenReport (via Bing)", lingua: "it", generale: true, url: bingNews("site:greenreport.it carbonio OR emissioni OR CO2", "it") },
   { nome: "ESGnews", lingua: "it", generale: true, url: "https://www.esgnews.it/feed/" },
   { nome: "LifeGate", lingua: "it", generale: true, url: "https://www.lifegate.it/feed" },
   { nome: "Climate Home News", lingua: "en", generale: true, url: "https://www.climatechangenews.com/feed/" },
