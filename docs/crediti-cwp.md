@@ -29,7 +29,7 @@ modello da scaricare.
 | 2-8 — ripartizione domestiche / non domestiche | `produzioneAttesa` |
 | 9-12 — valori attesi per classe | `produzioneAttesa` |
 | 13-15 — emissioni attese | `calcolaCrediti` (territorio e per utenza) |
-| 16-17 — FE dell'indifferenziato | `fattoreIndifferenziato` |
+| 16-17 — FE dell'indifferenziato | `fattoreIndifferenziato`: tutte le frazioni a recupero con quantità > 0 e FE numerico; restituisce anche quantità e FE di ogni frazione, `fuoriPaniere` (oltre organico, carta, vetro, plastica, tessili) ed `escluse` (senza FE). Paniere da confermare: rilievo N06, ATTESA_REGOLA |
 | 18 — peso specifico a consuntivo | `pesiSpecifici` |
 | 19-22 — conferimenti in peso | `conferimentiInPeso` |
 | 25-30 — emissioni di progetto | `calcolaCrediti` |
@@ -109,14 +109,14 @@ Stima ex ante, non certificabile.
 - ΔI(a) = EP(a) − EA(a); crediti lordi = −ΔI se negativa, altrimenti debito;
   netti = lordi × (1 − buffer).
 
-**Simulazione economica (19/10/2026).** Ricavi = crediti netti interi × valore del credito digitato anno per anno (proposto 32 €; «Applica a tutti gli anni» con variazione annua facoltativa). Costi a carico del Comune o del gestore, IVA esclusa: il simulatore chiede se usare il **Caso 1** (progetto volontario) o il **Caso 2** (progetto obbligatorio da bando di gara), dalle tabelle «Costi per il Soggetto Promotore» di Fondazione Operate del 28/07/2026 (progetti di 10 anni, una tantum ammortizzati in 10 anni, validazione dell'ente esclusa):
+**Simulazione economica (19/10/2026).** Ricavi = crediti netti interi × valore del credito digitato anno per anno (proposto 32 €; «Applica a tutti gli anni» con variazione annua facoltativa). Costi a carico del Comune o del gestore, IVA esclusa: il simulatore chiede se usare il **Caso 1** (progetto volontario) o il **Caso 2** (progetto obbligatorio da bando di gara), dalle tabelle «Costi per il Soggetto Promotore» di Fondazione Operate del 28/07/2026 (progetti di 10 anni; le voci una tantum sono un corrispettivo unico pagato in 10 rate annuali secondo i contratti di consulenza e di partecipazione, quindi l'importo annuo è una rata; validazione dell'ente esclusa). Con una durata diversa da 10 anni il risultato è segnalato come stima senza regola (`durataFuoriListino`, rilievo N01, ATTESA_REGOLA):
 
 | Attività | Caso 1: min €/anno · €/ab ≤5.000 · 20.000 · >100.000 · max €/anno | Caso 2: idem |
 |---|---|---|
-| Progetto (una tantum) | 300 · 0,20 · 0,10 · 0,08 · 15.000 | 450 · 0,30 · 0,15 · 0,12 · 22.500 |
+| Progetto (una tantum, in 10 rate annuali) | 300 · 0,20 · 0,10 · 0,08 · 15.000 | 450 · 0,30 · 0,15 · 0,12 · 22.500 |
 | Rapporto di Monitoraggio | 400 · 0,40 · 0,30 · 0,20 · 40.000 | 600 · 0,60 · 0,45 · 0,33 · 65.000 |
-| Registrazione Progetto (una tantum) | 100 · 0,10 · 0,10 · 0,02 · 3.000 | 150 · 0,15 · 0,15 · 0,03 · 4.500 |
-| Registrazione Crediti Progetto (una tantum) | 100 · 0,15 · 0,10 · 0,04 · 6.000 | 150 · 0,25 · 0,15 · 0,06 · 9.000 |
+| Registrazione Progetto (una tantum, in 10 rate annuali) | 100 · 0,10 · 0,10 · 0,02 · 3.000 | 150 · 0,15 · 0,15 · 0,03 · 4.500 |
+| Registrazione Crediti Progetto (una tantum, in 10 rate annuali) | 100 · 0,15 · 0,10 · 0,04 · 6.000 | 150 · 0,25 · 0,15 · 0,06 · 9.000 |
 | Registrazione Rapporto di Monitoraggio | 150 · 0,20 · 0,18 · 0,10 · 15.000 | 225 · 0,30 · 0,28 · 0,15 · 22.500 |
 | Registrazione Crediti Rapporto di Monitoraggio | 100 · 0,10 · 0,10 · 0,10 · 20.000 | 150 · 0,15 · 0,15 · 0,15 · 30.000 |
 
@@ -138,7 +138,7 @@ Con il metodo per utenza Bovisio-Masciago ricade nell'intervallo dell'Allegato A
 Modello della stima per utenza: per ogni rifiuto misurato, con A = quantità attesa (riferimento al 65%), m = produzione prevista / A e σ = variabilità tra utenze, i rifiuti evitati dalle sole utenze virtuose sono A × [d·Φ(d/σ) + σ·φ(d/σ)] con d = 1 − m (media di max(0, 1 − X) per X normale di media m e scarto σ); crediti lordi = Σ rifiuti evitati × |FErid|. Funzioni `quotaVirtuose`, `bufferMetodologia` e `taraVariabilita` di `simulatore.js`. Lettura prudente del Capitolo 7: la tariffa puntuale dimezza la parte della Tabella 16, non il 20% delle utenze virtuose.
 
 Altre osservazioni sull'Allegato A:
-- i costi: le tabelle del 28/07/2026 con 154.247 abitanti danno 82.614 € all'anno (826.139 € in 10 anni, 5,36 € per abitante; le voci «una tantum» sono ammortizzate in 10 anni, come dice la tabella). L'Allegato indica 6,08 € per abitante: la differenza (circa 111.700 € in 10 anni) potrebbe essere il costo dell'ente di validazione e verifica, che le tabelle escludono. Da chiarire con chi ha preparato l'Allegato;
+- i costi: le tabelle del 28/07/2026 con 154.247 abitanti danno 82.614 € all'anno (826.139 € in 10 anni, 5,36 € per abitante; le voci «una tantum» sono pagate in 10 rate annuali, come dicono i contratti). L'Allegato indica 6,08 € per abitante: la differenza (circa 111.700 € in 10 anni) potrebbe essere il costo dell'ente di validazione e verifica, che le tabelle escludono. Da chiarire con chi ha preparato l'Allegato;
 - i ricavi per abitante dell'Allegato (11,31 e 22,92 €) usano gli stessi crediti per tutti i 10 anni (29.077 a 6 € e 35.356 a 10 €), non il profilo a scalini della tabella dei crediti.
 
 **Conformità al modello CWP (verifica del 19/10/2026).**

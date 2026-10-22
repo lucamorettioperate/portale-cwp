@@ -81,6 +81,7 @@ La **Dashboard** è la pagina iniziale dello staff: mostra in un'unica tabella t
 | Pratiche in corso | Pratiche attive |
 | In scadenza (≤ 7 gg) | Fase aperta che scade entro 7 giorni (numero in arancione) |
 | Scadute | Fase aperta con scadenza passata (numero in rosso) |
+| Fase aperta senza scadenza | Fase aperta senza una data di scadenza (numero in arancione): sono pratiche **senza scadenza nota**, non pratiche in regola. Lo zero di «In scadenza» e «Scadute» vale solo per le pratiche con una data. Nella colonna Scadenza compare «nessuna scadenza nota» |
 | In attesa del Cliente | Integrazioni richieste e senza risposta |
 | Integrazioni da verificare | Integrazioni con risposta del Cliente da chiudere |
 | Feedback pubblico aperti | Periodi di feedback pubblico aperti, di Progetti e Rapporti |
@@ -99,7 +100,7 @@ La pagina **Pratiche** elenca a sinistra i Progetti (con più di 4 progetti comp
 
 1. Premete **+ Nuovo progetto**.
 2. Scegliete l'ente: **Organizzazione esistente** dal menu, oppure **Nuova** indicando **Denominazione** (es. Comune di …) e **Tipo** (es. Ente locale, Soggetto gestore).
-3. **Codice pratica**: lasciatelo vuoto per avere il codice automatico `CWP-AAAA-NNNN`.
+3. **Codice pratica**: lasciatelo vuoto per avere il codice automatico `CWP-AAAA-NNNN`. Un codice scritto a mano si salva così com'è; se non segue il formato `CWP-AAAA-NNNN` (es. minuscole o tre cifre) compare un avviso arancione. La regola sul formato dei codici scritti a mano è in attesa della Fondazione.
 4. **Titolo**: una descrizione breve.
 5. **Territorio: codici ISTAT dei Comuni (6 cifre)**, separati da virgola (es. `041044, 041001`).
 6. **Periodo di riferimento**: *10 anni (una volta)* oppure *7 anni rinnovabili 3 volte* (Standard 4.3.8).
@@ -174,6 +175,10 @@ Le azioni sulle fasi compaiono nella scheda di ciascuna fase, **solo se la prati
 **Attività sospese per fatture scadute.** Se la pratica ha una voce di pagamento scaduta e non pagata, il portale non apre nuove fasi e risponde «Attività sospese fino al saldo: c'è una fattura scaduta non pagata (Schema tariffario)». Registrate l'incasso per proseguire (capitolo «Pagamenti»).
 
 **Iscrizione prima della fase 5.** La fase 5 (validazione del Progetto o verifica del Rapporto) non si apre finché la voce *Tariffa di iscrizione* della pratica non è pagata (Guida 6.2.1 e 6.3.1).
+
+**Ente prima della fase 5.** La fase 5 si apre solo se la pratica ha un ente di validazione e verifica **attivo** assegnato (Guida 6.2.3: la validazione la svolge l'ente incaricato). Senza ente, al posto di **Apri fase** compare «Per aprire la fase 5 assegna prima l'ente di validazione e verifica». Con la fase 5 aperta l'ente si può sostituire ma non togliere.
+
+**Fase 3 e feedback pubblico.** La fase 3 è il feedback pubblico: si apre da sola quando aprite il feedback e la sua scadenza è l'ultimo giorno del feedback. Si chiude solo dal giorno dopo il termine, insieme al feedback (capitolo «Feedback pubblico»).
 
 **Note di fase.** Sotto ogni fase, **+ Aggiungi nota** apre un campo di testo. Senza spunta la nota è **interna** (la vede solo la Fondazione, bordo arancione); con la spunta **Visibile al Comune** la nota è **condivisa** (bordo verde) e il Comune riceve la notifica «Nuova nota della Fondazione». Le note non si modificano né si cancellano e finiscono nell'audit: per correggere, aggiungete una nuova nota.
 
@@ -290,7 +295,9 @@ Sulla pagina pubblica e per il Comune l'autore compare come *Partecipante*, oppu
 
 L'errata corrige compare nella pratica e sulla pagina pubblica, il Comune riceve la notifica e l'operazione (con l'eventuale proroga) finisce nell'audit.
 
-**Chiudere il feedback pubblico.** Dopo la data di chiusura il portale non accetta più osservazioni, ma lo stato va chiuso a mano con **Chiudi il feedback pubblico**.
+**Chiudere il feedback pubblico.** Il periodo comprende l'ultimo giorno indicato (ora italiana). Fino a quel giorno il riquadro mostra «Il feedback resta aperto fino al … compreso: si chiude dal giorno successivo» e non c'è un pulsante di chiusura. Dal giorno dopo il portale non accetta più osservazioni e lo stato si chiude con **Chiudi il feedback pubblico e la fase 3**: feedback e fase 3 si chiudono insieme. Anche **Chiudi fase** sulla fase 3 è rifiutato prima del termine e, dopo il termine, chiude il feedback.
+
+**Chiusura anticipata.** È ammessa solo se la pratica è **annullata, ritirata o chiusa**. Compare **Chiudi ora: pratica …**, con la **Motivazione** obbligatoria; la fase 3 resta com'è e la motivazione finisce nell'audit. Con la pratica attiva la chiusura prima del termine non è possibile (Guida 6.2.2). Con la fase 3 già completata non si apre un nuovo feedback.
 
 **Da sapere.** Finché il dominio della Fondazione non è verificato sul servizio email, le email di conferma arrivano solo all'indirizzo del titolare del servizio: prima di un feedback pubblico reale il dominio va verificato.
 
@@ -679,7 +686,7 @@ Ogni tabella ha **+ Riga**, **Importa CSV** e **Scarica il modello**; una riga s
 - **Classi domestiche**: per ogni classe (numero di componenti del nucleo) il **N. utenze** e il coefficiente **Kb**.
 - **Classi non domestiche**: per ogni categoria (es. «1 - Musei, biblioteche, scuole») il **N. utenze**, la **Superficie (m²)** e il coefficiente **Kd**.
 
-**Passo 4 — Fattori di emissione e pesi specifici.** La tabella è già compilata con i valori della Metodologia: **FErid(r)** in kgCO₂eq/kg dalle Tabelle 3 (USEPA WARM) e 4 (WRAP) e i pesi specifici di default della Tabella 8. Il fattore dell'indifferenziato è *Calcolato (f. 16-17)* dal portale. Un valore si cambia solo citando la fonte nelle note. Qui si trovano anche i **beni a riuso** (peso e fattore FErid(b)) e l'opzione **Tratta il riuso come riduzione di emissioni**, che resta spenta finché la Fondazione non conferma la scelta (vedi «Scelte da confermare»).
+**Passo 4 — Fattori di emissione e pesi specifici.** La tabella è già compilata con i valori della Metodologia: **FErid(r)** in kgCO₂eq/kg dalle Tabelle 3 (USEPA WARM) e 4 (WRAP) e i pesi specifici di default della Tabella 8. Il fattore dell'indifferenziato è *Calcolato (f. 16-17)* dal portale, con tutte le frazioni a recupero che hanno quantità e fattore. Nei risultati e nel rapporto PDF compaiono quota, tonnellate e fattore di ogni frazione usata, le tipologie oltre le cinque nominate al capitolo 5 della Metodologia (organico, carta e cartone, vetro, plastica, tessili), con la nota «paniere in attesa di conferma della Fondazione», e quelle escluse perché senza fattore. Un valore si cambia solo citando la fonte nelle note. Qui si trovano anche i **beni a riuso** (peso e fattore FErid(b)) e l'opzione **Tratta il riuso come riduzione di emissioni**, che resta spenta finché la Fondazione non conferma la scelta (vedi «Scelte da confermare»).
 
 **Passo 5 — Banca Dati Utenze.** Il cuore del calcolo *ex post*. Due tabelle:
 
@@ -855,7 +862,7 @@ PDF ed Excel contengono le stesse tabelle. Prima di scaricarli salvate lo scenar
 - **Caso 1 – Progetto volontario**: il Comune o il gestore aderisce di propria iniziativa;
 - **Caso 2 – Progetto obbligatorio**: il progetto arriva da un bando di gara di un Comune che ha inserito il CWP come metodo; le tariffe sono più alte.
 
-Per ogni attività (Progetto, Rapporto di Monitoraggio, registrazione del Progetto, dei crediti del Progetto, del Rapporto e dei crediti del Rapporto) il portale calcola il costo per abitante in base alla popolazione: valori fissi fino a 5.000 abitanti e oltre 100.000, **interpolati** tra 5.000 e 20.000 e tra 20.000 e 100.000 abitanti, arrotondati per eccesso al centesimo. Il costo annuo è il costo per abitante × la popolazione, mai sotto il **minimo** né sopra il **massimo** annuo della tabella. Le voci una tantum sono già ammortizzate in 10 anni, quindi si pagano ogni anno. Una tabella mostra le sei voci con € per abitante, € all'anno e il totale annuo. Le tabelle non comprendono la validazione dell'ente. Per progetti di durata diversa da 10 anni compare un avviso: i costi vanno computati a parte.
+Per ogni attività (Progetto, Rapporto di Monitoraggio, registrazione del Progetto, dei crediti del Progetto, del Rapporto e dei crediti del Rapporto) il portale calcola il costo per abitante in base alla popolazione: valori fissi fino a 5.000 abitanti e oltre 100.000, **interpolati** tra 5.000 e 20.000 e tra 20.000 e 100.000 abitanti, arrotondati per eccesso al centesimo. Il costo annuo è il costo per abitante × la popolazione, mai sotto il **minimo** né sopra il **massimo** annuo della tabella. Le voci **una tantum** (Progetto, Registrazione Progetto, Registrazione Crediti Progetto) sono un corrispettivo unico e forfettario pagato in **10 rate annuali** uguali (contratti di consulenza e di partecipazione): l'importo in tabella è la rata annua e la nota sotto la tabella lo spiega, anche nel PDF e nell'Excel. Una tabella mostra le sei voci con € per abitante, € all'anno e il totale annuo. Le tabelle non comprendono la validazione dell'ente. Per progetti di durata diversa da 10 anni la regola non è ancora stabilita: compaiono il riquadro rosso **Stima, non listino approvato**, l'avviso e la casella «Costi per il Comune nel periodo (stima)»; nel PDF e nell'Excel la riga «ATTENZIONE» sopra la tabella annuale.
 
 In alternativa si può scegliere lo **Schema tariffario** (tariffe massime pubblicate) o **nessuna tariffa**.
 

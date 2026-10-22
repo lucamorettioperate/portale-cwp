@@ -155,6 +155,12 @@
       "data": "21/10/2026",
       "descrizione": "Barra a LED delle fasi nell'elenco e nella pratica aperta.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.6",
+      "data": "22/10/2026",
+      "descrizione": "Feedback pubblico chiuso solo dopo il termine; ente prima della fase 5 (rilievi N02, N03).",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -403,6 +409,12 @@
       "data": "21/10/2026",
       "descrizione": "«News» diventa «Notizie CO2»; Google News attraverso il tramite; barra a LED nell'elenco e nella pratica. Pallino verde delle Notizie CO2 nuove. Notizie CO2: siti di notizie ambientali al posto di Google News. Notizie CO2: siti di notizie ambientali al posto di Google News.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.1",
+      "data": "22/10/2026",
+      "descrizione": "Rilievi N01-N06: costi una tantum in 10 rate, feedback pubblico e fase 3, ente prima della fase 5, riquadro «Fase aperta senza scadenza», avviso sui codici, frazioni del fattore dell'indifferenziato.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -626,6 +638,12 @@
       "rev": "3.16",
       "data": "21/10/2026",
       "descrizione": "Prove 10.10d-10.10e (barra a LED, loghi); nomi Notizie CO2. Prova 10.15h (pallino verde).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.17",
+      "data": "22/10/2026",
+      "descrizione": "Prove dei rilievi N01-N06: 1.2d, 4.1, 4.9-4.9d, 5.0, 5.1c, 7.24, 8b.7d, 8b.7f, 10.10f; nota sull'attesa di 30 giorni.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -941,6 +959,12 @@
       "data": "21/10/2026",
       "descrizione": "Script 38 e backup dal Mac; tolto BackupCWP.gs.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.2",
+      "data": "22/10/2026",
+      "descrizione": "Script 39 (rilievi N02, N03) e correzioni N01-N06 sul ramo correzioni-rilievi-n01-n06.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1008,6 +1032,12 @@
       "rev": "2.0",
       "data": "21/10/2026",
       "descrizione": "Backup giornaliero alle 20:00 dal Mac in Cwp › backup › data (Google blocca Apps Script); backup manuale; script 38.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.1",
+      "data": "22/10/2026",
+      "descrizione": "Script 01-39.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1107,6 +1137,12 @@
       "data": "21/10/2026",
       "descrizione": "Backup giornaliero alle 20 dal Mac.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.5",
+      "data": "22/10/2026",
+      "descrizione": "Rilievi N01-N06 della terza sessione di collaudo.",
+      "autore": "Fondazione Operate"
     }
   ],
   "issue": [
@@ -1156,6 +1192,12 @@
       "rev": "1.7",
       "data": "21/10/2026",
       "descrizione": "ISS-037: backup dal Mac.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.8",
+      "data": "22/10/2026",
+      "descrizione": "Rilievi N01-N06 della terza sessione: N01-N04 corretti da ritestare, N05 e N06 in attesa di regola; prove rilievi_n.test.mjs e t39.sql.",
       "autore": "Fondazione Operate"
     }
   ]

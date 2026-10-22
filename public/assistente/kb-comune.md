@@ -1,4 +1,4 @@
-# Base di conoscenza del Portale Carbon WastePrint — utenti degli enti (generata il 21/10/2026)
+# Base di conoscenza del Portale Carbon WastePrint — utenti degli enti (generata il 22/10/2026)
 
 === DOCUMENTO: Manuale Utente ===
 
@@ -216,7 +216,7 @@ Quando la fase è chiusa compare la scritta «La fase è chiusa: non è più pos
 
 ## Feedback pubblico
 
-Nella fase 3 la Fondazione apre il **feedback pubblico**: per un periodo stabilito chiunque può leggere la documentazione e inviare osservazioni. Il periodo dura 30 giorni per il Progetto e 20 giorni per ogni Rapporto di Monitoraggio. All'apertura ricevete la notifica «Aperto il periodo di feedback pubblico». Il riquadro **Feedback pubblico** si trova nel dettaglio della pratica e mostra il periodo, i giorni rimanenti e il documento pubblicato.
+Nella fase 3 la Fondazione apre il **feedback pubblico**: per un periodo stabilito chiunque può leggere la documentazione e inviare osservazioni. Il periodo dura 30 giorni per il Progetto e 20 giorni per ogni Rapporto di Monitoraggio. All'apertura ricevete la notifica «Aperto il periodo di feedback pubblico». Il periodo comprende l'ultimo giorno indicato e non si chiude prima: la fase 3 si conclude insieme al feedback, dal giorno successivo al termine. Il riquadro **Feedback pubblico** si trova nel dettaglio della pratica e mostra il periodo, i giorni rimanenti e il documento pubblicato.
 
 **Dove si partecipa.** Il feedback pubblico si svolge sulla pagina pubblica del portale **Feedback pubblico** ([portale-cwp.vercel.app/consultazioni](https://portale-cwp.vercel.app/consultazioni)), raggiungibile senza credenziali anche dal link nella pagina di accesso. Chiunque può leggere il documento e inviare un'osservazione: per farla arrivare deve confermare il proprio indirizzo email con il collegamento che riceve. Il link alla pagina pubblica del vostro Progetto o Rapporto compare nel riquadro **Feedback pubblico**: potete diffonderlo ai cittadini.
 
@@ -263,7 +263,7 @@ Il codice del Rapporto è quello del Progetto con l'anno, ad esempio `CWP-2026-0
 
 **Pagamenti.** In ogni pratica la sezione **Pagamenti** mostra le voci previste dalla Fondazione con importo, scadenza e stato: *Da pagare*, *Scaduto* o *Pagato*, con la data in cui la Fondazione ha registrato il pagamento. Accanto a ogni voce è indicata la voce dello **Schema tariffario** del Programma: *Tariffa di iscrizione*, *Tariffa di registrazione*, *Emissione dei crediti* o *Vendita dei crediti*. In alto trovate il riepilogo *Totale · pagato · da pagare*. La sezione è in sola lettura: i pagamenti si effettuano fuori dal portale, secondo le indicazioni della Fondazione, che poi li registra. Quando la Fondazione aggiunge una voce ricevete una notifica. Fatture e documenti amministrativi, quando caricati dalla Fondazione, si trovano in **I tuoi documenti**.
 
-**Fatture scadute.** Se una voce è scaduta e non è stata pagata, le attività successive sono sospese: la Fondazione non può aprire nuove fasi finché il pagamento non viene registrato. Nel riquadro **Pagamenti** compare un avviso rosso. La **Tariffa di iscrizione** va saldata prima della fase 5 (validazione o verifica).
+**Fatture scadute.** Se una voce è scaduta e non è stata pagata, le attività successive sono sospese: la Fondazione non può aprire nuove fasi finché il pagamento non viene registrato. Nel riquadro **Pagamenti** compare un avviso rosso. La **Tariffa di iscrizione** va saldata prima della fase 5 (validazione o verifica). Per aprire la fase 5 serve anche che la Fondazione abbia assegnato alla pratica l'ente di validazione e verifica.
 
 ## Crediti emessi
 
