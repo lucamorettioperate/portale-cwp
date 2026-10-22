@@ -405,7 +405,7 @@ async function icona(Comp, colore) {
       "Fatto il 20/10: registro degli accessi e avvisi di sicurezza, uscita per inattività, intestazioni del sito, librerie aggiornate (0 vulnerabilità)",
       "Verifica in due passaggi per lo staff (pronta, spenta); CAPTCHA sulle pagine pubbliche",
       "Antivirus sui file; verifica OWASP, test di intrusione a fine sviluppo",
-      "Backup automatico completo ogni giorno alle 20 dal Mac nella cartella Drive Cwp › backup (Google blocca Apps Script) e istruzioni di ripristino provate; da fare ambiente di prova e monitoraggio errori",
+      "Backup automatico completo ogni giorno alle 20 dal Mac nella cartella Drive Cwp › backup (pronto, da installare sul Mac) e istruzioni di ripristino provate; da fare ambiente di prova e monitoraggio errori",
       "Piani a pagamento e repository privato (slide «Piani a pagamento»); dominio email verificato, che serve anche alle email con le credenziali",
     ] },
     { i: "server", t: "Avvio della piattaforma pubblica", r: [
@@ -413,14 +413,14 @@ async function icona(Comp, colore) {
       "PEC del Programma per i reclami: operate@pec.it",
       "Da inserire: enti di validazione e verifica e registri riconosciuti, modulistica",
       "Accesso con SPID, CIE o CNS al feedback pubblico (adesione come fornitore di servizi)",
-      "Collaudo in corso con 5 Amministratori: correzioni dei rapporti V01 e V05 in produzione il 20-21/10; rilievi N01-N06 (22/10) corretti su un ramo da rilasciare; restano le regole metodologiche da confermare",
+      "Collaudo in corso con 5 Amministratori: correzioni dei rapporti V01 e V05 in produzione il 20-21/10; rilievi N01-N06 (22/10) corretti e in produzione; restano le regole metodologiche da confermare",
     ] },
     { i: "puzzle", t: "Qualità dei dati e completamenti", r: [
       "Dati ufficiali per i controlli: popolazione e cluster SOSE di ogni Comune",
       "Conferma delle scelte interpretative del calcolo con l'ente",
       "Privacy: DPIA, registro dei trattamenti; accessibilità WCAG 2.1 AA",
       "Collaudo con i dati reali di un Comune",
-      "Nuovi moduli: simulatore con PDF ed Excel, assistente virtuale (poi Operatori e aiuto sulla pratica), Audit User e utenti online (fatti il 20/10); Marketplaces da definire",
+      "Nuovi moduli: simulatore con PDF ed Excel, assistente virtuale (poi Operatori e aiuto sulla pratica), Audit User e utenti online (fatti il 20/10); navigazione da smartphone (22/10); Marketplaces da definire",
     ] },
   ];
   const cw = (12.1 - 0.6) / 3;

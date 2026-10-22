@@ -390,6 +390,8 @@ fascicolo, file Excel del simulatore). Nessun server proprio: tutto passa da Sup
 | Operatore | Dashboard, Pratiche, Anagrafiche, Simulatore, Crediti emessi, Reclami, Manuale |
 | Utente dell'ente (cliente) | Le mie pratiche, I tuoi documenti, Reclami, Formato dati, Il Programma CWP, Manuali, *Marketplaces* (grigia, non cliccabile) |
 
+Sul telefono (fino a 760 px, dal 22/10/2026) le stesse voci stanno nel pannello che si apre con **☰ Menu**, insieme a Il mio profilo ed Esci (hook `src/lib/useTelefono.js`, classi `header-*` di `global.css`).
+
 Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), campanella delle notifiche, ruolo, profilo ed Esci; in basso a destra «✦ Assistente» (Amministratori ed enti).
 
 **Struttura del codice** (in sintesi; descrizione completa file per file nel capitolo 14 «Codice sorgente»)
@@ -424,19 +426,20 @@ Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), c
 
 ---
 
-## 7. Funzionalità per area (stato al 20/10/2026)
+## 7. Funzionalità per area (stato al 22/10/2026)
 
 | Area (requisiti) | Stato | Dettaglio |
 |---|---|---|
 | Accesso e ruoli (§3, §13) | Fatto | Email+password, tre ruoli, utenti multi-organizzazione, disattivazione; password temporanea da cambiare al primo accesso, cambio e recupero password, reimpostazione dall'Admin; MFA pronta ma spenta |
 | Anagrafiche (§3) | Fatto | Organizzazioni (tipi dello Standard 4.4, fino a 2 delegati), Enti di Validazione e Registri censiti da Operatori e Admin, con le pratiche collegate; un solo account cliente attivo per Organizzazione (Guida 7.2) |
 | Pratiche (§2) | Fatto | Progetti e Rapporti di Monitoraggio annuali con le stesse 7 fasi (Guida 6.2 e 6.3.1), ID automatico, stato nel Programma (Guida, Tabelle 3 e 4), data di registrazione, territorio con codici ISTAT (un solo Progetto per territorio), co-promotori, periodo di riferimento (10 o 21 Rapporti), popolazione e crediti previsti; stati attiva/sospesa/annullata/chiusa/ritirata con motivazione, ritiro e rientro; avviso dopo 2 anni senza Rapporti |
-| Fasi (§4) | Fatto | Apertura con scadenza automatica, chiusura, modifica scadenza; durate per Progetto e Rapporto modificabili dall'Admin; verifica sull'accuratezza (+15 gg) e fino a 3 accertamenti (+10 gg) nelle fasi 2 e 6 (Guida 6.5.2); note di fase interne o condivise; documenti richiesti per fase preconfigurati dalla Guida (indicatore); il Comune carica solo nelle fasi aperte |
+| Fasi (§4) | Fatto | Apertura con scadenza automatica, chiusura, modifica scadenza; durate per Progetto e Rapporto modificabili dall'Admin; verifica sull'accuratezza (+15 gg) e fino a 3 accertamenti (+10 gg) nelle fasi 2 e 6 (Guida 6.5.2); note di fase interne o condivise; documenti richiesti per fase preconfigurati dalla Guida (indicatore); il Comune carica solo nelle fasi aperte. Dal 22/10 (script 39): la fase 3 è il feedback pubblico e si chiude con esso, solo dopo il termine; la fase 5 si apre solo con un ente di validazione e verifica attivo assegnato. |
 | Documenti (§5) | Fatto (manca antivirus) | Versioni mai sovrascritte, hash SHA-256, visibilità Cliente/Fondazione/Pubblico, per fase o generali; tipologie con i nomi ufficiali della Guida; contratto con l'ente e versione privata del Modulo mai pubblici; limite 50 MB, formati ammessi, controllo contenuto |
 | Integrazioni (§4) | Fatto | Richiesta → risposta del Cliente con documento → chiusura; fase "in attesa di integrazione" |
 | Feedback pubblico (§6, Guida 3.9) | Fatto (manca SPID/CIE/CNS) | Progetti (30 giorni) e Rapporti (20 giorni); pagina pubblica, documento pubblicato e bloccato, osservazioni numerate con email confermata e allegato, moderazione con motivazione facoltativa, firma «Partecipante» o nome a scelta dell'autore, risposte del Comune, errata corrige con ripartenza facoltativa del periodo; l'accesso con SPID/CIE/CNS richiesto dalla Guida 3.9 richiede l'adesione della Fondazione come fornitore di servizi |
 | Pagamenti (§7) | Fatto | Voci con la voce dello Schema tariffario e proposta degli importi (iscrizione, registrazione, emissione, vendita), incassi, operatore registrato e mostrato allo staff; attività sospese fino al saldo delle voci scadute, iscrizione da saldare prima della fase 5; visibili al Comune in sola lettura |
-| Back-office (§8) | Fatto | Cruscotto con scadenze/scaduti, ricerca, azioni con motivazione |
+| Back-office (§8) | Fatto | Cruscotto con scadenze/scaduti e, dal 22/10, fasi aperte senza scadenza; ricerca, azioni con motivazione |
+| Uso da telefono | Fatto (22/10) | Menu a pannello, schede al posto delle tabelle in Dashboard e Audit, elenco e dettaglio delle pratiche uno alla volta, campi a 16 px, assistente a schermo intero; tabelle larghe che scorrono nel loro riquadro |
 | Notifiche (§9) | Fatto | Interne + email (Resend); messaggi Comune-Fondazione nella pratica; manca verifica dominio |
 | Audit (§10) | Fatto | Scritto dal database, immutabile, pagina di consultazione; dal 20/10 anche lo scaricamento dei documenti e la sezione Audit User (accessi e operazioni per utente, solo Amministratore principale) |
 | Export fascicolo (§11) | Fatto | ZIP con riepilogo PDF, documenti, validazione, consultazioni con allegati ed errata corrige, note, messaggi, pagamenti e audit con i nomi |
@@ -446,7 +449,7 @@ Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), c
 | Reclami (Politica di reclamo, Guida 8) | Fatto | Invio dal portale, registrazione dei reclami arrivati via PEC, gestore, conferma, risposta scritta, costi, note interne, notifiche |
 | Calcolo crediti (Metodologia v1.2) | Fatto (scelte interpretative da confermare) | Motore formule 1-32, Tabelle 3-5, 8, 15, 16; import diretto del tracciato con aggregazione delle letture, blocco dei dati personali e controlli di coerenza; controlli della Gestione qualità dei dati (Tabella 3 dello Standard ±30% con motivazione obbligatoria, completezza, unicità, letture a buon fine, tempestività); calcoli confermati immutabili con numero progressivo interno; rapporto PDF. Funzione migliorativa: per la Metodologia il calcolo lo fa il promotore nel Rapporto e l'ente lo verifica |
 | Amministrazione | Fatto | Utenti (più Amministratori, principale protetto, cancellazione dei mai attivi), audit, Audit User, utenti online, impostazioni: durata fasi, documenti richiesti, modelli di documento; simulatore con PDF ed Excel; assistente virtuale |
-| Sicurezza (§13) | Parziale | RLS, audit, controlli file, registro degli accessi e dei tentativi non riusciti (20/10); mancano avvisi automatici, antivirus, ambiente di prova, verifica in due passaggi attiva |
+| Sicurezza (§13) | Parziale | RLS, audit, controlli file, registro degli accessi e dei tentativi non riusciti, avvisi di sicurezza all'Amministratore principale, uscita per inattività, intestazioni del sito (20/10); verifica OWASP in corso (22/10); mancano antivirus, ambiente di prova, verifica in due passaggi attiva |
 
 ---
 
@@ -1791,7 +1794,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 156 file, 37.254 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 156 file, 37.272 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1987,7 +1990,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 156 file, 37.254 righe 
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1246 | — |
+| `strumenti/revisioni_documenti.json` | 1264 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

@@ -995,6 +995,12 @@
       "data": "22/10/2026",
       "descrizione": "Rilascio in produzione di N01-N06, script 38-39 e navigazione da smartphone; Notizie CO2 via Bing.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.5",
+      "data": "22/10/2026",
+      "descrizione": "Funzionalità per area al 22/10; menu sul telefono.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1068,6 +1074,12 @@
       "rev": "2.1",
       "data": "22/10/2026",
       "descrizione": "Script 01-39.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.2",
+      "data": "22/10/2026",
+      "descrizione": "Stato del backup al 22/10: script 38 in produzione, installazione sul Mac da fare.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1172,6 +1184,12 @@
       "rev": "3.5",
       "data": "22/10/2026",
       "descrizione": "Rilievi N01-N06 della terza sessione di collaudo.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.6",
+      "data": "22/10/2026",
+      "descrizione": "Rilievi N01-N06 in produzione; navigazione da smartphone; stato del backup.",
       "autore": "Fondazione Operate"
     }
   ],

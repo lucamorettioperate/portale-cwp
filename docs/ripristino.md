@@ -131,6 +131,8 @@ Alla fine compare una **notifica del Mac** con l'esito («Backup del … complet
 
 ### Installazione (una volta, la fa Luca: circa 5 minuti)
 
+**Stato al 22/10/2026:** la funzione `backup_completo()` (script 38) è installata in produzione; manca solo l'installazione sul Mac qui sotto.
+
 Servono l'app **Google Drive per desktop** (https://www.google.com/drive/download/) aperta con l'account che possiede la cartella Cwp, e la chiave **service_role** di Supabase (*Project Settings* → *API Keys*).
 
 1. Aprite il **Terminale** del Mac (Spotlight → «Terminale»).
