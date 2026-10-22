@@ -64,8 +64,11 @@ const GIORNI = 10; // notizie più vecchie: ignorate
 // non si usa: blocca ogni richiesta dai server di Supabase (503, pagina
 // «Sorry…») e il tramite in Google Apps Script è stato bloccato dalla
 // protezione dell'account Google (ISS-036, 21/10/2026).
-const bingNews = (q, lingua) =>
-  `https://www.bing.com/news/search?q=${encodeURIComponent(q)}&qft=${encodeURIComponent('interval="7"')}&format=rss` +
+// Con «site:» il filtro dell'ultima settimana svuota i risultati (prova del
+// 22/10/2026): lì si passa settimana = false; le notizie più vecchie di 10
+// giorni le scarta comunque la funzione.
+const bingNews = (q, lingua, settimana = true) =>
+  `https://www.bing.com/news/search?q=${encodeURIComponent(q)}${settimana ? `&qft=${encodeURIComponent('interval="7"')}` : ""}&format=rss` +
   (lingua === "it" ? "&setlang=it-IT&cc=IT" : "&setlang=en-US&cc=US");
 
 // Canali dell'osservatorio: { nome, url, lingua, generale? }. «generale» =
@@ -97,9 +100,9 @@ const CANALI = [
   // esiste più (404): i due siti si leggono attraverso Bing News, che dai
   // server di Supabase risponde (22/10/2026). Solo «site:»: con altre
   // parole od OR Bing non restituisce nulla (prova del 22/10).
-  { nome: "Rinnovabili.it (via Bing)", lingua: "it", generale: true, url: bingNews("site:rinnovabili.it", "it") },
+  { nome: "Rinnovabili.it (via Bing)", lingua: "it", generale: true, url: bingNews("site:rinnovabili.it", "it", false) },
   { nome: "QualEnergia", lingua: "it", generale: true, url: "https://www.qualenergia.it/feed/" },
-  { nome: "GreenReport (via Bing)", lingua: "it", generale: true, url: bingNews("site:greenreport.it", "it") },
+  { nome: "GreenReport (via Bing)", lingua: "it", generale: true, url: bingNews("site:greenreport.it", "it", false) },
   { nome: "ESGnews", lingua: "it", generale: true, url: "https://www.esgnews.it/feed/" },
   { nome: "LifeGate", lingua: "it", generale: true, url: "https://www.lifegate.it/feed" },
   { nome: "Climate Home News", lingua: "en", generale: true, url: "https://www.climatechangenews.com/feed/" },
