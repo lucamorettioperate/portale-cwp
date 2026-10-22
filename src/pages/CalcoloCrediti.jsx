@@ -62,6 +62,7 @@ import { BENI_RIUSO, TIPOLOGIE_RIFIUTO } from "../lib/crediti/parametri.js";
 import { csvInOggetti, scriviCsv, scaricaTesto } from "../lib/csv.js";
 import { formatoData } from "../lib/date.js";
 import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
+import UtenzeCalcolo from "../components/crediti/UtenzeCalcolo.jsx";
 
 // Numero in formato italiano con `d` decimali fissi; "—" se manca o non è un numero.
 const fmt = (v, d = 2) =>
@@ -75,7 +76,10 @@ const PASSI = [
   ["rifiuti", "2. Rifiuti del territorio"],
   ["delibera", "3. Delibera tariffaria"],
   ["fattori", "4. Fattori di emissione"],
-  ["utenze", "5. Banca Dati Utenze"],
+  // 5a: Banca Dati Utenze per utenza (script 40, 22/10/2026); 5b: i
+  // conferimenti del tracciato, finché il calcolo non usa la 5a.
+  ["utenze_elenco", "5a. Utenze del calcolo"],
+  ["utenze", "5b. Conferimenti (tracciato)"],
   ["buffer", "6. Buffer"],
   ["risultati", "7. Risultati"],
 ];
@@ -633,6 +637,9 @@ export default function CalcoloCrediti() {
             )}
             {passo === "fattori" && (
               <Fattori dati={dati} aggiorna={aggiornaDati} sola={confermato} />
+            )}
+            {passo === "utenze_elenco" && (
+              <UtenzeCalcolo calcoloId={id} sola={confermato} onCambio={ricaricaTestata} />
             )}
             {passo === "utenze" && (
               <BancaDati

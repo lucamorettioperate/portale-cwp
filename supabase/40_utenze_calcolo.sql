@@ -12,8 +12,11 @@
 --   - nominativo: nome del capofamiglia (UD) o ragione sociale (UnD);
 --   - indirizzo;
 --   - n. componenti (solo UD, facoltativo) e mq (facoltativi);
---   - categoria tariffaria (solo UnD, obbligatoria: serve per i rifiuti
---     attesi con i coefficienti Kd della delibera);
+--   - categoria tariffaria (facoltativa, domestiche e non domestiche:
+--     classe o categoria della delibera TARI) e categoria di simulazione
+--     (quella usata dal calcolo per i rifiuti attesi; se manca e c'è la
+--     tariffaria, il database propone la stessa; si cambia dal portale).
+--     Richiesta di Luca del 22/10/2026 alle 16:58;
 --   - produzione totale in kg/anno;
 --   - per ogni frazione: kg/anno e svuotamenti (facoltativi);
 --     l'indifferenziato è obbligatorio.
@@ -97,16 +100,30 @@ create table if not exists calcolo_utenza (
   indirizzo           text not null check (length(trim(indirizzo)) between 1 and 300),
   componenti          int check (componenti between 1 and 30),
   mq                  numeric check (mq > 0 and mq < 1000000),
-  categoria           text check (categoria is null or length(trim(categoria)) between 1 and 40),
+  categoria_tariffaria text check (categoria_tariffaria is null or length(trim(categoria_tariffaria)) between 1 and 60),
+  categoria_simulazione text check (categoria_simulazione is null or length(trim(categoria_simulazione)) between 1 and 60),
   produzione_totale_kg numeric not null check (produzione_totale_kg >= 0),
   frazioni            jsonb not null,
   creato_il           timestamptz not null default now(),
   constraint utenza_codice_unico unique (calcolo_id, codice),
   constraint utenza_componenti_solo_ud check (tipo = 'UD' or componenti is null),
-  constraint utenza_categoria_und check (tipo = 'UD' or categoria is not null),
   constraint utenza_frazioni_valide check (cwp_frazioni_errore(frazioni) is null)
 );
 create index if not exists idx_utenza_calcolo on calcolo_utenza (calcolo_id, tipo, codice);
+
+-- Categoria di simulazione: se manca, si propone la tariffaria.
+create or replace function utenza_categoria_proposta()
+returns trigger
+language plpgsql set search_path = public as $$
+begin
+  new.codice := trim(new.codice);
+  new.categoria_tariffaria := nullif(trim(coalesce(new.categoria_tariffaria, '')), '');
+  new.categoria_simulazione := coalesce(nullif(trim(coalesce(new.categoria_simulazione, '')), ''), new.categoria_tariffaria);
+  return new;
+end $$;
+drop trigger if exists trg_utenza_categoria on calcolo_utenza;
+create trigger trg_utenza_categoria before insert or update on calcolo_utenza
+  for each row execute function utenza_categoria_proposta();
 
 alter table calcolo_utenza enable row level security;
 -- Nessuna regola di lettura: si legge solo con le funzioni del punto 5.
@@ -142,6 +159,11 @@ returns trigger
 language plpgsql security definer set search_path = public as $$
 declare r record;
 begin
+  -- Inserimento di una singola utenza dal modulo: l'audit lo scrive
+  -- admin_salva_utenza, non qui.
+  if current_setting('cwp.utenza_singola', true) = '1' then
+    return null;
+  end if;
   for r in select n.calcolo_id, count(*) as totale,
                   count(*) filter (where n.tipo = 'UD') as ud,
                   count(*) filter (where n.tipo = 'UnD') as und
@@ -191,10 +213,11 @@ grant execute on function admin_svuota_utenze(uuid, text) to authenticated;
 -- Elenco a pagine per la consultazione (Operatori e Amministratori):
 -- ricerca su codice, nominativo e indirizzo; tipo 'UD', 'UnD' o null.
 -- Una voce di audit per la prima pagina di ogni ricerca.
+drop function if exists staff_elenco_utenze(uuid, text, text, int, int);
 create or replace function staff_elenco_utenze(p_calcolo uuid, p_cerca text default null, p_tipo text default null,
                                                p_da int default 0, p_quanti int default 100)
 returns table (id bigint, codice text, tipo text, nominativo text, indirizzo text, componenti int, mq numeric,
-               categoria text, produzione_totale_kg numeric, frazioni jsonb, totale bigint)
+               categoria_tariffaria text, categoria_simulazione text, produzione_totale_kg numeric, frazioni jsonb, totale bigint)
 language plpgsql security definer set search_path = public as $$
 declare v_pratica uuid; v_cerca text := nullif(trim(coalesce(p_cerca, '')), '');
 begin
@@ -207,13 +230,14 @@ begin
             jsonb_strip_nulls(jsonb_build_object('ricerca', v_cerca, 'tipo', p_tipo)));
   end if;
   return query
-  select u.id, u.codice, u.tipo, u.nominativo, u.indirizzo, u.componenti, u.mq, u.categoria,
-         u.produzione_totale_kg, u.frazioni, count(*) over ()
+  select u.id, u.codice, u.tipo, u.nominativo, u.indirizzo, u.componenti, u.mq, u.categoria_tariffaria,
+         u.categoria_simulazione, u.produzione_totale_kg, u.frazioni, count(*) over ()
     from calcolo_utenza u
    where u.calcolo_id = p_calcolo
      and (p_tipo is null or u.tipo = p_tipo)
      and (v_cerca is null or u.codice ilike '%' || v_cerca || '%' or u.nominativo ilike '%' || v_cerca || '%'
-          or u.indirizzo ilike '%' || v_cerca || '%')
+          or u.indirizzo ilike '%' || v_cerca || '%' or u.categoria_tariffaria ilike v_cerca
+          or u.categoria_simulazione ilike v_cerca)
    order by u.tipo, u.codice
    offset greatest(coalesce(p_da, 0), 0) limit least(greatest(coalesce(p_quanti, 100), 1), 1000);
 end $$;
@@ -223,22 +247,132 @@ grant execute on function staff_elenco_utenze(uuid, text, text, int, int) to aut
 -- Lettura per il calcolo (solo Amministratore): SENZA nominativo e
 -- indirizzo, che al motore non servono. A blocchi di 5.000 per gli
 -- elenchi grandi. Nessun audit: non contiene dati personali.
+drop function if exists admin_utenze_calcolo(uuid, int, int);
 create or replace function admin_utenze_calcolo(p_calcolo uuid, p_da int default 0, p_quanti int default 5000)
-returns table (id bigint, codice text, tipo text, componenti int, mq numeric, categoria text,
-               produzione_totale_kg numeric, frazioni jsonb)
+returns table (id bigint, codice text, tipo text, componenti int, mq numeric, categoria_tariffaria text,
+               categoria_simulazione text, produzione_totale_kg numeric, frazioni jsonb)
 language plpgsql stable security definer set search_path = public as $$
 begin
   if not app_is_admin() then
     raise exception 'Solo un amministratore gestisce il calcolo dei crediti';
   end if;
   return query
-  select u.id, u.codice, u.tipo, u.componenti, u.mq, u.categoria, u.produzione_totale_kg, u.frazioni
+  select u.id, u.codice, u.tipo, u.componenti, u.mq, u.categoria_tariffaria, u.categoria_simulazione,
+         u.produzione_totale_kg, u.frazioni
     from calcolo_utenza u where u.calcolo_id = p_calcolo
    order by u.id
    offset greatest(coalesce(p_da, 0), 0) limit least(greatest(coalesce(p_quanti, 5000), 1), 5000);
 end $$;
 revoke execute on function admin_utenze_calcolo(uuid, int, int) from public, anon;
 grant execute on function admin_utenze_calcolo(uuid, int, int) to authenticated;
+
+-- ---------------------------------------------------------------------
+-- 5b. Modulo di una singola utenza (inserimento e modifica) e cancellazione.
+-- ---------------------------------------------------------------------
+-- p_utenza: JSON con le chiavi della tabella (codice, tipo, nominativo,
+-- indirizzo, componenti, mq, categoria_tariffaria, categoria_simulazione,
+-- produzione_totale_kg, frazioni). p_id null = nuova utenza. Messaggi in
+-- italiano; nell'audit codice, tipo e nomi dei campi cambiati (non i valori
+-- personali).
+create or replace function admin_salva_utenza(p_calcolo uuid, p_id bigint, p_utenza jsonb)
+returns bigint
+language plpgsql security definer set search_path = public as $$
+declare
+  v_pratica uuid; v_stato text; v_id bigint; v_prima calcolo_utenza; v_dopo calcolo_utenza;
+  v_err text; v_campi text[];
+  u jsonb := coalesce(p_utenza, '{}'::jsonb);
+begin
+  if not app_is_admin() then
+    raise exception 'Solo un amministratore gestisce il calcolo dei crediti';
+  end if;
+  select pratica_id, stato into v_pratica, v_stato from calcolo_crediti where id = p_calcolo;
+  if v_pratica is null then raise exception 'Calcolo non trovato'; end if;
+  if v_stato = 'confermato' then raise exception 'I dati di un calcolo confermato non si modificano'; end if;
+  -- Controlli con messaggi chiari (i vincoli della tabella restano la garanzia).
+  if length(trim(coalesce(u ->> 'codice', ''))) = 0 then raise exception 'Indica il codice utenza'; end if;
+  if coalesce(u ->> 'tipo', '') not in ('UD', 'UnD') then raise exception 'Tipo di utenza non valido'; end if;
+  if length(trim(coalesce(u ->> 'nominativo', ''))) = 0 then
+    raise exception '%', case when u ->> 'tipo' = 'UD' then 'Indica il nome del capofamiglia' else 'Indica la ragione sociale' end;
+  end if;
+  if length(trim(coalesce(u ->> 'indirizzo', ''))) = 0 then raise exception 'Indica l''indirizzo'; end if;
+  if jsonb_typeof(u -> 'produzione_totale_kg') <> 'number' or (u ->> 'produzione_totale_kg')::numeric < 0 then
+    raise exception 'Indica la produzione totale in kg (0 o più)';
+  end if;
+  if u ->> 'tipo' = 'UnD' and jsonb_typeof(u -> 'componenti') = 'number' then
+    raise exception 'Il numero di componenti vale solo per le utenze domestiche';
+  end if;
+  v_err := cwp_frazioni_errore(u -> 'frazioni');
+  if v_err is not null then raise exception 'Frazioni: %', v_err; end if;
+
+  perform set_config('cwp.utenza_singola', '1', true);
+  begin
+    if p_id is null then
+      insert into calcolo_utenza (calcolo_id, codice, tipo, nominativo, indirizzo, componenti, mq,
+                                  categoria_tariffaria, categoria_simulazione, produzione_totale_kg, frazioni)
+      values (p_calcolo, u ->> 'codice', u ->> 'tipo', trim(u ->> 'nominativo'), trim(u ->> 'indirizzo'),
+              (u ->> 'componenti')::int, (u ->> 'mq')::numeric, u ->> 'categoria_tariffaria',
+              u ->> 'categoria_simulazione', (u ->> 'produzione_totale_kg')::numeric, u -> 'frazioni')
+      returning * into v_dopo;
+      v_campi := array['nuova utenza'];
+    else
+      select * into v_prima from calcolo_utenza where id = p_id and calcolo_id = p_calcolo;
+      if v_prima.id is null then raise exception 'Utenza non trovata'; end if;
+      update calcolo_utenza
+         set codice = u ->> 'codice', tipo = u ->> 'tipo', nominativo = trim(u ->> 'nominativo'),
+             indirizzo = trim(u ->> 'indirizzo'), componenti = (u ->> 'componenti')::int, mq = (u ->> 'mq')::numeric,
+             categoria_tariffaria = u ->> 'categoria_tariffaria', categoria_simulazione = u ->> 'categoria_simulazione',
+             produzione_totale_kg = (u ->> 'produzione_totale_kg')::numeric, frazioni = u -> 'frazioni'
+       where id = p_id
+      returning * into v_dopo;
+      select array_agg(k order by k) into v_campi
+        from jsonb_each(to_jsonb(v_dopo)) d(k, v)
+       where k not in ('id', 'calcolo_id', 'creato_il') and v is distinct from to_jsonb(v_prima) -> k;
+    end if;
+  exception when unique_violation then
+    raise exception 'Il codice utenza % è già presente in questo calcolo', u ->> 'codice';
+  end;
+  perform set_config('cwp.utenza_singola', '0', true);
+
+  if v_campi is not null then
+    insert into audit_event (utente_id, ruolo, operazione, oggetto_tipo, oggetto_id, pratica_id, dettaglio)
+    values (auth.uid(), app_ruolo(), case when p_id is null then 'inserimento utenza' else 'modifica utenza' end,
+            'calcolo_crediti', p_calcolo, v_pratica,
+            jsonb_build_object('codice', v_dopo.codice, 'tipo', v_dopo.tipo, 'campi', to_jsonb(v_campi)));
+  end if;
+  return v_dopo.id;
+end $$;
+revoke execute on function admin_salva_utenza(uuid, bigint, jsonb) from public, anon;
+grant execute on function admin_salva_utenza(uuid, bigint, jsonb) to authenticated;
+
+create or replace function admin_elimina_utenza(p_id bigint)
+returns void
+language plpgsql security definer set search_path = public as $$
+declare u calcolo_utenza; v_pratica uuid;
+begin
+  if not app_is_admin() then
+    raise exception 'Solo un amministratore gestisce il calcolo dei crediti';
+  end if;
+  select * into u from calcolo_utenza where id = p_id;
+  if u.id is null then raise exception 'Utenza non trovata'; end if;
+  delete from calcolo_utenza where id = p_id;
+  select pratica_id into v_pratica from calcolo_crediti where id = u.calcolo_id;
+  insert into audit_event (utente_id, ruolo, operazione, oggetto_tipo, oggetto_id, pratica_id, dettaglio)
+  values (auth.uid(), app_ruolo(), 'cancellazione utenza', 'calcolo_crediti', u.calcolo_id, v_pratica,
+          jsonb_build_object('codice', u.codice, 'tipo', u.tipo));
+end $$;
+revoke execute on function admin_elimina_utenza(bigint) from public, anon;
+grant execute on function admin_elimina_utenza(bigint) to authenticated;
+
+-- Numero di utenze per tipo (riquadri del portale), senza dati personali.
+create or replace function admin_conta_utenze(p_calcolo uuid)
+returns table (tipo text, utenze bigint, senza_categoria bigint)
+language sql stable security definer set search_path = public as $$
+  select u.tipo, count(*), count(*) filter (where u.categoria_simulazione is null)
+    from calcolo_utenza u where u.calcolo_id = p_calcolo and app_is_admin()
+   group by u.tipo;
+$$;
+revoke execute on function admin_conta_utenze(uuid) from public, anon;
+grant execute on function admin_conta_utenze(uuid) to authenticated;
 
 -- ---------------------------------------------------------------------
 -- 6. Nuova versione di un calcolo: copia anche le utenze (script 20, 4d).
@@ -277,10 +411,10 @@ begin
   from calcolo_riuso where calcolo_id = p_calcolo order by id;
 
   -- Utenze (script 40).
-  insert into calcolo_utenza (calcolo_id, codice, tipo, nominativo, indirizzo, componenti, mq, categoria,
-                              produzione_totale_kg, frazioni)
-  select v_nuovo.id, codice, tipo, nominativo, indirizzo, componenti, mq, categoria,
-         produzione_totale_kg, frazioni
+  insert into calcolo_utenza (calcolo_id, codice, tipo, nominativo, indirizzo, componenti, mq, categoria_tariffaria,
+                              categoria_simulazione, produzione_totale_kg, frazioni)
+  select v_nuovo.id, codice, tipo, nominativo, indirizzo, componenti, mq, categoria_tariffaria,
+         categoria_simulazione, produzione_totale_kg, frazioni
   from calcolo_utenza where calcolo_id = p_calcolo order by id;
 
   return v_nuovo;

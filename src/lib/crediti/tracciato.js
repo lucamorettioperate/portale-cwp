@@ -147,27 +147,38 @@ async function leggiXlsx(zip) {
   return fogli;
 }
 
-// Legge il file caricato (Excel o ZIP di CSV). nome serve per riconoscere il tipo.
-// Parametri: contenuto del file (ArrayBuffer o Buffer), nome (usato nei
-// messaggi d'errore). Restituisce { tipo: "xlsx" | "zip-csv", fogli }.
-// Un CSV si riconosce anche senza il numero iniziale ("Letture.csv").
-// Lancia un errore se il file non è uno ZIP o non contiene fogli del tracciato.
-export async function leggiFileTracciato(buffer, nome = "") {
-  const zip = await JSZip.loadAsync(buffer);
+// Legge un file Excel o uno ZIP di CSV e restituisce i fogli attesi.
+// Parametri: contenuto del file (ArrayBuffer o Buffer), nome (per i
+// messaggi), elenco dei nomi di foglio attesi (per riconoscere i CSV, anche
+// senza il numero iniziale: «Letture.csv»), messaggio d'errore se non ne
+// trova nessuno. Restituisce { tipo: "xlsx" | "zip-csv", fogli }.
+// Usata dal tracciato (sotto) e dalla Banca Dati Utenze (bancaDatiUtenze.js).
+export async function leggiFileFogli(buffer, nome, fogliAttesi, messaggio) {
+  let zip;
+  try {
+    zip = await JSZip.loadAsync(buffer);
+  } catch {
+    throw new Error(`Il file ${nome ? "«" + nome + "» " : ""}non è un file Excel (.xlsx) né un archivio ZIP.`);
+  }
   if (zip.file("xl/workbook.xml")) return { tipo: "xlsx", fogli: await leggiXlsx(zip) };
   // ZIP di CSV: ogni file "<foglio>.csv" (anche dentro una cartella).
   const fogli = {};
   for (const percorso of Object.keys(zip.files)) {
     if (zip.files[percorso].dir || !/\.csv$/i.test(percorso)) continue;
     const base = percorso.split("/").pop().replace(/\.csv$/i, "");
-    const foglio = FOGLI_TRACCIATO.find((f) => normalizza(f) === normalizza(base) || normalizza(f).slice(1) === normalizza(base));
+    const foglio = fogliAttesi.find((f) => normalizza(f) === normalizza(base) || normalizza(f).slice(1) === normalizza(base));
     if (!foglio) continue;
     fogli[foglio] = leggiCsv(await zip.file(percorso).async("string"));
   }
-  if (!Object.keys(fogli).length) {
-    throw new Error(`Il file ${nome ? "«" + nome + "» " : ""}non contiene il tracciato: serve il file Excel del tracciato oppure uno ZIP con i fogli in CSV (es. 6_Letture.csv).`);
-  }
+  if (!Object.keys(fogli).length) throw new Error(messaggio);
   return { tipo: "zip-csv", fogli };
+}
+
+// Legge il file del tracciato (Excel o ZIP di CSV).
+// Lancia un errore se il file non è uno ZIP o non contiene fogli del tracciato.
+export async function leggiFileTracciato(buffer, nome = "") {
+  return leggiFileFogli(buffer, nome, FOGLI_TRACCIATO,
+    `Il file ${nome ? "«" + nome + "» " : ""}non contiene il tracciato: serve il file Excel del tracciato oppure uno ZIP con i fogli in CSV (es. 6_Letture.csv).`);
 }
 
 /* ---------------------------------------------------------------------
@@ -286,7 +297,7 @@ function tipologia(v) {
 // messaggi, array "errori" da riempire. Restituisce oggetti con le chiavi di
 // COL più _riga (numero di riga Excel). Un foglio vuoto non è un errore;
 // un foglio compilato senza una colonna obbligatoria viene ignorato tutto.
-function righeFoglio(righe, colonne, nomeFoglio, errori) {
+export function righeFoglio(righe, colonne, nomeFoglio, errori) {
   if (!righe?.length) return [];
   const intest = (righe[0] || []).map((h) => normalizza(h));
   const indici = {};

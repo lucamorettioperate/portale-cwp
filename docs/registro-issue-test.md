@@ -173,8 +173,9 @@ Si eseguono con `npm test` prima di ogni rilascio; l'ultimo esito è sempre «tu
 | `assistente.test.mjs` | 4 | Riepilogo della pratica per l'assistente, copia identica nella funzione del server, base di conoscenza degli Operatori |
 | `notizie.test.mjs` | 8 | Osservatorio News: lettura dei feed RSS (Google News, Bing News e siti), chiave dei titoli, pre-filtro, lettura della risposta di Claude, categorie uguali allo script 36, copia identica nella funzione del server |
 | `rilievi_n.test.mjs` | 13 | N01 (Caso 1 a 16.735 abitanti: 16.232,95 €/anno; 10 anni senza avviso, 7 e 12 anni stima), N04 (data assente, passata, oggi, +7, +8, pratiche non attive), N05 (formato dell'avviso), N06 (cinque frazioni + legno + metallo + RAEE a zero contro un calcolo indipendente, denominatore nullo) |
+| `bancaDatiUtenze.test.mjs` | 5 | Banca Dati Utenze per utenza: file di prova con 20 + 20 utenze, righe sbagliate con foglio e riga, codice doppio, svuotamenti senza kg, virgola e categoria numerica, colonna mancante, controllo del modulo |
 
-**Ultima esecuzione:** 22/10/2026 08:00 (ramo `correzioni-rilievi-n01-n06`), 16 serie superate.
+**Ultima esecuzione:** 22/10/2026 17:40 (ramo `banca-dati-utenze`), 17 serie superate.
 
 ### Prove del database (banco locale)
 
@@ -183,8 +184,9 @@ Ogni script del database è provato su una copia locale di Postgres 16 con tutti
 Ultime prove:
 
 - `t40.sql` del 22/10/2026 (Banca Dati Utenze, script 40):
-  - caricamento valido di 2 utenze domestiche e 1 non domestica;
-  - rifiutati: senza indifferenziato, kg negativo, frazione sconosciuta, svuotamenti decimali, non domestica senza categoria, componenti su non domestica, codice doppio;
+  - caricamento valido di 2 utenze domestiche e 1 non domestica; categoria di simulazione proposta uguale alla tariffaria;
+  - modulo: nuova utenza, modifica (audit con i campi cambiati), codice doppio e campi mancanti con messaggi in italiano, cancellazione;
+  - rifiutati: senza indifferenziato, kg negativo, frazione sconosciuta, svuotamenti decimali, componenti su non domestica, codice doppio;
   - nessuna lettura diretta; elenco e ricerca con voce di audit; lettura per il calcolo senza nomi e indirizzi;
   - Operatore consulta ma non carica né svuota; Comune e anonimo nulla;
   - una sola voce di audit per caricamento (con il numero di utenze);

@@ -373,6 +373,7 @@ Il calcolo dei crediti sta passando a un formato **per utenza**. Quando la Fonda
 | Codice utenza | sì | Codice dell'utenza nel sistema del Comune o del gestore (es. codice TARI); unico nel file |
 | Nome capofamiglia | sì | Nome e cognome dell'intestatario |
 | Indirizzo | sì | Via, numero civico ed eventuale interno |
+| Categoria tariffaria | no | Classe della quota variabile nella delibera TARI (di solito il numero di componenti: 1, 2, … 6 e oltre). Se presente, il portale la propone come **categoria di simulazione** |
 | N. componenti | no | Componenti del nucleo familiare: colloca l'utenza nella classe della delibera (Kb); se manca si usano i valori medi |
 | Mq abitazione | no | Superficie dell'abitazione in m² |
 | Produzione totale (kg) | sì | Rifiuti prodotti nell'anno, somma di tutte le frazioni |
@@ -385,9 +386,11 @@ Il calcolo dei crediti sta passando a un formato **per utenza**. Quando la Fonda
 | Colonna | Obbligatoria | Cosa contiene |
 | --- | --- | --- |
 | Ragione sociale | sì | Al posto del nome del capofamiglia |
-| Categoria | sì | Numero della categoria tariffaria della delibera TARI (DPR 158/1999, es. 22 = ristoranti): serve per i rifiuti attesi (Kd). Il foglio Categorie ha l'elenco di riferimento |
+| Categoria tariffaria | no, ma da compilare se nota | Numero della categoria della delibera TARI (DPR 158/1999, es. 22 = ristoranti; il foglio Categorie ha l'elenco di riferimento). Se presente, il portale la propone come **categoria di simulazione** |
 | Mq locali | no | Superficie tassata dei locali in m² (al posto dei mq dell'abitazione); se manca si usano i valori medi della categoria |
 | N. componenti | — | Non c'è: vale solo per le domestiche |
+
+**Categoria di simulazione.** Non è nel file: è un campo del portale, per ogni utenza, che dice quale classe o categoria usa il calcolo per i rifiuti attesi. All'arrivo del file il portale la propone uguale alla categoria tariffaria; la Fondazione può cambiarla dal modulo dell'utenza. Le utenze senza categoria tariffaria restano «da assegnare» finché non la si indica.
 
 **Regole.**
 - Ogni anno si carica l'**elenco completo** delle utenze, domestiche e non domestiche: le utenze cambiano di continuo e nessun dato si riprende dall'anno prima.

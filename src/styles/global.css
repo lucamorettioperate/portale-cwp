@@ -153,3 +153,11 @@ a {
   /* Spazio in fondo: il pulsante dell'assistente non copre l'ultima riga. */
   main { padding-bottom: 84px !important; }
 }
+
+/* Modulo di un'utenza del calcolo (UtenzeCalcolo.jsx): sul telefono a
+   schermo intero (22/10/2026). */
+@media (max-width: 760px) {
+  .modulo-utenza-sfondo { padding: 0 !important; }
+  .modulo-utenza { border-radius: 0 !important; min-height: 100dvh; padding: 14px !important; }
+  .intestazione-frazioni-2 { display: none !important; }
+}

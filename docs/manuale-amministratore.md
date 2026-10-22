@@ -659,6 +659,7 @@ Il calcolo dei crediti passerà a un formato **per utenza**: ogni anno il Comune
 | Codice utenza | sì | Codice dell'utenza nel sistema del Comune o del gestore (es. codice TARI); unico nel file |
 | Nome capofamiglia | sì | Nome e cognome dell'intestatario |
 | Indirizzo | sì | Via, numero civico ed eventuale interno |
+| Categoria tariffaria | no | Classe della quota variabile nella delibera TARI (di solito il numero di componenti: 1, 2, … 6 e oltre). Se presente, il portale la propone come **categoria di simulazione** |
 | N. componenti | no | Componenti del nucleo familiare: colloca l'utenza nella classe della delibera (Kb); se manca si usano i valori medi |
 | Mq abitazione | no | Superficie dell'abitazione in m² |
 | Produzione totale (kg) | sì | Rifiuti prodotti nell'anno, somma di tutte le frazioni |
@@ -671,9 +672,11 @@ Il calcolo dei crediti passerà a un formato **per utenza**: ogni anno il Comune
 | Colonna | Obbligatoria | Cosa contiene |
 | --- | --- | --- |
 | Ragione sociale | sì | Al posto del nome del capofamiglia |
-| Categoria | sì | Numero della categoria tariffaria della delibera TARI (DPR 158/1999, es. 22 = ristoranti): serve per i rifiuti attesi (Kd). Il foglio Categorie ha l'elenco di riferimento |
+| Categoria tariffaria | no, ma da compilare se nota | Numero della categoria della delibera TARI (DPR 158/1999, es. 22 = ristoranti; il foglio Categorie ha l'elenco di riferimento). Se presente, il portale la propone come **categoria di simulazione** |
 | Mq locali | no | Superficie tassata dei locali in m² (al posto dei mq dell'abitazione); se manca si usano i valori medi della categoria |
 | N. componenti | — | Non c'è: vale solo per le domestiche |
+
+**Categoria di simulazione.** Non è nel file: è un campo del portale, per ogni utenza, che dice quale classe o categoria usa il calcolo per i rifiuti attesi. All'arrivo del file il portale la propone uguale alla categoria tariffaria; la Fondazione può cambiarla dal modulo dell'utenza. Le utenze senza categoria tariffaria restano «da assegnare» finché non la si indica.
 
 **Regole.**
 - Ogni anno si carica l'**elenco completo** delle utenze, domestiche e non domestiche: le utenze cambiano di continuo e nessun dato si riprende dall'anno prima.
@@ -683,7 +686,17 @@ Il calcolo dei crediti passerà a un formato **per utenza**: ogni anno il Comune
 
 **Dati personali.** Questo modello contiene nomi e indirizzi, a differenza del tracciato attuale. Nel portale li vedono solo Operatori e Amministratori. Ogni consultazione dell'elenco finisce nell'Audit («consultazione utenze»), così come ogni caricamento («caricamento utenze», con il solo numero di utenze) e ogni cancellazione. Nomi e indirizzi non compaiono nei rapporti di calcolo, nei fascicoli né nelle pagine pubbliche. Prima dell'uso con dati reali servono la valutazione d'impatto (DPIA) e l'accordo sul trattamento con ogni Comune.
 
-**Stato al 22/10/2026.** Il modello Excel è pronto e la struttura del database è provata. Il caricamento nel portale e il collegamento al calcolo sono in preparazione: fino ad allora si usa il tracciato con i fogli 5_Conferimenti o 6_Letture.
+**Gestire le utenze nel portale.** Nel calcolo aprite il passo **5a. Utenze del calcolo**.
+
+1. In alto tre riquadri: utenze domestiche, non domestiche e utenze **senza categoria di simulazione** (arancione se ce ne sono).
+2. **Carica il file dell'anno** e scegliete il file compilato (Excel, oppure ZIP di CSV). Il portale mostra l'anteprima: numero di utenze, eventuali **errori** (foglio, riga e codice; con un errore il file non si carica e l'elenco attuale non cambia) e **avvisi** (produzione totale diversa dalla somma delle frazioni, utenze senza categoria). Premete **Sostituisci l'elenco**: le utenze precedenti del calcolo sono tolte e sostituite da quelle del file.
+3. Le schede **Utenze domestiche** e **Utenze non domestiche** mostrano l'elenco, 50 per pagina, con codice, nome o ragione sociale, indirizzo, categoria tariffaria e di simulazione («da assegnare» se manca), componenti o mq, produzione totale (con «≠ somma» se non corrisponde alle frazioni), indifferenziato e percentuale di differenziata. Il campo **Cerca** trova per codice, nome, indirizzo o categoria.
+4. Toccate il **codice** di un'utenza per aprire il suo modulo: tutti i campi, le frazioni con kg e svuotamenti, gli errori e gli avvisi in fondo. La **categoria di simulazione** segue la tariffaria finché non la cambiate a mano. Il pulsante **= somma delle frazioni** riporta la produzione totale alla somma. **Salva**, oppure **Elimina utenza**.
+5. **+ Nuova utenza domestica / non domestica** apre lo stesso modulo vuoto. **Svuota l'elenco** toglie tutte le utenze.
+
+Ogni modifica azzera il risultato della bozza (va premuto di nuovo **Calcola**). In un calcolo confermato il passo è in sola lettura.
+
+**Stato al 22/10/2026.** Il motore di calcolo usa ancora i conferimenti del passo **5b. Conferimenti (tracciato)**: il collegamento della Banca Dati per utenza al calcolo è il prossimo passo.
 
 ### Importare il tracciato nel calcolo
 

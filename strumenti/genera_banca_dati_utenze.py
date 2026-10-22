@@ -67,6 +67,7 @@ ANAG_UD = [
     ("Codice utenza", 14, True, "testo", "Codice dell'utenza nel sistema del Comune o del gestore (es. codice TARI). Unico nel file: due righe non possono avere lo stesso codice."),
     ("Nome capofamiglia", 26, True, "testo", "Nome e cognome dell'intestatario dell'utenza domestica."),
     ("Indirizzo", 32, True, "testo", "Indirizzo dell'utenza: via, numero civico ed eventuale interno."),
+    ("Categoria tariffaria", 12, False, "testo", "Classe della quota variabile nella delibera TARI del Comune (di solito il numero di componenti: 1, 2, … 6 e oltre). Se presente, il portale la propone come categoria di simulazione, modificabile."),
     ("N. componenti", 11, False, "intero", "Numero di componenti del nucleo familiare (facoltativo). Serve a collocare l'utenza nella classe della delibera TARI; se manca si usano i valori medi."),
     ("Mq abitazione", 11, False, "decimale", "Superficie dell'abitazione in metri quadrati (facoltativa)."),
 ]
@@ -74,7 +75,7 @@ ANAG_UND = [
     ("Codice utenza", 14, True, "testo", "Codice dell'utenza nel sistema del Comune o del gestore (es. codice TARI). Unico nel file."),
     ("Ragione sociale", 28, True, "testo", "Denominazione dell'attività (ditta, società, ente)."),
     ("Indirizzo", 32, True, "testo", "Indirizzo dei locali dell'utenza."),
-    ("Categoria", 12, True, "testo", "Numero della categoria tariffaria della delibera TARI del Comune (DPR 158/1999, es. 22 per ristoranti). Obbligatoria: serve per i rifiuti attesi (coefficiente Kd). Elenco di riferimento nel foglio Categorie."),
+    ("Categoria tariffaria", 12, False, "testo", "Numero della categoria della delibera TARI del Comune (DPR 158/1999, es. 22 per ristoranti; elenco di riferimento nel foglio Categorie). Se presente, il portale la propone come categoria di simulazione; se manca, la Fondazione la assegna nel portale. Compilatela sempre se la conoscete."),
     ("Mq locali", 11, False, "decimale", "Superficie tassata dei locali in metri quadrati (facoltativa; se manca si usano i valori medi della categoria)."),
 ]
 TOTALE = ("Produzione totale (kg)", 13, True, "decimale0", "Rifiuti totali prodotti dall'utenza nell'anno, in kg (somma di tutte le frazioni). Il portale la confronta con la somma delle colonne delle frazioni.")
@@ -97,7 +98,7 @@ def colonne(anag):
 COL_UD = colonne(ANAG_UD)
 COL_UND = colonne(ANAG_UND)
 
-ES_UD = ["UD000123", "Mario Rossi", "Via Roma 12, int. 3", 3, 95, 630, 210, 180, 110, 50, 70, 10, None, None, None, None, None, None,
+ES_UD = ["UD000123", "Mario Rossi", "Via Roma 12, int. 3", "3", 3, 95, 630, 210, 180, 110, 50, 70, 10, None, None, None, None, None, None,
          26, 52, 13, 26, 13, None, None, None, None, None, None, None]
 ES_UND = ["UND000045", "Bar Centrale s.r.l.", "Piazza Duomo 2", "24", 80, 4200, 1300, 900, 600, 400, 1000, None, None, None, None, None, None, None,
           104, 156, 52, 52, 52, None, None, None, None, None, None, None]
@@ -208,7 +209,8 @@ for p in [
     "5. Numeri senza unità di misura e senza testo; i decimali possono avere la virgola. Kg e svuotamenti sono i totali dell'anno di riferimento.",
     "6. Per ogni utenza: produzione totale in kg, kg di indifferenziato (obbligatorio, anche 0) e kg delle altre frazioni raccolte. Una frazione non raccolta o non misurata per l'utenza si lascia vuota (vuoto è diverso da 0).",
     "7. La produzione totale deve essere uguale alla somma delle frazioni (il portale segnala le differenze oltre l'1%).",
-    "8. Oltre 1 milione di righe o 50 MB: salvate ciascun foglio come CSV (separatore punto e virgola) con le stesse intestazioni e lo stesso nome del foglio (es. Utenze_domestiche.csv) e riunite i file in un archivio ZIP.",
+    "8. Categoria tariffaria: indicate la classe (domestiche) o la categoria (non domestiche) della vostra delibera TARI. Nel portale ogni utenza ha anche una «categoria di simulazione», quella usata dal calcolo per i rifiuti attesi: il portale la propone uguale alla tariffaria e la Fondazione può cambiarla.",
+    "9. Oltre 1 milione di righe o 50 MB: salvate ciascun foglio come CSV (separatore punto e virgola) con le stesse intestazioni e lo stesso nome del foglio (es. Utenze_domestiche.csv) e riunite i file in un archivio ZIP.",
 ]:
     riga(p, altezza=30)
 r += 1

@@ -40,6 +40,7 @@ Istruzioni, Utenze_domestiche, Utenze_non_domestiche e Categorie.
 | Codice utenza | sì | Codice dell'utenza nel sistema del Comune o del gestore (es. codice TARI); unico nel file |
 | Nome capofamiglia | sì | Nome e cognome dell'intestatario |
 | Indirizzo | sì | Via, numero civico ed eventuale interno |
+| Categoria tariffaria | no | Classe della quota variabile nella delibera TARI (di solito il numero di componenti: 1, 2, … 6 e oltre). Se presente, il portale la propone come **categoria di simulazione** |
 | N. componenti | no | Componenti del nucleo familiare: colloca l'utenza nella classe della delibera (Kb); se manca si usano i valori medi |
 | Mq abitazione | no | Superficie dell'abitazione in m² |
 | Produzione totale (kg) | sì | Rifiuti prodotti nell'anno, somma di tutte le frazioni |
@@ -52,9 +53,11 @@ Istruzioni, Utenze_domestiche, Utenze_non_domestiche e Categorie.
 | Colonna | Obbligatoria | Cosa contiene |
 | --- | --- | --- |
 | Ragione sociale | sì | Al posto del nome del capofamiglia |
-| Categoria | sì | Numero della categoria tariffaria della delibera TARI (DPR 158/1999, es. 22 = ristoranti): serve per i rifiuti attesi (Kd). Il foglio Categorie ha l'elenco di riferimento |
+| Categoria tariffaria | no, ma da compilare se nota | Numero della categoria della delibera TARI (DPR 158/1999, es. 22 = ristoranti; il foglio Categorie ha l'elenco di riferimento). Se presente, il portale la propone come **categoria di simulazione** |
 | Mq locali | no | Superficie tassata dei locali in m² (al posto dei mq dell'abitazione); se manca si usano i valori medi della categoria |
 | N. componenti | — | Non c'è: vale solo per le domestiche |
+
+**Categoria di simulazione.** Non è nel file: è un campo del portale, per ogni utenza, che dice quale classe o categoria usa il calcolo per i rifiuti attesi. All'arrivo del file il portale la propone uguale alla categoria tariffaria; la Fondazione può cambiarla dal modulo dell'utenza. Le utenze senza categoria tariffaria restano «da assegnare» finché non la si indica.
 
 **Regole.**
 - Ogni anno si carica l'**elenco completo** delle utenze, domestiche e non domestiche: le utenze cambiano di continuo e nessun dato si riprende dall'anno prima.
@@ -64,11 +67,24 @@ Istruzioni, Utenze_domestiche, Utenze_non_domestiche e Categorie.
 
 **Dove finiscono i dati.** Tabella `calcolo_utenza` (script 40): una riga per
 utenza con codice, tipo (UD/UnD), nominativo, indirizzo, componenti, mq,
-categoria, produzione totale e un campo JSON con kg e svuotamenti per
+categoria tariffaria, categoria di simulazione (se vuota il database mette la
+tariffaria), produzione totale e un campo JSON con kg e svuotamenti per
 frazione (codici di `parametri.js`). Il database rifiuta: indifferenziato
 mancante, kg negativi, svuotamenti non interi, frazioni sconosciute, codice
-doppio nello stesso calcolo, utenza non domestica senza categoria, componenti
-su un'utenza non domestica.
+doppio nello stesso calcolo, componenti su un'utenza non domestica.
+
+**Gestione nel portale (passo «5a. Utenze del calcolo»,
+`src/components/crediti/UtenzeCalcolo.jsx`).** Due schede, domestiche e non
+domestiche, con ricerca e pagine da 50; riquadri con i numeri e le utenze
+senza categoria di simulazione; «Carica il file dell'anno» (anteprima con
+errori e avvisi, poi «Sostituisci l'elenco»; un file con righe sbagliate non
+si carica); modulo di ogni utenza (nuova, modifica, eliminazione) con tutti i
+campi, la categoria di simulazione che segue la tariffaria finché non la si
+cambia e il pulsante «= somma delle frazioni». Lettura del file e controlli in
+`src/lib/crediti/bancaDatiUtenze.js` (prove `test/bancaDatiUtenze.test.mjs`),
+accesso al database in `src/lib/crediti/utenzeCalcolo.js`. File di prova con
+20 + 20 utenze inventate: `test/dati/Banca_dati_utenze_prova_40.xlsx`
+(`strumenti/genera_utenze_casuali.py`).
 
 **Dati personali (scelta di Luca: salvati e visibili allo staff).** Nessuna
 lettura diretta della tabella: Operatori e Amministratori la consultano con
@@ -80,11 +96,11 @@ Da completare: DPIA e accordo sul trattamento con i Comuni (art. 28 GDPR).
 Questa Banca Dati sostituirà i fogli 5_Conferimenti e 6_Letture del tracciato,
 che oggi bloccano i dati personali.
 
-**Stato.** Fatti struttura del database (script 40, provato sul banco con
-`t40.sql`, non ancora eseguito in produzione) e modello Excel. Da fare:
-caricamento nel portale con i controlli riga per riga ed elenco consultabile;
-collegamento al motore di calcolo (classe dalla delibera, rifiuti attesi,
-kg misurati al posto di svuotamenti × volume × peso specifico).
+**Stato.** Fatti: struttura del database (script 40, provato con `t40.sql`),
+modello Excel, caricamento e moduli di gestione nel portale. Da fare: il
+collegamento al motore di calcolo (categoria di simulazione → classe della
+delibera e rifiuti attesi; kg misurati al posto di svuotamenti × volume ×
+peso specifico); il passo 5b resta finché il motore non usa la 5a.
 
 ## Corrispondenza con le formule
 
