@@ -31,7 +31,8 @@ import Header from "../components/Header.jsx";
 import Badge from "../components/Badge.jsx";
 import { leggiCruscotto, leggiFasiPratiche } from "../lib/dati.js";
 import BarraFasi from "../components/BarraFasi.jsx";
-import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
+import { useOrdinamento, ThOrdinabile, SceltaOrdinamento } from "../components/Ordinamento.jsx";
+import { useTelefono } from "../lib/useTelefono.js";
 import { formatoData } from "../lib/date.js";
 import { SOGLIA_SCADENZA, inScadenza, scaduta, senzaScadenza } from "../lib/scadenze.js";
 
@@ -115,6 +116,7 @@ export default function Cruscotto() {
 
   // Ordinamento per colonna (clic sulle intestazioni).
   const completate = (p) => (fasiPerPratica[p.id] || []).filter((f) => f.stato === "completata").length;
+  const telefono = useTelefono();
   const ord = useOrdinamento(filtrate, {
     pratica: (p) => p.codice,
     organizzazione: (p) => p.organizzazione,
@@ -209,7 +211,12 @@ export default function Cruscotto() {
 
         {/* Elenco */}
         <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 900 }}>
+          {/* Sul telefono (global.css, «tabella-schede») ogni riga diventa una
+              scheda con le etichette delle colonne; l'ordine si sceglie sopra. */}
+          {telefono && (
+            <SceltaOrdinamento ord={ord} opzioni={[["pratica", "Pratica"], ["organizzazione", "Organizzazione"], ["avanzamento", "Avanzamento"], ["stato", "Stato"], ["fase", "Fase corrente"], ["scadenza", "Scadenza"], ["dafare", "Da fare"]]} style={{ padding: "10px 12px", flexWrap: "wrap" }} />
+          )}
+          <table className="tabella-schede" style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 900 }}>
             <thead>
               <tr style={{ textAlign: "left", color: C.grafite, fontSize: 11.5, textTransform: "uppercase", letterSpacing: 0.3 }}>
                 <ThOrdinabile ord={ord} chiave="pratica" style={th}>Pratica</ThOrdinabile>
@@ -245,10 +252,10 @@ export default function Cruscotto() {
                         {p.tipo === "rapporto" ? `Rapporto anno ${p.anno_monitoraggio}` : p.titolo || "Progetto"}
                       </div>
                     </td>
-                    <td style={td}>{p.organizzazione}</td>
-                    <td style={{ ...td, verticalAlign: "middle" }}><BarraFasi fasi={fasiPerPratica[p.id] || []} /></td>
-                    <td style={td}><Badge bg={sp.bg} fg={sp.fg}>{sp.label}</Badge></td>
-                    <td style={td}>
+                    <td style={td} data-etichetta="Organizzazione">{p.organizzazione}</td>
+                    <td style={{ ...td, verticalAlign: "middle" }} data-etichetta="Avanzamento"><BarraFasi fasi={fasiPerPratica[p.id] || []} /></td>
+                    <td style={td} data-etichetta="Stato"><Badge bg={sp.bg} fg={sp.fg}>{sp.label}</Badge></td>
+                    <td style={td} data-etichetta="Fase corrente">
                       {p.fase_numero ? (
                         <>
                           <div>{p.fase_numero}. {p.fase_nome}</div>
@@ -256,7 +263,7 @@ export default function Cruscotto() {
                         </>
                       ) : "—"}
                     </td>
-                    <td style={td}>
+                    <td style={td} data-etichetta="Scadenza">
                       {p.fase_scadenza ? formatoData(p.fase_scadenza) : "—"}
                       {senzaScadenza(p) && <div style={{ fontSize: 11.5, fontWeight: 600, color: C.amber }}>nessuna scadenza nota</div>}
                       {g != null && (
@@ -265,7 +272,7 @@ export default function Cruscotto() {
                         </div>
                       )}
                     </td>
-                    <td style={{ ...td, fontSize: 12 }}>
+                    <td style={{ ...td, fontSize: 12 }} data-etichetta="Da fare" className="cella-vuota-nascosta">
                       {p.integrazioni_da_verificare > 0 && <div>{p.integrazioni_da_verificare} integrazione/i da verificare</div>}
                       {p.integrazioni_in_attesa > 0 && <div style={{ color: C.grafite }}>{p.integrazioni_in_attesa} in attesa del Cliente</div>}
                       {p.consultazione_attiva && <div style={{ color: C.grafite }}>Consultazione fino al {formatoData(p.consultazione_chiusura)}</div>}

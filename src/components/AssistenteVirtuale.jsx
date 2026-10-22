@@ -79,12 +79,12 @@ export default function AssistenteVirtuale({ ruolo }) {
   return (
     <>
       {!aperto && (
-        <button onClick={() => setAperto(true)} style={pulsanteApri} aria-label="Apri l'assistente virtuale" className="no-stampa">
-          <span aria-hidden="true" style={{ fontSize: 16 }}>✦</span> Assistente
+        <button onClick={() => setAperto(true)} style={pulsanteApri} aria-label="Apri l'assistente virtuale" className="no-stampa assistente-apri">
+          <span aria-hidden="true" style={{ fontSize: 16 }}>✦</span> <span className="assistente-etichetta">Assistente</span>
         </button>
       )}
       {aperto && (
-        <div role="dialog" aria-label="Assistente virtuale" style={finestra} className="no-stampa">
+        <div role="dialog" aria-label="Assistente virtuale" style={finestra} className="no-stampa assistente-finestra">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", background: C.green, color: C.white }}>
             <div>
               <div style={{ fontWeight: 700, fontSize: 14 }}>Assistente virtuale</div>

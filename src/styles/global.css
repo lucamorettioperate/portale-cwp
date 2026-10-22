@@ -75,3 +75,81 @@ a {
   .loghi-partner img.logo-rina { height: 44px; }
   .loghi-header { gap: 12px; }
 }
+
+/* ---------------------------------------------------------------------
+   Intestazione (Header.jsx). Su computer: loghi a sinistra, menu e utente
+   a destra. Sul telefono (fino a 760 px, richiesta di Luca del 22/10/2026):
+   loghi più piccoli, campanella e pulsante «Menu»; il menu si apre in un
+   pannello con voci alte almeno 44 px, comode da toccare.
+   --------------------------------------------------------------------- */
+.header-portale { padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.header-computer { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.header-telefono { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.header-pulsante-menu {
+  position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--white); color: var(--ink);
+  font: 600 14px "Inter", system-ui, sans-serif; cursor: pointer;
+}
+.header-icona-menu { font-size: 18px; line-height: 1; }
+.header-pallino { position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; border-radius: 50%; background: #2fb24c; box-shadow: 0 0 0 2px #fff; }
+.header-pannello { flex-basis: 100%; display: grid; gap: 2px; padding: 6px 0 4px; border-top: 1px solid var(--line); }
+.header-voce {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 46px; padding: 10px 12px;
+  border-radius: 10px; color: var(--ink); text-decoration: none; font: 600 15px "Inter", system-ui, sans-serif;
+  background: transparent; border: none; text-align: left; width: 100%; cursor: pointer;
+}
+.header-voce:active { background: var(--paper); }
+.header-voce-attiva { background: var(--green-soft); color: var(--green); }
+.header-voce-spenta { color: #a9ada3; cursor: not-allowed; }
+.header-pallino-voce { font-size: 12px; font-weight: 700; color: #fff; background: #2fb24c; border-radius: 999px; padding: 2px 8px; }
+.header-pannello-utente { display: grid; gap: 2px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
+.header-pannello-utente .header-voce { display: block; }
+.header-esci { color: var(--red); }
+@media (max-width: 760px) {
+  .header-portale { padding: 10px 14px; gap: 8px; }
+}
+@media (max-width: 640px) {
+  .logo-cwp { height: 60px; }
+  .logo-fondazione { height: 32px; }
+  .loghi-partner img { height: 28px; }
+  .loghi-partner img.logo-rina { height: 31px; }
+  .loghi-colonna { gap: 6px; }
+  .loghi-header { gap: 10px; }
+}
+
+/* ---------------------------------------------------------------------
+   Telefono: regole generali (22/10/2026).
+   - Campi di almeno 16 px: sotto questa misura iPhone ingrandisce la
+     pagina quando si tocca un campo e poi resta ingrandita.
+   - Margini laterali di 14 px al posto di 24.
+   - Pulsanti e menu a tendina alti almeno 40 px, più facili da toccare.
+   - Assistente: solo il simbolo ✦ in basso a destra; aperto, occupa lo
+     schermo intero.
+   --------------------------------------------------------------------- */
+@media (max-width: 760px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea { font-size: 16px !important; }
+  main { padding-left: 14px !important; padding-right: 14px !important; }
+  button, select { min-height: 40px; }
+  .assistente-etichetta { display: none; }
+  .assistente-apri { padding: 0 !important; width: 54px; height: 54px; justify-content: center; }
+  .assistente-finestra { inset: 0 !important; width: auto !important; height: 100dvh !important; border-radius: 0 !important; }
+}
+
+/* Tabelle a schede sul telefono (classe «tabella-schede», 22/10/2026):
+   intestazione nascosta, ogni riga diventa una scheda e ogni cella mostra
+   sopra l'etichetta della colonna (attributo data-etichetta). L'ordine si
+   sceglie con «Ordina per» sopra la tabella. Usata in Dashboard e Audit. */
+@media (max-width: 760px) {
+  table.tabella-schede { min-width: 0 !important; }
+  .tabella-schede thead { display: none; }
+  .tabella-schede, .tabella-schede tbody, .tabella-schede tr, .tabella-schede td { display: block; width: 100%; }
+  .tabella-schede tr { border: none !important; border-top: 1px solid var(--line) !important; padding: 8px 2px; }
+  .tabella-schede td { padding: 4px 12px !important; white-space: normal !important; }
+  .tabella-schede td[data-etichetta]::before {
+    content: attr(data-etichetta); display: block; font-size: 10.5px; font-weight: 700; color: var(--grafite);
+    text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 1px;
+  }
+  .tabella-schede td.cella-vuota-nascosta:empty { display: none; }
+  /* Spazio in fondo: il pulsante dell'assistente non copre l'ultima riga. */
+  main { padding-bottom: 84px !important; }
+}

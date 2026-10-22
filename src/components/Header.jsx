@@ -17,6 +17,12 @@
      in basso a destra. Per tutti segnala la presenza (SegnalaPresenza) e,
      solo all'Amministratore principale, mostra «n online»
      (IndicatoreOnline, src/components/UtentiOnline.jsx).
+   Telefono (fino a 760 px, richiesta di Luca del 22/10/2026): sotto i
+     loghi più piccoli restano solo la campanella e il pulsante «Menu», che
+     apre un pannello con le voci grandi da toccare, il profilo ed «Esci».
+     Il pannello si chiude cambiando pagina, con Esc o con «Chiudi». Su
+     computer l'intestazione resta com'era. Le regole sono in global.css
+     (classi header-*).
    Sicurezza: il menu per ruolo è solo interfaccia (nasconde le voci che
      non servono). Il vero controllo è in App.jsx (rotte protette), nelle
      pagine e soprattutto nel database (RLS e funzioni): un utente che
@@ -32,6 +38,7 @@ import AssistenteVirtuale from "./AssistenteVirtuale.jsx";
 import { IndicatoreOnline, SegnalaPresenza, usePrincipale } from "./UtentiOnline.jsx";
 import UscitaInattivita from "./UscitaInattivita.jsx";
 import { notizieNuove } from "../lib/dati.js";
+import { useTelefono } from "../lib/useTelefono.js";
 
 // Notizie CO2 nuove per il pallino verde del menu (solo Amministratori,
 // script 37): si legge all'apertura, a ogni cambio di pagina e ogni 2
@@ -118,20 +125,22 @@ export default function Header() {
   const location = useLocation();
   const principale = usePrincipale();
   const notizie = useNotizieNuove(!!utente && ruolo === "admin", location.pathname);
+  const telefono = useTelefono();
+  // Pannello del menu sul telefono: si chiude a ogni cambio di pagina e con Esc.
+  const [menuAperto, setMenuAperto] = useState(false);
+  useEffect(() => { setMenuAperto(false); }, [location.pathname, location.search]);
+  useEffect(() => {
+    if (!menuAperto) return undefined;
+    const esc = (e) => { if (e.key === "Escape") setMenuAperto(false); };
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
+  }, [menuAperto]);
+  const voci = backendPronto && utente ? vociMenu(ruolo, principale) : [];
+  const attivaDi = (to) => (to === "/" ? location.pathname === "/" : location.pathname === to || location.pathname.startsWith(to + "/"));
+  const pallino = (to, attiva) => to === "/notizie-co2" && notizie > 0 && !attiva;
 
   return (
-    <header
-      style={{
-        background: C.white,
-        borderBottom: `1px solid ${C.line}`,
-        padding: "12px 24px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        flexWrap: "wrap",
-        gap: 12,
-      }}
-    >
+    <header className="header-portale" style={{ background: C.white, borderBottom: `1px solid ${C.line}` }}>
       {/* Loghi in piccolo, a sinistra */}
       <Link to="/" className="loghi-header" aria-label="Pagina iniziale">
         <img className="logo-cwp" src="/loghi/carbonwasteprint.png" alt="Carbon WastePrint" />
@@ -148,10 +157,51 @@ export default function Header() {
         </div>
       </Link>
 
-      {backendPronto && utente && (
-        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+      {/* Telefono: campanella e pulsante «Menu» accanto ai loghi. */}
+      {backendPronto && utente && telefono && (
+        <div className="header-telefono">
+          <Notifiche />
+          <button
+            onClick={() => setMenuAperto((a) => !a)}
+            aria-expanded={menuAperto}
+            aria-controls="menu-telefono"
+            className="header-pulsante-menu"
+          >
+            <span aria-hidden="true" className="header-icona-menu">{menuAperto ? "✕" : "☰"}</span>
+            {menuAperto ? "Chiudi" : "Menu"}
+            {voci.some(([to]) => pallino(to, attivaDi(to))) && <span className="header-pallino" aria-label="Notizie CO2 nuove" />}
+          </button>
+        </div>
+      )}
+
+      {/* Telefono: pannello del menu, a tutta larghezza sotto i loghi. */}
+      {backendPronto && utente && telefono && menuAperto && (
+        <nav id="menu-telefono" aria-label="Menu principale" className="header-pannello">
+          {voci.map(([to, label]) => {
+            if (!to) return <span key={label} aria-disabled="true" className="header-voce header-voce-spenta">{label} · in arrivo</span>;
+            const attiva = attivaDi(to);
+            return (
+              <Link key={to} to={to} aria-current={attiva ? "page" : undefined} className={"header-voce" + (attiva ? " header-voce-attiva" : "")}>
+                {label}
+                {pallino(to, attiva) && <span className="header-pallino-voce">{notizie} {notizie === 1 ? "nuova" : "nuove"}</span>}
+              </Link>
+            );
+          })}
+          <div className="header-pannello-utente">
+            <Link to="/profilo" className="header-voce">
+              <span style={{ display: "block", fontSize: 12, color: C.grafite, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis" }}>{utente.email}</span>
+              Il mio profilo {r && <span style={{ fontSize: 11, fontWeight: 600, color: r.color, background: r.soft, padding: "3px 9px", borderRadius: 999, marginLeft: 6 }}>{r.short}</span>}
+            </Link>
+            <IndicatoreOnline />
+            <button onClick={() => esci()} className="header-voce header-esci">Esci</button>
+          </div>
+        </nav>
+      )}
+
+      {backendPronto && utente && !telefono && (
+        <div className="header-computer">
           <nav aria-label="Menu principale" style={{ display: "flex", gap: 4, marginRight: 4, flexWrap: "wrap" }}>
-            {vociMenu(ruolo, principale).map(([to, label]) => {
+            {voci.map(([to, label]) => {
               // Sezione in arrivo: testo grigio, non cliccabile.
               if (!to) {
                 return (
@@ -169,7 +219,7 @@ export default function Header() {
               // sarebbe sempre evidenziata); le altre anche sulle sottopagine
               // (es. /crediti/123 evidenzia «Calcolo crediti»), ma /audit non si
               // accende su /audit-utenti.
-              const attiva = to === "/" ? location.pathname === "/" : location.pathname === to || location.pathname.startsWith(to + "/");
+              const attiva = attivaDi(to);
               return (
                 <Link
                   key={to}
@@ -188,7 +238,7 @@ export default function Header() {
                 >
                   {label}
                   {/* Pallino verde: notizie CO2 nuove dall'ultima visita (21/10/2026). */}
-                  {to === "/notizie-co2" && notizie > 0 && !attiva && (
+                  {pallino(to, attiva) && (
                     <span
                       title={`${notizie} ${notizie === 1 ? "notizia nuova" : "notizie nuove"}`}
                       aria-label={`${notizie} notizie nuove`}

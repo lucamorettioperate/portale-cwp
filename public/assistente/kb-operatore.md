@@ -72,6 +72,8 @@ Il collegamento vale una sola volta e per un tempo limitato; se è scaduto compa
 
 La pagina elenca i Progetti della vostra organizzazione (o delle organizzazioni che seguite), dal più recente. I Rapporti di Monitoraggio annuali si trovano dentro ciascun Progetto (capitolo 9).
 
+**Dal telefono.** Il portale si usa anche dallo smartphone. In alto restano i loghi, la campanella delle notifiche e il pulsante **☰ Menu**, che apre l'elenco delle pagine, **Il mio profilo** ed **Esci**. Con più pratiche si vede prima l'elenco: toccandone una si apre il dettaglio e **← Tutte le pratiche** riporta all'elenco. Con una sola pratica il dettaglio si apre subito. L'assistente è il pulsante tondo ✦ in basso a destra e, aperto, occupa tutto lo schermo.
+
 **Ordinare gli elenchi.** Con più pratiche o documenti, in alto compare **Ordina per**: scegliete il campo (titolo, codice, stato, data…) e con il pulsante ▲/▼ l'ordine crescente o decrescente. Nelle tabelle basta fare clic sull'intestazione della colonna.
 
 Ogni riquadro mostra il titolo del progetto, lo stato e il codice della pratica con il nome dell'ente. In alto a destra c'è la **barra di avanzamento a LED**: 7 luci, una per fase; le fasi completate sono accese (ambra, la settima verde), quella in corso ha il contorno ambra, accanto il conteggio (es. «4/7»). Passando il mouse su una luce compaiono nome e stato della fase. La stessa barra compare in alto a destra nella pratica aperta.
@@ -496,6 +498,8 @@ Si accede da [portale-cwp.vercel.app](https://portale-cwp.vercel.app) con **Emai
 *Accessi successivi:* dopo la password inserite il codice a 6 cifre e premete **Accedi**. Con l'errore «Codice non valido o scaduto» attendete il codice successivo dell'app e riprovate. Se perdete il telefono vedete il capitolo «Manutenzione ed emergenze».
 
 ## Dashboard
+
+**Dal telefono (dal 22/10/2026).** Su uno schermo fino a 760 px l'intestazione mostra solo i loghi, la campanella e **☰ Menu**, che apre tutte le voci, il profilo ed **Esci**; il pallino verde delle Notizie CO2 compare sul pulsante Menu e accanto alla voce. La tabella della Dashboard e quella dell'Audit diventano schede, una per pratica o per evento, con l'etichetta di ogni colonna; l'ordine si sceglie con **Ordina per** sopra le schede. In **Pratiche** si vede prima l'elenco: toccando una pratica si apre il dettaglio, con **← Tutte le pratiche** in alto. Le tabelle più larghe (simulatore, calcolo) scorrono di lato dentro il loro riquadro. I campi di testo sono a 16 px, così l'iPhone non ingrandisce la pagina quando li si tocca.
 
 La **Dashboard** è la pagina iniziale dello staff: mostra in un'unica tabella tutte le pratiche, Progetti e Rapporti, con l'avanzamento, la fase corrente, la scadenza e ciò che c'è da fare.
 

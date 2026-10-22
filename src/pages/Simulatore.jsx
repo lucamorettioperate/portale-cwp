@@ -274,11 +274,13 @@ export default function Simulatore() {
           {!caricamento && scenari.length === 0 && (
             <div style={{ ...riquadro, color: C.grafite, fontSize: 13.5 }}>Nessuno scenario ancora. Crea il primo con «+ Nuovo scenario».</div>
           )}
-          <div style={{ display: "grid", gap: 12 }}>
+          <div style={{ display: "grid", gap: 12, gridTemplateColumns: "minmax(0, 1fr)" }}>
             {Object.entries(perComune).map(([comune, lista]) => (
               <div key={comune} style={riquadro}>
                 <div style={{ fontWeight: 700, marginBottom: 8 }}>{comune}</div>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                {/* Sul telefono la tabella scorre dentro il riquadro (22/10/2026). */}
+                <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 520 }}>
                   <thead>
                     <tr style={{ textAlign: "left", color: C.grafite, fontSize: 12 }}>
                       <ThOrdinabile ord={ordScenari} chiave="nome" style={th}>Scenario</ThOrdinabile>
@@ -300,6 +302,7 @@ export default function Simulatore() {
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             ))}
           </div>

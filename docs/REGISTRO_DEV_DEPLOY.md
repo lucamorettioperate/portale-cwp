@@ -528,6 +528,23 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 22 ottobre 2026
+- **Navigazione da smartphone** (richiesta di Luca delle 13:26). Ramo
+  `ottimizzazione-smartphone`, costruito sopra `correzioni-rilievi-n01-n06`.
+  - `Header.jsx`: fino a 760 px intestazione bassa (90 px invece di 304)
+    con loghi più piccoli, campanella e pulsante «☰ Menu»; pannello con
+    voci alte 46 px, profilo ed Esci; si chiude cambiando pagina o con Esc.
+  - Hook `src/lib/useTelefono.js` (stessa soglia delle regole CSS).
+  - `global.css`: campi a 16 px (niente ingrandimento su iPhone), margini
+    di 14 px, pulsanti alti almeno 40 px, spazio in fondo per l'assistente;
+    classe `tabella-schede` (Dashboard e Audit diventano schede con
+    etichette, «Ordina per» sopra).
+  - `BackOffice.jsx` e `AreaCliente.jsx`: elenco e dettaglio uno alla volta
+    con «← Tutte le pratiche».
+  - Assistente: sul telefono solo ✦, aperto a schermo intero.
+  - `Simulatore.jsx`: la tabella degli scenari faceva scorrere tutta la
+    pagina di lato (515 px su 390); ora scorre dentro il riquadro.
+  - Verifica con il portale montato su dati finti: 19 pagine a 390 px,
+    nessuna più larga dello schermo; pagine da computer invariate.
 - **Rilievi N01-N06 della terza sessione di collaudo** (file
   `CWP_NUOVI_RILIEVI_A_MORETTI_V01_20261021`, risposte in
   `docs/collaudo/Rilievi_N01-N06_risposte.md`). Ramo separato
@@ -1765,7 +1782,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 155 file, 37.076 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 156 file, 37.234 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1779,16 +1796,16 @@ Inventario generato da `strumenti/inventario_codice.py`: 155 file, 37.076 righe 
 | File | Righe | Cosa contiene |
 |---|---|---|
 | `src/pages/Anagrafiche.jsx` | 214 | censimento di Organizzazioni ed Enti di Validazione (requisiti §3: l'Operatore «censisce Organizzazioni ed Enti di Validazione»). - Organizzazioni: elenco con ricerca, dati essenziali (tipo, codice fiscale, partita IVA, PEC,… |
-| `src/pages/AreaCliente.jsx` | 153 | il Comune/azienda vede l'elenco dei propri Progetti (schede compatte con stato) e, sotto, il dettaglio della pratica selezionata: fasi, documenti, integrazioni, messaggi. Link al Manuale Utente in PDF. |
-| `src/pages/Audit.jsx` | 169 | tabella degli eventi registrati (data, utente, operazione, pratica, passaggio di stato, motivazione), con ricerca testuale e pulsante per caricare eventi meno recenti (requisiti §10). Ogni colonna si ordina con un clic… |
+| `src/pages/AreaCliente.jsx` | 168 | il Comune/azienda vede l'elenco dei propri Progetti (schede compatte con stato) e, sotto, il dettaglio della pratica selezionata: fasi, documenti, integrazioni, messaggi. Link al Manuale Utente in PDF. Sul telefono (fino a 760… |
+| `src/pages/Audit.jsx` | 175 | tabella degli eventi registrati (data, utente, operazione, pratica, passaggio di stato, motivazione), con ricerca testuale e pulsante per caricare eventi meno recenti (requisiti §10). Ogni colonna si ordina con un clic… |
 | `src/pages/AuditUtenti.jsx` | 477 | Nomi leggibili degli eventi di accesso. |
-| `src/pages/BackOffice.jsx` | 246 | a sinistra l'elenco dei Progetti (con ricerca oltre 4 voci), a destra il dettaglio della pratica scelta con le sue fasi, documenti, integrazioni, consultazione, pagamenti, rapporti. Pulsante «+ Nuovo progetto» per registrare un… |
+| `src/pages/BackOffice.jsx` | 263 | a sinistra l'elenco dei Progetti (con ricerca oltre 4 voci), a destra il dettaglio della pratica scelta con le sue fasi, documenti, integrazioni, consultazione, pagamenti, rapporti. Pulsante «+ Nuovo progetto» per registrare un… |
 | `src/pages/CalcoloCrediti.jsx` | 1553 | editor di un calcolo dei crediti di CO₂eq secondo la Metodologia CWP v1.2, a passi (menu a sinistra): import del tracciato dati, impostazioni, rifiuti del territorio, delibera tariffaria, fattori di emissione, Banca Dati Utenze,… |
 | `src/pages/CambiaPassword.jsx` | 163 | scegliere una nuova password, con le regole di src/lib/password.js. - "obbligatorio": primo accesso con password temporanea (o reimpostata dall'Amministratore): finché non la cambia l'utente non entra; - "volontario": l'utente… |
 | `src/pages/ConsultazioniPubbliche.jsx` | 331 | permettere a chiunque di leggere il Progetto (30 giorni) o il Rapporto di Monitoraggio (20 giorni) nel periodo di feedback pubblico (Guida al Programma 3.9 e 6.3.1) e inviare osservazioni, che Fondazione Operate modera e a cui… |
 | `src/pages/Crediti.jsx` | 240 | sezione del calcolo dei crediti di CO₂eq (Metodologia Carbon WastePrint® v1.2). Due viste: - «Calcoli»: elenco di tutti i calcoli (titolo, pratica, anno e tipo, crediti netti, stato bozza/confermato) e modulo «+ Nuovo calcolo»… |
 | `src/pages/CreditiEmessiPagina.jsx` | 83 | elenco di tutti i lotti di crediti emessi dai Rapporti di Monitoraggio (Guida al Programma 6.3.2 e 6.3.3; script 24), con il totale emessi / attivi / ritirati e, per lo staff, le azioni su ogni lotto (caricamento sul registro,… |
-| `src/pages/Cruscotto.jsx` | 297 | (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso, in scadenza, scadute, fase aperta senza scadenza — rilievo N04: una data mancante non conta come «in regola» —, in attesa del Cliente, integrazioni da verificare,… |
+| `src/pages/Cruscotto.jsx` | 304 | (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso, in scadenza, scadute, fase aperta senza scadenza — rilievo N04: una data mancante non conta come «in regola» —, in attesa del Cliente, integrazioni da verificare,… |
 | `src/pages/Documentazione.jsx` | 219 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
 | `src/pages/FormatoDati.jsx` | 136 | spiega lo standard dei dati da inviare per il calcolo dei crediti e permette di scaricare il tracciato Excel. Il link si può mandare a Comuni e gestori anche senza credenziali. Contiene: elenco dei fogli del tracciato,… |
 | `src/pages/GestioneUtenti.jsx` | 763 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
@@ -1798,7 +1815,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 155 file, 37.076 righe 
 | `src/pages/Profilo.jsx` | 66 | mostra i dati dell'account (nome, email di accesso, ruolo), il collegamento al cambio password («/password») e i documenti da scaricare per il proprio ruolo: Manuale Utente per tutti; Manuale Amministratore e Registro sviluppo e… |
 | `src/pages/Programma.jsx` | 249 | la parte pubblica della piattaforma online richiesta dalla Guida al Programma (cap. 3.7) e dallo Standard CWP (cap. 2.3, 5 e 6): - informazioni del Programma: soggetto promotore del programma, PEC, email e sito ufficiale (Guida… |
 | `src/pages/Reclami.jsx` | 271 | reclami e richieste di chiarimento (Politica di reclamo del Programma; Guida al Programma cap. 8; script 24). - Chiunque abbia un account invia un reclamo o una richiesta di chiarimento dal portale e ne segue lo stato e la… |
-| `src/pages/Simulatore.jsx` | 1201 | stima ex ante, non certificabile, dei crediti che un Comune potrebbe generare in 7, 10 o 21 anni (Registro, backlog punto 37). - Elenco degli scenari raggruppati per Comune, con confronto dei totali; «+ Nuovo scenario» (Comune… |
+| `src/pages/Simulatore.jsx` | 1204 | stima ex ante, non certificabile, dei crediti che un Comune potrebbe generare in 7, 10 o 21 anni (Registro, backlog punto 37). - Elenco degli scenari raggruppati per Comune, con confronto dei totali; «+ Nuovo scenario» (Comune… |
 | `src/pages/TuoiDocumenti.jsx` | 185 | (requisiti §5) raccoglie i documenti GENERALI (non legati a una fase) di tutte le pratiche dell'organizzazione: contratto, allegati, documentazione amministrativa e altri documenti della Fondazione, raggruppati per tipologia,… |
 | `src/pages/VerificaMfa.jsx` | 169 | (requisiti §13) - primo accesso: attivazione con QR code da inquadrare con un'app di autenticazione (Google Authenticator, Microsoft Authenticator, Authy…), con chiave da inserire a mano in alternativa; - accessi successivi:… |
 
@@ -1814,7 +1831,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 155 file, 37.076 righe 
 | `src/components/CreditiEmessi.jsx` | 319 | crediti di carbonio emessi da un Rapporto di Monitoraggio registrato (Guida al Programma 6.3.2 e 6.3.3, Tabella 5; Standard 6.2; script 24): - emissione di un lotto con ID univoci (solo Amministratori), anche collegata a un… |
 | `src/components/DettaglioPratica.jsx` | 920 | pagina di dettaglio di una pratica (Progetto o Rapporto di Monitoraggio) con le sue 7 fasi (Guida al Programma 6.2 e 6.3.1). |
 | `src/components/Documenti.jsx` | 325 | gestione documentale di una pratica: elenco con versioni, caricamento di nuovi file e download. Lo staff sceglie anche tipologia e visibilità (Cliente, Pubblico) e può cambiarle dopo il caricamento. |
-| `src/components/Header.jsx` | 242 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
+| `src/components/Header.jsx` | 292 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
 | `src/components/Integrazioni.jsx` | 266 | richieste di integrazione di una fase (requisiti §4). Ciclo: l'Operatore richiede → il Cliente carica un documento e risponde → l'Operatore chiude la richiesta. Con la chiusura della fase la possibilità di integrare termina. La… |
 | `src/components/Messaggi.jsx` | 129 | conversazione tra Comune e Fondazione Operate dentro una pratica (backlog 26). Mostra i messaggi in ordine di data, quelli dell'utente a destra, e permette di scriverne di nuovi. |
 | `src/components/NoteFase.jsx` | 108 | note scritte sotto una delle fasi di una pratica (backlog 10). Lo staff legge tutte le note e ne aggiunge di nuove, interne (solo Fondazione) o condivise con il Comune; il Comune vede solo le condivise. |
@@ -1863,13 +1880,14 @@ Inventario generato da `strumenti/inventario_codice.py`: 155 file, 37.076 righe 
 | `src/lib/fascicoloPdf.js` | 137 | un documento leggibile da stampare o archiviare insieme ai file del fascicolo: dati della pratica e dell'Ente di Validazione, fasi, elenco dei documenti (con l'impronta SHA-256), integrazioni, consultazioni pubbliche, pagamenti… |
 | `src/lib/file.js` | 158 | prima di inviare un file all'archivio controlla formato ammesso, dimensione, contenuto reale (primi byte, "firma" del formato) e prepara un nome sicuro per il percorso nell'archivio. Traduce anche gli errori dello Storage di… |
 | `src/lib/inattivita.js` | 20 | un solo posto per i tempi usati da src/components/ UscitaInattivita.jsx (richiesta di Luca del 20/10/2026, sicurezza). - Operatori e Amministratori: 30 minuti senza attività; - utenti degli enti: 60 minuti; - l'avviso «Sei… |
-| `src/lib/notizie.js` | 218 | funzioni pure usate dalla funzione del server «notizie» (supabase/functions/notizie) e dalla pagina /news: - CANALI: dove si cercano le notizie (Bing News in italiano e in inglese con ricerche mirate, quattro siti specializzati… |
+| `src/lib/notizie.js` | 221 | funzioni pure usate dalla funzione del server «notizie» (supabase/functions/notizie) e dalla pagina /news: - CANALI: dove si cercano le notizie (Bing News in italiano e in inglese con ricerche mirate, quattro siti specializzati… |
 | `src/lib/ordinamento.js` | 37 | logica pura (senza React) usata dal componente src/components/Ordinamento.jsx. Numeri come numeri, booleani (falso prima di vero), date ISO e testi in ordine alfabetico italiano senza distinguere maiuscole e con i numeri nel… |
 | `src/lib/password.js` | 70 | controllo delle regole della password prima dell'invio, generazione della password temporanea assegnata dall'Amministratore, traduzione in italiano degli errori di Supabase Auth. |
 | `src/lib/presenza.js` | 52 | trasformare i dati della presenza (script 32) in testi leggibili: nome della pagina aperta e da quanto tempo un utente è collegato. |
 | `src/lib/scadenze.js` | 34 | Una pratica è "in scadenza" se la fase aperta scade entro questi giorni. |
 | `src/lib/supabase.js` | 37 | crea l'unico client @supabase/supabase-js usato dal portale (database, Auth, Storage, Edge Functions). Legge URL e chiave dalle variabili d'ambiente (file .env in locale, mai pubblicato; in produzione le variabili del progetto… |
 | `src/lib/tariffe.js` | 110 | calcolare le voci di pagamento proposte per una pratica dalle tariffe massime dello Schema tariffario (IVA esclusa). Sono proposte: lo staff le controlla, può cambiare l'importo e le salva come voci di pagamento (Pagamenti.jsx).… |
+| `src/lib/useTelefono.js` | 24 | — |
 
 **Database: script SQL (supabase)**
 
@@ -1924,7 +1942,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 155 file, 37.076 righe 
 | `supabase/functions/consultazione-pubblica/index.ts` | 432 | servizio della pagina pubblica delle consultazioni (requisiti §6, decisioni B e D del 18/10/2026). Chiunque, senza account, può: - "elenco": vedere le consultazioni aperte; - "dettaglio": leggere documento, errata corrige e… |
 | `supabase/functions/crea-utente/index.ts` | 263 | crea un nuovo utente con password temporanea e imposta ruolo + organizzazione. All'utente parte un'email con indirizzo del portale, email di accesso e password temporanea (Resend, funzione inviaEmailAccesso in fondo al file); se… |
 | `supabase/functions/invia-email-notifica/index.ts` | 160 | invia per email ogni nuova notifica del portale (requisiti §9: "email + notifica interna"). |
-| `supabase/functions/notizie/index.ts` | 480 | osservatorio News per gli Amministratori (richiesta di Luca Moretti del 21/10/2026). Ogni 2 ore cerca notizie sul mondo dei crediti di carbonio volontari (mercato volontario, marketplace e borse, prezzi dei crediti scambiati o… |
+| `supabase/functions/notizie/index.ts` | 483 | osservatorio News per gli Amministratori (richiesta di Luca Moretti del 21/10/2026). Ogni 2 ore cerca notizie sul mondo dei crediti di carbonio volontari (mercato volontario, marketplace e borse, prezzi dei crediti scambiati o… |
 | `supabase/functions/recupera-password/index.ts` | 155 | «Password dimenticata?» — genera il collegamento di recupero di Supabase Auth e spedisce l'email in italiano con Resend (stessa grafica delle notifiche), invece del modello email di Supabase. |
 | `supabase/functions/reimposta-password/index.ts` | 218 | l'Amministratore assegna una nuova password temporanea a un utente (Cliente od Operatore) che l'ha dimenticata. Al primo accesso il portale obbliga l'utente a sceglierne una personale (script 15). |
 
@@ -1960,7 +1978,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 155 file, 37.076 righe 
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1204 | — |
+| `strumenti/revisioni_documenti.json` | 1234 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

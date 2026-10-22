@@ -161,6 +161,12 @@
       "data": "22/10/2026",
       "descrizione": "Feedback pubblico chiuso solo dopo il termine; ente prima della fase 5 (rilievi N02, N03).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.7",
+      "data": "22/10/2026",
+      "descrizione": "Uso dal telefono: menu, elenco e dettaglio delle pratiche.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -415,6 +421,12 @@
       "data": "22/10/2026",
       "descrizione": "Rilievi N01-N06: costi una tantum in 10 rate, feedback pubblico e fase 3, ente prima della fase 5, riquadro «Fase aperta senza scadenza», avviso sui codici, frazioni del fattore dell'indifferenziato.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.2",
+      "data": "22/10/2026",
+      "descrizione": "Uso dal telefono: menu a pannello, schede in Dashboard e Audit, elenco e dettaglio delle pratiche.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -644,6 +656,12 @@
       "rev": "3.17",
       "data": "22/10/2026",
       "descrizione": "Prove dei rilievi N01-N06: 1.2d, 4.1, 4.9-4.9d, 5.0, 5.1c, 7.24, 8b.7d, 8b.7f, 10.10f; nota sull'attesa di 30 giorni.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.18",
+      "data": "22/10/2026",
+      "descrizione": "Prove 10.10g-10.10l (navigazione da smartphone).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -965,6 +983,12 @@
       "data": "22/10/2026",
       "descrizione": "Script 39 (rilievi N02, N03) e correzioni N01-N06 sul ramo correzioni-rilievi-n01-n06.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.3",
+      "data": "22/10/2026",
+      "descrizione": "Navigazione da smartphone (ramo ottimizzazione-smartphone).",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1198,6 +1222,12 @@
       "rev": "1.8",
       "data": "22/10/2026",
       "descrizione": "Rilievi N01-N06 della terza sessione: N01-N04 corretti da ritestare, N05 e N06 in attesa di regola; prove rilievi_n.test.mjs e t39.sql.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.9",
+      "data": "22/10/2026",
+      "descrizione": "ISS-038: navigazione da smartphone.",
       "autore": "Fondazione Operate"
     }
   ]

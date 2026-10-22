@@ -4,7 +4,10 @@
    Scopo: a sinistra l'elenco dei Progetti (con ricerca oltre 4 voci), a
      destra il dettaglio della pratica scelta con le sue fasi, documenti,
      integrazioni, consultazione, pagamenti, rapporti. Pulsante
-     «+ Nuovo progetto» per registrare un nuovo Progetto.
+     «+ Nuovo progetto» per registrare un nuovo Progetto. Sul telefono
+     (fino a 760 px, 22/10/2026) elenco e dettaglio si vedono uno alla
+     volta: toccando una pratica si apre il dettaglio con «← Tutte le
+     pratiche» in alto.
    Chi la usa: Operatore e Amministratore. Un cliente che apre l'indirizzo
      viene rimandato a «/».
    Dati: elencaProgetti() di src/lib/dati.js (tabella "pratica"); il
@@ -16,7 +19,7 @@
      l'interruttore mfa_obbligatoria è acceso, sessione a due fattori).
    Registro sviluppo e deploy: capitolo «Portale (frontend)».
    ========================================================================= */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams, Navigate } from "react-router-dom";
 import { COLORI as C, STATI_PRATICA } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
@@ -27,6 +30,7 @@ import BarraFasi from "../components/BarraFasi.jsx";
 import NuovoProgetto from "../components/NuovoProgetto.jsx";
 import { elencaProgetti } from "../lib/dati.js";
 import { useOrdinamento, SceltaOrdinamento } from "../components/Ordinamento.jsx";
+import { useTelefono } from "../lib/useTelefono.js";
 
 /* Pagina del back-office. Nessuna prop.
    Stato principale: elenco progetti, pratica selezionata (nell'indirizzo),
@@ -39,7 +43,13 @@ export default function BackOffice() {
   const [params, setParams] = useSearchParams();
   const selId = params.get("id");
   // Selezionare una pratica = scrivere ?id= nell'indirizzo (null lo toglie).
-  const setSelId = (id) => setParams(id ? { id } : {});
+  const setSelId = (id) => { setParams(id ? { id } : {}); if (telefonoRef.current) window.scrollTo(0, 0); };
+  // Telefono (22/10/2026): elenco e dettaglio uno alla volta; il dettaglio
+  // ha in alto «← Tutte le pratiche» e all'apertura non si sceglie da sola
+  // la prima pratica.
+  const telefono = useTelefono();
+  const telefonoRef = useRef(telefono);
+  telefonoRef.current = telefono;
   const [cerca, setCerca] = useState("");
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState("");
@@ -54,7 +64,7 @@ export default function BackOffice() {
     if (error) setErrore(error.message);
     else {
       setProgetti(data || []);
-      if (!params.get("id") && data && data.length) setSelId(data[0].id);
+      if (!params.get("id") && data && data.length && !telefonoRef.current) setSelId(data[0].id);
     }
     setCaricamento(false);
   }
@@ -94,7 +104,8 @@ export default function BackOffice() {
           margin: "0 auto",
         }}
       >
-        {/* Lista progetti */}
+        {/* Lista progetti (sul telefono solo se nessuna pratica è aperta) */}
+        {!(telefono && selId) && (
         <aside>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
             <h2
@@ -207,13 +218,19 @@ export default function BackOffice() {
             );
           })}
         </aside>
+        )}
 
         {/* Dettaglio */}
         <main>
+          {telefono && selId && (
+            <button onClick={() => setSelId(null)} style={{ marginBottom: 12, background: "transparent", border: `1px solid ${C.line}`, borderRadius: 10, padding: "0 14px", fontSize: 14, fontWeight: 600, color: C.green, cursor: "pointer" }}>
+              ← Tutte le pratiche
+            </button>
+          )}
           {selId ? (
             <DettaglioPratica key={selId} praticaId={selId} onAggiornato={ricarica} onApri={setSelId} />
           ) : (
-            !caricamento && (
+            !caricamento && !telefono && (
               <div
                 style={{
                   background: C.white,

@@ -26,7 +26,8 @@ import { COLORI as C } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
 import { elencaAudit, elencaUtenti, leggiCruscotto, elencaOrganizzazioni } from "../lib/dati.js";
-import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
+import { useOrdinamento, ThOrdinabile, SceltaOrdinamento } from "../components/Ordinamento.jsx";
+import { useTelefono } from "../lib/useTelefono.js";
 import { elencaScenari } from "../lib/crediti/scenari.js";
 import { etichettaOggetto, testoRicercaEvento } from "../lib/auditDettaglio.js";
 import OggettoEModifiche from "../components/OggettoEModifiche.jsx";
@@ -77,6 +78,7 @@ export default function Audit() {
   }, [eventi, testo, utenti, pratiche, nomiOggetti]);
 
   // Ordinamento per colonna; senza scelta resta dal più recente.
+  const telefono = useTelefono();
   const ord = useOrdinamento(filtrati, {
     data: (e) => e.avvenuto_il,
     utente: (e) => utenti[e.utente_id] || (e.utente_id ? "utente" : "sistema"),
@@ -115,7 +117,11 @@ export default function Audit() {
         />
         {errore && <div style={{ color: C.red, fontSize: 13 }}>{errore}</div>}
         <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 980 }}>
+          {/* Sul telefono ogni evento è una scheda (global.css, «tabella-schede»). */}
+          {telefono && (
+            <SceltaOrdinamento ord={ord} opzioni={[["data", "Data e ora"], ["utente", "Utente"], ["operazione", "Operazione"], ["pratica", "Pratica"], ["oggetto", "Oggetto"], ["stati", "Da → A"], ["motivazione", "Motivazione"]]} style={{ padding: "10px 12px", flexWrap: "wrap" }} />
+          )}
+          <table className="tabella-schede" style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 980 }}>
             <thead>
               <tr style={{ textAlign: "left", color: C.grafite, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.3 }}>
                 <ThOrdinabile ord={ord} chiave="data" style={th}>Data e ora</ThOrdinabile>
@@ -133,21 +139,21 @@ export default function Audit() {
               {ord.ordinate.map((e) => (
                 <tr key={e.id} style={{ borderTop: `1px solid ${C.line}` }}>
                   <td style={{ ...td, whiteSpace: "nowrap" }}>{new Date(e.avvenuto_il).toLocaleString("it-IT")}</td>
-                  <td style={td}>
+                  <td style={td} data-etichetta="Utente">
                     {/* Senza utente_id l'evento è del sistema (es. SQL Editor,
                         Edge Function); con id ma senza nome: utente non più in elenco. */}
                     {utenti[e.utente_id] || (e.utente_id ? "utente" : "sistema")}
                     {e.ruolo && <div style={{ fontSize: 11, color: C.grafite }}>{e.ruolo}</div>}
                   </td>
-                  <td style={td}>{e.operazione}</td>
-                  <td style={td}>{pratiche[e.pratica_id] || "—"}</td>
-                  <td style={td}><OggettoEModifiche evento={e} nomi={nomiOggetti} /></td>
-                  <td style={td}>
+                  <td style={td} data-etichetta="Operazione">{e.operazione}</td>
+                  <td style={td} data-etichetta="Pratica">{pratiche[e.pratica_id] || "—"}</td>
+                  <td style={td} data-etichetta="Oggetto e modifiche"><OggettoEModifiche evento={e} nomi={nomiOggetti} /></td>
+                  <td style={td} data-etichetta="Da → A">
                     {e.stato_precedente || e.stato_successivo ? (
                       <>{e.stato_precedente || "—"} → {e.stato_successivo || "—"}</>
                     ) : "—"}
                   </td>
-                  <td style={td}>{e.motivazione || "—"}</td>
+                  <td style={td} data-etichetta="Motivazione">{e.motivazione || "—"}</td>
                 </tr>
               ))}
             </tbody>

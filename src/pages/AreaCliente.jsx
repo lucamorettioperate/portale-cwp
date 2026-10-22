@@ -5,6 +5,8 @@
    Scopo: il Comune/azienda vede l'elenco dei propri Progetti (schede
      compatte con stato) e, sotto, il dettaglio della pratica selezionata:
      fasi, documenti, integrazioni, messaggi. Link al Manuale Utente in PDF.
+     Sul telefono (fino a 760 px, 22/10/2026) elenco e dettaglio uno alla
+     volta, con «← Tutte le pratiche»; con una sola pratica si apre subito.
    Chi la usa: cliente (Comune o gestore). Lo staff arriva invece al Cruscotto.
    Dati: elencaProgetti() di src/lib/dati.js (tabella "pratica" con
      l'organizzazione); il dettaglio è il componente DettaglioPratica.
@@ -15,7 +17,7 @@
      e dalle funzioni del database.
    Registro sviluppo e deploy: capitolo «Portale (frontend)».
    ========================================================================= */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { COLORI as C, STATI_PRATICA, STATI_FASE } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
@@ -25,6 +27,7 @@ import DettaglioPratica from "../components/DettaglioPratica.jsx";
 import BarraFasi from "../components/BarraFasi.jsx";
 import { elencaProgetti } from "../lib/dati.js";
 import { useOrdinamento, SceltaOrdinamento } from "../components/Ordinamento.jsx";
+import { useTelefono } from "../lib/useTelefono.js";
 
 /* Pagina principale del cliente.
    Nessuna prop. Legge i progetti una volta all'apertura e, se l'indirizzo
@@ -37,7 +40,12 @@ export default function AreaCliente() {
   const [params, setParams] = useSearchParams();
   const selId = params.get("id");
   // Cambiare pratica = cambiare l'indirizzo (senza id si toglie il parametro).
-  const setSelId = (id) => setParams(id ? { id } : {});
+  const setSelId = (id) => { setParams(id ? { id } : {}); if (telefonoRef.current) window.scrollTo(0, 0); };
+  // Telefono (22/10/2026): elenco e dettaglio uno alla volta; con una sola
+  // pratica si apre subito il dettaglio.
+  const telefono = useTelefono();
+  const telefonoRef = useRef(telefono);
+  telefonoRef.current = telefono;
   const [caricamento, setCaricamento] = useState(true);
 
   // Caricamento iniziale (una sola volta). Gli errori di lettura non sono
@@ -46,7 +54,7 @@ export default function AreaCliente() {
     elencaProgetti().then(({ data }) => {
       setProgetti(data || []);
       // Se si arriva da una notifica l'id è già nell'indirizzo: lo si rispetta.
-      if (!params.get("id") && data && data.length) setSelId(data[0].id);
+      if (!params.get("id") && data && data.length && (!telefonoRef.current || data.length === 1)) setSelId(data[0].id);
       setCaricamento(false);
     });
   }, []);
@@ -101,6 +109,12 @@ export default function AreaCliente() {
         {progetti.length > 0 && (
           <div style={{ display: "grid", gap: 20 }}>
             {/* Riepilogo pratiche (card compatte), ordinabili */}
+            {telefono && selId && progetti.length > 1 && (
+              <button onClick={() => setSelId(null)} style={{ justifySelf: "start", background: "transparent", border: `1px solid ${C.line}`, borderRadius: 10, padding: "0 14px", fontSize: 14, fontWeight: 600, color: C.green, cursor: "pointer" }}>
+                ← Tutte le pratiche
+              </button>
+            )}
+            {!(telefono && selId) && (
             <div style={{ display: "grid", gap: 10 }}>
               {progetti.length > 1 && (
                 <SceltaOrdinamento ord={ord} opzioni={[["titolo", "Titolo"], ["codice", "Codice"], ["organizzazione", "Organizzazione"], ["stato", "Stato"], ["creato", "Data di creazione"]]} style={{ flexWrap: "wrap" }} />
@@ -140,6 +154,7 @@ export default function AreaCliente() {
                 );
               })}
             </div>
+            )}
 
             {/* Dettaglio della pratica selezionata. key={selId} ricrea il
                 componente a ogni cambio di pratica (stato interno azzerato).

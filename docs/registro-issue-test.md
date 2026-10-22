@@ -31,12 +31,12 @@ Dal 21/10/2026 ogni nuova voce riporta l'ora esatta della segnalazione.
 
 **Chi segnala:** Luca = Luca Moretti; Collaudo = Amministratori collaudatori (Andrea Valentini, Albina Ambrogio, Andrea Pavan, Gianluca Tapparini, Luca Belfiore); Revisione = rilettura del codice da parte dello sviluppo; Sviluppo = prova dello sviluppo o messaggio di errore di un servizio.
 
-## Riepilogo al 22/10/2026 (ore 08:15)
+## Riepilogo al 22/10/2026 (ore 13:40)
 
 | Stato | Numero | Voci |
 |---|---|---|
 | CHIUSO | 33 | ISS-001 … ISS-034 tranne ISS-012 e ISS-020; ISS-036 |
-| CORRETTO_DA_RITESTARE | 18 | D01, D02, D03, D04, D05, D06, D07, R05, R07, R08, D05-R1, O01, ISS-035, ISS-037, N01, N02, N03, N04 (N01-N04 sul ramo `correzioni-rilievi-n01-n06`, non ancora in produzione; ciascuno con una domanda residua alla Fondazione) |
+| CORRETTO_DA_RITESTARE | 19 | D01, D02, D03, D04, D05, D06, D07, R05, R07, R08, D05-R1, O01, ISS-035, ISS-037, ISS-038, N01, N02, N03, N04 (N01-N04 sul ramo `correzioni-rilievi-n01-n06`, non ancora in produzione; ciascuno con una domanda residua alla Fondazione) |
 | ATTESA_REGOLA | 8 | R01, R02, R03, R04, R06, riuso, N05, N06 |
 | APERTO | 2 voci, 1 causa | ISS-012 e D08 (email ai destinatari diversi dal titolare) |
 | NON_RIPRODOTTO | 1 | ISS-020 |
@@ -105,6 +105,7 @@ Ordine cronologico. Una data senza ora vuol dire «ora della segnalazione non re
 | D08 | 21/10 10:42 (rapporto V05; creazione A del 20/10) | **Email** — Email delle credenziali non inviata («Email non inviata», Resend 403). Segnalato da: Collaudo | APERTO (P1) | Stessa causa di ISS-012 |
 | D05-R1 | 21/10 10:42 (osservato il 21/10 sugli eventi delle 09:20:41 e 09:21:21) | **Audit** — Nel dettaglio dell'Audit i testi lunghi restavano tagliati anche aprendo «1 modifica». Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P2) | 21/10 10:48 (`39c9bc8`); in produzione alle 10:50, verificato dal vivo alle 10:51 |
 | O01 | 21/10 10:42 (osservato il 20/10 su B disattivato) | **Accesso** — Account disattivato: elenchi vuoti invece di un messaggio esplicito. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P3) | 21/10 10:48 (`39c9bc8`); in produzione alle 10:50 |
+| ISS-038 | 22/10 13:26 | **Telefono** — Navigazione da smartphone da ottimizzare (intestazione di 304 px su 844, simulatore più largo dello schermo, campi che fanno ingrandire l'iPhone). Segnalato da: Luca | CORRETTO_DA_RITESTARE (P2) | 22/10 (ramo `ottimizzazione-smartphone`): menu a pannello, schede al posto delle tabelle in Dashboard e Audit, elenco e dettaglio delle pratiche uno alla volta, campi a 16 px; prove 10.10g-10.10l |
 | N01 | 21/10 (terza sessione, file ricevuto il 22/10 07:46) | **Simulatore** — Voci «una tantum» del Caso 1/2 ripetute in tutti gli anni; correttezza economica da verificare. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P2); durate ≠ 10 anni ATTESA_REGOLA | 22/10 08:04 (`18a4653`, ramo): rate annuali di un corrispettivo unico (contratti di consulenza e partecipazione); etichette e nota in pagina, PDF ed Excel; durate diverse da 10 anni segnalate come stima |
 | N02 | 21/10 (terza sessione) | **Feedback pubblico** — Borgoval: fase 3 chiusa il 17/10 e consultazione chiusa il 18/10, prima del termine del 16/11. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P1) | 22/10 08:04 (`18a4653`, ramo, script 39 non eseguito): chiusura solo dal giorno dopo il termine e insieme alla fase 3; prima del termine solo per pratica annullata/ritirata/chiusa con motivazione; Borgoval non toccato |
 | N03 | 21/10 (terza sessione) | **Pratiche** — Borgoval: fase 5 in corso con ente non assegnato. Segnalato da: Collaudo | CORRETTO_DA_RITESTARE (P1); dati del contratto ATTESA_REGOLA | 22/10 08:04 (`18a4653`, ramo, script 39): fase 5 solo con un ente attivo assegnato; ente non rimovibile a fase 5 aperta; dato di Borgoval da decidere a parte |
@@ -234,3 +235,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 21/10/2026 14:15 | ISS-036 chiuso: Bing e 12 siti verificati |
 | 21/10/2026 14:45 | ISS-037: backup dal Mac al posto di Apps Script; prova di `backup_completo()` |
 | 22/10/2026 08:15 | Rilievi N01-N06 della terza sessione: N01-N04 corretti sul ramo e da ritestare, N05 e N06 in attesa di regola; prove `rilievi_n.test.mjs` (16 serie) e `t39.sql` |
+| 22/10/2026 13:40 | ISS-038: navigazione da smartphone |
