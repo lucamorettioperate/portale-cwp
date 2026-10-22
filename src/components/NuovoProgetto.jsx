@@ -15,7 +15,9 @@
      organizzazioni e pratiche (RLS org_insert e funzione
      staff_crea_pratica, script 20-23, che crea pratica e fasi insieme).
      Codice vuoto: lo assegna un trigger (CWP-AAAA-NNNN, script 09); un
-     codice scritto a mano viene mantenuto così com'è. Il database rifiuta
+     codice scritto a mano viene mantenuto così com'è, con un avviso se
+     non segue quel formato (rilievo N05: formato dei codici manuali in
+     attesa di regola della Fondazione). Il database rifiuta
      codici ISTAT non validi o già in un altro progetto attivo (script 23).
      Un'organizzazione nuova resta creata anche se poi fallisce la pratica.
    Registro sviluppo e deploy: capitolo «Portale (frontend)»
@@ -183,9 +185,18 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
           </div>
 
           {/* Dati progetto */}
+          {/* Rilievo N05: vuoto = codice automatico CWP-AAAA-NNNN (trigger
+              dello script 09). Un codice scritto a mano resta com'è; se non
+              segue il formato automatico compare solo un avviso: la regola
+              sul formato è in attesa della Fondazione (ATTESA_REGOLA). */}
           <label style={lbl}>
-            Codice pratica
-            <input placeholder="es. CWP-2026-0001" value={codice} onChange={(e) => setCodice(e.target.value)} style={campo} />
+            Codice pratica (lasciare vuoto: lo assegna il portale, CWP-AAAA-NNNN)
+            <input placeholder="vuoto = automatico" value={codice} onChange={(e) => setCodice(e.target.value)} style={campo} />
+            {codice.trim() && !/^CWP-\d{4}-\d{4}$/.test(codice.trim()) && (
+              <span style={{ fontSize: 11.5, color: C.ocra, fontWeight: 400 }}>
+                Il codice non segue il formato automatico CWP-AAAA-NNNN: verrà salvato così come è scritto.
+              </span>
+            )}
           </label>
           <label style={lbl}>
             Titolo

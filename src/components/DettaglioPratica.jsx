@@ -233,7 +233,7 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
       <Messaggi pratica={pratica} />
 
       {/* Feedback pubblico (fase 3): Progetti e Rapporti (Guida 3.9 e 6.3.1) */}
-      <Consultazione praticaId={pratica.id} tipo={pratica.tipo} />
+      <Consultazione praticaId={pratica.id} tipo={pratica.tipo} statoPratica={pratica.stato} onCambio={dopoAzione} />
 
       {/* Rapporti di Monitoraggio annuali del Progetto */}
       {pratica.tipo === "progetto" && (
@@ -366,7 +366,11 @@ function Fase({ fase: f, pratica, staff, richieste, note, modelli, richiesti, do
             {/* Apri fase: il database imposta data di apertura = oggi e
                 scadenza = oggi + giorni della fase (tabella durata_fase,
                 modificabile dall'Admin in Impostazioni; script 08 e 13). */}
-            {f.stato === "non_iniziata" && (
+            {/* Rilievo N03 (script 39): la fase 5 parte solo con un ente di
+                validazione e verifica assegnato; il database lo impone. */}
+            {f.stato === "non_iniziata" && f.numero === 5 && !pratica.ente_validazione_id ? (
+              <span style={{ fontSize: 12, color: C.ocra }}>Per aprire la fase 5 assegna prima l'ente di validazione e verifica (riquadro in alto).</span>
+            ) : f.stato === "non_iniziata" && (
               <button onClick={() => esegui(() => apriFase(f.id))} disabled={inCorso} style={btnPrimario}>
                 Apri fase
               </button>

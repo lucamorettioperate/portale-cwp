@@ -128,17 +128,32 @@ export function coefficientePrimoAnno(dataAvvio, anno) {
    FErid(rur) = Σ FErid(r=rec) × M(r=rec),  M = Qtot(r) / Σ Qtot(r=rec)
    Cioè: media dei FE delle frazioni a recupero, pesata sulle loro quantità.
    Parametri: { tipologia: Qtot in t/anno }, { tipologia: fattore }.
-   Restituisce { fe, composizione: [{ tipologia, quota, fe }] };
+   Restituisce { fe, composizione: [{ tipologia, quantita, quota, fe }],
+   fuoriPaniere: [tipologie usate oltre le cinque nominate dal testo],
+   escluse: [tipologie a recupero con quantità ma senza FE numerico] };
    fe = null se nessuna frazione a recupero ha quantità e FE validi.
+   Criterio attuale: tutte le frazioni a recupero con quantità > 0 e FE
+   numerico. Il testo del cap. 5 nomina organico, carta e cartone, vetro,
+   plastica e tessili e ammette altre classificazioni motivate nel
+   Progetto: quale paniere usare è in attesa della Fondazione (rilievo
+   N06, ATTESA_REGOLA). Per trasparenza il risultato elenca quantità e FE
+   di ogni frazione usata, quelle oltre le cinque nominate e quelle
+   escluse per FE mancante; la formula non cambia.
    --------------------------------------------------------------------- */
+export const PANIERE_METODOLOGIA = ["organico", "carta", "vetro", "plastica", "tessili"];
+
 export function fattoreIndifferenziato(quantitaPerTipologia, fattori) {
   const voci = Object.entries(quantitaPerTipologia).filter(
     ([t, q]) => q > 0 && fattori[t] && fattori[t].recupero && Number.isFinite(fattori[t].fe)
   );
+  const escluse = Object.entries(quantitaPerTipologia)
+    .filter(([t, q]) => q > 0 && fattori[t] && fattori[t].recupero && !Number.isFinite(fattori[t].fe))
+    .map(([t]) => t);
   const totale = somma(voci, ([, q]) => q);
-  if (!totale) return { fe: null, composizione: [] };
-  const composizione = voci.map(([t, q]) => ({ tipologia: t, quota: q / totale, fe: fattori[t].fe }));
-  return { fe: somma(composizione, (c) => c.fe * c.quota), composizione };
+  if (!totale) return { fe: null, composizione: [], fuoriPaniere: [], escluse };
+  const composizione = voci.map(([t, q]) => ({ tipologia: t, quantita: q, quota: q / totale, fe: fattori[t].fe }));
+  const fuoriPaniere = composizione.map((c) => c.tipologia).filter((t) => !PANIERE_METODOLOGIA.includes(t));
+  return { fe: somma(composizione, (c) => c.fe * c.quota), composizione, fuoriPaniere, escluse };
 }
 
 /* ---------------------------------------------------------------------

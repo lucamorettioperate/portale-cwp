@@ -1359,7 +1359,12 @@ function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermat
       {r.indifferenziato?.fe != null && (
         <div style={{ fontSize: 12, color: C.grafite, marginTop: 6 }}>
           FE indifferenziato calcolato (formule 16-17): {fmt(r.indifferenziato.fe, 4)} kgCO₂eq/kg, da{" "}
-          {r.indifferenziato.composizione.map((c) => `${tipNome(c.tipologia)} ${fmt(c.quota * 100, 1)}%`).join(", ")}.
+          {r.indifferenziato.composizione.map((c) => `${tipNome(c.tipologia)} ${fmt(c.quota * 100, 1)}%${c.quantita != null ? ` (${fmt(c.quantita, 2)} t; FE ${fmt(c.fe, 3)})` : ""}`).join(", ")}.
+          {/* Rilievo N06 (ATTESA_REGOLA): frazioni oltre le cinque nominate dal cap. 5 ed escluse per FE mancante. */}
+          {r.indifferenziato.fuoriPaniere?.length > 0 && (
+            <> Comprende tipologie oltre le cinque nominate al cap. 5 della Metodologia ({r.indifferenziato.fuoriPaniere.map(tipNome).join(", ")}): il paniere da usare è in attesa di conferma della Fondazione.</>
+          )}
+          {r.indifferenziato.escluse?.length > 0 && <> Escluse perché senza fattore: {r.indifferenziato.escluse.map(tipNome).join(", ")}.</>}
         </div>
       )}
 

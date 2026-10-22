@@ -403,9 +403,12 @@ export async function apriConsultazione({ praticaId, documentoId }) {
 }
 
 // Chiude la consultazione: non accetta più osservazioni.
-// RPC `staff_chiudi_consultazione` (21_completamento_funzionale.sql): solo staff.
-export async function chiudiConsultazione(id) {
-  return await supabase.rpc("staff_chiudi_consultazione", { p_consultazione: id });
+// RPC `staff_chiudi_consultazione` (script 39, rilievo N02): solo staff.
+// Chiusura ordinaria solo dal giorno dopo il termine (data_chiusura
+// compresa), e allora si completa anche la fase 3; prima del termine solo
+// per una pratica annullata, ritirata o chiusa, con motivazione.
+export async function chiudiConsultazione(id, motivazione = null) {
+  return await supabase.rpc("staff_chiudi_consultazione", { p_consultazione: id, p_motivazione: motivazione });
 }
 
 // Tutte le consultazioni di una pratica (dalla prima), ciascuna con le sue

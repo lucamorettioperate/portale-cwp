@@ -393,13 +393,17 @@ export async function generaPdfSimulazione(contenuto, nomeFile) {
       footStyles: { fillColor: VERDE_CHIARO, textColor: INK, fontStyle: "bold", halign: "right" },
     });
     y += 5;
-    paragrafo("Tabelle «Costi per il Soggetto Promotore» di Fondazione Operate (28/07/2026), progetti di 10 anni; le voci una tantum sono già ammortizzate sui 10 anni. Non comprendono la validazione dell'ente.");
+    paragrafo("Tabelle «Costi per il Soggetto Promotore» di Fondazione Operate (28/07/2026), progetti di 10 anni. Non comprendono la validazione dell'ente.");
+    // Rilievo N01: natura delle voci una tantum (rate annuali del corrispettivo).
+    if (c.costi.nota) paragrafo(c.costi.nota);
     y += 3;
   }
   if (c.economia) {
     if (y > H - 60) { doc.addPage(); y = 22; }
     doc.setFont(FONT, "bold").setFontSize(9.5).setTextColor(...VERDE).text("Ricavi, costi e margine anno per anno", M, y);
     y += 3;
+    // Rilievo N01: durata diversa da 10 anni con il Caso 1 o 2 = stima senza regola.
+    if (c.economia.stima) { y += 2; paragrafo(`ATTENZIONE: ${c.economia.stima}`, ROSSO); }
     tabella({
       head: [c.economia.colonne.map(pdfTesto)],
       body: c.economia.righe.map((r) => r.map((v, i) => (i === 0 ? String(v) : i === 2 ? num(v, 2) : num(v, 0)))),

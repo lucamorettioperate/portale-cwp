@@ -24,7 +24,10 @@
      staff_errata_corrige e staff_autori_commenti (script 17).
    Sicurezza:
      - garantito dal database: solo lo staff apre e chiude (funzioni
-       staff_apri_consultazione e staff_chiudi_consultazione, script 21) e
+       staff_apri_consultazione e staff_chiudi_consultazione, script 21,
+       aggiornate dallo script 39: chiusura solo dopo il termine, legata
+       alla fase 3; prima del termine solo per pratica annullata,
+       ritirata o chiusa, con motivazione — rilievo N02) e
        modera (RLS commento_update); il documento in consultazione diventa
        pubblico e resta bloccato finché la consultazione è attiva (si
        sostituisce solo con l'errata corrige, script 21); nome ed email degli autori non
@@ -61,7 +64,7 @@ import {
   urlDocumento,
   elencaDurateFasi,
 } from "../lib/dati.js";
-import { formatoData, giorniA } from "../lib/date.js";
+import { formatoData, giorniA, oggiItalia } from "../lib/date.js";
 import { campo, etichetta, btnPrimario, btnMini, btnLink, dataOra } from "./stili.js";
 
 /* Consultazione pubblica (fase 3, requisiti §6).
@@ -76,7 +79,9 @@ import { campo, etichetta, btnPrimario, btnMini, btnLink, dataOra } from "./stil
    - Errata corrige: lo staff decide caso per caso se far ripartire il
      periodo, con motivazione (decisione B).
    Props: praticaId (id della pratica), tipo ("progetto" | "rapporto"). */
-export default function Consultazione({ praticaId, tipo = "progetto" }) {
+// onCambio(): facoltativa, avvisa la pratica dopo un'azione (apertura e
+// chiusura del feedback cambiano anche la fase 3, script 39).
+export default function Consultazione({ praticaId, tipo = "progetto", statoPratica = "attiva", onCambio }) {
   const { ruolo } = useAuth();
   const staff = ruolo === "operatore" || ruolo === "admin";
   // Giorni del feedback pubblico: durata della fase 3 del tipo di pratica
@@ -105,6 +110,9 @@ export default function Consultazione({ praticaId, tipo = "progetto" }) {
   // motivazione aperto (facoltativa, requisiti §6) e testo in scrittura.
   const [rifiuto, setRifiuto] = useState(null);
   const [motivoRifiuto, setMotivoRifiuto] = useState("");
+  // Chiusura prima del termine (solo pratica annullata, ritirata o chiusa):
+  // motivazione obbligatoria, null = modulo chiuso (rilievo N02).
+  const [motivoChiusura, setMotivoChiusura] = useState(null);
 
   // Legge consultazione, documenti, errata corrige e (solo staff) gli autori.
   // Se non c'è consultazione, preseleziona il documento più recente.
@@ -148,6 +156,7 @@ export default function Consultazione({ praticaId, tipo = "progetto" }) {
     if (error) setErrore(error.message);
     await carica();
     setAzione(false);
+    if (!error && onCambio) onCambio();
     return !error;
   }
 
@@ -329,8 +338,38 @@ export default function Consultazione({ praticaId, tipo = "progetto" }) {
             })}
           </div>
 
-          {staff && cons.attiva && (
-            <button onClick={() => esegui(() => chiudiConsultazione(cons.id))} disabled={azione} style={{ ...btnMini, marginTop: 14 }}>Chiudi il feedback pubblico</button>
+          {/* Chiusura (rilievo N02, script 39): ordinaria solo dal giorno
+              dopo il termine, e completa anche la fase 3; prima del termine
+              solo se la pratica è annullata, ritirata o chiusa, motivata.
+              Il database applica le stesse regole. */}
+          {staff && cons.attiva && (!cons.data_chiusura || oggiItalia() > cons.data_chiusura) && (
+            <button onClick={() => esegui(() => chiudiConsultazione(cons.id))} disabled={azione} style={{ ...btnMini, marginTop: 14 }}>Chiudi il feedback pubblico e la fase 3</button>
+          )}
+          {staff && cons.attiva && cons.data_chiusura && oggiItalia() <= cons.data_chiusura && (
+            <div style={{ marginTop: 14, fontSize: 12.5, color: C.grafite }}>
+              Il feedback resta aperto fino al {formatoData(cons.data_chiusura)} compreso: si chiude dal giorno successivo (Guida 6.2.2 e Tabella 3).
+              {["annullata", "ritirata", "chiusa"].includes(statoPratica) && motivoChiusura === null && (
+                <> <button onClick={() => setMotivoChiusura("")} style={{ ...btnMini, marginLeft: 6 }}>Chiudi ora: pratica {statoPratica}</button></>
+              )}
+              {motivoChiusura !== null && (
+                <div style={{ marginTop: 8, display: "grid", gap: 6, maxWidth: 520 }}>
+                  <label style={etichetta}>
+                    Motivazione (obbligatoria, resta nell'audit)
+                    <input value={motivoChiusura} onChange={(e) => setMotivoChiusura(e.target.value)} style={campo} placeholder="Es. progetto ritirato con lettera prot. 12/2026" />
+                  </label>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      onClick={async () => { if (await esegui(() => chiudiConsultazione(cons.id, motivoChiusura.trim()))) setMotivoChiusura(null); }}
+                      disabled={azione || motivoChiusura.trim().length < 3}
+                      style={{ ...btnMini, color: C.red }}
+                    >
+                      Conferma la chiusura anticipata
+                    </button>
+                    <button onClick={() => setMotivoChiusura(null)} style={btnMini}>Annulla</button>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}

@@ -50,7 +50,7 @@ import { CLUSTER } from "../lib/crediti/qualita.js";
 import { formatoData } from "../lib/date.js";
 import {
   DURATE, TIPOLOGIE, datiIniziali, riepilogoAnnoBase, rifiutiDaCluster, rifiutiDaCalcolo,
-  anniDelPeriodo, traiettoriaLineare, simula, righeCsv, puntoDiPartenza, RD_SOGLIA, simulaEconomia, economiaIniziale, prezziPerAnni, PREZZO_PROPOSTO, costiPerCaso, listinoDi, CASI_COSTI,
+  anniDelPeriodo, traiettoriaLineare, simula, righeCsv, puntoDiPartenza, RD_SOGLIA, simulaEconomia, economiaIniziale, prezziPerAnni, PREZZO_PROPOSTO, costiPerCaso, listinoDi, CASI_COSTI, NOTA_UNA_TANTUM,
   METODI_STIMA, RIFIUTI_MISURATI, UTENZE_MONITORATE, STIMA_PREDEFINITA, bufferMetodologia, taraVariabilita, erroriScenario, erroriEconomia,
 } from "../lib/crediti/simulatore.js";
 import { elencaScenari, leggiScenario, creaScenario, salvaScenario, duplicaScenario, eliminaScenario } from "../lib/crediti/scenari.js";
@@ -941,6 +941,8 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
                 </tr>
               </tbody>
             </table>
+            {/* Rilievo N01: le voci una tantum sono rate annuali di un corrispettivo unico. */}
+            <p style={{ ...nota, margin: "6px 0 12px" }}>{NOTA_UNA_TANTUM}</p>
           </div>
         )}
         {listinoDi(economia) === "schema" && (
@@ -975,9 +977,15 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
                 {eco.avvisi.map((a) => <li key={a}>{a}</li>)}
               </ul>
             )}
+            {/* Rilievo N01: durata diversa da 10 anni con il Caso 1 o 2 = i totali sono una stima senza regola. */}
+            {eco.durataFuoriListino && (
+              <div role="alert" style={{ margin: "12px 0", padding: "10px 14px", background: "#FBE9E7", border: `1px solid ${C.red}`, borderRadius: 10, fontSize: 12.5 }}>
+                <strong style={{ color: C.red }}>Stima, non listino approvato:</strong> costi, margine e totali per {eco.righe.length} anni non hanno ancora una regola della Fondazione.
+              </div>
+            )}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 10, margin: "14px 0" }}>
               <Tile etichetta={`Ricavi in ${eco.righe.length} anni`} valore={`€ ${fmt(eco.totali.ricavi, 0)}`} unita={`${fmt(eco.totali.crediti, 0)} crediti × ${fmt(eco.totali.prezzoMedio, 2)} € in media`} />
-              <Tile etichetta="Costi per il Comune nel periodo" valore={`€ ${fmt(eco.totali.costi, 0)}`} unita={`€ ${fmt(eco.totali.costoAnnuoMedio, 0)} all'anno in media`} />
+              <Tile etichetta={eco.durataFuoriListino ? "Costi per il Comune nel periodo (stima)" : "Costi per il Comune nel periodo"} valore={`€ ${fmt(eco.totali.costi, 0)}`} unita={`€ ${fmt(eco.totali.costoAnnuoMedio, 0)} all'anno in media`} />
               <Tile etichetta="Margine netto" valore={`€ ${fmt(eco.totali.margine, 0)}`} unita={eco.totali.primoAnnoPositivo ? `costi rientrati nel ${eco.totali.primoAnnoPositivo} (primo saldo cumulato positivo)` : eco.totali.primoAnnoPareggio ? `pareggio esatto nel ${eco.totali.primoAnnoPareggio}, nessun saldo positivo nel periodo` : "i costi non rientrano nel periodo"} principale />
               <Tile etichetta="Per abitante nel periodo" valore={eco.totali.costoProCapite != null ? `€ ${fmt(eco.totali.costoProCapite, 2)}` : "—"} unita={eco.totali.ricavoProCapite != null ? `di costo; ricavo € ${fmt(eco.totali.ricavoProCapite, 2)}` : ""} />
             </div>

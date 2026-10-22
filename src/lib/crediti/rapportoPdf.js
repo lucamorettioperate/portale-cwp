@@ -253,7 +253,12 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
   });
   y += 5;
   if (r.indifferenziato?.composizione?.length) {
-    paragrafo(`FE dell'indifferenziato calcolato con le formule 16-17 dalla composizione: ${r.indifferenziato.composizione.map((c) => `${tipNome(c.tipologia)} ${num(c.quota * 100, 1)}%`).join(", ")}.`);
+    // Rilievo N06: quantità e FE di ogni frazione usata, più le frazioni
+    // oltre le cinque nominate dal cap. 5 e quelle escluse (paniere ATTESA_REGOLA).
+    const ind = r.indifferenziato;
+    paragrafo(`FE dell'indifferenziato calcolato con le formule 16-17 dalla composizione: ${ind.composizione.map((c) => `${tipNome(c.tipologia)} ${num(c.quota * 100, 1)}%${c.quantita != null ? ` (${num(c.quantita, 2)} t; FE ${num(c.fe, 3)})` : ""}`).join(", ")}.` +
+      (ind.fuoriPaniere?.length ? ` Comprende tipologie oltre le cinque nominate al cap. 5 della Metodologia (${ind.fuoriPaniere.map(tipNome).join(", ")}): paniere in attesa di conferma della Fondazione.` : "") +
+      (ind.escluse?.length ? ` Escluse perché senza fattore: ${ind.escluse.map(tipNome).join(", ")}.` : ""));
   }
   if (dati.importazione?.conteggi) {
     const k = dati.importazione.conteggi;

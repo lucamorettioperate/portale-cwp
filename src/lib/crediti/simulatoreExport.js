@@ -22,7 +22,7 @@
 import JSZip from "jszip";
 import {
   METODI_STIMA, RIFIUTI_MISURATI, UTENZE_MONITORATE, STIMA_PREDEFINITA, RD_SOGLIA, TIPOLOGIE,
-  bufferMetodologia, costiPerCaso, listinoDi,
+  bufferMetodologia, costiPerCaso, listinoDi, NOTA_UNA_TANTUM, avvisoDurataCosti,
 } from "./simulatore.js";
 import { CLUSTER } from "./qualita.js";
 
@@ -238,6 +238,9 @@ export function contenutoSimulazione({ scenario, risultato, eco = null, economia
         colonne: ["Anno", "Crediti", "Valore (€/credito)", "Ricavi (€)", "Partecipazione al Programma (€)", "Consulenza (€)", "Ente di validazione e verifica (€)", "Altri costi (€)", "Costi totali (€)", "Margine (€)", "Margine cumulato (€)"],
         righe: eco.righe.map((r) => [r.anno, r.crediti, r.prezzo, r.ricavi, r.partecipazione, r.consulenza, r.costiEnte, r.altriCosti, r.costi, r.margine, r.cumulato]),
         totali: ["Totale", eco.totali.crediti, eco.totali.prezzoMedio, eco.totali.ricavi, eco.totali.partecipazione, eco.totali.consulenza, eco.totali.costiEnte, eco.totali.altriCosti, eco.totali.costi, eco.totali.margine, null],
+        // Rilievo N01: con il Caso 1 o 2 e una durata diversa da 10 anni i
+        // totali sono una stima senza regola; lo si scrive sopra la tabella.
+        stima: eco.durataFuoriListino ? avvisoDurataCosti(eco.righe.length) : null,
       }
     : null;
 
@@ -250,6 +253,7 @@ export function contenutoSimulazione({ scenario, risultato, eco = null, economia
           const imp = vociCosti.reduce((s, c) => s + c.importo, 0);
           return ["Totale annuo", "", popolazione ? imp / popolazione : null, imp];
         })(),
+        nota: NOTA_UNA_TANTUM,
       }
     : null;
 
@@ -464,11 +468,15 @@ export async function creaXlsxSimulazione(contenuto, tipo = "blob") {
   // Economia e costi, se ci sono.
   if (c.economia) {
     const righe = [[c.titolo], [c.sottotitolo + " · importi IVA esclusa"], c.economia.colonne, ...c.economia.righe, c.economia.totali];
-    fogli.push({ nome: "Economia", xml: foglio(righe, { larghezze: c.economia.colonne.map((h, i) => (i === 0 ? 8 : 16)), stile: stileTabella(2, [0, 1], righe.length - 1) }) });
+    const totaleEco = righe.length - 1;
+    if (c.economia.stima) righe.push([], ["ATTENZIONE: " + c.economia.stima]);
+    fogli.push({ nome: "Economia", xml: foglio(righe, { larghezze: c.economia.colonne.map((h, i) => (i === 0 ? 8 : 16)), stile: stileTabella(2, [0, 1], totaleEco) }) });
   }
   if (c.costi) {
     const righe = [[c.titolo], [`${c.costi.listino} · costi annui per il Comune o il gestore, IVA esclusa`], ["Voce", "Tipo", "€/abitante/anno", "€/anno"], ...c.costi.righe, c.costi.totale];
-    fogli.push({ nome: "Costi", xml: foglio(righe, { larghezze: [50, 16, 16, 14], stile: stileTabella(2, [], righe.length - 1) }) });
+    const totaleCosti = righe.length - 1;
+    if (c.costi.nota) righe.push([], [c.costi.nota]);
+    fogli.push({ nome: "Costi", xml: foglio(righe, { larghezze: [50, 16, 16, 14], stile: stileTabella(2, [], totaleCosti) }) });
   }
 
   const zip = new JSZip();

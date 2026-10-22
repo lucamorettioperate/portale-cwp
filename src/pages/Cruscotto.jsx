@@ -2,7 +2,8 @@
    Cruscotto (nel menu «Dashboard») — indirizzo «/» per Operatore e Admin
    (src/App.jsx, HomePerRuolo)
    Scopo: (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso,
-     in scadenza, scadute, in attesa del Cliente, integrazioni da
+     in scadenza, scadute, fase aperta senza scadenza — rilievo N04: una
+     data mancante non conta come «in regola» —, in attesa del Cliente, integrazioni da
      verificare, consultazioni attive) e tabella di tutte le pratiche,
      Progetti e Rapporti, con ricerca e filtri per stato, tipo, anno e fase.
      Un clic su una riga apre la pratica in «/pratiche?id=…». Per ogni
@@ -32,24 +33,20 @@ import { leggiCruscotto, leggiFasiPratiche } from "../lib/dati.js";
 import BarraFasi from "../components/BarraFasi.jsx";
 import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
 import { formatoData } from "../lib/date.js";
-
-// Una pratica è "in scadenza" se la fase aperta scade entro questi giorni.
-const SOGLIA_SCADENZA = 7;
+import { SOGLIA_SCADENZA, inScadenza, scaduta, senzaScadenza } from "../lib/scadenze.js";
 
 // Riquadri del cruscotto (requisiti §8): ciascuno è anche un filtro.
 // - test(p): vero se la riga p del cruscotto rientra nel riquadro
 // - tono: colore del numero quando è > 0 ("amber" o "red"); assente = neutro.
-// giorni_scadenza è calcolato dal database solo per fasi aperte (in corso o
-// in attesa di integrazione): negativo = scaduta, null = nessuna scadenza.
+// Le regole delle scadenze sono in src/lib/scadenze.js (rilievo N04).
 const RIQUADRI = [
   { id: "in_corso", label: "Pratiche in corso", test: (p) => p.stato === "attiva" },
-  {
-    id: "in_scadenza",
-    label: `In scadenza (≤ ${SOGLIA_SCADENZA} gg)`,
-    test: (p) => p.stato === "attiva" && p.giorni_scadenza != null && p.giorni_scadenza >= 0 && p.giorni_scadenza <= SOGLIA_SCADENZA,
-    tono: "amber",
-  },
-  { id: "scadute", label: "Scadute", test: (p) => p.stato === "attiva" && p.giorni_scadenza != null && p.giorni_scadenza < 0, tono: "red" },
+  { id: "in_scadenza", label: `In scadenza (≤ ${SOGLIA_SCADENZA} gg)`, test: inScadenza, tono: "amber" },
+  { id: "scadute", label: "Scadute", test: scaduta, tono: "red" },
+  // Rilievo N04: una fase aperta senza data non è «in regola», è senza
+  // scadenza nota. Così lo zero di «In scadenza» e «Scadute» non sembra una
+  // garanzia: queste pratiche si contano a parte.
+  { id: "senza_scadenza", label: "Fase aperta senza scadenza", test: senzaScadenza, tono: "amber" },
   // Integrazioni non risolte: senza documento di risposta = attende il
   // Cliente; con documento = tocca alla Fondazione verificarlo.
   { id: "attesa_cliente", label: "In attesa del Cliente", test: (p) => p.integrazioni_in_attesa > 0 },
@@ -261,6 +258,7 @@ export default function Cruscotto() {
                     </td>
                     <td style={td}>
                       {p.fase_scadenza ? formatoData(p.fase_scadenza) : "—"}
+                      {senzaScadenza(p) && <div style={{ fontSize: 11.5, fontWeight: 600, color: C.amber }}>nessuna scadenza nota</div>}
                       {g != null && (
                         <div style={{ fontSize: 11.5, fontWeight: 600, color: g < 0 ? C.red : g <= SOGLIA_SCADENZA ? C.amber : C.grafite }}>
                           {g < 0 ? `scaduta da ${-g} gg` : g === 0 ? "scade oggi" : `tra ${g} gg`}

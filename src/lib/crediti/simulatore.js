@@ -678,7 +678,13 @@ export function righeCsv(scenario, risultato, economia = null) {
      arrotondamento per eccesso al centesimo; costo annuo = unitario ×
      popolazione, non meno del minimo e non più del massimo €/anno.
      Le voci una tantum (Progetto, registrazioni del Progetto e dei suoi
-     crediti) sono già ammortizzate in 10 anni: si pagano ogni anno.
+     crediti) sono un corrispettivo unico e forfettario pagato in 10 rate
+     annuali (contratti di consulenza e di partecipazione: fattura entro il
+     31 gennaio di ogni anno successivo per nove anni): l'importo annuo è
+     una rata e si ripete ogni anno; il totale della voce è 10 rate
+     (verifica del rilievo N01, 22/10/2026). Per durate diverse da 10 anni
+     la regola non c'è: gli importi annui ripetuti sono solo una stima e il
+     risultato lo dichiara (durataFuoriListino, ATTESA_REGOLA).
      Non comprende la validazione dell'ente (Nota 1 del documento).
      Il Caso 1 riproduce le cifre dei contratti tipo EsaCom (154.247 ab.).
    - "schema": tariffe MASSIME dello Schema tariffario v1.2
@@ -698,10 +704,10 @@ export function righeCsv(scenario, risultato, economia = null) {
 // ab. e oltre 100.000 ab., massimo €/anno; tipo: "consulenza" (redazione)
 // o "partecipazione" (registrazioni del Programma).
 const VOCI_COSTI = [
-  ["progetto", "Progetto (una tantum)", "consulenza"],
+  ["progetto", "Progetto (una tantum, in 10 rate annuali)", "consulenza"],
   ["rapporto", "Rapporto di Monitoraggio", "consulenza"],
-  ["regProgetto", "Registrazione Progetto (una tantum)", "partecipazione"],
-  ["regCreditiProgetto", "Registrazione Crediti Progetto (una tantum)", "partecipazione"],
+  ["regProgetto", "Registrazione Progetto (una tantum, in 10 rate annuali)", "partecipazione"],
+  ["regCreditiProgetto", "Registrazione Crediti Progetto (una tantum, in 10 rate annuali)", "partecipazione"],
   ["regRapporto", "Registrazione Rapporto di Monitoraggio", "partecipazione"],
   ["regCreditiRapporto", "Registrazione Crediti Rapporto di Monitoraggio", "partecipazione"],
 ];
@@ -714,6 +720,20 @@ export const CASI_COSTI = {
   caso2: "Caso 2 – Progetto obbligatorio (da bando di gara)",
 };
 export const DURATA_TARIFFE = 10;
+
+// Spiegazione delle voci una tantum, uguale in pagina, PDF ed Excel
+// (rilievo N01): fonte i contratti di consulenza e di partecipazione.
+export const NOTA_UNA_TANTUM =
+  "Le voci «una tantum» (Progetto, Registrazione Progetto, Registrazione Crediti Progetto) sono un corrispettivo unico e forfettario " +
+  "pagato in 10 rate annuali uguali (contratti di consulenza e di partecipazione: fattura entro il 31 gennaio di ogni anno): " +
+  "l'importo indicato è la rata annua, il costo complessivo della voce è 10 rate.";
+
+// Avviso per le durate diverse da 10 anni con il Caso 1 o 2 (rilievo N01):
+// la regola non esiste ancora, i costi sono solo una stima.
+export function avvisoDurataCosti(anni) {
+  return `Le tabelle dei costi (Casi 1 e 2) valgono per progetti di ${DURATA_TARIFFE} anni. Per ${anni} anni la regola non è ancora stabilita dalla Fondazione: ` +
+    "qui la rata annua è ripetuta per ogni anno solo come stima, quindi costi, margine e totali NON sono un listino approvato.";
+}
 
 // Costo unitario €/ab/anno per una popolazione: fasce e interpolazione
 // lineare, arrotondamento per eccesso al centesimo (Nota 2 del documento).
@@ -794,9 +814,8 @@ export function simulaEconomia(righe, economia = {}, popolazione) {
   const crescita = num(economia.crescitaPrezzo) / 100;
   const listino = listinoDi(economia);
   const costiCaso = listino === "caso1" || listino === "caso2" ? costiPerCaso(listino, pop) : [];
-  if (costiCaso.length && righe.length !== DURATA_TARIFFE) {
-    avvisi.push(`Le tabelle dei costi valgono per progetti di ${DURATA_TARIFFE} anni: per ${righe.length} anni i costi si computano a parte (qui sono applicati gli stessi importi annui).`);
-  }
+  const durataFuoriListino = costiCaso.length > 0 && righe.length !== DURATA_TARIFFE;
+  if (durataFuoriListino) avvisi.push(avvisoDurataCosti(righe.length));
   const validazione = num(economia.costoValidazione);
   const verifica = num(economia.costoVerificaAnnua);
   const altri = num(economia.altriCostiAnnui);
@@ -848,6 +867,9 @@ export function simulaEconomia(righe, economia = {}, popolazione) {
   return {
     listino,
     costiCaso,
+    // Vero con il Caso 1 o 2 e una durata diversa da 10 anni: i costi sono
+    // una stima senza regola (rilievo N01), pagina ed esportazioni lo dicono.
+    durataFuoriListino,
     righe: out,
     totali: {
       crediti: tot("crediti"),
