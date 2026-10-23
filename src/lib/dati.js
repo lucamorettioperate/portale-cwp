@@ -1019,6 +1019,23 @@ export async function impostaInfoProgramma(chiave, valore) {
   return await supabase.rpc("admin_imposta_info_programma", { p_chiave: chiave, p_valore: valore });
 }
 
+// ---- Valore complessivo dei crediti (Dashboard, script 42, 23/10/2026) ----
+
+// Totali dei crediti in simulazione e in fase esecutiva, in crediti e in
+// euro. RPC `cruscotto_valore_crediti`: lo staff riceve i totali di tutto
+// il portale, gli utenti dei Comuni solo quelli delle proprie
+// organizzazioni. Restituisce { data: { ambito, prezzo_riferimento,
+// simulazione, calcolati, emessi, venduti }, error }.
+export async function leggiValoreCrediti() {
+  return await supabase.rpc("cruscotto_valore_crediti");
+}
+
+// Solo Admin: prezzo di riferimento del credito in € (0-10.000), usato per
+// dare un valore in euro ai crediti calcolati ed emessi. Nell'audit.
+export async function impostaPrezzoRiferimento(prezzo) {
+  return await supabase.rpc("admin_imposta_prezzo_riferimento", { p_prezzo: prezzo });
+}
+
 // ---- Registri di scambio (Guida 3.5, Standard 6) ----
 
 // Tutti i registri (anche disattivati). Tabella `registro_scambio`: lettura

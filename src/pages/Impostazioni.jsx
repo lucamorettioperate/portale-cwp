@@ -8,7 +8,9 @@
      - Modelli di documento per i Comuni e documenti pubblici del
        Programma (script 17 e 24, componente ModelliDocumento);
      - informazioni del Programma e metodologie approvate per la pagina
-       pubblica /programma (script 24, componente InfoProgramma).
+       pubblica /programma (script 24, componente InfoProgramma);
+     - prezzo di riferimento del credito per i valori in euro della
+       Dashboard (script 42, componente PrezzoRiferimento, 23/10/2026).
    Gli Enti di Validazione si gestiscono nella pagina Anagrafiche
    (/anagrafiche), aperta anche agli Operatori (script 21).
    Chi la usa: solo Amministratori (gli altri vedono un messaggio).
@@ -25,6 +27,7 @@ import DurateFasi from "../components/impostazioni/DurateFasi.jsx";
 import DocumentiRichiesti from "../components/impostazioni/DocumentiRichiesti.jsx";
 import ModelliDocumento from "../components/impostazioni/ModelliDocumento.jsx";
 import InfoProgramma from "../components/impostazioni/InfoProgramma.jsx";
+import PrezzoRiferimento from "../components/impostazioni/PrezzoRiferimento.jsx";
 
 /* Pagina delle impostazioni. Nessuna prop. */
 export default function Impostazioni() {
@@ -50,6 +53,7 @@ export default function Impostazioni() {
           Parametri del Programma Carbon WastePrint modificabili dagli amministratori.
         </p>
         <InfoProgramma />
+        <PrezzoRiferimento />
         <DurateFasi tipo="progetto" />
         <DurateFasi tipo="rapporto" />
         <DocumentiRichiesti />

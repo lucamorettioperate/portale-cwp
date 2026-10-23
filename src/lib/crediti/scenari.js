@@ -49,7 +49,7 @@ export async function creaScenario({ comune, organizzazioneId = null, nome, dura
 
 // Salva input e riepilogo dei risultati. Parametro: id e campi da
 // aggiornare (nome, note, durata, anno_inizio, dati, crediti_netti_totali,
-// rd_finale, simulato_il).
+// rd_finale, ricavi_totali (dal 23/10/2026, script 42), simulato_il).
 export async function salvaScenario(id, campi) {
   const rifiuto = rifiutaSeNonAmmessi(campi.dati);
   if (rifiuto) return rifiuto;
