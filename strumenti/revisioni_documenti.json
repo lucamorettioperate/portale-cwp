@@ -179,6 +179,12 @@
       "data": "22/10/2026",
       "descrizione": "Banca Dati Utenze: categoria tariffaria e di simulazione.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.0",
+      "data": "23/10/2026",
+      "descrizione": "Banca Dati Utenze per utenza: come la Fondazione usa categoria tariffaria e kg di ogni frazione (vuoto diverso da 0).",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -457,6 +463,12 @@
       "data": "22/10/2026",
       "descrizione": "Audit delle utenze; calcolo di prova.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.6",
+      "data": "23/10/2026",
+      "descrizione": "Passo 5a: «Calcola» usa le utenze (categoria di simulazione come classe della delibera, kg misurati, frazioni per utenza); utenze senza categoria o fuori delibera escluse e conferma bloccata; fonte nei Risultati, nel CSV e nel PDF.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -698,6 +710,12 @@
       "rev": "3.19",
       "data": "22/10/2026",
       "descrizione": "Prove 7.25-7.25e (Banca Dati Utenze).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.20",
+      "data": "23/10/2026",
+      "descrizione": "Prove 7.26-7.26f: utenze del passo 5a nel calcolo, esclusioni, conferma, riquadro del 5b, calcoli solo tracciato, CSV.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1055,6 +1073,12 @@
       "data": "22/10/2026",
       "descrizione": "Banca Dati Utenze in produzione, calcolo di prova caricato.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.9",
+      "data": "23/10/2026",
+      "descrizione": "Script 41 (utenze nel motore e controlli di conferma), cronologia del 23/10, capitolo 15, funzione cwp_utenze_controllo.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1140,6 +1164,12 @@
       "rev": "2.3",
       "data": "22/10/2026",
       "descrizione": "Script 01-40 (Banca Dati Utenze).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.4",
+      "data": "23/10/2026",
+      "descrizione": "Script del database 01-41.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1251,6 +1281,12 @@
       "data": "22/10/2026",
       "descrizione": "Rilievi N01-N06 in produzione; navigazione da smartphone; stato del backup.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.7",
+      "data": "23/10/2026",
+      "descrizione": "Emissioni di progetto dai kg misurati per utenza; Banca Dati Utenze con nomi visibili solo allo staff; stato al 23/10.",
+      "autore": "Fondazione Operate"
     }
   ],
   "issue": [
@@ -1336,6 +1372,12 @@
       "rev": "1.13",
       "data": "22/10/2026",
       "descrizione": "Riassunto degli eventi delle utenze nell'Audit (6 prove).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.14",
+      "data": "23/10/2026",
+      "descrizione": "Prove utenzeNelCalcolo.test.mjs (7) e t41.sql; 18 serie.",
       "autore": "Fondazione Operate"
     }
   ]

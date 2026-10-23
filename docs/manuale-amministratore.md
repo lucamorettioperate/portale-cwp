@@ -648,9 +648,9 @@ I dati arrivano dal Comune e dal soggetto gestore nel **tracciato dati standard 
 
 Il Comune carica il tracciato tra i documenti della sua pratica: il file Excel (.xlsx) oppure, se è molto grande, uno ZIP con i fogli salvati in CSV (es. `6_Letture.csv`).
 
-### Banca Dati Utenze per utenza (nuovo formato, in arrivo)
+### Banca Dati Utenze per utenza (passo 5a)
 
-Il calcolo dei crediti passerà a un formato **per utenza**: ogni anno il Comune o il gestore compila il modello **Banca dati utenze CWP** con l'elenco **completo** delle utenze dell'anno, domestiche e non domestiche, e lo carica nel calcolo di quell'anno. Nessun dato si riprende dall'anno precedente, perché le utenze cambiano di continuo.
+Il calcolo dei crediti usa un formato **per utenza**: ogni anno il Comune o il gestore compila il modello **Banca dati utenze CWP** con l'elenco **completo** delle utenze dell'anno, domestiche e non domestiche, e lo carica nel calcolo di quell'anno. Nessun dato si riprende dall'anno precedente, perché le utenze cambiano di continuo.
 
 **Foglio Utenze_domestiche** — una riga per ogni utenza domestica attiva nell'anno.
 
@@ -698,7 +698,15 @@ Ogni modifica azzera il risultato della bozza (va premuto di nuovo **Calcola**).
 
 **Calcolo di prova.** Dal 22/10/2026 c'è il calcolo «PROVA Banca Dati Utenze - dati casuali (non confermare)» sul Progetto CWP-2026-003, con 20 utenze domestiche e 20 non domestiche inventate (codici PROVA-…): serve a provare il passo 5a e si può eliminare quando non serve più.
 
-**Stato al 22/10/2026.** Il motore di calcolo usa ancora i conferimenti del passo **5b. Conferimenti (tracciato)**: il collegamento della Banca Dati per utenza al calcolo è il prossimo passo.
+**Come «Calcola» usa le utenze (dal 23/10/2026).** Se il calcolo ha utenze nel passo 5a, il motore usa quelle; i conferimenti del passo **5b. Conferimenti (tracciato)** valgono solo per i calcoli senza utenze (il 5b lo ricorda con un riquadro arancione). I beni a riuso vengono sempre dal passo 5b.
+
+1. Ogni utenza va nella classe della **delibera** (passo 3) indicata dalla sua **categoria di simulazione**: da lì prende i rifiuti attesi. Le categorie devono essere scritte come le classi della delibera (es. «2» e non «2 componenti»).
+2. I **kg** di ogni frazione sono i rifiuti prodotti dall'utenza e si usano così come sono; gli svuotamenti sono solo informativi.
+3. Per ogni utenza contano solo le frazioni con un valore, anche 0. Una frazione lasciata vuota non entra nel calcolo di quell'utenza (né nei rifiuti attesi né in quelli prodotti).
+4. Le utenze **senza categoria di simulazione** o con una categoria che **non è nella delibera** restano fuori dal calcolo. I **Controlli di coerenza** (in fondo al passo 5a e nei Risultati) le segnalano in rosso, i Risultati dicono quante sono state escluse e il calcolo **non si può confermare** finché non le correggete dal modulo dell'utenza (o non aggiungete la classe nel passo 3).
+5. Se cambiate le utenze dopo «Calcola», il risultato si azzera: premete di nuovo **Calcola** prima di confermare (il database rifiuta la conferma se le utenze non sono quelle usate dal calcolo).
+
+Nei **Risultati** una riga indica la Banca Dati usata («utenze del passo 5a» o «conferimenti del tracciato»); lo stesso compare nel CSV di riepilogo e nel rapporto PDF. Il dettaglio per utenza contiene solo i codici, non nomi né indirizzi.
 
 ### Importare il tracciato nel calcolo
 

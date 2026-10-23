@@ -174,8 +174,9 @@ Si eseguono con `npm test` prima di ogni rilascio; l'ultimo esito è sempre «tu
 | `notizie.test.mjs` | 8 | Osservatorio News: lettura dei feed RSS (Google News, Bing News e siti), chiave dei titoli, pre-filtro, lettura della risposta di Claude, categorie uguali allo script 36, copia identica nella funzione del server |
 | `rilievi_n.test.mjs` | 13 | N01 (Caso 1 a 16.735 abitanti: 16.232,95 €/anno; 10 anni senza avviso, 7 e 12 anni stima), N04 (data assente, passata, oggi, +7, +8, pratiche non attive), N05 (formato dell'avviso), N06 (cinque frazioni + legno + metallo + RAEE a zero contro un calcolo indipendente, denominatore nullo) |
 | `bancaDatiUtenze.test.mjs` | 6 | Banca Dati Utenze per utenza: file di prova con 20 + 20 utenze, righe sbagliate con foglio e riga, codice doppio, svuotamenti senza kg, virgola e categoria numerica, colonna mancante, controllo del modulo, riassunto degli eventi delle utenze nell'Audit |
+| `utenzeNelCalcolo.test.mjs` | 7 | Utenze del passo 5a nel motore: categoria di simulazione come classe e kg misurati, stessi numeri dei conferimenti del tracciato a parità di dati, frazioni contate per utenza, utenze senza categoria o fuori delibera escluse (avviso) e segnalate come errore di coerenza, priorità del 5a sul 5b, kg negativi bloccanti |
 
-**Ultima esecuzione:** 22/10/2026 17:40 (ramo `banca-dati-utenze`), 17 serie superate.
+**Ultima esecuzione:** 23/10/2026 10:30 (ramo `utenze-nel-calcolo`), 18 serie superate.
 
 ### Prove del database (banco locale)
 
@@ -183,6 +184,14 @@ Ogni script del database è provato su una copia locale di Postgres 16 con tutti
 
 Ultime prove:
 
+- `t41.sql` del 23/10/2026 (utenze del calcolo nel motore, script 41), tutte come attese:
+  - conteggi: 3 utenze, 1 senza categoria, 1 con categoria fuori delibera (classi numeriche o con spazi riconosciute);
+  - conferma rifiutata con utenze senza categoria o fuori delibera; dopo la correzione dal modulo i conteggi tornano a zero;
+  - conferma rifiutata se il risultato ha usato un numero diverso di utenze (2 contro 3) o è di prima (senza il numero di utenze);
+  - conferma accettata con tutte le utenze in delibera;
+  - calcolo senza utenze né conferimenti: conferma rifiutata;
+  - calcolo con i soli conferimenti del tracciato e risultato di prima: confermato come prima;
+  - anonimo: nessun accesso ai conteggi.
 - `t40.sql` del 22/10/2026 (Banca Dati Utenze, script 40):
   - caricamento valido di 2 utenze domestiche e 1 non domestica; categoria di simulazione proposta uguale alla tariffaria;
   - modulo: nuova utenza, modifica (audit con i campi cambiati), codice doppio e campi mancanti con messaggi in italiano, cancellazione;
@@ -248,3 +257,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 22/10/2026 13:40 | ISS-038: navigazione da smartphone |
 | 22/10/2026 14:50 | Rilascio in produzione di N01-N04, ISS-038 e script 38-39 |
 | 22/10/2026 16:50 | Prova `t40.sql` (Banca Dati Utenze) |
+| 23/10/2026 10:30 | Utenze del passo 5a nel motore: prove `utenzeNelCalcolo.test.mjs` (18 serie) e `t41.sql` |

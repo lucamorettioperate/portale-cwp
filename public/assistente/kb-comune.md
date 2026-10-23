@@ -1,4 +1,4 @@
-# Base di conoscenza del Portale Carbon WastePrint — utenti degli enti (generata il 22/10/2026)
+# Base di conoscenza del Portale Carbon WastePrint — utenti degli enti (generata il 23/10/2026)
 
 === DOCUMENTO: Manuale Utente ===
 
@@ -393,6 +393,8 @@ Il calcolo dei crediti sta passando a un formato **per utenza**. Quando la Fonda
 - Numeri senza unità di misura; decimali con la virgola.
 - La produzione totale deve corrispondere alla somma delle frazioni: il portale segnala le differenze oltre l'1%.
 - Oltre 1 milione di righe o 50 MB: un CSV per foglio, con lo stesso nome, dentro uno ZIP.
+
+**Come la Fondazione usa questi dati.** Ogni utenza è confrontata con i rifiuti attesi per la sua classe o categoria della delibera TARI (per questo è importante la **categoria tariffaria**), usando i kg indicati per ogni frazione. Una frazione lasciata vuota non conta per quell'utenza; scrivete 0 solo se la frazione è raccolta e l'utenza non ne ha prodotta.
 
 **Dati personali.** A differenza del tracciato, questo modello contiene nomi e indirizzi. Il Comune ne è titolare e la Fondazione li tratta per suo conto solo per il calcolo dei crediti, secondo l'accordo sul trattamento dei dati. Il file si carica **solo nel portale**, mai per email. Nel portale lo vedono solo gli Operatori e gli Amministratori della Fondazione, ogni consultazione è registrata e nomi e indirizzi non compaiono nei rapporti né nelle pagine pubbliche. Non aggiungete altri dati personali (codice fiscale, telefono, email).
 
