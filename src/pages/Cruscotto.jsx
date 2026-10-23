@@ -18,6 +18,8 @@
      leggiFasiPratiche() = stato di tutte le fasi (tabella fase) per la
      barra a LED.
      Tutti i filtri lavorano nel browser su queste righe.
+     In alto, dal 23/10/2026, i riquadri «Crediti in simulazione» e
+     «Crediti in fase esecutiva» (componente ValoreCrediti, script 42).
    Sicurezza: staff_cruscotto rifiuta chi non è staff (app_is_staff, che
      richiede anche la verifica a due fattori se attiva). La pagina non ha
      un proprio controllo di ruolo: un cliente non ci arriva perché
@@ -35,6 +37,7 @@ import { useOrdinamento, ThOrdinabile, SceltaOrdinamento } from "../components/O
 import { useTelefono } from "../lib/useTelefono.js";
 import { formatoData } from "../lib/date.js";
 import { SOGLIA_SCADENZA, inScadenza, scaduta, senzaScadenza } from "../lib/scadenze.js";
+import ValoreCrediti from "../components/ValoreCrediti.jsx";
 
 // Riquadri del cruscotto (requisiti §8): ciascuno è anche un filtro.
 // - test(p): vero se la riga p del cruscotto rientra nel riquadro
@@ -143,6 +146,9 @@ export default function Cruscotto() {
         <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 16px" }}>Dashboard</h1>
 
         {errore && <div style={{ color: C.red, fontSize: 13, marginBottom: 12 }}>{errore}</div>}
+
+        {/* Valore complessivo dei crediti (23/10/2026): totali di tutto il portale. */}
+        <ValoreCrediti />
 
         {/* Riquadri di sintesi */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 12, marginBottom: 20 }}>

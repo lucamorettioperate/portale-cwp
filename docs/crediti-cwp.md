@@ -136,6 +136,15 @@ modello Excel, caricamento e moduli di gestione) e script 41 il 23/10/2026
 (collegamento al motore). Da fare: DPIA e accordo con i Comuni; conferma della
 Fondazione sulla regola delle frazioni per utenza.
 
+**Valore dei crediti nella Dashboard (dal 23/10/2026, script 42).** Due
+riquadri in crediti ed euro: *in simulazione* (ultimo scenario aggiornato per
+ogni Comune, crediti netti del periodo, euro = ricavi dello scenario) e *in
+fase esecutiva* (calcoli ex post confermati e validi, lotti emessi, vendite
+con il valore comunicato). Calcolati ed emessi sono valorizzati al prezzo di
+riferimento (Impostazioni, iniziale 32 €). Lo staff vede tutto, i Comuni solo
+i propri dati (anche in «Le mie pratiche»). Funzione
+`cruscotto_valore_crediti`, componente `ValoreCrediti.jsx`.
+
 ## Corrispondenza con le formule
 
 | Formula | Dove |

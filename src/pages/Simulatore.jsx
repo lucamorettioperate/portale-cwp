@@ -223,9 +223,12 @@ export default function Simulatore() {
             }}
             modificato={modificato}
             messaggio={messaggio}
-            onSalva={async (risultato) => {
+            onSalva={async (risultato, eco) => {
               setErrore("");
               const t = risultato.totali;
+              // Ricavi del periodo (crediti × valore del credito anno per
+              // anno) per la Dashboard, script 42; null senza valore del credito.
+              const ricavi = eco?.totali?.ricavi;
               const { data, error } = await salvaScenario(aperto.id, {
                 nome: aperto.nome,
                 note: aperto.note || null,
@@ -234,6 +237,7 @@ export default function Simulatore() {
                 dati: aperto.dati,
                 crediti_netti_totali: t ? Math.round(t.netti * 10) / 10 : null,
                 rd_finale: t ? Math.round(t.rdFinale * 10) / 10 : null,
+                ricavi_totali: t && Number.isFinite(ricavi) ? Math.round(ricavi) : null,
                 simulato_il: t ? new Date().toISOString() : null,
               });
               if (error) return setErrore(traduci(error));
@@ -314,7 +318,7 @@ export default function Simulatore() {
 }
 
 /* Editor di uno scenario. Props: scenario (riga completa), ruolo,
-   onCambia(scenario aggiornato), onSalva(risultato), onDuplica, onElimina,
+   onCambia(scenario aggiornato), onSalva(risultato, eco: risultati economici), onDuplica, onElimina,
    onChiudi, modificato, messaggio. */
 export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimina, onChiudi, modificato, messaggio }) {
   const dati = scenario.dati || {};
@@ -455,7 +459,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
           {messaggio && <span style={{ fontSize: 12.5, color: C.green, fontWeight: 600 }}>{messaggio}</span>}
           {modificato && <span style={{ fontSize: 12.5, color: C.ocra, fontWeight: 600 }}>Modifiche non salvate</span>}
           {errori.length > 0 && <span style={{ fontSize: 12.5, color: C.red, fontWeight: 600 }}>Da correggere prima di salvare: {errori.length}</span>}
-          <button style={{ ...btnPrimario, opacity: errori.length ? 0.5 : 1 }} disabled={errori.length > 0} title={errori.length ? "Ci sono dati non ammessi: correggili (elenco nel riquadro «Risultati»)" : undefined} onClick={() => onSalva(risultato)}>Salva</button>
+          <button style={{ ...btnPrimario, opacity: errori.length ? 0.5 : 1 }} disabled={errori.length > 0} title={errori.length ? "Ci sono dati non ammessi: correggili (elenco nel riquadro «Risultati»)" : undefined} onClick={() => onSalva(risultato, eco)}>Salva</button>
           <button style={btnMini} onClick={onDuplica}>Duplica</button>
           {esportazione && <span style={{ fontSize: 12.5, color: C.grafite }}>{esportazione}</span>}
           <button style={btnMini} onClick={() => esporta("pdf")} disabled={!risultato.righe.length} title="Rapporto in A4 orizzontale con tutti i dati della pagina, i costi e i grafici">Scarica PDF</button>

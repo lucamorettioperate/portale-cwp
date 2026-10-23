@@ -420,7 +420,7 @@ async function icona(Comp, colore) {
       "Conferma delle scelte interpretative del calcolo con l'ente",
       "Privacy: DPIA, registro dei trattamenti; accessibilità WCAG 2.1 AA",
       "Collaudo con i dati reali di un Comune",
-      "Nuovi moduli: simulatore con PDF ed Excel, assistente virtuale (poi Operatori e aiuto sulla pratica), Audit User e utenti online (fatti il 20/10); navigazione da smartphone (22/10); Banca Dati Utenze per utenza nel calcolo (22-23/10); Marketplaces da definire",
+      "Nuovi moduli: simulatore con PDF ed Excel, assistente virtuale (poi Operatori e aiuto sulla pratica), Audit User e utenti online (fatti il 20/10); navigazione da smartphone (22/10); Banca Dati Utenze per utenza nel calcolo (22-23/10); valore dei crediti in Dashboard (23/10); Marketplaces da definire",
     ] },
   ];
   const cw = (12.1 - 0.6) / 3;

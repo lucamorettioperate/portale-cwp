@@ -26,6 +26,7 @@ import Badge from "../components/Badge.jsx";
 import DettaglioPratica from "../components/DettaglioPratica.jsx";
 import BarraFasi from "../components/BarraFasi.jsx";
 import { elencaProgetti } from "../lib/dati.js";
+import ValoreCrediti from "../components/ValoreCrediti.jsx";
 import { useOrdinamento, SceltaOrdinamento } from "../components/Ordinamento.jsx";
 import { useTelefono } from "../lib/useTelefono.js";
 
@@ -85,6 +86,10 @@ export default function AreaCliente() {
             <a href="/manuali/Manuale_Utente_Portale_CWP.pdf" target="_blank" rel="noreferrer" style={{ color: C.green, fontWeight: 600 }}>manuale utente (PDF)</a>.
           </p>
         </div>
+
+        {/* Valore dei crediti della propria organizzazione (23/10/2026,
+            script 42: il database restituisce solo i dati dell'utente). */}
+        {!caricamento && progetti.length > 0 && <ValoreCrediti titolo="Valore dei crediti della tua organizzazione" />}
 
         {caricamento && <div style={{ color: C.grafite, fontSize: 13 }}>Caricamento…</div>}
 

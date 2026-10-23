@@ -76,7 +76,13 @@ La **Dashboard** è la pagina iniziale dello staff: mostra in un'unica tabella t
 
 **Barra di avanzamento a LED.** La colonna **Avanzamento** mostra per ogni pratica (quindi per ogni Comune) una barra di 7 luci, una per fase. Le fasi **completate sono accese** (ambra), quelle **ancora da fare sono spente**. La **settima luce**, la Chiusura, si accende in **verde**. La fase in corso è spenta ma ha un contorno ambra, così si vede subito dove è arrivata la pratica. Accanto c'è il conteggio, ad esempio «4/7». Passando il mouse su una luce compaiono numero, nome e stato della fase. La stessa barra, in piccolo, compare **nell'elenco delle pratiche** a sinistra della pagina Pratiche (in alto a destra di ogni riquadro, con lo stato sotto) e **in alto a destra nella pratica aperta**.
 
-**Riquadri in alto.** Ogni riquadro conta le pratiche e, se cliccato, filtra la tabella. Si clicca di nuovo per togliere il filtro.
+**Valore dei crediti (dal 23/10/2026).** In cima alla Dashboard due riquadri danno il valore complessivo dei crediti di tutto il portale, in crediti (1 credito = 1 tCO₂eq) e in euro:
+- **Crediti in simulazione**: per ogni Comune conta solo lo scenario del Simulatore **aggiornato più di recente** (gli scenari prudente, obiettivo, ambizioso… sono alternative e non si sommano), con i crediti netti di tutto il periodo simulato (7, 10 o 21 anni). Gli euro sono i ricavi dello scenario (crediti × valore del credito anno per anno). Gli scenari salvati prima del 23/10/2026 o senza valore del credito si valorizzano al prezzo di riferimento e il riquadro dice quanti sono: basta riaprirli e premere **Salva** nel Simulatore. È una stima ex ante, non certificabile.
+- **Crediti in fase esecutiva**: tre righe. **Calcolati**: crediti netti dei calcoli ex post confermati e ancora validi (non sostituiti da una nuova versione). **Emessi**: crediti dei lotti emessi dai Rapporti. **Venduti**: crediti venduti con il valore comunicato dal registro. Calcolati ed emessi sono valorizzati al **prezzo di riferimento** (Impostazioni); le righe non si sommano, perché i crediti emessi provengono dai calcoli.
+
+Gli utenti dei Comuni vedono gli stessi riquadri nella loro pagina **Le mie pratiche**, ma solo con i dati della propria organizzazione (scenari collegati alla loro organizzazione, loro calcoli, lotti e vendite). Gli scenari fatti per un Comune scritto solo per nome, senza organizzazione collegata, contano solo per lo staff.
+
+**Riquadri delle pratiche.** Ogni riquadro conta le pratiche e, se cliccato, filtra la tabella. Si clicca di nuovo per togliere il filtro.
 
 | Riquadro | Cosa conta |
 | --- | --- |
@@ -524,11 +530,15 @@ Un registro non si cancella: togliendo **Attivo** non si può più scegliere e s
 
 ## Impostazioni
 
-La pagina **Impostazioni** (solo Amministratori) ha sei sezioni: Il Programma (pagina pubblica), metodologie approvate, durata delle fasi del Progetto, durata delle fasi del Rapporto di Monitoraggio, documenti richiesti per fase e modelli di documento.
+La pagina **Impostazioni** (solo Amministratori) ha sette sezioni: Il Programma (pagina pubblica), metodologie approvate, prezzo di riferimento del credito, durata delle fasi del Progetto, durata delle fasi del Rapporto di Monitoraggio, documenti richiesti per fase e modelli di documento.
 
 ### Il Programma (pagina pubblica)
 
 Le informazioni che compaiono sulla pagina pubblica del Programma (Guida 3.1 e 3.6): **Soggetto promotore del programma**, **PEC del Programma (anche per i reclami)**, **Email** e **Sito ufficiale**. Valori iniziali: soggetto promotore Fondazione Operate, gestore in esclusiva del Programma (parte commerciale e parte tecnologica, portale CWP) per conferimento dello Studio Associato Wastelab, proprietario del Programma (dal 19/10/2026); email info@carbonwasteprint.com; sito www.carbonwasteprint.com; PEC operate@pec.it (dal 19/10/2026). Tra i modelli di documento sono già pubblicati, come «Documento del Programma», gli otto documenti ufficiali v1.2 (Guida, Definizioni, Normativa, Standard, Metodologia, Politica di reclamo, Schema tariffario, Gestione della qualità dei dati), e il PDF della Metodologia è collegato alla metodologia approvata. Cambiate i campi e premete **Salva**; ogni modifica finisce nell'audit. Quando l'incarico al soggetto promotore sarà formalizzato, aggiornate il testo.
+
+### Prezzo di riferimento del credito
+
+Il prezzo in euro (iniziale **32 €** per credito, come il valore proposto dal Simulatore) con cui la Dashboard dà un valore ai crediti calcolati ed emessi e agli scenari salvati senza valore del credito. Scrivete il nuovo prezzo (0-10.000 €, decimali con la virgola) e premete **Salva**; la modifica finisce nell'Audit («modifica prezzo di riferimento del credito»). Le vendite usano sempre il valore comunicato dal registro.
 
 ### Metodologie approvate
 
