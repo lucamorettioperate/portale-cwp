@@ -257,7 +257,24 @@ async function importaComuni(admin: ReturnType<typeof createClient>, fase: strin
     const perChiave = new Map(esistenti.map((e) => [e.chiave as string, e.id as number]));
     const enti: Record<string, unknown>[] = [];
     const sindaci: Record<string, unknown>[] = [];
+    // Nella categoria L6 ci sono anche Unioni, Consorzi e Comunità con il
+    // codice ISTAT del Comune sede: per ogni Comune si tiene una sola riga,
+    // solo quella dell'ente «Comune …» (o «Città …», «Roma Capitale»): il
+    // 23/10/2026 sono 7.891 codici su 8.046 righe L6.
+    const eComune = (r: Record<string, unknown>) => /^(comune|citta|città|roma capitale)\b/i.test(String(r.Denominazione_ente || "").trim());
+    const perCodice = new Map<string, Record<string, unknown>[]>();
     for (const r of righe) {
+      const c = String(r.Codice_comune_ISTAT || "");
+      if (!c) continue;
+      if (!perCodice.has(c)) perCodice.set(c, []);
+      perCodice.get(c)!.push(r);
+    }
+    const scelte: Record<string, unknown>[] = [];
+    for (const gruppo of perCodice.values()) {
+      const r = gruppo.find(eComune);
+      if (r) scelte.push(r);
+    }
+    for (const r of scelte) {
       const chiave = `istat:${r.Codice_comune_ISTAT}`;
       const id = perChiave.get(chiave);
       if (!id) continue; // Comune non più esistente nell'elenco ISTAT
