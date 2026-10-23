@@ -43,9 +43,9 @@ export default function Importazioni({ riepilogo, onFatto }) {
     scrivi(`✓ ${num(r.data.fatti)} Comuni aggiornati da IndicePA.`);
     let da = 0;
     for (;;) {
-      scrivi(`IndicePA: uffici dei Comuni (dal ${num(da)})…`);
+      scrivi(`IndicePA: uffici dei Comuni, dal n. ${num(da + 1)}…`);
       r = await azioneMarketing("importa_comuni", { fase: "uo", da });
-      if (r.error) return fine(`Errore uffici: ${r.error.message}`);
+      if (r.error) return fine(`Errore uffici: ${r.error.message}. IndicePA a volte non risponde: ripetete «Aggiorna i Comuni» più tardi (i dati già letti restano).`);
       scrivi(`✓ ${num(r.data.fatti)} uffici letti, ${num(r.data.referenti)} referenti.`);
       if (r.data.prossimo == null) break;
       da = r.data.prossimo;
@@ -57,12 +57,22 @@ export default function Importazioni({ riepilogo, onFatto }) {
     setInCorso(true);
     setDiario([]);
     let totale = 0;
+    // Una provincia per chiamata (la funzione risponde con «prossimo»).
     for (const [id, nome] of sezioni) {
-      scrivi(`Albo, sezione ${nome}…`);
-      const r = await azioneMarketing("importa_albo", { sezione: id });
-      if (r.error) { scrivi(`✗ ${nome}: ${r.error.message}`); continue; }
-      totale += r.data.categoria_1o;
-      scrivi(`✓ ${nome}: ${num(r.data.lette)} iscritti letti, ${num(r.data.categoria_1o)} in categoria 1 ordinaria${r.data.con_dati_ipa ? `, ${num(r.data.con_dati_ipa)} con dati da IndicePA` : ""}.`);
+      let indice = 0;
+      let lette = 0, cat1 = 0, ipa = 0, ipaAssente = false;
+      for (;;) {
+        const r = await azioneMarketing("importa_albo", { sezione: id, indice });
+        if (r.error) { scrivi(`✗ ${nome}, provincia ${indice + 1}: ${r.error.message}`); }
+        else {
+          lette += r.data.lette; cat1 += r.data.categoria_1o; ipa += r.data.con_dati_ipa || 0;
+          ipaAssente = ipaAssente || !!r.data.ipa_non_disponibile;
+        }
+        if (r.error || r.data.prossimo == null) break;
+        indice = r.data.prossimo;
+      }
+      totale += cat1;
+      scrivi(`✓ ${nome}: ${num(lette)} iscritti letti, ${num(cat1)} in categoria 1 ordinaria${ipa ? `, ${num(ipa)} con dati da IndicePA` : ""}${ipaAssente ? " (IndicePA non disponibile: ripetere più tardi per PEC ed email dei gestori pubblici)" : ""}.`);
     }
     fine(`Gestori aggiornati: ${num(totale)} imprese in categoria 1 ordinaria.`);
   }

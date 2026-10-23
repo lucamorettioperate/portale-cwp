@@ -12,7 +12,8 @@
 //             responsabili di tributi, ambiente, finanziario, tecnico con
 //             le loro email; email generica (protocollo, segreteria) se
 //             manca. Restituisce { fatti, prossimo } per il blocco seguente.
-//   - importa_albo { sezione }: imprese della sezione regionale dell'Albo
+//   - importa_albo { sezione, indice }: imprese di una provincia (indice
+//       nella sezione regionale; risponde con «prossimo») dell'Albo
 //       Nazionale Gestori Ambientali con categoria 1 ordinaria («1o»),
 //       dall'elenco pubblico degli iscritti; poi PEC, email e sito dei
 //       gestori pubblici registrati in IndicePA (stesso codice fiscale).
@@ -226,7 +227,7 @@ Deno.serve(async (req) => {
     if (!u?.user || eAdmin !== true) return json({ errore: "Operazione riservata agli amministratori" }, 403);
 
     if (azione === "importa_comuni") return json(await importaComuni(admin, String(body.fase || "base"), Number(body.da || 0)));
-    if (azione === "importa_albo") return json(await importaAlbo(admin, String(body.sezione || "")));
+    if (azione === "importa_albo") return json(await importaAlbo(admin, String(body.sezione || ""), Number(body.indice || 0)));
     if (azione === "prova_campagna") return json(await provaCampagna(admin, String(body.campagna || ""), u.user.email || ""));
     if (azione === "invia_campagna") return json(await inviaCampagna(admin, String(body.campagna || ""), Number(body.quanti || 50)));
     return json({ errore: "Azione sconosciuta" }, 400);
@@ -302,11 +303,17 @@ async function importaComuni(admin: ReturnType<typeof createClient>, fase: strin
   }
 
   if (fase === "uo") {
-    const BLOCCO = 15000;
-    const righe = await ipa(`SELECT u."Codice_IPA",u."Codice_uni_uo",u."Descrizione_uo",u."Nome_responsabile",u."Cognome_responsabile",u."Mail_responsabile",u."Telefono_responsabile",u."Telefono",u."Mail1",u."Tipo_Mail1",u."Mail2",u."Tipo_Mail2",u."Mail3",u."Tipo_Mail3" FROM "${IPA_UO}" u WHERE u."Codice_IPA" IN (SELECT "Codice_IPA" FROM "${IPA_ENTI}" WHERE "Codice_Categoria" = 'L6') ORDER BY u."Codice_uni_uo" LIMIT ${BLOCCO} OFFSET ${da}`);
+    // A blocchi di 400 Comuni (codici IPA già importati), una lettura leggera
+    // per blocco: la lettura unica di tutti gli uffici mandava IndicePA in
+    // errore. «da» = posizione nell'elenco dei Comuni con codice IPA.
+    const BLOCCO = 400;
     const enti = await tutte((da, a) => admin.from("mkt_ente").select("id, codice_ipa, email").eq("tipo", "comune").not("codice_ipa", "is", null).order("id").range(da, a));
+    const blocco = enti.slice(da, da + BLOCCO);
+    if (!blocco.length) return { fatti: 0, referenti: 0, prossimo: null };
+    const codici = blocco.map((e) => `'${String(e.codice_ipa).replace(/'/g, "")}'`).join(",");
+    const righe = await ipa(`SELECT u."Codice_IPA",u."Codice_uni_uo",u."Descrizione_uo",u."Nome_responsabile",u."Cognome_responsabile",u."Mail_responsabile",u."Telefono_responsabile",u."Telefono",u."Mail1",u."Tipo_Mail1",u."Mail2",u."Tipo_Mail2",u."Mail3",u."Tipo_Mail3" FROM "${IPA_UO}" u WHERE u."Codice_IPA" IN (${codici}) LIMIT 32000`);
     // deno-lint-ignore no-explicit-any
-    const perIpa = new Map(enti.map((e: any) => [e.codice_ipa as string, e as { id: number; email: string | null }]));
+    const perIpa = new Map(blocco.map((e: any) => [e.codice_ipa as string, e as { id: number; email: string | null }]));
     const referenti: Record<string, unknown>[] = [];
     const emailGeneriche = new Map<number, string>();
     for (const r of righe) {
@@ -328,7 +335,7 @@ async function importaComuni(admin: ReturnType<typeof createClient>, fase: strin
     for (const [id, email] of emailGeneriche) {
       await admin.from("mkt_ente").update({ email }).eq("id", id).is("email", null);
     }
-    return { fatti: righe.length, referenti: referenti.length, prossimo: righe.length === BLOCCO ? da + BLOCCO : null };
+    return { fatti: righe.length, referenti: referenti.length, prossimo: da + BLOCCO < enti.length ? da + BLOCCO : null };
   }
   throw new Error("Fase sconosciuta");
 }
@@ -336,10 +343,14 @@ async function importaComuni(admin: ReturnType<typeof createClient>, fase: strin
 // ---------------------------------------------------------------------
 // Importazione dei gestori dall'Albo (categoria 1 ordinaria)
 // ---------------------------------------------------------------------
-async function importaAlbo(admin: ReturnType<typeof createClient>, sezione: string) {
+// Una provincia per chiamata (indice nella sezione), per restare nei tempi
+// della funzione: la pagina Importazioni ripete finché «prossimo» è null.
+async function importaAlbo(admin: ReturnType<typeof createClient>, sezione: string, indice: number) {
   const s = SEZIONI_ALBO[sezione];
   if (!s) throw new Error("Sezione dell'Albo sconosciuta");
-  const [regione, province] = s;
+  const [regione, tutteLeProvince] = s;
+  if (!(indice >= 0 && indice < tutteLeProvince.length)) throw new Error("Provincia fuori elenco");
+  const province = [tutteLeProvince[indice]];
   const imprese: Record<string, unknown>[] = [];
   let lette = 0;
   for (const provincia of province) {
@@ -369,9 +380,17 @@ async function importaAlbo(admin: ReturnType<typeof createClient>, sezione: stri
   // Gestori pubblici in IndicePA (stesso codice fiscale): PEC, email, sito.
   const cf = [...new Set(imprese.map((i) => i.codice_fiscale).filter(Boolean))] as string[];
   let daIpa = 0;
-  for (let i = 0; i < cf.length; i += 300) {
+  let ipaAssente = false;
+  for (let i = 0; i < cf.length && !ipaAssente; i += 300) {
     const elenco = cf.slice(i, i + 300).map((c) => `'${c.replace(/'/g, "")}'`).join(",");
-    const righe = await ipa(`SELECT "Codice_fiscale_ente","Mail1","Tipo_Mail1","Mail2","Tipo_Mail2","Mail3","Tipo_Mail3","Sito_istituzionale" FROM "${IPA_ENTI}" WHERE "Codice_fiscale_ente" IN (${elenco})`);
+    // IndicePA a volte risponde «App offline»: le imprese restano salvate e
+    // i dati pubblici si aggiungono ripetendo l'importazione più tardi.
+    let righe: Record<string, string | null>[] = [];
+    try {
+      righe = await ipa(`SELECT "Codice_fiscale_ente","Mail1","Tipo_Mail1","Mail2","Tipo_Mail2","Mail3","Tipo_Mail3","Sito_istituzionale" FROM "${IPA_ENTI}" WHERE "Codice_fiscale_ente" IN (${elenco})`);
+    } catch {
+      ipaAssente = true;
+    }
     for (const r of righe) {
       const indirizzi = [1, 2, 3].map((k) => ({ m: mail(r[`Mail${k}`]), tipo: String(r[`Tipo_Mail${k}`] || "") }));
       const pec = indirizzi.find((x) => x.m && /pec/i.test(x.tipo))?.m || null;
@@ -384,7 +403,10 @@ async function importaAlbo(admin: ReturnType<typeof createClient>, sezione: stri
       if (!error) daIpa++;
     }
   }
-  return { regione, lette, categoria_1o: imprese.length, con_dati_ipa: daIpa };
+  return {
+    regione, provincia: province[0], lette, categoria_1o: imprese.length, con_dati_ipa: daIpa, ipa_non_disponibile: ipaAssente,
+    prossimo: indice + 1 < tutteLeProvince.length ? indice + 1 : null, province: tutteLeProvince.length,
+  };
 }
 
 // ---------------------------------------------------------------------
