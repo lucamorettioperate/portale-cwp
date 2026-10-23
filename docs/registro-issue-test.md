@@ -189,6 +189,10 @@ Si eseguono con `npm test` prima di ogni rilascio; l'ultimo esito è sempre «tu
   - utente del Comune: nessun dato visibile, scrittura e riepilogo rifiutati; anonimo: nessun accesso;
   - **errore trovato e corretto prima del rilascio**: l'audit delle richieste di registrazione falliva perché `mkt_richiesta` aveva un id numerico (l'audit vuole uuid); id portato a uuid, audit di campagne e richieste presente;
   - `mkt_sembra_pec` riconosce pec.it, pecveneto.it, cert.provincia.it e non «pecora@».
+- Primo aggiornamento delle banche dati in produzione (23/10/2026 12:20-12:50), due errori trovati e corretti:
+  - IndicePA: righe doppie per lo stesso codice ISTAT (Unioni e Consorzi nella categoria L6) → una sola riga per Comune, quella dell'ente «Comune…»;
+  - lettura unica degli uffici dei Comuni respinta da IndicePA («App offline») → blocchi di 400 Comuni; Albo una provincia per chiamata;
+  - esito: 7.904 Comuni, 7.504 con dati IndicePA, 5.642 con email generica; 5.818 gestori in categoria 1 ordinaria.
 Ogni script del database è provato su una copia locale di Postgres 16 con tutti gli script, prima dell'esecuzione in produzione. Le prove sono nei file `t8.sql` … `t35.sql`: permessi per ruolo, rifiuti attesi, immutabilità dell'audit, conferma dei calcoli, emissioni, avvisi di sicurezza, vincoli del collaudo.
 
 Ultime prove:
@@ -279,4 +283,5 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 23/10/2026 11:45 | Valore dei progetti (Caso 1 / Caso 2): prove `valoreProgetti.test.mjs` e `t43.sql`; 19 serie |
 | 23/10/2026 12:10 | Colori dello stato delle fasi: verifica a schermo (computer e telefono); 19 serie |
 | 23/10/2026 12:20 | Script 34 in produzione dopo la prova `t34.sql` nell'ordine della produzione |
-| 23/10/2026 13:30 | Prova `t44.sql` (Marketing, script 44) con l'errore dell'id di `mkt_richiesta` trovato e corretto; nuova serie `marketing.test.mjs` (20 serie) |
+| 23/10/2026 12:05 | Prova `t44.sql` (Marketing, script 44) con l'errore dell'id di `mkt_richiesta` trovato e corretto; nuova serie `marketing.test.mjs` (20 serie) |
+| 23/10/2026 12:50 | Rilascio del Marketing: due errori dell'importazione da IndicePA trovati al primo aggiornamento in produzione (righe doppie per Comune, lettura degli uffici troppo grande) e corretti; banche dati caricate |
