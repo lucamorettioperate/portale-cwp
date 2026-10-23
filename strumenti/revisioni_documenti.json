@@ -529,6 +529,12 @@
       "data": "23/10/2026",
       "descrizione": "Marketing: aggiornamento a blocchi e IndicePA non disponibile.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.3",
+      "data": "23/10/2026",
+      "descrizione": "Rapporto di Monitoraggio solo per Progetti registrati.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -800,6 +806,12 @@
       "rev": "3.24",
       "data": "23/10/2026",
       "descrizione": "Prove 10.16-10.16i: sezione Marketing, campagne, pagina Approfondisci, richiesta di registrazione, disiscrizione.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.25",
+      "data": "23/10/2026",
+      "descrizione": "Prove 6.2b (Rapporto su Progetto non registrato) e 10.16j (elenco dei Comuni senza filtri).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1211,6 +1223,12 @@
       "data": "23/10/2026",
       "descrizione": "Marketing: verifica dei gestori sui siti, primo lotto (Lombardia classi A e B) e strumento di caricamento.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "7.8",
+      "data": "23/10/2026",
+      "descrizione": "Script 45 in produzione: Rapporto solo per Progetti registrati, Marketing più veloce; tutti gli script 01-45 eseguiti.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1326,6 +1344,12 @@
       "rev": "2.8",
       "data": "23/10/2026",
       "descrizione": "Script 01-44 e funzione marketing (Verify JWT disattivato).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.9",
+      "data": "23/10/2026",
+      "descrizione": "Script 01-45.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1600,6 +1624,12 @@
       "rev": "1.21",
       "data": "23/10/2026",
       "descrizione": "Rilascio del Marketing: errori dell'importazione da IndicePA trovati e corretti.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.22",
+      "data": "23/10/2026",
+      "descrizione": "ISS-039 e ISS-040 corretti e in produzione; prova t45.sql.",
       "autore": "Fondazione Operate"
     }
   ]

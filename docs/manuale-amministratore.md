@@ -148,7 +148,7 @@ Il periodo di riferimento vale anche per i Rapporti del Progetto. Non si può pa
 
 **Creare un Rapporto di Monitoraggio annuale**
 
-1. Aprite il Progetto (deve essere *Attivo*).
+1. Aprite il Progetto (deve essere *Attivo* e **registrato**, cioè con la fase 6 «Seconda verifica documentale» completata: prima il pulsante non compare e una riga lo spiega).
 2. Nella sezione **Rapporti di Monitoraggio (N/10)** (oppure **N/21** con il periodo di 7 anni rinnovabili) premete **+ Rapporto anno N**.
 3. Il Rapporto nasce con codice `<codice progetto>-RMN`, eredita l'ente e il periodo di riferimento e si apre subito.
 

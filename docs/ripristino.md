@@ -38,7 +38,7 @@ Il portale non ha un server proprio: è distribuito su sei servizi. Sapere che c
 
 | Servizio | Che cosa contiene | Se si perde |
 | --- | --- | --- |
-| **GitHub** (lucamorettioperate/portale-cwp) | Tutto il codice, gli script del database (01-44), le funzioni del server, i manuali e la loro storia | Si recupera dal ramo `snapshot-…` o dal file `.bundle` dell'archivio di backup |
+| **GitHub** (lucamorettioperate/portale-cwp) | Tutto il codice, gli script del database (01-45), le funzioni del server, i manuali e la loro storia | Si recupera dal ramo `snapshot-…` o dal file `.bundle` dell'archivio di backup |
 | **Vercel** (progetto portale-cwp) | Solo la pubblicazione del portale; nessun dato | Si ricrea in 10 minuti collegando di nuovo GitHub |
 | **Supabase** (organizzazione Fondazione Operate, progetto portale-cwp) | Database (pratiche, utenti, audit, impostazioni), file caricati, funzioni del server, lavori pianificati, chiavi | La struttura si ricrea dagli script; **i dati e i file solo da una copia** (capitolo «Copie di sicurezza») |
 | **Resend** | Invio delle email; chiave API e verifica del dominio | Nuovo account o nuova chiave, poi aggiornare Supabase |
@@ -175,7 +175,7 @@ node strumenti/backup/genera_sql_ripristino.mjs database_completo.json ripristin
 Si usa quando dati o progetto Supabase sono persi. Serve un computer con Node 18+ e, per i dati grandi, `psql` (lo sviluppatore).
 
 1. **Scegliete il backup**: l'ultima cartella di Cwp › backup con `esito.txt` → «Esito: completo, nessun errore». Scaricatela dal Drive (tasto destro → *Scarica*) e scompattate `portale-cwp-main.zip`.
-2. **Nuovo progetto Supabase** ed esecuzione degli script 01-44, come nel capitolo «Supabase: ricostruzione da zero», passi 1 e 2.
+2. **Nuovo progetto Supabase** ed esecuzione degli script 01-45, come nel capitolo «Supabase: ricostruzione da zero», passi 1 e 2.
 3. **Dati**: dalla cartella del codice scompattato eseguite
    `node strumenti/backup/genera_sql_ripristino.mjs database_completo.json ripristino_dati.sql`,
    poi `psql "<stringa di connessione del nuovo progetto>" -f ripristino_dati.sql`. Se il file è piccolo si può incollare nel SQL Editor.
@@ -279,7 +279,7 @@ Se il progetto Supabase è stato cancellato, lo sviluppatore lo ricostruisce in 
 
 ### 2. Struttura del database (script)
 
-Nel *SQL Editor* eseguite gli script della cartella `supabase/` del repository, **uno alla volta e in ordine di numero**, da `01_schema.sql` a `44_marketing.sql`:
+Nel *SQL Editor* eseguite gli script della cartella `supabase/` del repository, **uno alla volta e in ordine di numero**, da `01_schema.sql` a `45_rapporto_registrato_marketing_rls.sql`:
 
 - **non** eseguite `schema_completo.sql`: è una vecchia fotografia, superata dagli script numerati;
 - `03_dati_esempio.sql` crea solo dati di prova (Comune di Borgoval): eseguitelo solo per un ambiente di prova;
