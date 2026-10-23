@@ -175,8 +175,9 @@ Si eseguono con `npm test` prima di ogni rilascio; l'ultimo esito è sempre «tu
 | `rilievi_n.test.mjs` | 13 | N01 (Caso 1 a 16.735 abitanti: 16.232,95 €/anno; 10 anni senza avviso, 7 e 12 anni stima), N04 (data assente, passata, oggi, +7, +8, pratiche non attive), N05 (formato dell'avviso), N06 (cinque frazioni + legno + metallo + RAEE a zero contro un calcolo indipendente, denominatore nullo) |
 | `bancaDatiUtenze.test.mjs` | 6 | Banca Dati Utenze per utenza: file di prova con 20 + 20 utenze, righe sbagliate con foglio e riga, codice doppio, svuotamenti senza kg, virgola e categoria numerica, colonna mancante, controllo del modulo, riassunto degli eventi delle utenze nell'Audit |
 | `utenzeNelCalcolo.test.mjs` | 7 | Utenze del passo 5a nel motore: categoria di simulazione come classe e kg misurati, stessi numeri dei conferimenti del tracciato a parità di dati, frazioni contate per utenza, utenze senza categoria o fuori delibera escluse (avviso) e segnalate come errore di coerenza, priorità del 5a sul 5b, kg negativi bloccanti |
+| `valoreProgetti.test.mjs` | 4 | Valore dei Progetti per il cliente: Caso 1 a 16.735 abitanti (16.232,95 €/anno, 10 anni), Caso 2 più caro, 7 anni come stima, Progetti senza listino o popolazione contati a parte |
 
-**Ultima esecuzione:** 23/10/2026 11:00 (ramo `valore-crediti-dashboard`), 18 serie superate.
+**Ultima esecuzione:** 23/10/2026 11:45 (ramo `valore-progetti-casi`), 19 serie superate.
 
 ### Prove del database (banco locale)
 
@@ -184,6 +185,7 @@ Ogni script del database è provato su una copia locale di Postgres 16 con tutti
 
 Ultime prove:
 
+- `t43.sql` del 23/10/2026 (valore dei progetti, script 43), tutte come attese: nuovo Progetto con Caso 2; listino non valido rifiutato con messaggio italiano (creazione e modifica); Progetto esistente da indicare → Caso 1 con motivazione nell'audit; Amministratore: scenario più recente per Comune e tutti i Progetti aperti; utente del Comune A: solo i suoi e nessuna modifica; anonimo negato; script rieseguibile.
 - `t42.sql` del 23/10/2026 (valore dei crediti nella Dashboard, script 42), tutte come attese:
   - Amministratore: simulazione con un solo scenario per Comune (il più recente; il Comune non censito riconosciuto anche con il nome scritto diversamente), euro dai ricavi o al prezzo di riferimento, scenari a prezzo di riferimento contati; calcoli ex post confermati e validi (esclusi bozze, ex ante e versioni sostituite); lotti e vendite;
   - Operatore: stessi totali; non cambia il prezzo;
@@ -265,3 +267,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 22/10/2026 16:50 | Prova `t40.sql` (Banca Dati Utenze) |
 | 23/10/2026 10:30 | Utenze del passo 5a nel motore: prove `utenzeNelCalcolo.test.mjs` (18 serie) e `t41.sql` |
 | 23/10/2026 11:00 | Valore dei crediti nella Dashboard: prova `t42.sql`; 18 serie |
+| 23/10/2026 11:45 | Valore dei progetti (Caso 1 / Caso 2): prove `valoreProgetti.test.mjs` e `t43.sql`; 19 serie |

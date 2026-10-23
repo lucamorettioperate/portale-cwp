@@ -197,6 +197,12 @@
       "data": "23/10/2026",
       "descrizione": "Revisione generale al 23/10: Banca Dati Utenze per utenza non più «in arrivo».",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.3",
+      "data": "23/10/2026",
+      "descrizione": "«Le mie pratiche»: valore del progetto (listino Caso 1 o Caso 2).",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -493,6 +499,12 @@
       "data": "23/10/2026",
       "descrizione": "Revisione generale al 23/10: protezione dei dati del tracciato e della Banca Dati Utenze per utenza.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.9",
+      "data": "23/10/2026",
+      "descrizione": "Nuovo progetto e dati della pratica: listino Caso 1 / Caso 2 e valore del progetto; Dashboard: valore dei progetti per il cliente.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -746,6 +758,12 @@
       "rev": "3.21",
       "data": "23/10/2026",
       "descrizione": "Prove 10.10m-10.10p: valore dei crediti in Dashboard e per i Comuni, prezzo di riferimento.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.22",
+      "data": "23/10/2026",
+      "descrizione": "Prove 10.10q-10.10s: listino del Progetto e valore dei progetti.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1121,6 +1139,12 @@
       "data": "23/10/2026",
       "descrizione": "Revisione generale al 23/10: intestazione (versione 0.42), dati personali, flusso del calcolo, «Da fare subito», struttura del codice, tabelle; script 34 verificato non eseguito.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "7.2",
+      "data": "23/10/2026",
+      "descrizione": "Script 43 (valore dei progetti, listino Caso 1 / Caso 2), funzione cruscotto_valore_progetti, cronologia.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1218,6 +1242,12 @@
       "rev": "2.5",
       "data": "23/10/2026",
       "descrizione": "Script del database 01-42.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.6",
+      "data": "23/10/2026",
+      "descrizione": "Script del database 01-43.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1347,6 +1377,12 @@
       "data": "23/10/2026",
       "descrizione": "Nuova slide «Novità del 22 e 23 ottobre» (valore dei crediti, Banca Dati Utenze per utenza, smartphone, collaudo); scelte da prendere aggiornate.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.0",
+      "data": "23/10/2026",
+      "descrizione": "Valore dei progetti per il cliente nella slide delle novità.",
+      "autore": "Fondazione Operate"
     }
   ],
   "issue": [
@@ -1450,6 +1486,12 @@
       "rev": "1.16",
       "data": "23/10/2026",
       "descrizione": "Riepilogo al 23/10.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.17",
+      "data": "23/10/2026",
+      "descrizione": "Prove valoreProgetti.test.mjs e t43.sql; 19 serie.",
       "autore": "Fondazione Operate"
     }
   ]

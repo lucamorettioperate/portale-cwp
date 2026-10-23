@@ -75,6 +75,7 @@ La pagina elenca i Progetti della vostra organizzazione (o delle organizzazioni 
 **Valore dei crediti della vostra organizzazione.** In cima alla pagina due riquadri, in crediti (1 credito = 1 tCO₂eq) e in euro, con i soli dati della vostra organizzazione:
 - **Crediti in simulazione**: la stima dell'ultima simulazione che la Fondazione ha preparato per il vostro Comune, su tutto il periodo simulato. È una stima, non un credito certificato.
 - **Crediti in fase esecutiva**: crediti **calcolati** nei Rapporti di Monitoraggio confermati, crediti **emessi** e crediti **venduti** con il valore comunicato dal registro. Calcolati ed emessi sono valorizzati al prezzo di riferimento indicato nel riquadro; non si sommano, perché i crediti emessi vengono dai calcoli.
+- **Valore dei progetti**: quanto costa il vostro Progetto secondo il listino concordato con la Fondazione (Caso 1, progetto volontario, oppure Caso 2, progetto da bando di gara), in totale e all'anno, e quanto prevede l'ultima simulazione. Lo stesso valore compare nei dati del Progetto, alla voce **Valore del progetto per il cliente**.
 
 **Dal telefono.** Il portale si usa anche dallo smartphone. In alto restano i loghi, la campanella delle notifiche e il pulsante **☰ Menu**, che apre l'elenco delle pagine, **Il mio profilo** ed **Esci**. Con più pratiche si vede prima l'elenco: toccandone una si apre il dettaglio e **← Tutte le pratiche** riporta all'elenco. Con una sola pratica il dettaglio si apre subito. L'assistente è il pulsante tondo ✦ in basso a destra e, aperto, occupa tutto lo schermo.
 
@@ -553,6 +554,8 @@ La **Dashboard** è la pagina iniziale dello staff: mostra in un'unica tabella t
 - **Crediti in simulazione**: per ogni Comune conta solo lo scenario del Simulatore **aggiornato più di recente** (gli scenari prudente, obiettivo, ambizioso… sono alternative e non si sommano), con i crediti netti di tutto il periodo simulato (7, 10 o 21 anni). Gli euro sono i ricavi dello scenario (crediti × valore del credito anno per anno). Gli scenari salvati prima del 23/10/2026 o senza valore del credito si valorizzano al prezzo di riferimento e il riquadro dice quanti sono: basta riaprirli e premere **Salva** nel Simulatore. È una stima ex ante, non certificabile.
 - **Crediti in fase esecutiva**: tre righe. **Calcolati**: crediti netti dei calcoli ex post confermati e ancora validi (non sostituiti da una nuova versione). **Emessi**: crediti dei lotti emessi dai Rapporti. **Venduti**: crediti venduti con il valore comunicato dal registro. Calcolati ed emessi sono valorizzati al **prezzo di riferimento** (Impostazioni); le righe non si sommano, perché i crediti emessi provengono dai calcoli.
 
+- **Valore dei progetti (quanto paga il cliente)** (dal 23/10/2026): il totale in euro dei Progetti aperti (non annullati né ritirati) con il listino del **Caso 1** o del **Caso 2**, per la popolazione e il periodo di ogni Progetto, con l'importo annuo; sotto, la riga **In simulazione** con quanto pagherebbe il cliente nell'ultimo scenario di ogni Comune simulato con il Caso 1 o 2. Il riquadro dice quanti Progetti sono senza listino o senza popolazione (da completare in **Modifica i dati** della pratica) e quanti scenari non hanno il Caso 1 o 2 (o sono stati salvati prima del 23/10: basta riaprirli e premere **Salva**).
+
 Gli utenti dei Comuni vedono gli stessi riquadri nella loro pagina **Le mie pratiche**, ma solo con i dati della propria organizzazione (scenari collegati alla loro organizzazione, loro calcoli, lotti e vendite). Gli scenari fatti per un Comune scritto solo per nome, senza organizzazione collegata, contano solo per lo staff.
 
 **Riquadri delle pratiche.** Ogni riquadro conta le pratiche e, se cliccato, filtra la tabella. Si clicca di nuovo per togliere il filtro.
@@ -585,8 +588,9 @@ La pagina **Pratiche** elenca a sinistra i Progetti (con più di 4 progetti comp
 4. **Titolo**: una descrizione breve.
 5. **Territorio: codici ISTAT dei Comuni (6 cifre)**, separati da virgola (es. `041044, 041001`).
 6. **Periodo di riferimento**: *10 anni (una volta)* oppure *7 anni rinnovabili 3 volte* (Standard 4.3.8).
-7. **Popolazione residente** e **Crediti previsti nel periodo**: servono per le tariffe dello Schema tariffario (capitolo «Pagamenti»); si possono completare dopo.
-8. Premete **Crea progetto**.
+7. **Popolazione residente** e **Crediti previsti nel periodo**: servono per le tariffe dello Schema tariffario (capitolo «Pagamenti») e per il valore del progetto; si possono completare dopo.
+8. **Listino (quanto paga il cliente)**, obbligatorio dal 23/10/2026: **Caso 1 – Progetto volontario** oppure **Caso 2 – Progetto obbligatorio (da bando di gara)**, le stesse tabelle dei costi del Simulatore. Con la popolazione indicata, sotto il menu compare il **valore del progetto** (es. Caso 1 a 16.735 abitanti: 16.232,95 € all'anno, 162.329,50 € in 10 anni). Con il periodo di 7 anni il valore è una stima, perché le tabelle valgono per 10 anni.
+9. Premete **Crea progetto**.
 
 Vengono create le 7 fasi: la 1 (Adesione) già *In corso*, le altre *Non iniziata*.
 
@@ -603,12 +607,12 @@ Vengono create le 7 fasi: la 1 (Adesione) già *In corso*, le altre *Non iniziat
 | progetto ritirato | Progetto ritirato |
 | non registrato (pratica annullata) | pratica annullata |
 
-**Dati del Progetto e del Rapporto.** Sotto l'intestazione un riquadro riporta: **Territorio (codici ISTAT)**, **Co-promotori** (gli altri soggetti promotori, Guida 3.3.1), **Periodo di riferimento**, **Popolazione residente**, **Crediti previsti nel periodo** (Progetto) o **Crediti previsti nell'anno** (Rapporto) e, dopo la chiusura della fase 6, la data di registrazione (**Registrato il** per il Progetto, che è la sua data di inizio secondo lo Standard 4.5; **Crediti registrati il** per il Rapporto). Il Comune li vede in sola lettura.
+**Dati del Progetto e del Rapporto.** Sotto l'intestazione un riquadro riporta: **Territorio (codici ISTAT)**, **Co-promotori** (gli altri soggetti promotori, Guida 3.3.1), **Periodo di riferimento**, **Popolazione residente**, **Crediti previsti nel periodo** (Progetto) o **Crediti previsti nell'anno** (Rapporto) e, dopo la chiusura della fase 6, la data di registrazione (**Registrato il** per il Progetto, che è la sua data di inizio secondo lo Standard 4.5; **Crediti registrati il** per il Rapporto) e, per il Progetto, il **Listino** (Caso 1 o Caso 2, «da indicare» per i Progetti aperti prima del 23/10/2026) con il **Valore del progetto per il cliente** (in 10 anni e all'anno). Il Comune li vede in sola lettura.
 
 Per cambiarli:
 
 1. Premete **Modifica i dati**.
-2. Per un Progetto correggete **Codici ISTAT dei Comuni (6 cifre)**, **Periodo di riferimento**, **Popolazione residente**, **Crediti previsti nel periodo** e **Altri soggetti promotori del progetto** (uno per riga); per un Rapporto popolazione e crediti previsti nell'anno.
+2. Per un Progetto correggete **Codici ISTAT dei Comuni (6 cifre)**, **Periodo di riferimento**, **Listino (quanto paga il cliente)**, **Popolazione residente**, **Crediti previsti nel periodo** e **Altri soggetti promotori del progetto** (uno per riga); per un Rapporto popolazione e crediti previsti nell'anno.
 3. Se serve scrivete la **Motivazione** (facoltativa, finisce nell'audit), ad esempio «dati del Modulo di descrizione del progetto».
 4. Premete **Salva i dati**.
 
@@ -1940,7 +1944,11 @@ fase esecutiva* (calcoli ex post confermati e validi, lotti emessi, vendite
 con il valore comunicato). Calcolati ed emessi sono valorizzati al prezzo di
 riferimento (Impostazioni, iniziale 32 €). Lo staff vede tutto, i Comuni solo
 i propri dati (anche in «Le mie pratiche»). Funzione
-`cruscotto_valore_crediti`, componente `ValoreCrediti.jsx`.
+`cruscotto_valore_crediti`, componente `ValoreCrediti.jsx`. Dal 23/10 (script
+43) anche il **valore dei progetti per il cliente**: listino Caso 1 o Caso 2
+scelto alla creazione del Progetto, somma annua di `costiPerCaso` × anni del
+periodo (`valoreProgettoCaso`), e quanto paga il cliente nell'ultimo scenario
+di ogni Comune.
 
 ## Corrispondenza con le formule
 
