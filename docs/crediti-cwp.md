@@ -96,11 +96,45 @@ Da completare: DPIA e accordo sul trattamento con i Comuni (art. 28 GDPR).
 Questa Banca Dati sostituirà i fogli 5_Conferimenti e 6_Letture del tracciato,
 che oggi bloccano i dati personali.
 
-**Stato.** In produzione dal 22/10/2026 (script 40 alle 17:30). Fatti: struttura del database (provata con `t40.sql`),
-modello Excel, caricamento e moduli di gestione nel portale. Da fare: il
-collegamento al motore di calcolo (categoria di simulazione → classe della
-delibera e rifiuti attesi; kg misurati al posto di svuotamenti × volume ×
-peso specifico); il passo 5b resta finché il motore non usa la 5a.
+**Come il calcolo usa le utenze (dal 23/10/2026, script 41).** Quando il
+calcolo ha le utenze del passo 5a, il motore usa quelle; i conferimenti del
+passo 5b (tracciato) valgono solo per i calcoli senza utenze, compresi quelli
+fatti prima. I beni a riuso vengono sempre dal passo 5b.
+- Ogni utenza va nella **classe della delibera indicata dalla sua categoria di
+  simulazione** (UD tra le classi domestiche, UnD tra le categorie non
+  domestiche): da lì prende i rifiuti attesi (formule 9-12) e le emissioni
+  attese EA(i).
+- I **kg** di ogni frazione sono il peso prodotto dall'utenza (Ptot, formula
+  21) e si usano così come sono: non servono svuotamenti × volume × peso
+  specifico. Gli svuotamenti restano informativi.
+- **Frazioni per utenza** (estensione della scelta interpretativa 2, da
+  confermare): EA(i) ed EP(i) si calcolano solo sulle frazioni con un valore
+  per quell'utenza, anche 0. Una frazione lasciata vuota (non raccolta o non
+  misurata) non entra né nelle emissioni attese né in quelle di progetto: così
+  una frazione non misurata non diventa un credito.
+- Utenze **senza categoria di simulazione** o con una categoria che **non è
+  tra le classi della delibera** restano fuori dal calcolo (avviso nei
+  risultati, errore nei controlli di coerenza) e il calcolo **non si può
+  confermare** finché non si correggono (controllo anche nel database).
+- Alla conferma il database confronta il numero di utenze usato da «Calcola»
+  con quelle salvate (`risultato.righe.utenze`): se l'elenco è cambiato dopo il
+  calcolo, la conferma è rifiutata.
+- Il motore legge le utenze con `admin_utenze_calcolo`, **senza nomi e
+  indirizzi**; il dettaglio per utenza dei risultati ha solo il codice.
+- Risultati, CSV di riepilogo e rapporto PDF dicono quale Banca Dati è stata
+  usata e quante utenze sono state escluse.
+
+Codice: `utenzeInConferimenti` e `calcolaCrediti` in `calcolo.js`,
+`controllaCoerenza` in `tracciato.js` (parametro `origine`),
+`leggiUtenzeCalcolo` in `utenzeCalcolo.js`; database: script
+`41_utenze_nel_calcolo.sql` (`cwp_utenze_controllo`, nuove versioni di
+`calcolo_coerenza` e `calcolo_prerequisiti_conferma`). Prove:
+`test/utenzeNelCalcolo.test.mjs` e `t41.sql`.
+
+**Stato.** In produzione: script 40 il 22/10/2026 alle 17:30 (struttura,
+modello Excel, caricamento e moduli di gestione) e script 41 il 23/10/2026
+(collegamento al motore). Da fare: DPIA e accordo con i Comuni; conferma della
+Fondazione sulla regola delle frazioni per utenza.
 
 ## Corrispondenza con le formule
 
@@ -112,7 +146,7 @@ peso specifico); il passo 5b resta finché il motore non usa la 5a.
 | 13-15 — emissioni attese | `calcolaCrediti` (territorio e per utenza) |
 | 16-17 — FE dell'indifferenziato | `fattoreIndifferenziato`: tutte le frazioni a recupero con quantità > 0 e FE numerico; restituisce anche quantità e FE di ogni frazione, `fuoriPaniere` (oltre organico, carta, vetro, plastica, tessili) ed `escluse` (senza FE). Paniere da confermare: rilievo N06, ATTESA_REGOLA |
 | 18 — peso specifico a consuntivo | `pesiSpecifici` |
-| 19-22 — conferimenti in peso | `conferimentiInPeso` |
+| 19-22 — conferimenti in peso | `conferimentiInPeso` (con le utenze del passo 5a: kg misurati, `utenzeInConferimenti`) |
 | 25-30 — emissioni di progetto | `calcolaCrediti` |
 | 31-32 — variazione di impatto e crediti | `calcolaCrediti` |
 | Tab. 15-16 — buffer | `calcolaBuffer` |
@@ -124,7 +158,9 @@ peso specifico); il passo 5b resta finché il motore non usa la 5a.
    indicare valori diversi.
 2. **Emissioni attese per utenza**: EA(i) è calcolato sulle sole tipologie di
    rifiuto misurate nella Banca Dati Utenze; le tipologie non misurate sono
-   coperte dal buffer della Tabella 16.
+   coperte dal buffer della Tabella 16. Con le utenze del passo 5a (dal
+   23/10/2026) la regola vale **utenza per utenza**: contano le frazioni con
+   un valore per quell'utenza (anche 0), non quelle lasciate vuote.
 3. **Riuso (formule 26 e 29)**: applicate alla lettera
    (EP(b) = − Q × FErid(b), con FErid(b) negativo) fanno *aumentare* le
    emissioni quando un'utenza conferisce beni a riuso. Il portale applica la

@@ -21,8 +21,13 @@
      pefUd, pefUnd, classiUd, classiUnd, fattori, scenarioRiuso, beni,
      psConsuntivo, volumiCentralizzati, opzioni (buffer) e, dopo un import,
      importazione (file d'origine, hash, parti, conteggi). Valori iniziali
-     in datiIniziali() di archivio.js. La Banca Dati Utenze (conferimenti e
-     riuso) sta invece nelle due tabelle di dettaglio, una riga per utenza.
+     in datiIniziali() di archivio.js. La Banca Dati Utenze sta invece in
+     tabelle di dettaglio: le utenze del passo 5a (calcolo_utenza, script
+     40, una riga per utenza con i kg per frazione) e i conferimenti e il
+     riuso del tracciato (passo 5b). Dal 23/10/2026 il motore usa le utenze
+     del passo 5a quando il calcolo le ha (utenzeInConferimenti di
+     calcolo.js; controlli di conferma nello script 41), altrimenti i
+     conferimenti del 5b; il riuso viene sempre dal 5b.
    Stati: «bozza» (modificabile, eliminabile) → «confermato» (definitivo).
      Per correggere un calcolo confermato si crea una «nuova versione» in
      bozza che ne copia dati e Banca Dati Utenze.
@@ -57,7 +62,8 @@ import {
   salvaRiuso,
   nuovaVersione,
 } from "../lib/crediti/archivio.js";
-import { calcolaCrediti, coefficientePrimoAnno } from "../lib/crediti/calcolo.js";
+import { calcolaCrediti, coefficientePrimoAnno, utenzeInConferimenti } from "../lib/crediti/calcolo.js";
+import { leggiUtenzeCalcolo } from "../lib/crediti/utenzeCalcolo.js";
 import { BENI_RIUSO, TIPOLOGIE_RIFIUTO } from "../lib/crediti/parametri.js";
 import { csvInOggetti, scriviCsv, scaricaTesto } from "../lib/csv.js";
 import { formatoData } from "../lib/date.js";
@@ -76,8 +82,9 @@ const PASSI = [
   ["rifiuti", "2. Rifiuti del territorio"],
   ["delibera", "3. Delibera tariffaria"],
   ["fattori", "4. Fattori di emissione"],
-  // 5a: Banca Dati Utenze per utenza (script 40, 22/10/2026); 5b: i
-  // conferimenti del tracciato, finché il calcolo non usa la 5a.
+  // 5a: Banca Dati Utenze per utenza (script 40, 22/10/2026), usata dal
+  // motore dal 23/10/2026; 5b: conferimenti e riuso del tracciato (i
+  // conferimenti valgono solo per i calcoli senza utenze nel 5a).
   ["utenze_elenco", "5a. Utenze del calcolo"],
   ["utenze", "5b. Conferimenti (tracciato)"],
   ["buffer", "6. Buffer"],
@@ -89,7 +96,9 @@ const PASSI = [
    Stato principale:
    - calcolo: riga di calcolo_crediti come salvata (stato, risultato salvato…)
    - dati / testa: copie in modifica del JSON `dati` e dei campi di testata
-   - conferimenti / riuso: Banca Dati Utenze (già salvata nel database)
+   - conferimenti / riuso: Banca Dati Utenze del tracciato (passo 5b)
+   - utenze: utenze del passo 5a senza nomi e indirizzi
+     (admin_utenze_calcolo), per il motore
    - modificato: ci sono modifiche a dati/testa non ancora salvate
    - risultato: ultimo risultato COMPLETO calcolato nel browser (con il
      dettaglio per utenza); nel database va solo un riepilogo. */
@@ -102,6 +111,7 @@ export default function CalcoloCrediti() {
   const [testa, setTesta] = useState(null); // titolo, anno, tipo, data_avvio, note
   const [conferimenti, setConferimenti] = useState([]);
   const [riuso, setRiuso] = useState([]);
+  const [utenze, setUtenze] = useState([]);
   const [passo, setPasso] = useState("impostazioni");
   const [modificato, setModificato] = useState(false);
   const [risultato, setRisultato] = useState(null);
@@ -124,12 +134,23 @@ export default function CalcoloCrediti() {
     setCalcolo(data);
     setDati(data.dati);
     setTesta({ titolo: data.titolo, anno: data.anno, tipo: data.tipo, data_avvio: data.data_avvio || "", note: data.note || "" });
-    const [c, r] = await Promise.all([leggiConferimenti(id), leggiRiuso(id)]);
+    const [c, r, u] = await Promise.all([leggiConferimenti(id), leggiRiuso(id), leggiUtenzeCalcolo(id)]);
     setConferimenti(c.data || []);
     setRiuso(r.data || []);
+    setUtenze(u.data || []);
+    if (u.error) setMessaggio({ errore: true, testo: "Utenze del calcolo non lette: " + u.error.message });
     setModificato(false);
     // Calcolo ancora vuoto: si parte dall'import del tracciato.
-    if (!data.dati?.rifiuti?.length && !(c.data || []).length && data.stato !== "confermato") setPasso("importa");
+    if (!data.dati?.rifiuti?.length && !(c.data || []).length && !(u.data || []).length && data.stato !== "confermato") setPasso("importa");
+  }
+
+  // Rilegge le utenze del passo 5a dopo un caricamento o una modifica dal
+  // modulo (il database ha già azzerato il risultato salvato).
+  async function ricaricaUtenze() {
+    const u = await leggiUtenzeCalcolo(id);
+    if (u.error) setMessaggio({ errore: true, testo: "Utenze del calcolo non lette: " + u.error.message });
+    else setUtenze(u.data || []);
+    await ricaricaTestata();
   }
 
   // Rilegge solo la testata del calcolo (non la Banca Dati Utenze). Serve
@@ -142,6 +163,15 @@ export default function CalcoloCrediti() {
     setCalcolo(data);
     if (!data.risultato) setRisultato(null);
   }
+
+  // Righe della Banca Dati Utenze usate dal motore, dai controlli di
+  // coerenza, dagli indicatori di qualità e dal buffer: le utenze del passo
+  // 5a se ci sono (una riga per frazione con i kg misurati e la categoria
+  // di simulazione come classe), altrimenti i conferimenti del tracciato.
+  // Calcolate una volta sola per ogni cambio (elenchi anche di decine di
+  // migliaia di utenze). Hook prima dei ritorni anticipati più sotto.
+  const origineBdu = utenze.length ? "utenze" : "conferimenti";
+  const righeBdu = useMemo(() => (utenze.length ? utenzeInConferimenti(utenze) : conferimenti), [utenze, conferimenti]);
 
   // Ricarica quando cambia il calcolo nell'indirizzo (es. dopo «Nuova versione»).
   useEffect(() => {
@@ -234,6 +264,7 @@ export default function CalcoloCrediti() {
       dataAvvio: testa.data_avvio,
       conferimenti,
       riuso,
+      utenze,
     });
     setRisultato(r);
     setPasso("risultati");
@@ -267,13 +298,14 @@ export default function CalcoloCrediti() {
       perClasse[k].deltaI += u.deltaI;
     });
     const { dettaglio, ...utenzeSenzaDettaglio } = r.utenze;
-    // righe: quante righe della Banca Dati Utenze ha usato il calcolo. Alla
-    // conferma il database le confronta con quelle salvate e rifiuta la
-    // conferma se non coincidono (20_rinforzi_integrita.sql).
+    // righe: quante righe della Banca Dati Utenze ha usato il calcolo (e,
+    // dal 23/10/2026, quante utenze del passo 5a). Alla conferma il
+    // database le confronta con quelle salvate e rifiuta la conferma se non
+    // coincidono (20_rinforzi_integrita.sql, 41_utenze_nel_calcolo.sql).
     const riepilogo = {
       ...r,
       utenze: { ...utenzeSenzaDettaglio, perClasse: Object.values(perClasse) },
-      righe: { conferimenti: conferimenti.length, riuso: riuso.length },
+      righe: { conferimenti: conferimenti.length, riuso: riuso.length, utenze: utenze.length },
     };
     // Un calcolo confermato non si scrive (lo rifiuterebbe anche il database).
     if (confermato) return;
@@ -467,8 +499,8 @@ export default function CalcoloCrediti() {
   // psTipologie: peso specifico (kg/m³) per tipologia, dai fattori del
   // passo 4; accetta la virgola decimale, valore assente = 0.
   const psTipologie = Object.fromEntries(dati.fattori.map((f) => [f.id, Number(String(f.ps ?? "").replace(",", ".")) || 0]));
-  const coerenza = ["utenze", "risultati"].includes(passo) || conferma
-    ? controllaCoerenza({ anno: testa.anno, rifiuti: dati.rifiuti, pefUd: dati.pefUd, pefUnd: dati.pefUnd, classiUd: dati.classiUd, classiUnd: dati.classiUnd, conferimenti, riuso, ps: psTipologie })
+  const coerenza = ["utenze_elenco", "utenze", "risultati"].includes(passo) || conferma
+    ? controllaCoerenza({ anno: testa.anno, rifiuti: dati.rifiuti, pefUd: dati.pefUd, pefUnd: dati.pefUnd, classiUd: dati.classiUd, classiUnd: dati.classiUnd, conferimenti: righeBdu, riuso, ps: psTipologie, origine: origineBdu })
     : null;
 
   // Controlli della Gestione qualità dei dati (qualita.js): confronto con la
@@ -479,7 +511,7 @@ export default function CalcoloCrediti() {
     return {
       ...q,
       scostamenti: scostamentiTabella3({ rifiuti: dati.rifiuti, popolazione: q.popolazione, cluster: q.cluster }),
-      indicatori: indicatoriQualita({ anno: testa.anno, annoDati: dati.importazione?.annoDati, classiUd: dati.classiUd, classiUnd: dati.classiUnd, conferimenti, conteggi: dati.importazione?.conteggi }),
+      indicatori: indicatoriQualita({ anno: testa.anno, annoDati: dati.importazione?.annoDati, classiUd: dati.classiUd, classiUnd: dati.classiUnd, conferimenti: righeBdu, conteggi: origineBdu === "utenze" ? null : dati.importazione?.conteggi }),
     };
   }
   const qualita = passo === "risultati" || conferma ? qualitaDati() : null;
@@ -639,7 +671,12 @@ export default function CalcoloCrediti() {
               <Fattori dati={dati} aggiorna={aggiornaDati} sola={confermato} />
             )}
             {passo === "utenze_elenco" && (
-              <UtenzeCalcolo calcoloId={id} sola={confermato} onCambio={ricaricaTestata} />
+              <>
+                <UtenzeCalcolo calcoloId={id} sola={confermato} onCambio={ricaricaUtenze} />
+                {/* Controlli sulle utenze rispetto alla delibera (categorie
+                    mancanti o sconosciute), solo se ci sono utenze. */}
+                {utenze.length > 0 && <div style={{ marginTop: 16 }}><ControlliCoerenza esiti={coerenza} /></div>}
+              </>
             )}
             {passo === "utenze" && (
               <BancaDati
@@ -650,13 +687,14 @@ export default function CalcoloCrediti() {
                 sola={confermato}
                 conferimenti={conferimenti}
                 riuso={riuso}
+                utenzeAttive={utenze.length}
                 onConferimenti={(righe) => { setConferimenti(righe); ricaricaTestata(); }}
                 onRiuso={(righe) => { setRiuso(righe); ricaricaTestata(); }}
                 tipologie={tipologieOpzioni}
               />
             )}
             {passo === "buffer" && (
-              <Buffer dati={dati} opzioni={dati.opzioni} aggiorna={aggiornaOpzioni} sola={confermato} conferimenti={conferimenti} riuso={riuso} />
+              <Buffer dati={dati} opzioni={dati.opzioni} aggiorna={aggiornaOpzioni} sola={confermato} conferimenti={righeBdu} riuso={riuso} />
             )}
             {passo === "risultati" && (
               <Risultati risultato={risultato} salvato={salvato} onCalcola={esegui} testa={testa} onRapporto={rapporto} confermato={confermato} />
@@ -883,6 +921,9 @@ function normalizzaMacro(v) {
    - conferimenti, riuso: righe attuali; onConferimenti / onRiuso: aggiornano
      lo stato della pagina dopo un import
    - tipologie: [{ valore, etichetta }] ammesse.
+   - utenzeAttive: numero di utenze del passo 5a; se più di 0 il motore usa
+     quelle e NON questi conferimenti (il riuso invece sì): lo dice un
+     riquadro in cima (23/10/2026).
    ATTENZIONE: l'import CSV salva SUBITO nel database e sostituisce tutte
    le righe esistenti (cancella e reinserisce a blocchi di 1000). I dati
    si controllano tutti PRIMA di cancellare (collaudo V01, D07): un file con
@@ -890,7 +931,7 @@ function normalizzaMacro(v) {
    caso di un guasto di rete a metà salvataggio: la tabella può restare
    incompleta, ma il calcolo non si può confermare finché non si ripete il
    salvataggio e non si ripreme «Calcola» (script 20). */
-function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso, onConferimenti, onRiuso, tipologie }) {
+function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso, utenzeAttive = 0, onConferimenti, onRiuso, tipologie }) {
   // Esito dell'ultima operazione: { testo, errore? } oppure null.
   const [stato, setStato] = useState(null);
   const refC = useRef(null);
@@ -1024,6 +1065,12 @@ function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso,
           : "Capitolo 6.1, ex ante: valori stimati. Si possono usare valori medi per classe indicando nella colonna «N. utenze» quante utenze rappresenta la riga."
       }
     >
+      {utenzeAttive > 0 && (
+        <div style={{ background: C.ocraSoft, borderRadius: 9, padding: "10px 12px", marginBottom: 12, fontSize: 12.5 }}>
+          <b>Questo calcolo usa le {utenzeAttive.toLocaleString("it-IT")} utenze del passo 5a.</b> I conferimenti di questa pagina
+          non entrano nel calcolo; i beni a riuso sì.
+        </div>
+      )}
       {stato && <div style={{ fontSize: 12.5, color: stato.errore ? C.amber : C.green, marginBottom: 10 }}>{stato.testo}</div>}
 
       <h3 style={h3}>Conferimenti di rifiuti</h3>
@@ -1264,7 +1311,9 @@ function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermat
       ["P%UnD (%)", r.attesa.pUnD * 100],
       ["EA territorio (tCO2eq)", r.attesa.EAterritorio],
       ["FE indifferenziato (kgCO2eq/kg)", r.indifferenziato?.fe ?? ""],
+      ["Banca Dati Utenze", r.fonte === "utenze" ? "utenze del passo 5a" : "conferimenti del tracciato (passo 5b)"],
       ["Utenze", r.utenze.totale],
+      ...(r.fonte === "utenze" ? [["Utenze escluse (categoria mancante o non in delibera)", r.utenze.escluse || 0]] : []),
       ["Utenze virtuose", r.utenze.virtuose],
       ["ΔI (kgCO2eq)", r.deltaI],
       ["Buffer (%)", r.buffer.totale],
@@ -1292,6 +1341,14 @@ function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermat
           <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>{r.avvisi.map((a) => <li key={a}>{a}</li>)}</ul>
         </div>
       )}
+
+      {/* Da dove vengono i dati delle utenze (23/10/2026). Assente nei
+          risultati salvati prima: erano tutti dai conferimenti del tracciato. */}
+      <div style={{ fontSize: 12.5, color: C.grafite, marginBottom: 10 }}>
+        Banca Dati Utenze: {r.fonte === "utenze"
+          ? <>utenze del passo 5a, con i kg misurati e la categoria di simulazione come classe{r.utenze.escluse ? <> · <b style={{ color: C.red }}>{r.utenze.escluse.toLocaleString("it-IT")} escluse</b> (categoria mancante o non in delibera)</> : ""}.</>
+          : "conferimenti del tracciato (passo 5b)."}
+      </div>
 
       {/* Riquadri principali. Convenzione dei segni: ΔI < 0 = il territorio
           riduce le emissioni; crediti lordi = −ΔI (in tCO₂eq); crediti netti

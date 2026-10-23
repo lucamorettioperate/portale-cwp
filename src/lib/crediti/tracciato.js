@@ -572,7 +572,11 @@ const n0 = (v) => Number(String(v ?? "").replace(",", ".")) || 0;
 // Le soglie (1,05 × utenze in delibera, 50% di copertura, 366 svuotamenti,
 // 5.000 litri, 1,1 × totale del territorio) sono scelte di buon senso, non
 // regole della Metodologia: si possono tarare.
-export function controllaCoerenza({ anno, anagrafica = {}, rifiuti = [], pefUd, pefUnd, classiUd = [], classiUnd = [], conferimenti = [], riuso = [], ps = {} }) {
+// origine: "conferimenti" (passo 5b, tracciato) oppure "utenze" (passo 5a:
+// righe di utenzeInConferimenti di calcolo.js, con i kg misurati e la
+// categoria di simulazione come classe; 23/10/2026).
+export function controllaCoerenza({ anno, anagrafica = {}, rifiuti = [], pefUd, pefUnd, classiUd = [], classiUnd = [], conferimenti = [], riuso = [], ps = {}, origine = "conferimenti" }) {
+  const daUtenze = origine === "utenze";
   const esiti = [];
   const errore = (testo) => esiti.push({ livello: "errore", testo });
   const avviso = (testo) => esiti.push({ livello: "avviso", testo });
@@ -603,7 +607,7 @@ export function controllaCoerenza({ anno, anagrafica = {}, rifiuti = [], pefUd, 
   if (senzaKb.length) avviso(`Classi domestiche con Kb nullo: ${senzaKb.slice(0, 6).join(", ")}.`);
 
   if (!conferimenti.length) {
-    errore("Manca la Banca Dati Utenze (fogli 5_Conferimenti o 6_Letture).");
+    errore("Manca la Banca Dati Utenze: carica le utenze del calcolo (passo 5a) oppure i conferimenti del tracciato (passo 5b).");
     return esiti;
   }
 
@@ -614,10 +618,25 @@ export function controllaCoerenza({ anno, anagrafica = {}, rifiuti = [], pefUd, 
     errore(`Banca Dati Utenze con ${nonAmmessi.righe} righe con valori negativi o non numerici: ${nonAmmessi.messaggi.slice(0, 3).join("; ")}${nonAmmessi.righe > 3 ? "…" : ""}.`);
   }
 
-  // Classi della Banca Dati non presenti in delibera
+  // Classi della Banca Dati non presenti in delibera. Con le utenze del
+  // passo 5a la classe è la categoria di simulazione: quelle senza categoria
+  // si contano a parte (vanno assegnate dal modulo dell'utenza).
   const ignote = new Set();
-  conferimenti.forEach((c) => { if (!classiNote[c.macro]?.has(String(c.classe).trim())) ignote.add(`${c.macro} «${c.classe}»`); });
-  if (ignote.size) errore(`Classi della Banca Dati Utenze assenti nella delibera (scritte in modo diverso?): ${elenco(ignote)}.`);
+  const senzaCategoria = new Set();
+  const conIgnota = new Set();
+  conferimenti.forEach((c) => {
+    const cl = String(c.classe ?? "").trim();
+    if (daUtenze && !cl) { senzaCategoria.add(c.utenza); return; }
+    if (!classiNote[c.macro]?.has(cl)) { ignote.add(`${c.macro} «${c.classe}»`); conIgnota.add(c.utenza); }
+  });
+  if (senzaCategoria.size) {
+    errore(`${senzaCategoria.size} utenze senza categoria di simulazione (es. ${elenco(senzaCategoria, 4)}): assegnala dal passo 5a, altrimenti restano fuori dal calcolo.`);
+  }
+  if (ignote.size) {
+    errore(daUtenze
+      ? `${conIgnota.size} utenze con una categoria di simulazione che non è tra le classi della delibera (${elenco(ignote)}): correggi la categoria (passo 5a) o le classi (passo 3).`
+      : `Classi della Banca Dati Utenze assenti nella delibera (scritte in modo diverso?): ${elenco(ignote)}.`);
+  }
 
   // Stessa utenza con macrocategorie o classi diverse
   const perUtenza = new Map();
@@ -662,7 +681,9 @@ export function controllaCoerenza({ anno, anagrafica = {}, rifiuti = [], pefUd, 
   if (tante) avviso(`${tante} righe con più di 366 svuotamenti nell'anno.`);
   const grandi = conferimenti.filter((c) => n0(c.volume) > 5000).length;
   if (grandi) avviso(`${grandi} righe con contenitore oltre 5.000 litri: verificate l'unità di misura (litri).`);
-  const vuote = conferimenti.filter((c) => !n0(c.svuotamenti) && !n0(c.pesoStrutture) && !n0(c.volumeStrutture) && !n0(c.pesoCdr) && !n0(c.volumeCdr)).length;
+  // Le righe delle utenze del passo 5a hanno i kg misurati (anche 0 è un
+  // dato valido): non contano tra le righe vuote.
+  const vuote = conferimenti.filter((c) => (c.kg === undefined || c.kg === null) && !n0(c.svuotamenti) && !n0(c.pesoStrutture) && !n0(c.volumeStrutture) && !n0(c.pesoCdr) && !n0(c.volumeCdr)).length;
   if (vuote) avviso(`${vuote} righe della Banca Dati senza alcun conferimento.`);
   const tipSenzaRifiuto = new Set(conferimenti.map((c) => c.tipologia).filter((t) => !rifiuti.some((r) => r.tipologia === t)));
   if (rifiuti.length && tipSenzaRifiuto.size) avviso(`Tipologie conferite dalle utenze ma assenti nei rifiuti del territorio: ${elenco(tipSenzaRifiuto)}.`);
@@ -671,7 +692,7 @@ export function controllaCoerenza({ anno, anagrafica = {}, rifiuti = [], pefUd, 
   const kgPer = {};
   conferimenti.forEach((c) => {
     const p = ps[c.tipologia] || 0;
-    const kg = (n0(c.svuotamenti) * n0(c.volume) + n0(c.volumeStrutture) + n0(c.volumeCdr)) * p / 1000 + n0(c.pesoStrutture) + n0(c.pesoCdr);
+    const kg = (n0(c.svuotamenti) * n0(c.volume) + n0(c.volumeStrutture) + n0(c.volumeCdr)) * p / 1000 + n0(c.pesoStrutture) + n0(c.pesoCdr) + n0(c.kg);
     kgPer[c.tipologia] = (kgPer[c.tipologia] || 0) + kg * (Number(c.nUtenze) || 1);
   });
   for (const [t, kg] of Object.entries(kgPer)) {
@@ -681,7 +702,7 @@ export function controllaCoerenza({ anno, anagrafica = {}, rifiuti = [], pefUd, 
 
   // Riuso
   const riusoSenzaUtenza = new Set(riuso.map((r) => r.utenza).filter((u) => !perUtenza.has(u)));
-  if (riusoSenzaUtenza.size) avviso(`Utenze del riuso non presenti nella Banca Dati dei conferimenti: ${elenco(riusoSenzaUtenza)}.`);
+  if (riusoSenzaUtenza.size) avviso(`Utenze del riuso non presenti nella Banca Dati ${daUtenze ? "delle utenze (passo 5a)" : "dei conferimenti"}: ${elenco(riusoSenzaUtenza)}.`);
 
   return esiti;
 }

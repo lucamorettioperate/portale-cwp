@@ -69,6 +69,7 @@ export const CAMPI_CONFERIMENTO = {
   pesoCdr: "peso centri di raccolta",
   volumeCdr: "volume centri di raccolta",
   nUtenze: "N. utenze",
+  kg: "kg misurati",
 };
 export const CAMPI_RIUSO = { pezzi: "pezzi", peso: "peso", nUtenze: "N. utenze" };
 
@@ -98,6 +99,45 @@ export function valoriNonAmmessiBdu({ conferimenti = [], riuso = [] }) {
   return { righe, messaggi };
 }
 
+
+/* ---------------------------------------------------------------------
+   Banca Dati Utenze per utenza (passo «5a. Utenze del calcolo», tabella
+   calcolo_utenza dello script 40; richiesta di Luca Moretti del 23/10/2026:
+   collegare le utenze al motore).
+   Trasforma le utenze in righe nel formato dei conferimenti, così il resto
+   del motore (pesi, emissioni, controlli di coerenza, buffer) non cambia:
+   - utenza = codice utenza; macro = tipo (UD / UnD);
+   - classe = CATEGORIA DI SIMULAZIONE (decide la classe della delibera e
+     quindi i rifiuti attesi, formule 9-12); vuota = utenza «da assegnare»;
+   - una riga per ogni frazione con i kg indicati (anche 0): kg = peso
+     MISURATO, usato così com'è al posto di svuotamenti × volume × peso
+     specifico (formula 20); gli svuotamenti restano solo informativi;
+   - una frazione lasciata vuota nel file (non raccolta o non misurata per
+     quell'utenza) non dà righe: vedi «tipologie per utenza» in
+     calcolaCrediti.
+   Parametro: utenze come le restituisce admin_utenze_calcolo (codice, tipo,
+   categoria_simulazione, frazioni { id: { kg, svuotamenti } }).
+   Restituisce l'elenco delle righe (nUtenze = 1: ogni riga è un'utenza vera).
+   --------------------------------------------------------------------- */
+export function utenzeInConferimenti(utenze = []) {
+  const righe = [];
+  utenze.forEach((u) => {
+    const classe = u.categoria_simulazione == null ? "" : String(u.categoria_simulazione).trim();
+    Object.entries(u.frazioni || {}).forEach(([tipologia, v]) => {
+      if (!v || v.kg === null || v.kg === undefined || v.kg === "") return;
+      righe.push({
+        utenza: u.codice,
+        macro: u.tipo,
+        classe,
+        tipologia,
+        kg: v.kg,
+        svuotamenti: v.svuotamenti ?? null,
+        nUtenze: 1,
+      });
+    });
+  });
+  return righe;
+}
 
 /* ---------------------------------------------------------------------
    Capitolo 2 — Periodo di riferimento (formula 1)
@@ -260,6 +300,8 @@ export function pesiSpecifici({ perTipologia, conferimenti, volumiCentralizzati 
 /* ---------------------------------------------------------------------
    Capitolo 6.1 — Conferimenti in peso per utenza (formule 19-22)
    Ptot(r,i) = PD + PStIn + PCdR;  PD = S × VC × PS / 1000
+   Righe delle utenze del passo 5a (utenzeInConferimenti): il campo kg è
+   il peso già misurato e si somma così com'è.
    Priut(b,i) = Np × Pb (o peso misurato)
    PD = conferimenti domiciliari, PStIn = strutture informatizzate,
    PCdR = centri di raccolta (pesati direttamente o convertiti da litri).
@@ -289,7 +331,8 @@ export function conferimentiInPeso({ conferimenti, riuso = [], ps, beni }) {
     const pd = pesoSpec ? (litriDomiciliare * pesoSpec) / 1000 : 0; // formula 20
     const pStIn = num(c.pesoStrutture) + (pesoSpec ? (num(c.volumeStrutture) * pesoSpec) / 1000 : 0);
     const pCdR = num(c.pesoCdr) + (pesoSpec ? (num(c.volumeCdr) * pesoSpec) / 1000 : 0);
-    u.ptot[c.tipologia] = (u.ptot[c.tipologia] || 0) + pd + pStIn + pCdR; // formula 21
+    const pMisurato = num(c.kg); // kg misurati (utenze del passo 5a)
+    u.ptot[c.tipologia] = (u.ptot[c.tipologia] || 0) + pd + pStIn + pCdR + pMisurato; // formula 21
   });
 
   riuso.forEach((r) => {
@@ -403,7 +446,16 @@ export function calcolaCrediti(dati) {
   if (periodo.errore) errori.push(periodo.errore);
   const coefficiente = periodo.coefficiente ?? 1;
   const giorni = periodo.giorni;
-  const nonAmmessi = valoriNonAmmessiBdu({ conferimenti: dati.conferimenti || [], riuso: dati.riuso || [] });
+  // Fonte della Banca Dati Utenze. Con le utenze del passo 5a (dati.utenze)
+  // il motore usa quelle; i conferimenti del passo 5b (tracciato) restano
+  // per i calcoli che non hanno utenze (compresi quelli già fatti).
+  const utenzeBdu = dati.utenze || [];
+  const daUtenze = utenzeBdu.length > 0;
+  const conferimenti = daUtenze ? utenzeInConferimenti(utenzeBdu) : (dati.conferimenti || []);
+  if (daUtenze && (dati.conferimenti || []).length) {
+    avvisi.push(`Il calcolo usa le ${utenzeBdu.length.toLocaleString("it-IT")} utenze del passo 5a: le ${dati.conferimenti.length.toLocaleString("it-IT")} righe di conferimento del passo 5b (tracciato) non sono usate.`);
+  }
+  const nonAmmessi = valoriNonAmmessiBdu({ conferimenti, riuso: dati.riuso || [] });
   if (nonAmmessi.righe) {
     errori.push(`Banca Dati Utenze: ${nonAmmessi.righe} righe con valori negativi o non numerici (es. ${nonAmmessi.messaggi.slice(0, 3).join("; ")}). Correggi il file e importalo di nuovo.`);
   }
@@ -458,9 +510,9 @@ export function calcolaCrediti(dati) {
   const EAterritorio = somma(eaTipologie, (t) => t.ea);
 
   // 3. Conferimenti in peso per utenza (Cap. 6.1).
-  const conferimenti = dati.conferimenti || [];
   // Tipologie presenti nella Banca Dati Utenze: solo su queste si calcola
-  // EA(i) (docs/crediti-cwp.md, punto 2).
+  // EA(i) (docs/crediti-cwp.md, punto 2). Con le utenze del passo 5a la
+  // regola vale utenza per utenza (vedi sotto).
   const tipologieMisurate = [...new Set(conferimenti.map((c) => c.tipologia))];
   const pesiDefault = {};
   (dati.fattori || []).forEach((f) => {
@@ -479,14 +531,39 @@ export function calcolaCrediti(dati) {
   // 4. Per ogni utenza: EA(i) sui soli rifiuti misurati, EP(i), ΔI(i).
   // Valori in kgCO₂eq. L'utenza si aggancia alla sua classe con "macro|classe"
   // (UD o UnD + codice classe della delibera).
-  const classiPerChiave = new Map(attesa.classi.map((c) => [`${c.macro}|${c.classe}`, c]));
+  const classiPerChiave = new Map(attesa.classi.map((c) => [`${String(c.macro)}|${String(c.classe).trim()}`, c]));
   const senzaClasse = new Set();
-  const risultatiUtenze = pesi.utenze.map((u) => {
-    const classe = classiPerChiave.get(`${u.macro}|${u.classe}`);
+  // Utenze del passo 5a senza categoria di simulazione o con una categoria
+  // che non è nella delibera: senza rifiuti attesi darebbero un debito
+  // falso, quindi restano FUORI dal calcolo (avviso qui; i controlli di
+  // coerenza le segnalano come errore e la conferma è bloccata, anche dal
+  // database, script 41).
+  const escluse = { senzaCategoria: 0, categoriaIgnota: 0, esempi: new Set() };
+  const utenzeValide = pesi.utenze.filter((u) => {
+    if (!daUtenze) return true;
+    if (classiPerChiave.has(`${u.macro}|${String(u.classe).trim()}`)) return true;
+    if (!String(u.classe ?? "").trim()) escluse.senzaCategoria++;
+    else { escluse.categoriaIgnota++; escluse.esempi.add(`${u.macro} «${u.classe}»`); }
+    return false;
+  });
+  if (escluse.senzaCategoria) {
+    avvisi.push(`${escluse.senzaCategoria} utenze senza categoria di simulazione: escluse dal calcolo finché non la si assegna (passo 5a).`);
+  }
+  if (escluse.categoriaIgnota) {
+    avvisi.push(`${escluse.categoriaIgnota} utenze con una categoria di simulazione che non è tra le classi della delibera (${[...escluse.esempi].slice(0, 6).join(", ")}): escluse dal calcolo.`);
+  }
+  const risultatiUtenze = utenzeValide.map((u) => {
+    const classe = classiPerChiave.get(`${u.macro}|${String(u.classe).trim()}`);
     if (!classe) senzaClasse.add(`${u.macro} ${u.classe}`);
     const n = u.nUtenze || 1;
     // EA(i): formula 13 applicata ai valori attesi della classe dell'utenza.
-    const ea = classe ? somma(tipologieMisurate, (t) => -num(classe.atteso[t]) * fe(t)) * n : 0;
+    // Tipologie: con le utenze del passo 5a quelle con i kg indicati per
+    // QUELLA utenza (anche 0); una frazione vuota (non raccolta o non
+    // misurata) non entra né nelle emissioni attese né in quelle di
+    // progetto. Con i conferimenti del tracciato: le tipologie presenti in
+    // tutta la Banca Dati (regola precedente, invariata).
+    const tipologieUtenza = daUtenze ? Object.keys(u.ptot) : tipologieMisurate;
+    const ea = classe ? somma(tipologieUtenza, (t) => -num(classe.atteso[t]) * fe(t)) * n : 0;
     // EP(i): formule 28-30 (Ptot già moltiplicato per n se dati medi di classe).
     const epR = somma(Object.entries(u.ptot), ([t, kg]) => -kg * fe(t)) * n;
     // Formula 29 come scritta: EP(b,i) = − Priut × FErid(b). Con FErid(b)
@@ -540,10 +617,15 @@ export function calcolaCrediti(dati) {
     indifferenziato,
     pesiSpecifici: { ps, dettaglio: dettaglioPs },
     tipologieMisurate,
+    // Fonte della Banca Dati Utenze: "utenze" (passo 5a) o "conferimenti"
+    // (passo 5b, tracciato).
+    fonte: daUtenze ? "utenze" : "conferimenti",
     utenze: {
       totale: risultatiUtenze.length,
       equivalenti: somma(risultatiUtenze, (u) => u.nUtenze),
       virtuose: virtuose.length,
+      // Utenze del passo 5a lasciate fuori (categoria mancante o non in delibera).
+      escluse: escluse.senzaCategoria + escluse.categoriaIgnota,
       deltaITutte,
       deltaIVirtuose,
       EA: somma(risultatiUtenze, (u) => u.ea),

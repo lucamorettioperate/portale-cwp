@@ -145,7 +145,7 @@ async function icona(Comp, colore) {
   const fy = 1.85, fh = 1.4;
   const blocchi = [
     { x: 0.6, w: 2.75, t: "Emissioni attese (EA)", d: "Scenario di riferimento: rifiuti dell'anno (Catasto ISPRA) ripartiti per classe di utenza (delibera TARI)", f: C.background2, c: C.text1 },
-    { x: 3.85, w: 2.75, t: "Emissioni di progetto (EP)", d: "Dai conferimenti misurati di ogni utenza (Banca Dati Utenze), ex post", f: C.background2, c: C.text1 },
+    { x: 3.85, w: 2.75, t: "Emissioni di progetto (EP)", d: "Dai kg misurati di ogni utenza (Banca Dati Utenze dell'anno), ex post", f: C.background2, c: C.text1 },
     { x: 7.1, w: 2.5, t: "Crediti lordi", d: "ΔI = EP − EA: se negativa, la riduzione in tCO₂eq (formule 31-32)", f: C.accent3, c: C.text2 },
     { x: 10.1, w: 2.6, t: "Crediti netti", d: "Lordi meno il buffer cautelativo (Cap. 7, massimo 80%)", f: C.text2, c: C.background1 },
   ];
@@ -315,7 +315,7 @@ async function icona(Comp, colore) {
   // Garanzie e prossimi passi
   card(s, 9.0, 1.4, 3.7, 3.05, C.background2, "Garanzie");
   s.addText("Garanzie", { x: 9.2, y: 1.5, w: 3.3, h: 0.38, fontSize: 15, bold: true, color: C.text2, margin: 0, isTextBox: true });
-  s.addText(["Chi vede e chi modifica lo decide il database, non lo schermo", "Audit di ogni operazione, non modificabile", "Nessuna chiave segreta nel browser", "Nessuna cancellazione: conservazione 12 anni", "Banca Dati Utenze solo con codici anonimi", "Backup, istruzioni di ripristino; amministratore principale protetto"].map((t, j, a) => ({ text: t, options: { bullet: true, breakLine: j < a.length - 1 } })),
+  s.addText(["Chi vede e chi modifica lo decide il database, non lo schermo", "Audit di ogni operazione, non modificabile", "Nessuna chiave segreta nel browser", "Nessuna cancellazione: conservazione 12 anni", "Banca Dati Utenze: nomi visibili solo allo staff, ogni consultazione nell'audit", "Backup, istruzioni di ripristino; amministratore principale protetto"].map((t, j, a) => ({ text: t, options: { bullet: true, breakLine: j < a.length - 1 } })),
     { x: 9.2, y: 1.92, w: 3.35, h: 2.45, fontSize: 12, color: C.text1, valign: "top", margin: 0, paraSpaceAfter: 4, isTextBox: true });
   card(s, 9.0, 4.6, 3.7, 2.3, C.accent3, "Prossimi passi infrastruttura");
   s.addText("Prossimi passi", { x: 9.2, y: 4.7, w: 3.3, h: 0.38, fontSize: 15, bold: true, color: C.text2, margin: 0, isTextBox: true });
@@ -420,7 +420,7 @@ async function icona(Comp, colore) {
       "Conferma delle scelte interpretative del calcolo con l'ente",
       "Privacy: DPIA, registro dei trattamenti; accessibilità WCAG 2.1 AA",
       "Collaudo con i dati reali di un Comune",
-      "Nuovi moduli: simulatore con PDF ed Excel, assistente virtuale (poi Operatori e aiuto sulla pratica), Audit User e utenti online (fatti il 20/10); navigazione da smartphone (22/10); Marketplaces da definire",
+      "Nuovi moduli: simulatore con PDF ed Excel, assistente virtuale (poi Operatori e aiuto sulla pratica), Audit User e utenti online (fatti il 20/10); navigazione da smartphone (22/10); Banca Dati Utenze per utenza nel calcolo (22-23/10); Marketplaces da definire",
     ] },
   ];
   const cw = (12.1 - 0.6) / 3;

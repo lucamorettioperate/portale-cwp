@@ -252,6 +252,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `32_utenti_online.sql` | Utenti online (backlog 38): tabella `presenza` (una riga per utente: ultima segnalazione, inizio del collegamento, pagina aperta; nessun IP, nessuno storico; RLS senza regole), `segnala_presenza(pagina)` e `presenza_uscita()` per ognuno solo per sé, `utenti_online()` (visti nelle ultime 24 ore, online se l'ultima segnalazione ha meno di 2 minuti) solo per l'Amministratore principale | 20/10/2026 — provato sul banco locale; **eseguito in produzione il 20/10** |
 | `33_audit_trail_user.sql` | Audit User (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **eseguito in produzione il 20/10** e provato dal vivo |
 | `34_sicurezza_avvisi.sql` | Sicurezza (backlog 14, 30): avvisi all'Amministratore principale (`cwp_avviso_sicurezza`, evento «sicurezza»): 5 accessi non riusciti in 15 minuti per email, 30 in un'ora in tutto, nuovo Amministratore (trigger `trg_profilo_avviso_admin`); `registra_uscita(p_motivo)` con l'uscita per inattività; rinforzi del Security Advisor: `search_path` fisso su tutte le funzioni, funzioni SECURITY DEFINER non eseguibili da anon (tranne `registra_accesso_fallito` e quelle usate nelle regole RLS) | 20/10/2026 — provato sul banco locale (`t34.sql`, regressioni `t33.sql`); **da eseguire in produzione** |
+| `41_utenze_nel_calcolo.sql` | Utenze del passo 5a nel motore di calcolo (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026**): `cwp_utenze_controllo(calcolo, dati)` (security definer, solo numeri: utenze, senza categoria di simulazione, con categoria assente dalle classi della delibera); nuova `calcolo_coerenza` (alla conferma confronta anche `risultato.righe.utenze` con le utenze salvate; i risultati di prima valgono 0 utenze); nuova `calcolo_prerequisiti_conferma` (servono utenze del 5a o conferimenti del 5b; con le utenze nessuna senza categoria o con categoria fuori delibera). Prova `t41.sql` |
 | `40_utenze_calcolo.sql` | Banca Dati Utenze per utenza (22/10/2026, richiesta di Luca; **eseguito in produzione il 22/10/2026 alle 17:30**): tabella `calcolo_utenza` (codice unico nel calcolo, tipo UD/UnD, nominativo, indirizzo, componenti solo UD, mq, categoria tariffaria e categoria di simulazione (proposta uguale alla tariffaria dal trigger `trg_utenza_categoria`), produzione totale, `frazioni` JSON con kg e svuotamenti, indifferenziato obbligatorio; controlli `cwp_tipologie_rifiuto()` e `cwp_frazioni_errore()`); nessuna regola di lettura: consultazione con `staff_elenco_utenze` (staff, voce di audit «consultazione utenze»), lettura per il motore con `admin_utenze_calcolo` (Admin, senza nomi e indirizzi), `admin_svuota_utenze` (Admin, audit «cancellazione utenze»); modulo con `admin_salva_utenza` (nuova o modifica, messaggi in italiano, audit «inserimento/modifica utenza» con i nomi dei campi cambiati) e `admin_elimina_utenza`; `admin_conta_utenze`; inserimento solo Admin con una voce di audit per caricamento; immutabile a calcolo confermato, azzera il risultato della bozza, copiata da `admin_nuova_versione_calcolo` (ora security definer). Prova `t40.sql` |
 | `39_rilievi_n02_n03.sql` | Rilievi N02 e N03 della terza sessione di collaudo (22/10/2026, **eseguito in produzione il 22/10/2026 alle 14:27** con l'OK di Luca): `cwp_oggi()` (data in ora italiana); colonne `consultazione.chiusa_il`, `chiusura_tipo` («ordinaria» o «pratica_non_attiva»), `motivazione_chiusura`; `staff_chiudi_consultazione(p_consultazione, p_motivazione)` (sostituisce la firma a un parametro): chiusura ordinaria solo dal giorno dopo `data_chiusura` e completamento della fase 3, prima del termine solo per pratica annullata/ritirata/chiusa con motivazione; `staff_chiudi_fase`: fase 3 rifiutata senza feedback o con il feedback nel periodo, a termine passato chiude anche il feedback; `staff_apri_consultazione`: rifiutata con la fase 3 completata, apre la fase 3 se non iniziata; trigger `trg_consultazione_scadenza_fase3` (scadenza della fase 3 = termine del feedback, anche dopo l'errata corrige); `staff_apri_fase`: fase 5 solo con un ente attivo assegnato; `staff_imposta_ente_validazione`: l'ente non si toglie con la fase 5 aperta. Nessun dato storico modificato. Prova `t39.sql` |
 | `38_backup.sql` | Backup (21/10/2026): funzione `backup_completo()` (security definer, solo service_role) che restituisce in un JSON tutte le tabelle public, gli utenti dell'autenticazione senza password, l'elenco dei file degli archivi e i lavori pg_cron; stesso formato del backup manuale, ripristinabile con `genera_sql_ripristino.mjs database_completo.json` | 21/10/2026 — provato sul banco locale (38 tabelle, 3 utenti, 2 file; ripristino in un database nuovo con righe identiche; negata al ruolo authenticated) |
@@ -427,7 +428,7 @@ Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), c
 
 ---
 
-## 7. Funzionalità per area (stato al 22/10/2026)
+## 7. Funzionalità per area (stato al 23/10/2026)
 
 | Area (requisiti) | Stato | Dettaglio |
 |---|---|---|
@@ -448,7 +449,7 @@ Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), c
 | Piattaforma pubblica (Guida 3.7) | Fatto | Pagina /programma: informazioni del Programma, enti, registri, metodologie, documenti e modulistica, Progetti dal momento «in fase di validazione» con documenti pubblici, Rapporti e crediti |
 | Crediti emessi (Guida 6.3.2-6.3.3, Standard 6) | Fatto | Lotti con ID univoci emessi dall'Admin dopo la registrazione del Rapporto (con il limite del calcolo ex post confermato), caricamento sul registro esterno, vendite comunicate dal registro, cancellazione tombale (attivo / ritirato), avviso dopo 10 giorni senza dichiarazione |
 | Reclami (Politica di reclamo, Guida 8) | Fatto | Invio dal portale, registrazione dei reclami arrivati via PEC, gestore, conferma, risposta scritta, costi, note interne, notifiche |
-| Calcolo crediti (Metodologia v1.2) | Fatto (scelte interpretative da confermare) | Motore formule 1-32, Tabelle 3-5, 8, 15, 16; import diretto del tracciato con aggregazione delle letture, blocco dei dati personali e controlli di coerenza; controlli della Gestione qualità dei dati (Tabella 3 dello Standard ±30% con motivazione obbligatoria, completezza, unicità, letture a buon fine, tempestività); calcoli confermati immutabili con numero progressivo interno; rapporto PDF. Funzione migliorativa: per la Metodologia il calcolo lo fa il promotore nel Rapporto e l'ente lo verifica |
+| Calcolo crediti (Metodologia v1.2) | Fatto (scelte interpretative da confermare) | Motore formule 1-32, Tabelle 3-5, 8, 15, 16; import diretto del tracciato con aggregazione delle letture, blocco dei dati personali e controlli di coerenza; Banca Dati Utenze per utenza (passo 5a: file dell'anno, moduli, categoria tariffaria e di simulazione) usata dal motore dal 23/10/2026; controlli della Gestione qualità dei dati (Tabella 3 dello Standard ±30% con motivazione obbligatoria, completezza, unicità, letture a buon fine, tempestività); calcoli confermati immutabili con numero progressivo interno; rapporto PDF. Funzione migliorativa: per la Metodologia il calcolo lo fa il promotore nel Rapporto e l'ente lo verifica |
 | Amministrazione | Fatto | Utenti (più Amministratori, principale protetto, cancellazione dei mai attivi), audit, Audit User, utenti online, impostazioni: durata fasi, documenti richiesti, modelli di documento; simulatore con PDF ed Excel; assistente virtuale |
 | Sicurezza (§13) | Parziale | RLS, audit, controlli file, registro degli accessi e dei tentativi non riusciti, avvisi di sicurezza all'Amministratore principale, uscita per inattività, intestazioni del sito (20/10); verifica OWASP in corso (22/10); mancano antivirus, ambiente di prova, verifica in due passaggi attiva |
 
@@ -531,6 +532,28 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
+### 23 ottobre 2026
+- **Utenze del passo 5a nel motore di calcolo** (richiesta di Luca delle
+  9:39, «procediamo»). Ramo `utenze-nel-calcolo`.
+  - `calcolo.js`: `utenzeInConferimenti` (una riga per frazione con i kg
+    misurati; classe = categoria di simulazione); `calcolaCrediti` usa le
+    utenze se ci sono (`dati.utenze`), altrimenti i conferimenti del 5b;
+    kg misurati sommati in `conferimentiInPeso`; EA(i) ed EP(i) sulle sole
+    frazioni indicate per l'utenza; utenze senza categoria o con categoria
+    fuori delibera escluse con avviso; nel risultato `fonte` e
+    `utenze.escluse`.
+  - `tracciato.js`: `controllaCoerenza` con `origine` «utenze» (errori per
+    categoria mancante o fuori delibera; i kg a 0 non sono righe vuote).
+  - Pagina: lettura delle utenze senza nomi (`leggiUtenzeCalcolo`, a
+    blocchi di 5.000), controlli di coerenza anche nel passo 5a, riquadro nel
+    5b, riga «Banca Dati Utenze» nei Risultati, voci nel CSV di riepilogo e
+    paragrafo nel rapporto PDF; `righe.utenze` nel risultato salvato.
+  - Script `41_utenze_nel_calcolo.sql` (prova `t41.sql`, 9 casi).
+  - Prove `test/utenzeNelCalcolo.test.mjs` (7); 18 serie superate.
+    Verificato a schermo su computer e telefono con dati finti.
+  - In produzione: script 41 eseguito nel SQL Editor, main pubblicato,
+    «Calcola» sul calcolo di prova (non confermato).
+
 ### 22 ottobre 2026
 - **Banca Dati Utenze per utenza (prima parte)**, richiesta di Luca delle
   15:06 e 16:21-16:22: ogni calcolo carica obbligatoriamente l'elenco
@@ -563,7 +586,7 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
     simulazione proposta 2). Nell'Audit gli eventi delle utenze mostrano
     codice, numeri e campi cambiati (`riassuntoUtenze` in
     `auditDettaglio.js`).
-  - Da fare: collegamento al motore di calcolo.
+  - Collegamento al motore di calcolo: fatto il 23/10/2026 (script 41).
 - **Rilascio in produzione (14:25-14:50, OK di Luca delle 13:25).** Script
   38 (verifica: 38 tabelle) e 39 (6 funzioni aggiornate) eseguiti nel SQL
   Editor; main portato a `b296195` (rilievi N01-N06 e navigazione da
@@ -1753,6 +1776,7 @@ main.jsx → App.jsx (route, Protetta: accesso, password temporanea, MFA)
 | `staff_autori_commenti` | 17 | staff | Nome ed email degli autori delle osservazioni |
 | `staff_errata_corrige` | 17 | staff | Errata corrige, eventuale ripartenza dei 30 giorni |
 | `staff_imposta_ente_validazione` | 17, 39 | staff | Ente di Validazione della pratica (non si toglie con la fase 5 aperta) |
+| `cwp_utenze_controllo` | 41 | uso interno (trigger della conferma) | Numero di utenze del calcolo, senza categoria di simulazione e con categoria fuori delibera |
 | `staff_elenco_utenze`, `admin_utenze_calcolo`, `admin_svuota_utenze` | 40 | staff / admin | Banca Dati Utenze del calcolo: consultazione registrata nell'audit, lettura per il motore senza dati personali, svuotamento prima di un nuovo caricamento |
 | `admin_elenco_utenti`, `admin_aggiorna_utente`, `admin_imposta_organizzazioni`, `admin_imposta_attivo` | 05, 06, 10 | admin | Gestione utenti |
 | `admin_imposta_durata_fase` | 13 | admin | Durata delle fasi con motivazione |
@@ -1828,7 +1852,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 163 file, 38.994 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 165 file, 39.522 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1846,7 +1870,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 163 file, 38.994 righe 
 | `src/pages/Audit.jsx` | 175 | tabella degli eventi registrati (data, utente, operazione, pratica, passaggio di stato, motivazione), con ricerca testuale e pulsante per caricare eventi meno recenti (requisiti §10). Ogni colonna si ordina con un clic… |
 | `src/pages/AuditUtenti.jsx` | 477 | Nomi leggibili degli eventi di accesso. |
 | `src/pages/BackOffice.jsx` | 263 | a sinistra l'elenco dei Progetti (con ricerca oltre 4 voci), a destra il dettaglio della pratica scelta con le sue fasi, documenti, integrazioni, consultazione, pagamenti, rapporti. Pulsante «+ Nuovo progetto» per registrare un… |
-| `src/pages/CalcoloCrediti.jsx` | 1560 | editor di un calcolo dei crediti di CO₂eq secondo la Metodologia CWP v1.2, a passi (menu a sinistra): import del tracciato dati, impostazioni, rifiuti del territorio, delibera tariffaria, fattori di emissione, Banca Dati Utenze,… |
+| `src/pages/CalcoloCrediti.jsx` | 1617 | editor di un calcolo dei crediti di CO₂eq secondo la Metodologia CWP v1.2, a passi (menu a sinistra): import del tracciato dati, impostazioni, rifiuti del territorio, delibera tariffaria, fattori di emissione, Banca Dati Utenze,… |
 | `src/pages/CambiaPassword.jsx` | 163 | scegliere una nuova password, con le regole di src/lib/password.js. - "obbligatorio": primo accesso con password temporanea (o reimpostata dall'Amministratore): finché non la cambia l'utente non entra; - "volontario": l'utente… |
 | `src/pages/ConsultazioniPubbliche.jsx` | 331 | permettere a chiunque di leggere il Progetto (30 giorni) o il Rapporto di Monitoraggio (20 giorni) nel periodo di feedback pubblico (Guida al Programma 3.9 e 6.3.1) e inviare osservazioni, che Fondazione Operate modera e a cui… |
 | `src/pages/Crediti.jsx` | 240 | sezione del calcolo dei crediti di CO₂eq (Metodologia Carbon WastePrint® v1.2). Due viste: - «Calcoli»: elenco di tutti i calcoli (titolo, pratica, anno e tipo, crediti netti, stato bozza/confermato) e modulo «+ Nuovo calcolo»… |
@@ -1892,7 +1916,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 163 file, 38.994 righe 
 | `src/components/crediti/ImportaTracciato.jsx` | 283 | passo «Importa il tracciato» del calcolo dei crediti (backlog 1-5). L'Amministratore sceglie il tracciato dati del Comune: - dai documenti della pratica del calcolo (file .xlsx o .zip caricati dal Comune), oppure dal proprio… |
 | `src/components/crediti/RegistroCrediti.jsx` | 178 | registro dei crediti (backlog 7), vista «Registro» della pagina Calcolo crediti. Elenca i calcoli ex post confermati con il numero di registro assegnato dal database alla conferma (CWP-REG-AAAA-NNNN). Un calcolo corretto con una… |
 | `src/components/crediti/TabellaDati.jsx` | 208 | tabella di dati modificabile in pagina per il calcolo dei crediti CWP (conferimenti, utenze, riuso…), con aggiunta ed eliminazione di righe, importazione da CSV (anche salvato da Excel in italiano) e scaricamento di un modello… |
-| `src/components/crediti/UtenzeCalcolo.jsx` | 414 | passo «5a. Utenze del calcolo» del calcolo dei crediti: gestione della Banca Dati Utenze per utenza (richieste di Luca Moretti del 22/10/2026). Due tabelle, utenze domestiche e non domestiche, ciascuna con ricerca, pagine da 50,… |
+| `src/components/crediti/UtenzeCalcolo.jsx` | 417 | passo «5a. Utenze del calcolo» del calcolo dei crediti: gestione della Banca Dati Utenze per utenza (richieste di Luca Moretti del 22/10/2026). Due tabelle, utenze domestiche e non domestiche, ciascuna con ricerca, pagine da 50,… |
 | `src/components/impostazioni/DocumentiRichiesti.jsx` | 153 | elenco dei documenti richiesti in ogni fase (requisiti §4, «eventuali documenti richiesti»), per Progetto e Rapporto di Monitoraggio. Ogni voce è una tipologia di documento attesa in una fase; nella pratica la fase mostra… |
 | `src/components/impostazioni/DurateFasi.jsx` | 214 | sezione «Durata delle fasi» delle Impostazioni, una per tipo di pratica: Progetto (7 fasi) e Rapporto di Monitoraggio (4 fasi, script 21). Tabella delle fasi con la durata in giorni modificabile (dalla fase 2 in poi; la fase 1 è… |
 | `src/components/impostazioni/EntiValidazione.jsx` | 147 | anagrafica degli Enti di Validazione (backlog 11), sezione della pagina Anagrafiche. Elenco degli enti con i Progetti a cui sono assegnati (requisiti §3), inserimento di un nuovo ente, modifica e disattivazione. L'ente non… |
@@ -1911,16 +1935,16 @@ Inventario generato da `strumenti/inventario_codice.py`: 163 file, 38.994 righe 
 | `src/lib/contestoPratica.js` | 82 | trasformare i dati di UNA pratica (letti dalla funzione del server «assistente» con i permessi di chi fa la domanda) in un breve testo che l'assistente usa per rispondere a domande come «a che punto è la mia pratica?», «cosa… |
 | `src/lib/crediti/archivio.js` | 258 | crea, legge, aggiorna ed elimina i calcoli (testata e dati in calcolo_crediti) e la loro Banca Dati Utenze (righe di conferimento e di riuso), anche quando le righe sono centinaia di migliaia (invio e lettura a blocchi). Crea le… |
 | `src/lib/crediti/bancaDatiUtenze.js` | 213 | legge il file «Banca dati utenze CWP» (modello public/modelli/Banca_dati_utenze_CWP_v1.xlsx, generato da strumenti/genera_banca_dati_utenze.py), controlla ogni riga e la trasforma nella riga della tabella calcolo_utenza (script… |
-| `src/lib/crediti/calcolo.js` | 560 | funzioni pure (nessun accesso al database): ricevono i dati del calcolo e restituiscono risultati intermedi e finali, con il riferimento alla formula della Metodologia accanto a ogni passaggio. |
+| `src/lib/crediti/calcolo.js` | 642 | funzioni pure (nessun accesso al database): ricevono i dati del calcolo e restituiscono risultati intermedi e finali, con il riferimento alla formula della Metodologia accanto a ogni passaggio. |
 | `src/lib/crediti/parametri.js` | 95 | tabelle numeriche della Metodologia usate come valori iniziali di ogni calcolo: fattori di emissione per tipologia di rifiuto (Tab. 3, 4, 7), pesi specifici (Tab. 8), beni a riuso (Tab. 5), buffer (Tab. 15 e Cap. 7), giorni… |
 | `src/lib/crediti/qualita.js` | 124 | indicatori di qualità dei dati di un calcolo dei crediti, oltre ai controlli di coerenza di tracciato.js: - soglia di scostamento ±30% (cap. 3.1.2) tra la produzione pro capite dei rifiuti del territorio e i valori medi del… |
-| `src/lib/crediti/rapportoPdf.js` | 379 | genera nel browser, con jsPDF e jspdf-autotable, il rapporto di un calcolo: scheda, sintesi dei crediti, buffer, dati di ingresso, risultati per tipologia e per classe, avvisi, controlli di coerenza e scelte interpretative. Il… |
+| `src/lib/crediti/rapportoPdf.js` | 384 | genera nel browser, con jsPDF e jspdf-autotable, il rapporto di un calcolo: scheda, sintesi dei crediti, buffer, dati di ingresso, risultati per tipologia e per classe, avvisi, controlli di coerenza e scelte interpretative. Il… |
 | `src/lib/crediti/scenari.js` | 75 | unico punto in cui il portale legge e scrive la tabella scenario_simulazione (supabase/28_simulatore.sql). |
 | `src/lib/crediti/simulatore.js` | 902 | dati i rifiuti dell'anno base (per tipologia) e, per ogni anno del periodo, gli obiettivi di produzione totale e di secco residuo pro capite, ricalcola la percentuale di raccolta differenziata e stima i crediti anno per anno con… |
 | `src/lib/crediti/simulatoreExport.js` | 494 | Campo vuoto (non indicato) e numero da testo con la virgola decimale. |
 | `src/lib/crediti/simulatorePdf.js` | 444 | Colori RGB, uguali alla palette del portale e al rapporto di calcolo. |
-| `src/lib/crediti/tracciato.js` | 687 | legge il file del tracciato compilato dal Comune o dal gestore, blocca l'import se trova dati personali, converte i fogli nei dati del motore di calcolo (calcolo.js) e segnala le incoerenze. |
-| `src/lib/crediti/utenzeCalcolo.js` | 75 | elenco a pagine con ricerca, conteggi, modulo di una singola utenza (nuova o modificata), cancellazione e caricamento dell'elenco completo dell'anno (sostituisce quello precedente). |
+| `src/lib/crediti/tracciato.js` | 708 | legge il file del tracciato compilato dal Comune o dal gestore, blocca l'import se trova dati personali, converte i fogli nei dati del motore di calcolo (calcolo.js) e segnala le incoerenze. |
+| `src/lib/crediti/utenzeCalcolo.js` | 91 | elenco a pagine con ricerca, conteggi, modulo di una singola utenza (nuova o modificata), cancellazione e caricamento dell'elenco completo dell'anno (sostituisce quello precedente). |
 | `src/lib/csv.js` | 184 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
 | `src/lib/cwpProgram.js` | 185 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
 | `src/lib/date.js` | 81 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO (anche la data italiana, indipendente dal fuso del computer). |
@@ -1982,6 +2006,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 163 file, 38.994 righe 
 | `supabase/38_backup.sql` | 73 | 38 — BACKUP: TUTTO IL DATABASE IN UNA SOLA CHIAMATA |
 | `supabase/39_rilievi_n02_n03.sql` | 289 | correzioni dei rilievi N02 e N03 (terza sessione di collaudo, CWP_NUOVI_RILIEVI_A_MORETTI_V01_20261021, risposte in docs/collaudo/Rilievi_N01-N06_risposte.md). |
 | `supabase/40_utenze_calcolo.sql` | 426 | 40 — UTENZE DEL CALCOLO DEI CREDITI (UNA RIGA PER UTENZA) |
+| `supabase/41_utenze_nel_calcolo.sql` | 165 | 41 — UTENZE DEL CALCOLO NEL MOTORE: CONTROLLI DI CONFERMA |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
@@ -2017,6 +2042,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 163 file, 38.994 righe 
 | `test/simulatoreExport.test.mjs` | 94 | verificare che le tabelle preparate per PDF ed Excel riprendano i risultati del simulatore (sintesi, anni, economia, costi del Caso 1), che il file .xlsx sia un archivio valido con i fogli attesi e numeri veri nelle celle, e che… |
 | `test/tariffe.test.mjs` | 44 | verificare gli importi proposti per le voci di pagamento con gli esempi dello Schema tariffario v1.2: fasce di popolazione, quote per credito previsto, scaglioni cumulativi di emissione e minimo di vendita. |
 | `test/tracciato.test.mjs` | 110 | cinque prove sui file di esempio: lettura dell'Excel compilato, blocco dei dati personali (con valori oscurati nei messaggi), ZIP di CSV con singole letture (aggregazione ed esclusione delle letture fuori anno), controlli di… |
+| `test/utenzeNelCalcolo.test.mjs` | 137 | Stesso piccolo Comune di crediti.test.mjs. |
 
 **Strumenti (strumenti)**
 
@@ -2031,7 +2057,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 163 file, 38.994 righe 
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1342 | — |
+| `strumenti/revisioni_documenti.json` | 1384 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
@@ -2047,11 +2073,12 @@ Amministratore.
 |---|---|---|
 | Elenco calcoli e registro | `src/pages/Crediti.jsx`, `src/components/crediti/RegistroCrediti.jsx` | `calcolo_crediti`, `admin_registro_crediti` (18) |
 | Editor del calcolo (7 passi + import) | `src/pages/CalcoloCrediti.jsx`, `src/components/crediti/TabellaDati.jsx`, `ImportaTracciato.jsx` | `calcolo_crediti.dati`, `calcolo_conferimento`, `calcolo_riuso` (11) |
+| Utenze del calcolo (passo 5a), usate dal motore dal 23/10/2026 | `src/components/crediti/UtenzeCalcolo.jsx`, `src/lib/crediti/bancaDatiUtenze.js`, `utenzeCalcolo.js` (`leggiUtenzeCalcolo`), `utenzeInConferimenti` in `calcolo.js` | `calcolo_utenza` e funzioni (40); controlli di conferma `cwp_utenze_controllo` (41) |
 | Lettura e controlli del tracciato | `src/lib/crediti/tracciato.js` | — (nel browser) |
 | Motore di calcolo (formule 1-32, Tabelle 15-16) | `src/lib/crediti/calcolo.js`, `parametri.js` | riepilogo salvato in `calcolo_crediti.risultato` |
 | Salvataggio e versioni | `src/lib/crediti/archivio.js` | immutabilità e numero di registro: `calcolo_immutabile` (11, 18); coerenza del risultato: `calcolo_coerenza`, `calcolo_bdu_modificata`; nuova versione: `admin_nuova_versione_calcolo` (20) |
 | Rapporto PDF | `src/lib/crediti/rapportoPdf.js` | archiviazione come `documento` della pratica |
-| Prove | `test/crediti.test.mjs`, `test/tracciato.test.mjs`, `test/date.test.mjs` | — |
+| Prove | `test/crediti.test.mjs`, `test/tracciato.test.mjs`, `test/date.test.mjs`, `test/bancaDatiUtenze.test.mjs`, `test/utenzeNelCalcolo.test.mjs` | `t40.sql`, `t41.sql` sul banco locale |
 
 **Simulatore di scenari (backlog punto 37, prima versione 19/10)**: stima
 ex ante e non certificabile dei crediti di un Comune su 7, 10 o 21 anni.
@@ -2082,6 +2109,16 @@ database azzera il risultato (e i crediti) della bozza. «Calcola» scrive in
 conferma il database le confronta con quelle salvate e rifiuta la conferma
 se non coincidono. I calcoli in bozza calcolati prima del 18/10 vanno
 ricalcolati prima della conferma.
+
+**Utenze del passo 5a nel motore (23/10/2026, script 41)**: con utenze nel
+5a il motore usa quelle (classe = categoria di simulazione, kg misurati,
+frazioni contate utenza per utenza) e ignora i conferimenti del 5b (il
+riuso resta del 5b); senza utenze tutto come prima. Utenze senza categoria o
+con categoria fuori delibera restano fuori dal calcolo e bloccano la
+conferma (controlli di coerenza nel browser e `calcolo_prerequisiti_conferma`
+nel database). `risultato.righe.utenze` registra quante utenze ha usato
+«Calcola» e la conferma la confronta con quelle salvate. Dettagli in
+`docs/crediti-cwp.md`.
 
 **Limiti noti**: l'import della Banca Dati Utenze cancella e reinserisce a
 blocchi senza transazione (un errore a metà lascia dati incompleti, che
