@@ -404,7 +404,7 @@ async function icona(Comp, colore) {
   [
     ["In simulazione", "ultimo scenario per Comune, crediti ed euro del periodo"],
     ["In fase esecutiva", "calcolati, emessi e venduti; prezzo di riferimento 32 €"],
-    ["Chi vede", "staff: tutto; Comuni: solo i propri dati"],
+    ["Valore progetti", "quanto paga il cliente, listino Caso 1 o Caso 2 scelto sul Progetto"],
   ].forEach(([t, d], i) => {
     const x = 0.6 + i * 2.6;
     card(s, x, 3.35, 2.4, 1.05, i === 0 ? C.accent3 : C.background2, "Valore crediti " + t);
@@ -420,7 +420,7 @@ async function icona(Comp, colore) {
   const novita2 = [
     ["Collaudo", "rilievi N01-N04 corretti e in produzione (22/10); N05 e N06 in attesa della regola della Fondazione"],
     ["Smartphone", "menu a pannello, schede al posto delle tabelle, pratiche una alla volta, assistente a schermo intero (22/10)"],
-    ["Dashboard", "fasi aperte senza scadenza (22/10); valore dei crediti in simulazione e in fase esecutiva, anche per i Comuni (23/10)"],
+    ["Dashboard", "fasi aperte senza scadenza (22/10); valore dei crediti in simulazione e in fase esecutiva e valore dei progetti per il cliente (Caso 1 / Caso 2), anche per i Comuni (23/10)"],
     ["Calcolo crediti", "Banca Dati Utenze per utenza e collegamento al motore; calcolo di prova con 20 + 20 utenze inventate (22-23/10)"],
     ["Notizie CO2 e backup", "14 siti verificati; backup giornaliero dal Mac pronto da installare"],
   ];

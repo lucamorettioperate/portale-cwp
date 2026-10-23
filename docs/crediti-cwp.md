@@ -143,7 +143,11 @@ fase esecutiva* (calcoli ex post confermati e validi, lotti emessi, vendite
 con il valore comunicato). Calcolati ed emessi sono valorizzati al prezzo di
 riferimento (Impostazioni, iniziale 32 €). Lo staff vede tutto, i Comuni solo
 i propri dati (anche in «Le mie pratiche»). Funzione
-`cruscotto_valore_crediti`, componente `ValoreCrediti.jsx`.
+`cruscotto_valore_crediti`, componente `ValoreCrediti.jsx`. Dal 23/10 (script
+43) anche il **valore dei progetti per il cliente**: listino Caso 1 o Caso 2
+scelto alla creazione del Progetto, somma annua di `costiPerCaso` × anni del
+periodo (`valoreProgettoCaso`), e quanto paga il cliente nell'ultimo scenario
+di ogni Comune.
 
 ## Corrispondenza con le formule
 

@@ -229,6 +229,10 @@ export default function Simulatore() {
               // Ricavi del periodo (crediti × valore del credito anno per
               // anno) per la Dashboard, script 42; null senza valore del credito.
               const ricavi = eco?.totali?.ricavi;
+              // Quanto paga il cliente nel periodo con il Caso 1 o 2
+              // (Dashboard, script 43); null con gli altri listini.
+              const casoListino = eco && (eco.listino === "caso1" || eco.listino === "caso2");
+              const costoCliente = casoListino ? eco.totali.tariffeProgramma : null;
               const { data, error } = await salvaScenario(aperto.id, {
                 nome: aperto.nome,
                 note: aperto.note || null,
@@ -238,6 +242,7 @@ export default function Simulatore() {
                 crediti_netti_totali: t ? Math.round(t.netti * 10) / 10 : null,
                 rd_finale: t ? Math.round(t.rdFinale * 10) / 10 : null,
                 ricavi_totali: t && Number.isFinite(ricavi) ? Math.round(ricavi) : null,
+                costo_cliente_totale: t && Number.isFinite(costoCliente) ? Math.round(costoCliente) : null,
                 simulato_il: t ? new Date().toISOString() : null,
               });
               if (error) return setErrore(traduci(error));
