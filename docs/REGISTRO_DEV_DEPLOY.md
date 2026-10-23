@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Ultimo aggiornamento** | 23 ottobre 2026 |
-| **Versione del portale** | 0.44 in preparazione (script `44_marketing.sql` e funzione `marketing` pronti nel ramo `marketing`, da eseguire in produzione con l'OK di Luca; in produzione gli script 01-43) |
+| **Versione del portale** | 0.44 (ultimo script database: `44_marketing.sql`; tutti gli script 01-44 eseguiti) |
 | **Indirizzo** | https://portale-cwp.vercel.app |
 | **Repository** | https://github.com/lucamorettioperate/portale-cwp (pubblico: solo codice, nessun dato) |
 | **Responsabile** | Luca Moretti — Fondazione Operate |
@@ -258,7 +258,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `32_utenti_online.sql` | Utenti online (backlog 38): tabella `presenza` (una riga per utente: ultima segnalazione, inizio del collegamento, pagina aperta; nessun IP, nessuno storico; RLS senza regole), `segnala_presenza(pagina)` e `presenza_uscita()` per ognuno solo per sé, `utenti_online()` (visti nelle ultime 24 ore, online se l'ultima segnalazione ha meno di 2 minuti) solo per l'Amministratore principale | 20/10/2026 — provato sul banco locale; **eseguito in produzione il 20/10** |
 | `33_audit_trail_user.sql` | Audit User (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **eseguito in produzione il 20/10** e provato dal vivo |
 | `34_sicurezza_avvisi.sql` | Sicurezza (backlog 14, 30): avvisi all'Amministratore principale (`cwp_avviso_sicurezza`, evento «sicurezza»): 5 accessi non riusciti in 15 minuti per email, 30 in un'ora in tutto, nuovo Amministratore (trigger `trg_profilo_avviso_admin`); `registra_uscita(p_motivo)` con l'uscita per inattività; rinforzi del Security Advisor: `search_path` fisso su tutte le funzioni, funzioni SECURITY DEFINER non eseguibili da anon (tranne `registra_accesso_fallito` e quelle usate nelle regole RLS) | 20/10/2026 — provato sul banco locale (`t34.sql`, regressioni `t33.sql`); **eseguito in produzione il 23/10/2026 alle 12:20** su incarico di Luca, dopo gli script 35-43 (prova sul banco nello stesso ordine: stesse 9 funzioni eseguibili senza accesso, `t41`-`t43` invariati) |
-| `44_marketing.sql` | Marketing (23/10/2026, richiesta di Luca; **pronto, non ancora eseguito in produzione**): tabelle `mkt_ente` (Comuni e gestori: chiave `istat:` / `albo:`, regione, provincia, abitanti, PEC, email generica con controllo «non PEC», sito, natura, numero e categorie dell'Albo, attività di raccolta e tariffa, fonti), `mkt_referente` (sindaco, tributi, ambiente, finanziario, tecnico, direttori, amministratore), `mkt_campagna`, `mkt_invio` (un invio per ente con codice casuale, stato, visita, simulazione, richiesta), `mkt_disiscrizione`, `mkt_richiesta` (richieste di registrazione dalla pagina /scopri; id uuid per l'audit); RLS solo Amministratori, nessun accesso anonimo; audit di campagne e richieste; `mkt_sembra_pec`, `admin_mkt_prepara_invii` (salta enti senza email e indirizzi disiscritti), `admin_mkt_riepilogo`. Prova `t44.sql` |
+| `44_marketing.sql` | Marketing (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026 alle 12:12**): tabelle `mkt_ente` (Comuni e gestori: chiave `istat:` / `albo:`, regione, provincia, abitanti, PEC, email generica con controllo «non PEC», sito, natura, numero e categorie dell'Albo, attività di raccolta e tariffa, fonti), `mkt_referente` (sindaco, tributi, ambiente, finanziario, tecnico, direttori, amministratore), `mkt_campagna`, `mkt_invio` (un invio per ente con codice casuale, stato, visita, simulazione, richiesta), `mkt_disiscrizione`, `mkt_richiesta` (richieste di registrazione dalla pagina /scopri; id uuid per l'audit); RLS solo Amministratori, nessun accesso anonimo; audit di campagne e richieste; `mkt_sembra_pec`, `admin_mkt_prepara_invii` (salta enti senza email e indirizzi disiscritti), `admin_mkt_riepilogo`. Prova `t44.sql` |
 | `43_valore_progetti.sql` | Valore dei progetti per il cliente (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026 alle 11:50**): `pratica.caso_listino` ('caso1' / 'caso2', solo Progetti, null = da indicare); `staff_crea_pratica` e `staff_aggiorna_dati_pratica` salvano il caso (messaggio italiano per valori non ammessi); `scenario_simulazione.costo_cliente_totale` (salvato dal simulatore con il Caso 1 o 2); `cruscotto_valore_progetti()` (ultimo scenario per Comune ed elenco dei Progetti aperti con caso, popolazione e periodo; staff tutto, Comuni i propri). Prova `t43.sql` |
 | `42_valore_crediti.sql` | Valore complessivo dei crediti nella Dashboard (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026 alle 11:10**): colonna `scenario_simulazione.ricavi_totali` (salvata dal simulatore); impostazione `prezzo_credito_riferimento` (32 €) e `admin_imposta_prezzo_riferimento` (solo Admin, 0-10.000 €, audit); `cruscotto_valore_crediti()` (JSON: simulazione con l'ultimo scenario per Comune, calcoli ex post confermati e validi, lotti emessi, vendite; staff tutto, utenti dei Comuni solo le proprie organizzazioni; anon negato). Prova `t42.sql` |
 | `41_utenze_nel_calcolo.sql` | Utenze del passo 5a nel motore di calcolo (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026 alle 10:14**): `cwp_utenze_controllo(calcolo, dati)` (security definer, solo numeri: utenze, senza categoria di simulazione, con categoria assente dalle classi della delibera); nuova `calcolo_coerenza` (alla conferma confronta anche `risultato.righe.utenze` con le utenze salvate; i risultati di prima valgono 0 utenze); nuova `calcolo_prerequisiti_conferma` (servono utenze del 5a o conferimenti del 5b; con le utenze nessuna senza categoria o con categoria fuori delibera). Prova `t41.sql` |
@@ -353,7 +353,7 @@ autenticazione, dal SQL Editor:
 | `consultazione-pubblica` | Pagine pubbliche del feedback pubblico (data di «oggi» in ora italiana dal 18/10; numero delle osservazioni dallo script 21; dalla sera del 18/10 anche i Rapporti di Monitoraggio, ripubblicata; azioni `programma` e `file` per la pagina pubblica /programma, script 24, ripubblicata la sera del 18/10, Verify JWT spento): elenco, dettaglio (documento, errata corrige, osservazioni ammesse), invio di un'osservazione con allegato facoltativo ed email di conferma, conferma dell'email (l'osservazione diventa *Ricevuto*) | Verify JWT **disattivato** di proposito (pubblico senza account): nessun dato personale restituito, 3 invii/ora per indirizzo e 100/ora per consultazione, campo trappola anti-robot, allegati max 10 MB con controllo del contenuto, token monouso 48 ore salvato come SHA-256 | Dashboard Supabase (editor web), 18/10 |
 | `recupera-password` | «Password dimenticata?»: genera il collegamento di recupero (`auth.admin.generateLink`) e spedisce con Resend l'email in italiano «Portale Carbon WastePrint (CWP) — Richiesta di reimpostazione della password», al posto del modello email di Supabase | Verify JWT **disattivato** di proposito (la chiama chi non ha fatto l'accesso): risponde sempre `ok` senza rivelare se l'indirizzo esiste; niente email agli utenti disattivati; massimo una richiesta ogni 2 minuti per indirizzo; il collegamento porta solo al portale | Dashboard Supabase (editor web), 18/10 |
 | `notizie` | Osservatorio News (21/10/2026): legge 24 canali RSS, 4 alla volta: 12 ricerche Bing News in italiano e inglese, Carbon Herald, CarbonCredits.com, Ecosystem Marketplace, Verra e 8 siti di notizie ambientali (Rinnovabili.it, QualEnergia, GreenReport, ESGnews, LifeGate, Climate Home News, edie, BusinessGreen; per questi pre-filtro con parole più strette, `PAROLE_STRETTE`; dal 22/10 Rinnovabili.it, che rifiuta i server con 403, e GreenReport, il cui feed non esiste più, si leggono con una ricerca Bing News limitata al sito). Google News non si usa: risponde 503 (pagina «Sorry…») a ogni richiesta dai server di Supabase e il tramite in Google Apps Script è stato bloccato dall'account Google («Questa app è bloccata»). Con `{"diagnosi": true}` prova i canali e restituisce gli esiti HTTP (nessuna scrittura, niente Claude), toglie doppioni e notizie già viste o più vecchie di 10 giorni, pre-filtro sulle parole chiave, valutazione di Claude a gruppi di 25 (massimo 100 per ricerca; attinente, categoria, rilevanza 1-5, titolo e sintesi in italiano, prezzi citati, motivo), salva in `notizia` e chiude `notizie_esecuzione`; modello `claude-haiku-5-5` (`NOTIZIE_MODELLO`); funzioni pure copiate identiche da `src/lib/notizie.js` | Verify JWT **disattivato** di proposito (la chiama pg_cron senza token): nessun dato ricevuto viene salvato; `notizie_puo_partire` (script 36) ammette una ricerca ogni 100 minuti senza token di Amministratore, ogni 10 minuti con il token (`app_is_admin`, MFA compresa); scrive con la chiave di servizio | **Pubblicata il 21/10** (dashboard Supabase, Verify JWT disattivato), ripubblicata alle 12:10 con Bing News |
-| `marketing` | Sezione Marketing (23/10/2026, script 44). Azioni degli Amministratori: `importa_comuni` (elenco ISTAT da `public/marketing/dati/comuni_istat.json`, poi IndicePA: PEC, email generica, sito, sindaco; uffici di tributi, ambiente, finanziario e tecnico a blocchi), `importa_albo` (iscritti all'Albo Gestori Ambientali per sezione regionale, solo categoria 1 ordinaria; PEC ed email dei gestori pubblici da IndicePA), `prova_campagna`, `invia_campagna` (a blocchi di 50, solo email generiche, intestazione List-Unsubscribe). Azioni pubbliche della pagina /scopri: `visita`, `simulata`, `disiscrivi`, `richiesta` (campo trappola, 3 richieste all'ora per email e 30 in tutto, notifica ed email a tutti gli Amministratori) | Verify JWT **disattivato** di proposito (pagina pubblica): le azioni riservate controllano da sole token e ruolo Amministratore | Da pubblicare con l'OK di Luca (segreti: `RESEND_API_KEY` già presente, `EMAIL_MITTENTE` e `PORTALE_URL` facoltativi) |
+| `marketing` | Sezione Marketing (23/10/2026, script 44). Azioni degli Amministratori: `importa_comuni` (elenco ISTAT da `public/marketing/dati/comuni_istat.json`, poi IndicePA: PEC, email generica, sito, sindaco; uffici di tributi, ambiente, finanziario e tecnico a blocchi), `importa_albo` (iscritti all'Albo Gestori Ambientali per sezione regionale, solo categoria 1 ordinaria; PEC ed email dei gestori pubblici da IndicePA), `prova_campagna`, `invia_campagna` (a blocchi di 50, solo email generiche, intestazione List-Unsubscribe). Azioni pubbliche della pagina /scopri: `visita`, `simulata`, `disiscrivi`, `richiesta` (campo trappola, 3 richieste all'ora per email e 30 in tutto, notifica ed email a tutti gli Amministratori) | Verify JWT **disattivato** di proposito (pagina pubblica): le azioni riservate controllano da sole token e ruolo Amministratore | Pubblicata il 23/10/2026 alle 12:15 (OK di Luca), Verify JWT disattivato; aggiornata alle 12:25 e 12:35 (correzioni dell'importazione). Segreti: `RESEND_API_KEY` già presente, `EMAIL_MITTENTE` e `PORTALE_URL` facoltativi |
 | `invia-email-notifica` | Spedisce per email una notifica interna (pulsante "Apri nel portale") tramite Resend | Verify JWT **disattivato** di proposito: usa solo l'id ricevuto e rilegge tutto dal database; ogni notifica parte una volta sola | Dashboard Supabase; prima pubblicazione 17/10, aggiornata 17/10 (pulsante per tema scuro) |
 
 Sorgenti in `supabase/functions/<nome>/index.ts`. Si pubblicano dalla
@@ -472,7 +472,7 @@ Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), c
 | Reclami (Politica di reclamo, Guida 8) | Fatto | Invio dal portale, registrazione dei reclami arrivati via PEC, gestore, conferma, risposta scritta, costi, note interne, notifiche |
 | Calcolo crediti (Metodologia v1.2) | Fatto (scelte interpretative da confermare) | Motore formule 1-32, Tabelle 3-5, 8, 15, 16; import diretto del tracciato con aggregazione delle letture, blocco dei dati personali e controlli di coerenza; Banca Dati Utenze per utenza (passo 5a: file dell'anno, moduli, categoria tariffaria e di simulazione) usata dal motore dal 23/10/2026; controlli della Gestione qualità dei dati (Tabella 3 dello Standard ±30% con motivazione obbligatoria, completezza, unicità, letture a buon fine, tempestività); calcoli confermati immutabili con numero progressivo interno; rapporto PDF. Funzione migliorativa: per la Metodologia il calcolo lo fa il promotore nel Rapporto e l'ente lo verifica |
 | Amministrazione | Fatto | Utenti (più Amministratori, principale protetto, cancellazione dei mai attivi), audit, Audit User, utenti online, impostazioni: durata fasi, documenti richiesti, modelli di documento; simulatore con PDF ed Excel; assistente virtuale |
-| Marketing (richiesta del 23/10) | Pronto, da rilasciare | Banche dati di tutti i Comuni (ISTAT + IndicePA) e dei gestori dell'Albo in categoria 1 con PEC, email generica e referenti; campagne email con grafica verso i destinatari scelti (solo email generiche, mai PEC), pagina pubblica /scopri con micro simulazione, fascicolo PDF e richiesta di registrazione a tutti gli Amministratori. Mancano: esecuzione in produzione (OK di Luca), dominio email verificato, verifica legale delle email promozionali, verifica sui siti delle attività e dei referenti dei gestori |
+| Marketing (richiesta del 23/10) | Fatto (in produzione dal 23/10) | Banche dati di tutti i Comuni (ISTAT + IndicePA) e dei gestori dell'Albo in categoria 1 con PEC, email generica e referenti; campagne email con grafica verso i destinatari scelti (solo email generiche, mai PEC), pagina pubblica /scopri con micro simulazione, fascicolo PDF e richiesta di registrazione a tutti gli Amministratori. Banche dati caricate il 23/10: 7.904 Comuni (5.642 con email generica, 7.504 con PEC e referenti) e 5.818 gestori in categoria 1. Mancano: dominio email verificato, verifica legale delle email promozionali, verifica sui siti delle attività e dei referenti dei gestori |
 | Sicurezza (§13) | Parziale | RLS, audit, controlli file, registro degli accessi e dei tentativi non riusciti, avvisi di sicurezza all'Amministratore principale, uscita per inattività, intestazioni del sito (20/10); verifica OWASP in corso (22/10); mancano antivirus, ambiente di prova, verifica in due passaggi attiva |
 
 ---
@@ -555,6 +555,27 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 23 ottobre 2026
+- **Marketing in produzione** (OK di Luca delle 12:08).
+  - 12:12 script `44_marketing.sql` eseguito (avviso del SQL Editor «tabelle
+    senza RLS» confermato con «Run without RLS»: lo script attiva da sé
+    la RLS sulle 6 tabelle, verifica finale «tabelle_marketing_con_rls 6»).
+  - 12:15 funzione `marketing` pubblicata, Verify JWT disattivato; main
+    pubblicato (`41c5883`), Vercel ok.
+  - Primo aggiornamento dei Comuni: ISTAT ok, IndicePA in errore «ON
+    CONFLICT DO UPDATE command cannot affect row a second time»: nella
+    categoria L6 ci sono anche Unioni e Consorzi con il codice ISTAT del
+    Comune sede (8.046 righe, 7.891 codici di Comuni). Correzione: una sola
+    riga per Comune, quella dell'ente «Comune…» (`712b4ab`).
+  - La lettura unica degli uffici mandava IndicePA in errore («App
+    offline»): ora a blocchi di 400 Comuni; l'Albo si legge una provincia
+    per chiamata (tempi della funzione) e se IndicePA non risponde i
+    gestori restano salvati (`5ba8eab`). Funzione ripubblicata.
+  - Risultato: **7.904 Comuni** (7.504 con PEC e legale rappresentante da
+    IndicePA, 5.642 con email generica; referenti: tecnico 5.079,
+    finanziario 3.218, tributi 1.969, ambiente 1.397) e **5.818 gestori**
+    in categoria 1 ordinaria (145 con PEC e 34 con email generica da
+    IndicePA, i pubblici). Pagina pubblica /scopri, fascicolo e grafiche
+    raggiungibili dal vivo.
 - **Sezione Marketing** (richiesta di Luca del 23/10; scelte di Luca:
   gestori = tutta la categoria 1 dell'Albo; nessun invio «a tutti», per
   ogni campagna si scelgono Comuni e gestori). Ramo `marketing`, commit
@@ -580,11 +601,9 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   - Verificato a schermo su computer e telefono con dati finti (nessuno
     scorrimento orizzontale; corretti la tabella delle Importazioni e il
     grafico sul telefono).
-  - **Da fare con l'OK di Luca:** script 44 in produzione, pubblicazione
-    della funzione `marketing` (Verify JWT disattivato), primo
-    aggiornamento delle banche dati. Prima degli invii reali: dominio
-    email verificato su Resend e verifica legale delle email
-    promozionali.
+  - Rilascio in produzione: voce «Marketing in produzione» qui sopra.
+    Prima degli invii reali: dominio email verificato su Resend e
+    verifica legale delle email promozionali.
 - **Script 34 in produzione** (OK di Luca delle 11:12). Prima, prova sul
   banco nello stesso ordine della produzione (script 01-33 e 35-43, poi
   34): 95 funzioni SECURITY DEFINER eseguibili senza accesso ridotte alle 9
@@ -1629,9 +1648,7 @@ completato (va barrato qui e annotato in Cronologia).
 aperte; il dettaglio è nei punti numerati qui sotto.
 
 *Azioni di Luca (Claude non le può fare: chiavi, pubblicazioni, account)*
-- **Marketing:** dare l'OK per eseguire lo script `44_marketing.sql` e
-  pubblicare la funzione `marketing` (poi Claude esegue le importazioni);
-  prima delle campagne reali verificare il dominio email su Resend
+- **Marketing** (in produzione dal 23/10): prima delle campagne reali verificare il dominio email su Resend
   (`EMAIL_MITTENTE`) e far controllare a un legale le email promozionali
   agli enti (art. 130 Codice privacy, informativa art. 14 GDPR).
 - **Installare il backup giornaliero dal Mac** (Google Drive per desktop e
@@ -1991,7 +2008,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 181 file, 42.919 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 181 file, 42.986 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -2068,7 +2085,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 181 file, 42.919 righe 
 | `src/components/impostazioni/Registri.jsx` | 117 | elenco dei registri riconosciuti dal Programma (Guida al Programma 3.5, Standard CWP cap. 6), pubblicato sulla pagina pubblica /programma: piattaforme esterne su cui il promotore del progetto carica e vende i crediti. Requisiti… |
 | `src/components/marketing/Campagne.jsx` | 288 | — |
 | `src/components/marketing/ElencoEnti.jsx` | 287 | Ricarica a ogni cambio di filtri o pagina (con un piccolo ritardo per il testo). |
-| `src/components/marketing/Importazioni.jsx` | 127 | Sezioni regionali dell'Albo (id usati dall'elenco pubblico degli iscritti). |
+| `src/components/marketing/Importazioni.jsx` | 137 | Sezioni regionali dell'Albo (id usati dall'elenco pubblico degli iscritti). |
 | `src/components/marketing/Richieste.jsx` | 77 | — |
 | `src/components/stili.js` | 85 | oggetti di stile in linea condivisi dai componenti delle pratiche e delle impostazioni (stessa grafica del resto del portale: carta, verde Fondazione, bordi sottili) e la funzione dataOra per mostrare data e ora in formato… |
 
@@ -2169,7 +2186,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 181 file, 42.919 righe 
 | `supabase/functions/consultazione-pubblica/index.ts` | 432 | servizio della pagina pubblica delle consultazioni (requisiti §6, decisioni B e D del 18/10/2026). Chiunque, senza account, può: - "elenco": vedere le consultazioni aperte; - "dettaglio": leggere documento, errata corrige e… |
 | `supabase/functions/crea-utente/index.ts` | 263 | crea un nuovo utente con password temporanea e imposta ruolo + organizzazione. All'utente parte un'email con indirizzo del portale, email di accesso e password temporanea (Resend, funzione inviaEmailAccesso in fondo al file); se… |
 | `supabase/functions/invia-email-notifica/index.ts` | 160 | invia per email ogni nuova notifica del portale (requisiti §9: "email + notifica interna"). |
-| `supabase/functions/marketing/index.ts` | 483 | marketing — funzione del server dello strumento di marketing |
+| `supabase/functions/marketing/index.ts` | 522 | marketing — funzione del server dello strumento di marketing |
 | `supabase/functions/notizie/index.ts` | 487 | osservatorio News per gli Amministratori (richiesta di Luca Moretti del 21/10/2026). Ogni 2 ore cerca notizie sul mondo dei crediti di carbonio volontari (mercato volontario, marketplace e borse, prezzi dei crediti scambiati o… |
 | `supabase/functions/recupera-password/index.ts` | 155 | «Password dimenticata?» — genera il collegamento di recupero di Supabase Auth e spedisce l'email in italiano con Resend (stessa grafica delle notifiche), invece del modello email di Supabase. |
 | `supabase/functions/reimposta-password/index.ts` | 218 | l'Amministratore assegna una nuova password temporanea a un utente (Cliente od Operatore) che l'ha dimenticata. Al primo accesso il portale obbliga l'utente a sceglierne una personale (script 15). |
@@ -2212,7 +2229,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 181 file, 42.919 righe 
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 640 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1582 | — |
+| `strumenti/revisioni_documenti.json` | 1600 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
@@ -2307,6 +2324,10 @@ pagina pubblica «Approfondisci» con micro simulazione.
   Consorzi e Associazioni»): PEC, email generica, sito, sindaco; dalle unità
   organizzative i responsabili degli uffici tributi, ambiente, finanziario e
   tecnico (regole in `ruoloUfficio`).
+- *Importazione a blocchi* (dal 23/10, per i tempi della funzione e per
+  IndicePA che con letture grandi risponde «App offline»): uffici a
+  blocchi di 400 Comuni, Albo una provincia per chiamata; un errore di
+  IndicePA sui gestori non blocca il salvataggio delle imprese.
 - *Gestori*: elenco pubblico degli iscritti all'**Albo Nazionale Gestori
   Ambientali**, sezione per sezione, filtrato sulla categoria «1o»
   (raccolta e trasporto di rifiuti urbani, ordinaria). L'elenco pubblico

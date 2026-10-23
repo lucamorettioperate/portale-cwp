@@ -1630,8 +1630,11 @@ correggere email, sito, attività e note e aggiungere o togliere referenti
 ### Aggiornare le banche dati
 
 Scheda **Importazioni**: **Aggiorna i Comuni** (qualche minuto: elenco
-ISTAT, poi IndicePA e gli uffici dei Comuni) e **Aggiorna i gestori**
-(tutte le sezioni dell'Albo o una sola). Il diario mostra cosa è stato
+ISTAT, poi IndicePA e gli uffici dei Comuni a blocchi di 400) e
+**Aggiorna i gestori** (tutte le sezioni dell'Albo o una sola, una
+provincia alla volta: circa cinque minuti in tutto). Se IndicePA non
+risponde (capita: «App offline») ripetete l'aggiornamento più tardi: i
+dati già letti restano. Il diario mostra cosa è stato
 letto. Le modifiche fatte a mano restano, salvo nuovi valori dalla stessa
 fonte. Per i gestori privati le attività e i referenti si completano dalle
 schede, verificando sui loro siti.
