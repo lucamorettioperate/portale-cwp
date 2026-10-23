@@ -1169,6 +1169,12 @@
       "data": "23/10/2026",
       "descrizione": "Colori dello stato delle fasi (cronologia del 23/10).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "7.4",
+      "data": "23/10/2026",
+      "descrizione": "Script 34 eseguito in produzione il 23/10; tutti gli script 01-43 eseguiti.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1272,6 +1278,12 @@
       "rev": "2.6",
       "data": "23/10/2026",
       "descrizione": "Script del database 01-43.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.7",
+      "data": "23/10/2026",
+      "descrizione": "Script 34 in produzione: l'ordine 01-43 resta quello di ricostruzione.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1522,6 +1534,12 @@
       "rev": "1.18",
       "data": "23/10/2026",
       "descrizione": "Verifica dei colori dello stato delle fasi.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.19",
+      "data": "23/10/2026",
+      "descrizione": "Prova t34.sql nell'ordine della produzione.",
       "autore": "Fondazione Operate"
     }
   ]

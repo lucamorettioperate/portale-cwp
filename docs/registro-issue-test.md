@@ -185,6 +185,7 @@ Ogni script del database è provato su una copia locale di Postgres 16 con tutti
 
 Ultime prove:
 
+- `t34.sql` rieseguito il 23/10/2026 su un banco costruito nello stesso ordine della produzione (34 dopo 35-43): avviso per il nuovo Amministratore, un solo avviso dopo 5 tentativi non riusciti, funzioni riservate negate ad anon, uscita con il motivo «inattività», funzioni degli utenti collegati invariate; 9 funzioni eseguibili senza accesso; `t41`-`t43` invariati.
 - `t43.sql` del 23/10/2026 (valore dei progetti, script 43), tutte come attese: nuovo Progetto con Caso 2; listino non valido rifiutato con messaggio italiano (creazione e modifica); Progetto esistente da indicare → Caso 1 con motivazione nell'audit; Amministratore: scenario più recente per Comune e tutti i Progetti aperti; utente del Comune A: solo i suoi e nessuna modifica; anonimo negato; script rieseguibile.
 - `t42.sql` del 23/10/2026 (valore dei crediti nella Dashboard, script 42), tutte come attese:
   - Amministratore: simulazione con un solo scenario per Comune (il più recente; il Comune non censito riconosciuto anche con il nome scritto diversamente), euro dai ricavi o al prezzo di riferimento, scenari a prezzo di riferimento contati; calcoli ex post confermati e validi (esclusi bozze, ex ante e versioni sostituite); lotti e vendite;
@@ -269,3 +270,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 23/10/2026 11:00 | Valore dei crediti nella Dashboard: prova `t42.sql`; 18 serie |
 | 23/10/2026 11:45 | Valore dei progetti (Caso 1 / Caso 2): prove `valoreProgetti.test.mjs` e `t43.sql`; 19 serie |
 | 23/10/2026 12:10 | Colori dello stato delle fasi: verifica a schermo (computer e telefono); 19 serie |
+| 23/10/2026 12:20 | Script 34 in produzione dopo la prova `t34.sql` nell'ordine della produzione |

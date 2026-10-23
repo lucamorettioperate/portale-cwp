@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Ultimo aggiornamento** | 23 ottobre 2026 |
-| **Versione del portale** | 0.43 (ultimo script database eseguito: `43_valore_progetti.sql`; lo script 34 non è ancora eseguito) |
+| **Versione del portale** | 0.43 (ultimo script database: `43_valore_progetti.sql`; tutti gli script 01-43 eseguiti) |
 | **Indirizzo** | https://portale-cwp.vercel.app |
 | **Repository** | https://github.com/lucamorettioperate/portale-cwp (pubblico: solo codice, nessun dato) |
 | **Responsabile** | Luca Moretti — Fondazione Operate |
@@ -257,7 +257,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `30_elimina_utente.sql` | Cancellazione di un utente mai attivo: `utente_mai_attivo` (nessuna voce di audit come autore e nessuna riga che lo indichi come autore o responsabile in qualunque tabella con chiave esterna verso `auth.users` o `profilo` non a cascata: documenti, messaggi, note, pagamenti, calcoli, scenari, reclami…; uso interno), `admin_utenti_eliminabili()` per la pagina Utenti, `admin_elimina_utente(id)` (solo Admin, mai sé stessi né il principale; cancella da `auth.users`, a cascata profilo, associazioni e notifiche; voce «cancellazione profilo» nell'audit) | 19/10/2026 — provato sul banco locale (`t30b.sql`); eseguito in produzione da Luca il 19/10 (pulsante «Elimina» verificato sul portale); controllo esteso alle colonne «autore» lo stesso giorno, rieseguito in produzione il 20/10 |
 | `32_utenti_online.sql` | Utenti online (backlog 38): tabella `presenza` (una riga per utente: ultima segnalazione, inizio del collegamento, pagina aperta; nessun IP, nessuno storico; RLS senza regole), `segnala_presenza(pagina)` e `presenza_uscita()` per ognuno solo per sé, `utenti_online()` (visti nelle ultime 24 ore, online se l'ultima segnalazione ha meno di 2 minuti) solo per l'Amministratore principale | 20/10/2026 — provato sul banco locale; **eseguito in produzione il 20/10** |
 | `33_audit_trail_user.sql` | Audit User (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **eseguito in produzione il 20/10** e provato dal vivo |
-| `34_sicurezza_avvisi.sql` | Sicurezza (backlog 14, 30): avvisi all'Amministratore principale (`cwp_avviso_sicurezza`, evento «sicurezza»): 5 accessi non riusciti in 15 minuti per email, 30 in un'ora in tutto, nuovo Amministratore (trigger `trg_profilo_avviso_admin`); `registra_uscita(p_motivo)` con l'uscita per inattività; rinforzi del Security Advisor: `search_path` fisso su tutte le funzioni, funzioni SECURITY DEFINER non eseguibili da anon (tranne `registra_accesso_fallito` e quelle usate nelle regole RLS) | 20/10/2026 — provato sul banco locale (`t34.sql`, regressioni `t33.sql`); **da eseguire in produzione** |
+| `34_sicurezza_avvisi.sql` | Sicurezza (backlog 14, 30): avvisi all'Amministratore principale (`cwp_avviso_sicurezza`, evento «sicurezza»): 5 accessi non riusciti in 15 minuti per email, 30 in un'ora in tutto, nuovo Amministratore (trigger `trg_profilo_avviso_admin`); `registra_uscita(p_motivo)` con l'uscita per inattività; rinforzi del Security Advisor: `search_path` fisso su tutte le funzioni, funzioni SECURITY DEFINER non eseguibili da anon (tranne `registra_accesso_fallito` e quelle usate nelle regole RLS) | 20/10/2026 — provato sul banco locale (`t34.sql`, regressioni `t33.sql`); **eseguito in produzione il 23/10/2026 alle 12:20** su incarico di Luca, dopo gli script 35-43 (prova sul banco nello stesso ordine: stesse 9 funzioni eseguibili senza accesso, `t41`-`t43` invariati) |
 | `43_valore_progetti.sql` | Valore dei progetti per il cliente (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026 alle 11:50**): `pratica.caso_listino` ('caso1' / 'caso2', solo Progetti, null = da indicare); `staff_crea_pratica` e `staff_aggiorna_dati_pratica` salvano il caso (messaggio italiano per valori non ammessi); `scenario_simulazione.costo_cliente_totale` (salvato dal simulatore con il Caso 1 o 2); `cruscotto_valore_progetti()` (ultimo scenario per Comune ed elenco dei Progetti aperti con caso, popolazione e periodo; staff tutto, Comuni i propri). Prova `t43.sql` |
 | `42_valore_crediti.sql` | Valore complessivo dei crediti nella Dashboard (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026 alle 11:10**): colonna `scenario_simulazione.ricavi_totali` (salvata dal simulatore); impostazione `prezzo_credito_riferimento` (32 €) e `admin_imposta_prezzo_riferimento` (solo Admin, 0-10.000 €, audit); `cruscotto_valore_crediti()` (JSON: simulazione con l'ultimo scenario per Comune, calcoli ex post confermati e validi, lotti emessi, vendite; staff tutto, utenti dei Comuni solo le proprie organizzazioni; anon negato). Prova `t42.sql` |
 | `41_utenze_nel_calcolo.sql` | Utenze del passo 5a nel motore di calcolo (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026 alle 10:14**): `cwp_utenze_controllo(calcolo, dati)` (security definer, solo numeri: utenze, senza categoria di simulazione, con categoria assente dalle classi della delibera); nuova `calcolo_coerenza` (alla conferma confronta anche `risultato.righe.utenze` con le utenze salvate; i risultati di prima valgono 0 utenze); nuova `calcolo_prerequisiti_conferma` (servono utenze del 5a o conferimenti del 5b; con le utenze nessuna senza categoria o con categoria fuori delibera). Prova `t41.sql` |
@@ -546,6 +546,18 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 23 ottobre 2026
+- **Script 34 in produzione** (OK di Luca delle 11:12). Prima, prova sul
+  banco nello stesso ordine della produzione (script 01-33 e 35-43, poi
+  34): 95 funzioni SECURITY DEFINER eseguibili senza accesso ridotte alle 9
+  necessarie (regole di accesso e `registra_accesso_fallito`), script
+  rieseguibile, prove `t34`, `t41`, `t42`, `t43` come attese. In produzione
+  alle 12:20 (avviso «operazioni distruttive» confermato: riguarda solo
+  `drop trigger/function if exists`); verifica finale: le stesse 9
+  funzioni. Portale provato dal vivo: Dashboard, Audit User, Calcolo
+  crediti e pagina pubblica /programma funzionano. Attivi gli avvisi
+  all'Amministratore principale (5 accessi non riusciti in 15 minuti per
+  email, 30 in un'ora, nuovo Amministratore) e il motivo «inattività»
+  nell'uscita.
 - **Colori dello stato delle fasi** (richiesta di Luca delle 11:00): in
   `STATI_FASE` (`src/lib/cwpProgram.js`) scritta verde per Completata,
   arancio per In corso e In attesa di integrazione, rossa per Non
@@ -1583,7 +1595,7 @@ aperte; il dettaglio è nei punti numerati qui sotto.
   service_role inserita da Luca; Istruzioni di ripristino, capitolo
   «Backup»). Il backup in Google Apps Script è stato tolto (bloccato da
   Google).
-- Eseguire lo script `34_sicurezza_avvisi.sql` (avvisi di sicurezza e rinforzi del database) o autorizzare Claude a farlo: **verificato il 23/10, non è ancora in produzione** (la funzione `cwp_avviso_sicurezza` non c'è).
+- ~~Eseguire lo script `34_sicurezza_avvisi.sql`~~ — fatto il 23/10 alle 12:20 su incarico di Luca.
 - DPIA e accordo sul trattamento (art. 28 GDPR) con i Comuni prima di caricare utenze reali nella Banca Dati Utenze per utenza.
 - Inoltrare alla Fondazione le domande in ATTESA_REGOLA (R01-R04, R06, riuso, N05, N06, frazioni vuote nel calcolo per utenza) e decidere gli interventi sui dati proposti (fase 5 senza ente, fasi senza scadenza, codici).
 - Attivare gli avvisi automatici di GitHub (Settings → Code security → Dependabot alerts) e decidere sul CAPTCHA delle pagine pubbliche.
