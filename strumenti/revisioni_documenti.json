@@ -1205,6 +1205,12 @@
       "data": "23/10/2026",
       "descrizione": "Marketing in produzione il 23/10 (script 44, funzione marketing), correzioni dell'importazione, banche dati caricate; tutti gli script 01-44 eseguiti.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "7.7",
+      "data": "23/10/2026",
+      "descrizione": "Marketing: verifica dei gestori sui siti, primo lotto (Lombardia classi A e B) e strumento di caricamento.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [

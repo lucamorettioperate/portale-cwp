@@ -555,6 +555,24 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 23 ottobre 2026
+- **Marketing: verifica dei gestori sui loro siti, primo lotto** (richiesta
+  di Luca delle 14:22). Priorità per classe di iscrizione alla categoria 1
+  (A ≥ 500.000 abitanti … F < 5.000): in Italia A 267, B 356, C 554, D 567,
+  E 918, F 3.156. Primo lotto: Lombardia, classi A e B (78 imprese),
+  ricerca su fonti pubbliche (sito dell'impresa, Amministrazione
+  trasparente, carte dei servizi dei Comuni, bandi TED, notizie) con la
+  fonte di ogni dato; scartati i dati incerti (impresa forse diversa da
+  quella iscritta, email della capogruppo, sito di gruppo, un nome di
+  direttore letto da un documento illeggibile).
+  - Caricate alle 15:15 nel SQL Editor 68 imprese (10 non ricercate per il
+    limite di 200 ricerche web per turno): 22 con raccolta per Comuni, 7 con
+    gestione della tariffa, 22 nuove email generiche, 24 referenti
+    (amministratori, direttori generali e tecnici) con fonte.
+  - Strumento `strumenti/marketing_arricchimento_sql.py` (risultati JSON →
+    SQL: aggiorna solo i campi trovati, mai PEC nell'email generica,
+    `verificato_il`, fonti e note con le URL); provato sul banco.
+  - Da completare: le 10 imprese lombarde rimaste e, a lotti di circa 70,
+    le classi A-C delle altre regioni (circa 1.100 imprese).
 - **Marketing in produzione** (OK di Luca delle 12:08).
   - 12:12 script `44_marketing.sql` eseguito (avviso del SQL Editor «tabelle
     senza RLS» confermato con «Run without RLS»: lo script attiva da sé
@@ -2008,7 +2026,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 181 file, 42.986 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 182 file, 43.099 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -2228,8 +2246,9 @@ Inventario generato da `strumenti/inventario_codice.py`: 181 file, 42.986 righe 
 | `strumenti/genera_utenze_casuali.py` | 104 | riempie il modello public/modelli/Banca_dati_utenze_CWP_v1.xlsx con 20 utenze domestiche e 20 non domestiche inventate (richiesta di Luca |
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
+| `strumenti/marketing_arricchimento_sql.py` | 107 | — |
 | `strumenti/presentazione/genera_presentazione.cjs` | 640 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1600 | — |
+| `strumenti/revisioni_documenti.json` | 1606 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
@@ -2328,6 +2347,11 @@ pagina pubblica «Approfondisci» con micro simulazione.
   IndicePA che con letture grandi risponde «App offline»): uffici a
   blocchi di 400 Comuni, Albo una provincia per chiamata; un errore di
   IndicePA sui gestori non blocca il salvataggio delle imprese.
+- *Verifica dei gestori sui siti* (dal 23/10): a lotti, per classe di
+  iscrizione (prima A-C); risultati in JSON con la fonte di ogni dato,
+  trasformati in SQL da `strumenti/marketing_arricchimento_sql.py` ed
+  eseguiti nel SQL Editor. Ogni impresa verificata ha `verificato_il`, le
+  fonti e una nota con le evidenze (Comuni serviti, tariffa).
 - *Gestori*: elenco pubblico degli iscritti all'**Albo Nazionale Gestori
   Ambientali**, sezione per sezione, filtrato sulla categoria «1o»
   (raccolta e trasporto di rifiuti urbani, ordinaria). L'elenco pubblico
