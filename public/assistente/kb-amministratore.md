@@ -1604,6 +1604,77 @@ Ogni notizia nuova passa da un primo filtro sulle parole chiave e poi la control
 - Le notizie e il registro delle ricerche si leggono solo con un accesso da Amministratore (regole del database, script 36).
 - La funzione del server accetta al massimo una ricerca ogni 100 minuti da chi non è Amministratore: una chiamata esterna non può far spendere crediti.
 
+## Marketing: Comuni, gestori e campagne
+
+Menu **Marketing** (solo Amministratori). Serve a far conoscere il
+Programma ai Comuni e ai gestori del servizio rifiuti e a raccogliere le
+richieste di registrazione.
+
+### Le banche dati
+
+- **Comuni**: tutti i Comuni italiani con regione, provincia e abitanti;
+  PEC, email generica, sito e referenti (sindaco, responsabili di tributi,
+  ambiente, ufficio finanziario e tecnico) dall'Indice dei domicili
+  digitali della PA (IndicePA).
+- **Gestori**: le imprese iscritte all'Albo Nazionale Gestori Ambientali in
+  categoria 1 (raccolta e trasporto dei rifiuti urbani), pubbliche e
+  private, con le attività svolte (raccolta, gestione della tariffa), PEC,
+  email e referenti (direttore tecnico, direttore generale,
+  amministratore).
+
+Filtrate per regione, provincia, abitanti, «con email generica», natura e
+attività; cercate per nome. Aprendo una riga si vede la scheda: potete
+correggere email, sito, attività e note e aggiungere o togliere referenti
+(per ognuno indicate la fonte, per esempio il sito dell'ente).
+
+### Aggiornare le banche dati
+
+Scheda **Importazioni**: **Aggiorna i Comuni** (qualche minuto: elenco
+ISTAT, poi IndicePA e gli uffici dei Comuni) e **Aggiorna i gestori**
+(tutte le sezioni dell'Albo o una sola). Il diario mostra cosa è stato
+letto. Le modifiche fatte a mano restano, salvo nuovi valori dalla stessa
+fonte. Per i gestori privati le attività e i referenti si completano dalle
+schede, verificando sui loro siti.
+
+### Creare e inviare una campagna
+
+1. Scheda **Campagne** → **+ Nuova campagna**: titolo interno, oggetto
+   dell'email, testo (paragrafi separati da una riga vuota) e grafica
+   dell'intestazione. A destra l'anteprima: sotto il vostro testo l'email
+   aggiunge il riquadro «7, 10 o 21 anni» e il pulsante **Approfondisci e
+   simula il tuo Comune**.
+2. **Invia una prova a me**: l'email arriva al vostro indirizzo.
+3. **Destinatari**: scegliete Comuni e/o gestori, regioni, abitanti e (per
+   i gestori) natura e attività, poi **Cerca i destinatari** e
+   **Aggiungi**. Entrano solo gli enti con **email generica**: le PEC non
+   si usano mai; sono esclusi gli indirizzi che hanno chiesto di non
+   ricevere altre comunicazioni.
+4. **Invia**: l'invio procede a blocchi; i contatori mostrano da inviare,
+   inviati, errori, esclusi, visite alla pagina, simulazioni e richieste.
+
+Ogni email contiene l'informativa e il collegamento per non ricevere altre
+comunicazioni. Finché il dominio email della Fondazione non è verificato le
+email arrivano solo al titolare del servizio email; il piano attuale ne
+consente 100 al giorno.
+
+### La pagina «Approfondisci»
+
+Il pulsante dell'email apre una pagina pubblica (senza accesso) con il nome
+del Comune: presenta il Programma, chiede abitanti, rifiuti totali e secco
+residuo (tonnellate all'anno), durata (7, 10 o 21 anni) e tipo di progetto
+(Caso 1 volontario o Caso 2 da bando di gara) e mostra crediti, ricavi,
+costi e margine anno per anno con un grafico e le ipotesi della stima. Si
+può scaricare il **fascicolo informativo** (PDF) e inviare la **richiesta
+di registrazione**.
+
+### Richieste di registrazione
+
+Ogni richiesta arriva a tutti gli Amministratori come notifica nel portale
+ed email. Nella scheda **Richieste** trovate referente, recapiti, messaggio
+e la simulazione fatta; scrivete le note (es. «chiamato il…») e segnate la
+richiesta come gestita. La registrazione vera e propria si fa come sempre
+da Utenti e Anagrafiche.
+
 ## Assistente virtuale
 
 In basso a destra di ogni pagina c'è il pulsante **✦ Assistente**: apre una chat con un assistente basato su **Claude** (Anthropic) che risponde alle domande sul funzionamento del portale e del Programma. È disponibile per **Amministratori**, **Operatori** (dal 21/10/2026) e **utenti degli enti**.
