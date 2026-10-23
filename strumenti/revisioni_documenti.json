@@ -191,6 +191,12 @@
       "data": "23/10/2026",
       "descrizione": "«Le mie pratiche»: riquadri del valore dei crediti della propria organizzazione (simulazione e fase esecutiva, crediti ed euro).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.2",
+      "data": "23/10/2026",
+      "descrizione": "Revisione generale al 23/10: Banca Dati Utenze per utenza non più «in arrivo».",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -480,6 +486,12 @@
       "rev": "5.7",
       "data": "23/10/2026",
       "descrizione": "Dashboard: valore dei crediti in simulazione e in fase esecutiva; Impostazioni: prezzo di riferimento del credito.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.8",
+      "data": "23/10/2026",
+      "descrizione": "Revisione generale al 23/10: protezione dei dati del tracciato e della Banca Dati Utenze per utenza.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1103,6 +1115,12 @@
       "data": "23/10/2026",
       "descrizione": "Script 42 (valore dei crediti), funzioni cruscotto_valore_crediti e admin_imposta_prezzo_riferimento, cronologia del 23/10.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "7.1",
+      "data": "23/10/2026",
+      "descrizione": "Revisione generale al 23/10: intestazione (versione 0.42), dati personali, flusso del calcolo, «Da fare subito», struttura del codice, tabelle; script 34 verificato non eseguito.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1323,6 +1341,12 @@
       "data": "23/10/2026",
       "descrizione": "Stato al 23/10: valore dei crediti nella Dashboard.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.9",
+      "data": "23/10/2026",
+      "descrizione": "Nuova slide «Novità del 22 e 23 ottobre» (valore dei crediti, Banca Dati Utenze per utenza, smartphone, collaudo); scelte da prendere aggiornate.",
+      "autore": "Fondazione Operate"
     }
   ],
   "issue": [
@@ -1420,6 +1444,12 @@
       "rev": "1.15",
       "data": "23/10/2026",
       "descrizione": "Prova t42.sql (valore dei crediti).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.16",
+      "data": "23/10/2026",
+      "descrizione": "Riepilogo al 23/10.",
       "autore": "Fondazione Operate"
     }
   ]

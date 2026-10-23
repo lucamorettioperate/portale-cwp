@@ -21,7 +21,7 @@ script `supabase/11_crediti.sql`.
 Tutti i file si importano in CSV (anche salvati da Excel); ogni passo offre il
 modello da scaricare.
 
-## Banca Dati Utenze per utenza (dal 22/10/2026, in costruzione)
+## Banca Dati Utenze per utenza (dal 22/10/2026)
 
 Richiesta di Luca Moretti del 22/10/2026: il simulatore lavora su dati
 aggregati, mentre il **calcolo dei crediti è per utenza**. Ogni calcolo

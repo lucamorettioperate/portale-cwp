@@ -366,9 +366,9 @@ I dati per il calcolo dei crediti si inviano con un unico modello Excel, il **Tr
 
 **File molto grandi.** Oltre 50 MB o oltre 1 milione di righe: salvate ogni foglio come file CSV con le stesse intestazioni (ad esempio `6_Letture.csv`), raccoglieteli in un archivio ZIP e caricate lo ZIP.
 
-### Banca Dati Utenze: il nuovo formato per utenza (in arrivo)
+### Banca Dati Utenze: il nuovo formato per utenza
 
-Il calcolo dei crediti sta passando a un formato **per utenza**. Quando la Fondazione ve lo comunicherà, ogni anno compilerete il modello **Banca dati utenze CWP** con l'**elenco completo** delle utenze dell'anno, domestiche e non domestiche, anche se poche sono cambiate: nessun dato si riprende dall'anno precedente.
+Il calcolo dei crediti usa un formato **per utenza**. Quando la Fondazione ve lo chiederà, ogni anno compilerete il modello **Banca dati utenze CWP** con l'**elenco completo** delle utenze dell'anno, domestiche e non domestiche, anche se poche sono cambiate: nessun dato si riprende dall'anno precedente.
 
 **Foglio Utenze_domestiche** — una riga per ogni utenza domestica attiva nell'anno.
 

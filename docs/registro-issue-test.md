@@ -31,7 +31,7 @@ Dal 21/10/2026 ogni nuova voce riporta l'ora esatta della segnalazione.
 
 **Chi segnala:** Luca = Luca Moretti; Collaudo = Amministratori collaudatori (Andrea Valentini, Albina Ambrogio, Andrea Pavan, Gianluca Tapparini, Luca Belfiore); Revisione = rilettura del codice da parte dello sviluppo; Sviluppo = prova dello sviluppo o messaggio di errore di un servizio.
 
-## Riepilogo al 22/10/2026 (ore 13:40)
+## Riepilogo al 23/10/2026 (ore 11:30)
 
 | Stato | Numero | Voci |
 |---|---|---|

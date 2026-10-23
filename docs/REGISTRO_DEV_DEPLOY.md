@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Ultimo aggiornamento** | 19 ottobre 2026 |
-| **Versione del portale** | 0.29 (ultimo script database: `29_amministratori.sql`) |
+| **Ultimo aggiornamento** | 23 ottobre 2026 |
+| **Versione del portale** | 0.42 (ultimo script database eseguito: `42_valore_crediti.sql`; lo script 34 non è ancora eseguito) |
 | **Indirizzo** | https://portale-cwp.vercel.app |
 | **Repository** | https://github.com/lucamorettioperate/portale-cwp (pubblico: solo codice, nessun dato) |
 | **Responsabile** | Luca Moretti — Fondazione Operate |
@@ -125,9 +125,13 @@ cosa**, **Resend spedisce** le email.
   confermati non modificabili, numero di registro assegnato dal database.
 - **MFA**: lo staff ha i poteri del back-office solo con sessione a due
   fattori quando `mfa_obbligatoria` è acceso (oggi **spento**).
-- **Dati personali**: i commentatori esterni sono noti solo allo staff; la
-  Banca Dati Utenze deve contenere solo codici anonimi (import bloccato
-  altrimenti); il rapporto PDF non contiene il dettaglio per utenza.
+- **Dati personali**: i commentatori esterni sono noti solo allo staff; il
+  tracciato dati (passo 5b) deve contenere solo codici anonimi (import
+  bloccato altrimenti); la Banca Dati Utenze per utenza (passo 5a, script
+  40, dal 22/10) contiene nome e indirizzo per scelta di Luca: nessuna
+  lettura diretta, consultazione solo dello staff con voce di audit, motore
+  senza nomi, Comune escluso; servono DPIA e accordo art. 28 con i Comuni.
+  Il rapporto PDF non contiene il dettaglio per utenza.
 - **Segreti** solo in Supabase (Edge Functions → Secrets) e Vercel
   (variabili d'ambiente); il repository è pubblico ma non contiene chiavi.
 
@@ -170,7 +174,9 @@ come *Ricevuto* → trigger di notifica allo staff → moderazione nel portale
 «Importa il tracciato» (`ImportaTracciato.jsx`): il file è letto nel
 browser (`tracciato.js`), controllato per dati personali e coerenza,
 salvato in `calcolo_crediti.dati`, `calcolo_conferimento`,
-`calcolo_riuso` (script 11) → «Calcola» esegue il motore
+`calcolo_riuso` (script 11); dal 22/10 le utenze dell'anno si caricano nel
+passo «5a» (`UtenzeCalcolo.jsx`, tabella `calcolo_utenza`, script 40) e dal
+23/10 il motore usa quelle (script 41) → «Calcola» esegue il motore
 (`calcolo.js`) nel browser e salva il riepilogo → «Conferma» rende il
 calcolo immutabile e il database assegna il numero di registro (18) →
 «Scarica il rapporto (PDF)» (`rapportoPdf.js`) → «Archivia» carica il PDF
@@ -407,14 +413,17 @@ Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), c
   `UtentiOnline` (presenza, «n online», hook `usePrincipale`), `Badge`,
   `stili.js` (stili condivisi),
   `impostazioni/{DurateFasi,DocumentiRichiesti,EntiValidazione,ModelliDocumento,Registri,InfoProgramma}`,
-  `crediti/{ImportaTracciato,RegistroCrediti,TabellaDati}`.
+  `crediti/{ImportaTracciato,RegistroCrediti,TabellaDati,UtenzeCalcolo}`,
+  `ValoreCrediti` (valore dei crediti in Dashboard e Le mie pratiche),
+  `impostazioni/PrezzoRiferimento`.
 - `src/lib/` — `dati.js` (accesso ai dati), `AuthContext.jsx` (sessione,
   ruolo, MFA), `file.js` (controlli sui file), `fascicolo.js` (export ZIP)
   e `fascicoloPdf.js` (riepilogo PDF del fascicolo),
   `csv.js`, `date.js`, `cwpProgram.js` (fasi, ruoli, colori, stati del
   Programma, tipologie), `tariffe.js` (Schema tariffario),
   `crediti/{parametri,calcolo,archivio,qualita}.js` (motore di calcolo e
-  controlli della Gestione qualità dei dati), `crediti/rapportoPdf.js`,
+  controlli della Gestione qualità dei dati), `crediti/{bancaDatiUtenze,utenzeCalcolo}.js`
+  (Banca Dati Utenze per utenza), `crediti/rapportoPdf.js`,
   `crediti/{simulatore,simulatoreExport,simulatorePdf,scenari}.js`
   (simulatore, Excel e PDF), `ordinamento.js`, `presenza.js` (testi di
   Utenti online e Audit User).
@@ -423,7 +432,9 @@ Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), c
 - `test/` — test del motore crediti, del lettore CSV, dell'import del
   tracciato, delle date, dello Schema tariffario, della qualità dei dati,
   del simulatore e del suo export, dell'ordinamento e dei testi della
-  presenza (`npm test`, 10 file); `test/dati/` file di esempio.
+  presenza, dei collaudi, dell'assistente, delle notizie, dei rilievi N,
+  della Banca Dati Utenze e delle utenze nel calcolo (`npm test`, 18 file);
+  `test/dati/` file di esempio.
 - `strumenti/genera_tracciato_dati.py` — rigenera il tracciato Excel;
   `strumenti/genera_esempi_tracciato.py` — file di esempio compilati.
 
@@ -1531,14 +1542,18 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 Numerazione stabile: un punto mantiene il suo numero anche quando è
 completato (va barrato qui e annotato in Cronologia).
 
-**Da fare subito (stato al 20/10/2026)** — riepilogo delle azioni
+**Da fare subito (stato al 23/10/2026)** — riepilogo delle azioni
 aperte; il dettaglio è nei punti numerati qui sotto.
 
 *Azioni di Luca (Claude non le può fare: chiavi, pubblicazioni, account)*
-- **Installare il backup automatico su Google Drive** (circa 10 minuti,
-  Istruzioni di ripristino, capitolo «Backup automatico su Google Drive»;
-  documento «Backup CWP — installazione» nella cartella Cwp del Drive).
-- Eseguire lo script `34_sicurezza_avvisi.sql` (avvisi di sicurezza e rinforzi del database) o autorizzare Claude a farlo.
+- **Installare il backup giornaliero dal Mac** (Google Drive per desktop e
+  installatore `strumenti/backup/installa_backup_mac.sh`, con la chiave
+  service_role inserita da Luca; Istruzioni di ripristino, capitolo
+  «Backup»). Il backup in Google Apps Script è stato tolto (bloccato da
+  Google).
+- Eseguire lo script `34_sicurezza_avvisi.sql` (avvisi di sicurezza e rinforzi del database) o autorizzare Claude a farlo: **verificato il 23/10, non è ancora in produzione** (la funzione `cwp_avviso_sicurezza` non c'è).
+- DPIA e accordo sul trattamento (art. 28 GDPR) con i Comuni prima di caricare utenze reali nella Banca Dati Utenze per utenza.
+- Inoltrare alla Fondazione le domande in ATTESA_REGOLA (R01-R04, R06, riuso, N05, N06, frazioni vuote nel calcolo per utenza) e decidere gli interventi sui dati proposti (fase 5 senza ente, fasi senza scadenza, codici).
 - Attivare gli avvisi automatici di GitHub (Settings → Code security → Dependabot alerts) e decidere sul CAPTCHA delle pagine pubbliche.
 - ~~Eseguire gli script 32 e 33 e rieseguire lo script 30~~ — fatto il
   20/10 (su incarico di Luca, codice caricato dal repository).
@@ -1574,7 +1589,10 @@ aperte; il dettaglio è nei punti numerati qui sotto.
 - ~~Assistente: Operatori e aiuto sulla singola pratica (punto 21)~~ — fatto il 21/10.
 - Simulatore: conferma del modello ed eventuale visione da parte del Comune
   (punto 37).
-- Sicurezza (punti 14-18 e 30) e passaggio ai piani a pagamento (punto 29).
+- ~~Banca Dati Utenze per utenza e collegamento al motore~~ — fatti il
+  22-23/10 (script 40-41); ~~valore dei crediti nella Dashboard~~ — fatto
+  il 23/10 (script 42).
+- Sicurezza (punti 14-18 e 30, verifica OWASP in corso) e passaggio ai piani a pagamento (punto 29).
 - Collaudo con dati reali e conferma delle scelte interpretative (punti 8,
   9 e 19).
 
@@ -1831,7 +1849,10 @@ main.jsx → App.jsx (route, Protetta: accesso, password temporanea, MFA)
 | `notifica` | 09 | Notifiche interne (e stato dell'email) |
 | `audit_event` | 01 (07) | Registro delle operazioni, immutabile |
 | `impostazione` | 10 | Interruttori (MFA, indirizzo della funzione email) |
-| `calcolo_crediti`, `calcolo_conferimento`, `calcolo_riuso`, `contatore_registro` | 11, 18 | Calcoli dei crediti, Banca Dati Utenze, numerazione del registro |
+| `calcolo_crediti`, `calcolo_conferimento`, `calcolo_riuso`, `contatore_registro` | 11, 18 | Calcoli dei crediti, Banca Dati Utenze del tracciato (passo 5b), numerazione del registro |
+| `calcolo_utenza` | 40 | Banca Dati Utenze per utenza (passo 5a): una riga per utenza con categorie e kg per frazione; usata dal motore dallo script 41 |
+| `scenario_simulazione` | 28, 42 | Scenari del simulatore (dal 23/10 anche i ricavi del periodo) |
+| `credito_lotto`, `credito_vendita` | 24 | Crediti emessi e vendite comunicate dal registro |
 | `recupero_password_richiesta` | 16 | Limite alle richieste di recupero password |
 | `assistente_uso` | 31 | Domande e token dell'assistente per utente e giorno (nessun testo) |
 | `presenza` | 32 | Ultima presenza di ogni utente nel portale (Utenti online) |
@@ -1880,7 +1901,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 168 file, 39.902 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 168 file, 39.966 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -2087,8 +2108,8 @@ Inventario generato da `strumenti/inventario_codice.py`: 168 file, 39.902 righe 
 | `strumenti/genera_utenze_casuali.py` | 104 | riempie il modello public/modelli/Banca_dati_utenze_CWP_v1.xlsx con 20 utenze domestiche e 20 non domestiche inventate (richiesta di Luca |
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
-| `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1426 | — |
+| `strumenti/presentazione/genera_presentazione.cjs` | 622 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
+| `strumenti/revisioni_documenti.json` | 1456 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

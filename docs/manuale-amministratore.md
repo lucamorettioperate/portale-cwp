@@ -654,7 +654,7 @@ I dati arrivano dal Comune e dal soggetto gestore nel **tracciato dati standard 
 | 6_Letture (singole letture) | 5. Banca Dati Utenze: le letture sono sommate per utenza e tipologia |
 | 7_Riuso | 5. Banca Dati Utenze (beni a riuso) |
 
-**Protezione dei dati personali.** La Banca Dati Utenze deve contenere solo un **codice anonimo** per ogni utenza: niente nomi, codici fiscali, indirizzi, email o telefoni. Il portale controlla il file prima dell'import e lo **blocca** se trova dati personali, indicando foglio e riga (con il valore oscurato): chiedete al Comune di sostituirli con codici e di caricare di nuovo il file.
+**Protezione dei dati personali.** Il tracciato (passo 5b) deve contenere solo un **codice anonimo** per ogni utenza (la Banca Dati Utenze per utenza del passo 5a, descritta più avanti, contiene invece nomi e indirizzi, con le protezioni indicate lì): niente nomi, codici fiscali, indirizzi, email o telefoni. Il portale controlla il file prima dell'import e lo **blocca** se trova dati personali, indicando foglio e riga (con il valore oscurato): chiedete al Comune di sostituirli con codici e di caricare di nuovo il file.
 
 Il Comune carica il tracciato tra i documenti della sua pratica: il file Excel (.xlsx) oppure, se è molto grande, uno ZIP con i fogli salvati in CSV (es. `6_Letture.csv`).
 

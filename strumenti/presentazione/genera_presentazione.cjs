@@ -396,6 +396,40 @@ async function icona(Comp, colore) {
   ]), { x: 8.65, y: 1.45, w: 3.9, h: 5.3, fontSize: 13.5, valign: "top", margin: 0, paraSpaceAfter: 5, isTextBox: true });
   s.addNotes("Novità pubblicate il 19 ottobre pomeriggio, su richiesta di Luca. Dashboard (prima «Cruscotto»): per ogni pratica una barra di 7 luci, una per fase, accese le fasi completate e spente quelle da fare, la settima verde; la fase in corso ha il contorno. Ordinamento: ogni tabella del portale si ordina per qualsiasi colonna e gli elenchi a schede hanno il menu «Ordina per». Utenti: un Amministratore può nominare altri Amministratori, tutti con accesso completo; l'Amministratore principale luca.moretti@operate.it è protetto dal database (non si declassa, non si disattiva, non si cancella, nemmeno dal pannello di Supabase); si possono eliminare solo gli utenti che non hanno mai operato (nessuna voce nell'audit e nessun dato a loro nome). Email: il nuovo utente riceve indirizzo del portale, email e password temporanea, con l'obbligo di sceglierne una personale al primo accesso; finché il dominio operate.it non è verificato su Resend le email arrivano solo al titolare dell'account. Simulatore: oltre al bilancio del Comune c'è il metodo per utenza con le sole utenze virtuose (formula 32 con buffer), lo stesso delle stime dell'Allegato A dei contratti EsaCom; il buffer si calcola dalle Tabelle 15-16. Decisione: il portale non va qualificato ACN come servizio cloud per la PA, perché serve a qualificare il modello e il Comune vi riversa dati senza acquistare un servizio; restano GDPR, dati in UE e sicurezza; da confermare con un parere legale. Il 20 ottobre: sezione «Audit User» per l'Amministratore principale, con tutti gli utenti online o no, il registro degli accessi (entrate, uscite, tentativi non riusciti, senza indirizzi IP) e le operazioni dell'audit trail per utente, compreso lo scaricamento dei documenti; utenti online per l'Amministratore principale (chi è collegato adesso, pagina aperta, da quanto, e chi è stato visto nelle ultime 24 ore; si conserva solo l'ultimo collegamento, gli utenti ne sono informati nel Manuale Utente); messaggi d'errore dell'assistente in italiano semplice, con la causa per gli Amministratori; simulatore con PDF impaginato in A4 orizzontale ed export Excel con i fogli Sintesi, Anni, Economia e Costi. Menu riordinati da Luca il 20/10: Amministratori Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, Audit User (solo il principale), Documentazione; enti Le mie pratiche, I tuoi documenti, Reclami, Formato dati, Il Programma CWP, Manuali; per entrambi la voce Marketplaces in grigio, sezione in arrivo da definire.");
 
+  // ---------------------------------------------------------------- Novità del 22-23 ottobre
+  s = pres.addSlide({ masterName: "CONTENUTO", sectionTitle: "Novità" });
+  s.addText("Novità del 22 e 23 ottobre", { placeholder: "title" });
+  s.addImage({ path: IMMAGINI + "dashboard_valore_crediti.png", x: 0.6, y: 1.3, w: 7.6, h: 7.6 * 260 / 1210, altText: "Dashboard: riquadri del valore dei crediti in simulazione e in fase esecutiva (dati di prova)", objectName: "Schermata valore dei crediti" });
+  s.addText("Dashboard: valore dei crediti, dati di prova", { x: 0.6, y: 1.3 + 7.6 * 260 / 1210 + 0.05, w: 7.6, h: 0.25, fontSize: 10, italic: true, color: C.accent6, margin: 0, isTextBox: true });
+  [
+    ["In simulazione", "ultimo scenario per Comune, crediti ed euro del periodo"],
+    ["In fase esecutiva", "calcolati, emessi e venduti; prezzo di riferimento 32 €"],
+    ["Chi vede", "staff: tutto; Comuni: solo i propri dati"],
+  ].forEach(([t, d], i) => {
+    const x = 0.6 + i * 2.6;
+    card(s, x, 3.35, 2.4, 1.05, i === 0 ? C.accent3 : C.background2, "Valore crediti " + t);
+    s.addText([{ text: t, options: { bold: true, color: C.text2, breakLine: true } }, { text: d, options: { fontSize: 11.5, color: C.text1 } }],
+      { x: x + 0.15, y: 3.35, w: 2.1, h: 1.05, fontSize: 13, valign: "middle", margin: 0, isTextBox: true });
+  });
+  card(s, 0.6, 4.6, 7.6, 2.25, C.accent4, "Banca Dati Utenze per utenza");
+  s.addText([
+    { text: "Banca Dati Utenze per utenza (calcolo dei crediti)", options: { bold: true, color: C.text2, breakLine: true } },
+    { text: "Ogni anno l'elenco completo delle utenze, domestiche e non domestiche, dal modello Excel: kg e svuotamenti per frazione, categoria tariffaria e di simulazione. Passo «5a» con schede, ricerca e un modulo per ogni utenza; «Calcola» usa le utenze (classe = categoria di simulazione, kg misurati). Nomi visibili solo allo staff, ogni consultazione nell'Audit.", options: { fontSize: 12, color: C.text1 } },
+  ], { x: 0.8, y: 4.65, w: 7.2, h: 2.15, fontSize: 13.5, valign: "middle", margin: 0, isTextBox: true });
+  card(s, 8.45, 1.3, 4.25, 5.55, C.background2, "Elenco novità 22-23 ottobre");
+  const novita2 = [
+    ["Collaudo", "rilievi N01-N04 corretti e in produzione (22/10); N05 e N06 in attesa della regola della Fondazione"],
+    ["Smartphone", "menu a pannello, schede al posto delle tabelle, pratiche una alla volta, assistente a schermo intero (22/10)"],
+    ["Dashboard", "fasi aperte senza scadenza (22/10); valore dei crediti in simulazione e in fase esecutiva, anche per i Comuni (23/10)"],
+    ["Calcolo crediti", "Banca Dati Utenze per utenza e collegamento al motore; calcolo di prova con 20 + 20 utenze inventate (22-23/10)"],
+    ["Notizie CO2 e backup", "14 siti verificati; backup giornaliero dal Mac pronto da installare"],
+  ];
+  s.addText(novita2.flatMap(([t, d], j) => [
+    { text: t, options: { bold: true, color: C.text2, breakLine: true } },
+    { text: d, options: { color: C.text1, fontSize: 12, breakLine: j < novita2.length - 1 } },
+  ]), { x: 8.65, y: 1.45, w: 3.9, h: 5.3, fontSize: 13.5, valign: "top", margin: 0, paraSpaceAfter: 5, isTextBox: true });
+  s.addNotes("Novità del 22 e 23 ottobre 2026. Collaudo: i rilievi N01-N04 della terza sessione sono corretti e in produzione dal 22/10 alle 14:30 (script 39); N05 e N06 aspettano una regola della Fondazione. Smartphone: fino a 760 px l'intestazione è compatta con il pulsante Menu, Dashboard e Audit diventano schede, le pratiche si aprono una alla volta e l'assistente occupa lo schermo. Banca Dati Utenze per utenza (script 40, 22/10): ogni anno il Comune o il gestore compila il modello Excel con l'elenco completo delle utenze, domestiche e non domestiche, con kg e svuotamenti per frazione e categoria tariffaria; il portale propone la categoria di simulazione uguale alla tariffaria e la si può cambiare da un modulo per ogni utenza. Dal 23/10 (script 41) «Calcola» usa le utenze: la categoria di simulazione decide la classe della delibera e quindi i rifiuti attesi, i kg sono i rifiuti prodotti, le frazioni lasciate vuote non entrano nel calcolo di quell'utenza; utenze senza categoria o con categoria fuori delibera restano fuori e bloccano la conferma. Nomi e indirizzi sono visibili solo allo staff, con ogni consultazione nell'Audit; servono DPIA e accordo art. 28 con i Comuni prima dei dati reali. Dashboard (script 42, 23/10): valore complessivo dei crediti in simulazione (ultimo scenario per Comune, crediti ed euro del periodo) e in fase esecutiva (calcoli ex post confermati, lotti emessi, vendite), con prezzo di riferimento di 32 € modificabile in Impostazioni; gli utenti dei Comuni vedono gli stessi riquadri con i soli propri dati.");
+
   // ---------------------------------------------------------------- 4. Punti aperti
   pres.addSection({ title: "Punti aperti" });
   s = pres.addSlide({ masterName: "CONTENUTO", sectionTitle: "Punti aperti" });
@@ -562,11 +596,11 @@ async function icona(Comp, colore) {
     ["Accesso con SPID, CIE o CNS al feedback pubblico", "Previsto dalla Guida 3.9: serve l'adesione come fornitore di servizi", "Fondazione"],
     ["Rapporti prima della registrazione del Progetto: oggi ammessi", "Lo Standard 4.5 li prevede dopo «progetto registrato» (i crediti già lo richiedono)", "Fondazione"],
     ["Importi delle tariffe da applicare", "Lo Schema tariffario indica tariffe massime, IVA esclusa", "Fondazione"],
-    ["Scelte interpretative del calcolo (FEdes, segno del riuso, buffer, Tabella 16)", "Determinano il valore dei crediti", "Fondazione con l'ente"],
+    ["Scelte interpretative del calcolo (FEdes, segno del riuso, buffer, Tabella 16, frazioni vuote per utenza)", "Determinano il valore dei crediti", "Fondazione con l'ente"],
     ["Procedura di fine conservazione e ambito dell'assistente virtuale", "12 anni (Guida 6.2.1); assistente fuori dal flusso decisionale", "Fondazione"],
     ["Simulatore: metodo per le proposte, variabilità tra utenze (ipotesi 30%), chi vede gli scenari", "Solo utenze virtuose con buffer (Metodologia 4.6 e Cap. 7), come l'Allegato A EsaCom", "Fondazione"],
     ["Qualificazione ACN del portale", "Valutata non necessaria: qualifica il modello, il Comune non acquista un servizio cloud", "Parere legale"],
-    ["Servizi: dominio operate.it, piani a pagamento, verifica in due passaggi, antivirus, Comune per il collaudo", "Avvio in esercizio", "Fondazione e Luca Moretti"],
+    ["Servizi: dominio operate.it, piani a pagamento, verifica in due passaggi, antivirus, DPIA e accordo art. 28 per i dati delle utenze, Comune per il collaudo", "Avvio in esercizio", "Fondazione e Luca Moretti"],
   ];
   s.addTable([[H("Scelta"), H("Cosa dicono i documenti CWP"), H("Chi decide")], ...righe.map((r, i) => r.map((t, j) => ({ text: t, options: { bold: j === 0, fill: { color: i % 2 ? C.background1 : C.background2 } } })))], {
     x: 0.6, y: 1.35, w: 12.1, colW: [5.3, 4.8, 2.0], fontSize: 13, color: C.text1, valign: "middle",
