@@ -73,6 +73,7 @@ import {
   estendiVerifica,
 } from "../lib/dati.js";
 import { formatoData, giorniA } from "../lib/date.js";
+import { CASI_COSTI, valoreProgettoCaso } from "../lib/crediti/simulatore.js";
 import { esportaFascicolo } from "../lib/fascicolo.js";
 
 /* Dettaglio di una pratica con le sue fasi (componente principale).
@@ -558,7 +559,9 @@ function DocumentiRichiesti({ richiesti, documenti }) {
    ISTAT dei Comuni (un solo progetto per territorio, Standard 4.6),
    co-promotori (Guida 3.3.1), periodo di riferimento (Standard 4.3.8),
    popolazione e crediti previsti (per le tariffe dello Schema tariffario),
-   data di registrazione (Standard 4.5: data di inizio del progetto).
+   data di registrazione (Standard 4.5: data di inizio del progetto) e, dal
+   23/10/2026, il listino del Progetto (Caso 1 o Caso 2, script 43) con il
+   valore del progetto per il cliente (valoreProgettoCaso di simulatore.js).
    Il Comune li vede; lo staff li modifica con staff_aggiorna_dati_pratica.
    Props: pratica, staff, onFatto() dopo il salvataggio. */
 function DatiPratica({ pratica, staff, onFatto }) {
@@ -576,6 +579,7 @@ function DatiPratica({ pratica, staff, onFatto }) {
       periodo: pratica.periodo_riferimento || "10 anni",
       popolazione: pratica.popolazione ?? "",
       crediti: pratica.crediti_previsti ?? "",
+      caso: pratica.caso_listino || "",
       motivazione: "",
     });
   }
@@ -590,6 +594,7 @@ function DatiPratica({ pratica, staff, onFatto }) {
       dati.codici_istat = modulo.codici.split(/[\s,;]+/).map((c) => c.trim()).filter(Boolean);
       dati.copromotori = modulo.copromotori.split("\n").map((c) => c.trim()).filter(Boolean);
       dati.periodo_riferimento = modulo.periodo;
+      dati.caso_listino = modulo.caso;
     }
     const { error } = await aggiornaDatiPratica(pratica.id, dati, modulo.motivazione.trim() || null);
     setInCorso(false);
@@ -615,6 +620,12 @@ function DatiPratica({ pratica, staff, onFatto }) {
         {riga("Popolazione residente", numero(pratica.popolazione))}
         {riga(progetto ? "Crediti previsti nel periodo" : "Crediti previsti nell'anno", numero(pratica.crediti_previsti))}
         {pratica.data_registrazione && riga(progetto ? "Registrato il" : "Crediti registrati il", formatoData(pratica.data_registrazione))}
+        {progetto && riga("Listino", CASI_COSTI[pratica.caso_listino] || "da indicare")}
+        {progetto && (() => {
+          const v = valoreProgettoCaso(pratica.caso_listino, pratica.popolazione, pratica.periodo_riferimento);
+          const e = (x) => x.toLocaleString("it-IT", { style: "currency", currency: "EUR" });
+          return v ? riga("Valore del progetto per il cliente", `${e(v.totale)} in ${v.anni} anni (${e(v.annuo)} all'anno)${v.stima ? ", stima" : ""}`) : null;
+        })()}
       </div>
       {staff && !modulo && (
         <button onClick={apri} style={{ ...linkBtn, marginTop: 8 }}>Modifica i dati</button>
@@ -633,6 +644,15 @@ function DatiPratica({ pratica, staff, onFatto }) {
                 Periodo di riferimento
                 <select value={modulo.periodo} onChange={(e) => setModulo({ ...modulo, periodo: e.target.value })} style={campo}>
                   {Object.entries(PERIODI_RIFERIMENTO).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+                </select>
+              </label>
+            )}
+            {progetto && (
+              <label style={lbl}>
+                Listino (quanto paga il cliente)
+                <select value={modulo.caso} onChange={(e) => setModulo({ ...modulo, caso: e.target.value })} style={campo}>
+                  <option value="">— da indicare —</option>
+                  {Object.entries(CASI_COSTI).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </label>
             )}

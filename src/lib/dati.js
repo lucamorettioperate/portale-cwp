@@ -1030,6 +1030,16 @@ export async function leggiValoreCrediti() {
   return await supabase.rpc("cruscotto_valore_crediti");
 }
 
+// Dati per il valore dei Progetti (quanto paga il cliente con il listino
+// Caso 1 o Caso 2). RPC `cruscotto_valore_progetti` (script 43): staff
+// tutto, Comuni i propri. Restituisce { data: { ambito, simulazione:
+// { comuni, euro, senza_caso }, progetti: [{ codice, caso, popolazione,
+// periodo, stato }] }, error }; i valori dei Progetti si calcolano con
+// valoreProgetti di src/lib/crediti/simulatore.js.
+export async function leggiValoreProgetti() {
+  return await supabase.rpc("cruscotto_valore_progetti");
+}
+
 // Solo Admin: prezzo di riferimento del credito in € (0-10.000), usato per
 // dare un valore in euro ai crediti calcolati ed emessi. Nell'audit.
 export async function impostaPrezzoRiferimento(prezzo) {

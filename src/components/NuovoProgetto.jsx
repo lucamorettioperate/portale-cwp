@@ -5,7 +5,10 @@
      indicano codice (facoltativo, è l'ID univoco del progetto), titolo,
      territorio (codici ISTAT dei Comuni: un solo progetto per territorio,
      Standard 4.6), periodo di riferimento (10 anni oppure 7 rinnovabili,
-     Standard 4.3.8), popolazione e crediti previsti (servono alle tariffe);
+     Standard 4.3.8), popolazione e crediti previsti (servono alle tariffe)
+     e, dal 23/10/2026, il listino obbligatorio: Caso 1 (progetto
+     volontario) o Caso 2 (obbligatorio da bando di gara), che dà il valore
+     del progetto per il cliente (script 43, Dashboard);
      alla creazione vengono generate le 7 fasi, con la fase 1 «in corso».
    Usato da: pagina BackOffice (/pratiche), pulsante di nuovo progetto.
    Chi lo vede: operatore e admin.
@@ -24,6 +27,7 @@
    ========================================================================= */
 import React, { useEffect, useState } from "react";
 import { COLORI as C, PERIODI_RIFERIMENTO } from "../lib/cwpProgram.js";
+import { CASI_COSTI, valoreProgettoCaso } from "../lib/crediti/simulatore.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import {
   elencaOrganizzazioni,
@@ -49,6 +53,8 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
   const [periodo, setPeriodo] = useState("10 anni");
   const [popolazione, setPopolazione] = useState("");
   const [crediti, setCrediti] = useState("");
+  // Listino del Progetto: "caso1" | "caso2", da scegliere (nessuna proposta).
+  const [caso, setCaso] = useState("");
   const [errore, setErrore] = useState("");
   const [inCorso, setInCorso] = useState(false);
 
@@ -67,6 +73,10 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
   async function onSubmit(e) {
     e.preventDefault();
     setErrore("");
+    if (!caso) {
+      setErrore("Scegli il listino: Caso 1 (progetto volontario) o Caso 2 (obbligatorio da bando di gara).");
+      return;
+    }
     setInCorso(true);
 
     let organizzazioneId = orgId;
@@ -105,6 +115,7 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
       periodo_riferimento: periodo,
       popolazione: popolazione === "" ? null : Number(popolazione),
       crediti_previsti: crediti === "" ? null : Number(crediti),
+      caso_listino: caso,
     });
     if (error) {
       setErrore("Errore creando il progetto: " + error.message);
@@ -222,6 +233,23 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
               <input type="number" min="0" value={crediti} onChange={(e) => setCrediti(e.target.value)} style={campo} />
             </label>
           </div>
+
+          <label style={lbl}>
+            Listino (quanto paga il cliente)
+            <select value={caso} onChange={(e) => setCaso(e.target.value)} style={campo} aria-label="Listino Caso 1 o Caso 2">
+              <option value="">— scegli —</option>
+              {Object.entries(CASI_COSTI).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+          </label>
+          {/* Valore del progetto con il listino scelto (tabelle del simulatore). */}
+          {caso && (() => {
+            const v = valoreProgettoCaso(caso, popolazione, periodo);
+            return (
+              <div style={{ fontSize: 12.5, color: C.grafite, margin: "-4px 0 10px" }}>
+                {v ? `Valore del progetto: ${v.totale.toLocaleString("it-IT", { style: "currency", currency: "EUR" })} in ${v.anni} anni (${v.annuo.toLocaleString("it-IT", { style: "currency", currency: "EUR" })} all'anno)${v.stima ? ", stima" : ""}.` : "Indica la popolazione per vedere il valore del progetto."}
+              </div>
+            );
+          })()}
 
           {errore && <div style={{ color: C.red, fontSize: 13, margin: "6px 0 12px" }}>{errore}</div>}
 

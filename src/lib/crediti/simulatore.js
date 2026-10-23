@@ -763,6 +763,44 @@ export function costiPerCaso(caso, popolazione) {
   });
 }
 
+/* Valore di un Progetto per il cliente (richiesta di Luca Moretti del
+   23/10/2026, Dashboard e dati della pratica; script 43): quanto paga il
+   Comune o il gestore con il listino del Caso 1 o del Caso 2, cioè la somma
+   annua di costiPerCaso per gli anni del periodo di riferimento (10 anni;
+   con «7 anni rinnovabili» 7 anni, solo come stima: le tabelle valgono per
+   10 anni, rilievo N01).
+   Parametri: caso ("caso1" | "caso2"), popolazione, periodo (testo della
+   pratica, «10 anni» o «7 anni rinnovabili»).
+   Restituisce { annuo, totale, anni, stima } oppure null se mancano il
+   caso o la popolazione. */
+export const ANNI_PERIODO = { "10 anni": 10, "7 anni rinnovabili": 7 };
+export function valoreProgettoCaso(caso, popolazione, periodo = "10 anni") {
+  if (!CASI_COSTI[caso] || !(num(popolazione) > 0)) return null;
+  const anni = ANNI_PERIODO[periodo] || DURATA_TARIFFE;
+  const annuo = Math.round(somma(costiPerCaso(caso, popolazione), (c) => c.importo) * 100) / 100;
+  return { annuo, totale: Math.round(annuo * anni * 100) / 100, anni, stima: anni !== DURATA_TARIFFE };
+}
+
+/* Totale dei Progetti per la Dashboard. Parametro: elenco { caso,
+   popolazione, periodo } (cruscotto_valore_progetti, script 43).
+   Restituisce { progetti, valorizzati, euro, annuo, daIndicare (senza
+   caso), senzaPopolazione, stime (periodi diversi da 10 anni) }. */
+export function valoreProgetti(progetti = []) {
+  const out = { progetti: progetti.length, valorizzati: 0, euro: 0, annuo: 0, daIndicare: 0, senzaPopolazione: 0, stime: 0 };
+  progetti.forEach((p) => {
+    if (!CASI_COSTI[p.caso]) { out.daIndicare++; return; }
+    const v = valoreProgettoCaso(p.caso, p.popolazione, p.periodo);
+    if (!v) { out.senzaPopolazione++; return; }
+    out.valorizzati++;
+    out.euro += v.totale;
+    out.annuo += v.annuo;
+    if (v.stima) out.stime++;
+  });
+  out.euro = Math.round(out.euro * 100) / 100;
+  out.annuo = Math.round(out.annuo * 100) / 100;
+  return out;
+}
+
 // Valore del credito proposto (€ per credito), da confermare anno per anno.
 export const PREZZO_PROPOSTO = 32;
 

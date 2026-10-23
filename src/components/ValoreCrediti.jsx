@@ -9,13 +9,18 @@
        scenari salvati senza ricavi);
      - in fase esecutiva: crediti dei calcoli ex post confermati e validi
        e crediti emessi nei lotti, valorizzati al prezzo di riferimento;
-       in più le vendite comunicate dal registro con il loro valore.
+       in più le vendite comunicate dal registro con il loro valore;
+     - valore dei progetti (dal 23/10/2026, script 43): quanto paga il
+       cliente con il listino del Caso 1 o del Caso 2, nell'ultimo scenario
+       di ogni Comune e per i Progetti aperti (valoreProgetti di
+       simulatore.js su caso, popolazione e periodo di ogni Progetto).
    Usato da: src/pages/Cruscotto.jsx (Dashboard dello staff: totali di
      tutto il portale) e src/pages/AreaCliente.jsx («Le mie pratiche»:
      solo le proprie organizzazioni). Nessuna prop obbligatoria;
      `titolo` facoltativo.
-   Dati: leggiValoreCrediti() di src/lib/dati.js = RPC
-     cruscotto_valore_crediti (script 42). Chi vede cosa lo decide il
+   Dati: leggiValoreCrediti() e leggiValoreProgetti() di src/lib/dati.js
+     = RPC cruscotto_valore_crediti (script 42) e
+     cruscotto_valore_progetti (script 43). Chi vede cosa lo decide il
      database (staff tutto, Comuni solo i propri); il componente mostra
      soltanto ciò che riceve. Se la lettura non riesce non mostra nulla
      (la pagina funziona comunque).
@@ -24,23 +29,28 @@
    ========================================================================= */
 import React, { useEffect, useState } from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
-import { leggiValoreCrediti } from "../lib/dati.js";
+import { leggiValoreCrediti, leggiValoreProgetti } from "../lib/dati.js";
+import { valoreProgetti } from "../lib/crediti/simulatore.js";
 
 // Crediti con al massimo un decimale; euro senza decimali, in formato italiano.
 const crediti = (v) => Number(v || 0).toLocaleString("it-IT", { maximumFractionDigits: 1 });
 const euro = (v) => "€ " + Number(v || 0).toLocaleString("it-IT", { maximumFractionDigits: 0 });
 
-export default function ValoreCrediti({ titolo = "Valore dei crediti" }) {
+export default function ValoreCrediti({ titolo = "Valore dei crediti e dei progetti" }) {
   const [dati, setDati] = useState(null);
+  const [progetti, setProgetti] = useState(null);
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await leggiValoreCrediti();
-      if (!error && data) setDati(data);
+      const [c, p] = await Promise.all([leggiValoreCrediti(), leggiValoreProgetti()]);
+      if (!c.error && c.data) setDati(c.data);
+      if (!p.error && p.data) setProgetti(p.data);
     })();
   }, []);
 
   if (!dati) return null;
+  // Valore dei Progetti aperti con le tabelle del Caso 1 / Caso 2.
+  const vp = progetti ? valoreProgetti(progetti.progetti || []) : null;
   const { simulazione: s, calcolati: k, emessi: e, venduti: v } = dati;
   const prezzo = Number(dati.prezzo_riferimento || 0).toLocaleString("it-IT", { maximumFractionDigits: 2 });
   const propri = dati.ambito === "propri";
@@ -71,20 +81,38 @@ export default function ValoreCrediti({ titolo = "Valore dei crediti" }) {
           <Riga titolo="Venduti" n={v.crediti} e={v.euro} dettaglio={v.senza_valore ? `valore comunicato; ${v.senza_valore} ${v.senza_valore === 1 ? "vendita" : "vendite"} senza valore` : "valore comunicato dal registro"} />
           <div style={nota}>Calcolati ed emessi valorizzati a {prezzo} €/credito (prezzo di riferimento{propri ? "" : ", modificabile in Impostazioni"}); i crediti emessi provengono dai calcoli, quindi le righe non si sommano.</div>
         </div>
+        {/* Valore dei progetti: quanto paga il cliente (Caso 1 / Caso 2) */}
+        {progetti && vp && (
+          <div style={riquadro}>
+            <div style={etichetta}>Valore dei progetti (quanto paga il cliente)</div>
+            <div style={{ ...grande, color: C.green }}>{euro(vp.euro)}</div>
+            <div style={unita}>
+              {vp.valorizzati} {vp.valorizzati === 1 ? "Progetto aperto" : "Progetti aperti"} con il listino Caso 1 o Caso 2 · {euro(vp.annuo)} all'anno
+            </div>
+            <Riga titolo="In simulazione" e={progetti.simulazione.euro} soloEuro dettaglio={`${progetti.simulazione.comuni - progetti.simulazione.senza_caso} ${progetti.simulazione.comuni - progetti.simulazione.senza_caso === 1 ? "Comune" : "Comuni"} con Caso 1 o 2`} />
+            <div style={nota}>
+              Tabelle dei costi del Caso 1 (progetto volontario) e del Caso 2 (obbligatorio da bando di gara), per la popolazione e il periodo di ogni Progetto.
+              {vp.daIndicare > 0 && ` ${vp.daIndicare} ${vp.daIndicare === 1 ? "Progetto" : "Progetti"} senza listino indicato.`}
+              {vp.senzaPopolazione > 0 && ` ${vp.senzaPopolazione} senza popolazione.`}
+              {vp.stime > 0 && ` ${vp.stime} con periodo di 7 anni: valore stimato (le tabelle valgono per 10 anni).`}
+              {progetti.simulazione.senza_caso > 0 && ` ${progetti.simulazione.senza_caso} ${progetti.simulazione.senza_caso === 1 ? "scenario" : "scenari"} senza Caso 1 o 2 (o salvati prima del 23/10) non contati.`}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
 /* Una riga del riquadro «fase esecutiva»: nome, crediti, euro e dettaglio. */
-function Riga({ titolo, n, e, dettaglio }) {
+function Riga({ titolo, n, e, dettaglio, soloEuro = false }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10, padding: "5px 0", borderBottom: `1px solid ${C.line}`, flexWrap: "wrap" }}>
       <span style={{ fontSize: 12.5, color: C.ink, fontWeight: 600 }}>
         {titolo} <span style={{ fontWeight: 400, color: C.grafite }}>· {dettaglio}</span>
       </span>
       <span style={{ fontVariantNumeric: "tabular-nums", fontSize: 13.5, whiteSpace: "nowrap" }}>
-        <b>{crediti(n)}</b> <span style={{ color: C.grafite, fontSize: 12 }}>crediti</span> · <b style={{ color: C.green }}>{euro(e)}</b>
+        {!soloEuro && <><b>{crediti(n)}</b> <span style={{ color: C.grafite, fontSize: 12 }}>crediti</span> · </>}<b style={{ color: C.green }}>{euro(e)}</b>
       </span>
     </div>
   );
