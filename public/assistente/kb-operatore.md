@@ -72,6 +72,10 @@ Il collegamento vale una sola volta e per un tempo limitato; se è scaduto compa
 
 La pagina elenca i Progetti della vostra organizzazione (o delle organizzazioni che seguite), dal più recente. I Rapporti di Monitoraggio annuali si trovano dentro ciascun Progetto (capitolo 9).
 
+**Valore dei crediti della vostra organizzazione.** In cima alla pagina due riquadri, in crediti (1 credito = 1 tCO₂eq) e in euro, con i soli dati della vostra organizzazione:
+- **Crediti in simulazione**: la stima dell'ultima simulazione che la Fondazione ha preparato per il vostro Comune, su tutto il periodo simulato. È una stima, non un credito certificato.
+- **Crediti in fase esecutiva**: crediti **calcolati** nei Rapporti di Monitoraggio confermati, crediti **emessi** e crediti **venduti** con il valore comunicato dal registro. Calcolati ed emessi sono valorizzati al prezzo di riferimento indicato nel riquadro; non si sommano, perché i crediti emessi vengono dai calcoli.
+
 **Dal telefono.** Il portale si usa anche dallo smartphone. In alto restano i loghi, la campanella delle notifiche e il pulsante **☰ Menu**, che apre l'elenco delle pagine, **Il mio profilo** ed **Esci**. Con più pratiche si vede prima l'elenco: toccandone una si apre il dettaglio e **← Tutte le pratiche** riporta all'elenco. Con una sola pratica il dettaglio si apre subito. L'assistente è il pulsante tondo ✦ in basso a destra e, aperto, occupa tutto lo schermo.
 
 **Ordinare gli elenchi.** Con più pratiche o documenti, in alto compare **Ordina per**: scegliete il campo (titolo, codice, stato, data…) e con il pulsante ▲/▼ l'ordine crescente o decrescente. Nelle tabelle basta fare clic sull'intestazione della colonna.
@@ -545,7 +549,13 @@ La **Dashboard** è la pagina iniziale dello staff: mostra in un'unica tabella t
 
 **Barra di avanzamento a LED.** La colonna **Avanzamento** mostra per ogni pratica (quindi per ogni Comune) una barra di 7 luci, una per fase. Le fasi **completate sono accese** (ambra), quelle **ancora da fare sono spente**. La **settima luce**, la Chiusura, si accende in **verde**. La fase in corso è spenta ma ha un contorno ambra, così si vede subito dove è arrivata la pratica. Accanto c'è il conteggio, ad esempio «4/7». Passando il mouse su una luce compaiono numero, nome e stato della fase. La stessa barra, in piccolo, compare **nell'elenco delle pratiche** a sinistra della pagina Pratiche (in alto a destra di ogni riquadro, con lo stato sotto) e **in alto a destra nella pratica aperta**.
 
-**Riquadri in alto.** Ogni riquadro conta le pratiche e, se cliccato, filtra la tabella. Si clicca di nuovo per togliere il filtro.
+**Valore dei crediti (dal 23/10/2026).** In cima alla Dashboard due riquadri danno il valore complessivo dei crediti di tutto il portale, in crediti (1 credito = 1 tCO₂eq) e in euro:
+- **Crediti in simulazione**: per ogni Comune conta solo lo scenario del Simulatore **aggiornato più di recente** (gli scenari prudente, obiettivo, ambizioso… sono alternative e non si sommano), con i crediti netti di tutto il periodo simulato (7, 10 o 21 anni). Gli euro sono i ricavi dello scenario (crediti × valore del credito anno per anno). Gli scenari salvati prima del 23/10/2026 o senza valore del credito si valorizzano al prezzo di riferimento e il riquadro dice quanti sono: basta riaprirli e premere **Salva** nel Simulatore. È una stima ex ante, non certificabile.
+- **Crediti in fase esecutiva**: tre righe. **Calcolati**: crediti netti dei calcoli ex post confermati e ancora validi (non sostituiti da una nuova versione). **Emessi**: crediti dei lotti emessi dai Rapporti. **Venduti**: crediti venduti con il valore comunicato dal registro. Calcolati ed emessi sono valorizzati al **prezzo di riferimento** (Impostazioni); le righe non si sommano, perché i crediti emessi provengono dai calcoli.
+
+Gli utenti dei Comuni vedono gli stessi riquadri nella loro pagina **Le mie pratiche**, ma solo con i dati della propria organizzazione (scenari collegati alla loro organizzazione, loro calcoli, lotti e vendite). Gli scenari fatti per un Comune scritto solo per nome, senza organizzazione collegata, contano solo per lo staff.
+
+**Riquadri delle pratiche.** Ogni riquadro conta le pratiche e, se cliccato, filtra la tabella. Si clicca di nuovo per togliere il filtro.
 
 | Riquadro | Cosa conta |
 | --- | --- |

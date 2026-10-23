@@ -252,6 +252,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `32_utenti_online.sql` | Utenti online (backlog 38): tabella `presenza` (una riga per utente: ultima segnalazione, inizio del collegamento, pagina aperta; nessun IP, nessuno storico; RLS senza regole), `segnala_presenza(pagina)` e `presenza_uscita()` per ognuno solo per sé, `utenti_online()` (visti nelle ultime 24 ore, online se l'ultima segnalazione ha meno di 2 minuti) solo per l'Amministratore principale | 20/10/2026 — provato sul banco locale; **eseguito in produzione il 20/10** |
 | `33_audit_trail_user.sql` | Audit User (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **eseguito in produzione il 20/10** e provato dal vivo |
 | `34_sicurezza_avvisi.sql` | Sicurezza (backlog 14, 30): avvisi all'Amministratore principale (`cwp_avviso_sicurezza`, evento «sicurezza»): 5 accessi non riusciti in 15 minuti per email, 30 in un'ora in tutto, nuovo Amministratore (trigger `trg_profilo_avviso_admin`); `registra_uscita(p_motivo)` con l'uscita per inattività; rinforzi del Security Advisor: `search_path` fisso su tutte le funzioni, funzioni SECURITY DEFINER non eseguibili da anon (tranne `registra_accesso_fallito` e quelle usate nelle regole RLS) | 20/10/2026 — provato sul banco locale (`t34.sql`, regressioni `t33.sql`); **da eseguire in produzione** |
+| `42_valore_crediti.sql` | Valore complessivo dei crediti nella Dashboard (23/10/2026, richiesta di Luca): colonna `scenario_simulazione.ricavi_totali` (salvata dal simulatore); impostazione `prezzo_credito_riferimento` (32 €) e `admin_imposta_prezzo_riferimento` (solo Admin, 0-10.000 €, audit); `cruscotto_valore_crediti()` (JSON: simulazione con l'ultimo scenario per Comune, calcoli ex post confermati e validi, lotti emessi, vendite; staff tutto, utenti dei Comuni solo le proprie organizzazioni; anon negato). Prova `t42.sql` |
 | `41_utenze_nel_calcolo.sql` | Utenze del passo 5a nel motore di calcolo (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026 alle 10:14**): `cwp_utenze_controllo(calcolo, dati)` (security definer, solo numeri: utenze, senza categoria di simulazione, con categoria assente dalle classi della delibera); nuova `calcolo_coerenza` (alla conferma confronta anche `risultato.righe.utenze` con le utenze salvate; i risultati di prima valgono 0 utenze); nuova `calcolo_prerequisiti_conferma` (servono utenze del 5a o conferimenti del 5b; con le utenze nessuna senza categoria o con categoria fuori delibera). Prova `t41.sql` |
 | `40_utenze_calcolo.sql` | Banca Dati Utenze per utenza (22/10/2026, richiesta di Luca; **eseguito in produzione il 22/10/2026 alle 17:30**): tabella `calcolo_utenza` (codice unico nel calcolo, tipo UD/UnD, nominativo, indirizzo, componenti solo UD, mq, categoria tariffaria e categoria di simulazione (proposta uguale alla tariffaria dal trigger `trg_utenza_categoria`), produzione totale, `frazioni` JSON con kg e svuotamenti, indifferenziato obbligatorio; controlli `cwp_tipologie_rifiuto()` e `cwp_frazioni_errore()`); nessuna regola di lettura: consultazione con `staff_elenco_utenze` (staff, voce di audit «consultazione utenze»), lettura per il motore con `admin_utenze_calcolo` (Admin, senza nomi e indirizzi), `admin_svuota_utenze` (Admin, audit «cancellazione utenze»); modulo con `admin_salva_utenza` (nuova o modifica, messaggi in italiano, audit «inserimento/modifica utenza» con i nomi dei campi cambiati) e `admin_elimina_utenza`; `admin_conta_utenze`; inserimento solo Admin con una voce di audit per caricamento; immutabile a calcolo confermato, azzera il risultato della bozza, copiata da `admin_nuova_versione_calcolo` (ora security definer). Prova `t40.sql` |
 | `39_rilievi_n02_n03.sql` | Rilievi N02 e N03 della terza sessione di collaudo (22/10/2026, **eseguito in produzione il 22/10/2026 alle 14:27** con l'OK di Luca): `cwp_oggi()` (data in ora italiana); colonne `consultazione.chiusa_il`, `chiusura_tipo` («ordinaria» o «pratica_non_attiva»), `motivazione_chiusura`; `staff_chiudi_consultazione(p_consultazione, p_motivazione)` (sostituisce la firma a un parametro): chiusura ordinaria solo dal giorno dopo `data_chiusura` e completamento della fase 3, prima del termine solo per pratica annullata/ritirata/chiusa con motivazione; `staff_chiudi_fase`: fase 3 rifiutata senza feedback o con il feedback nel periodo, a termine passato chiude anche il feedback; `staff_apri_consultazione`: rifiutata con la fase 3 completata, apre la fase 3 se non iniziata; trigger `trg_consultazione_scadenza_fase3` (scadenza della fase 3 = termine del feedback, anche dopo l'errata corrige); `staff_apri_fase`: fase 5 solo con un ente attivo assegnato; `staff_imposta_ente_validazione`: l'ente non si toglie con la fase 5 aperta. Nessun dato storico modificato. Prova `t39.sql` |
@@ -440,7 +441,7 @@ Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), c
 | Integrazioni (§4) | Fatto | Richiesta → risposta del Cliente con documento → chiusura; fase "in attesa di integrazione" |
 | Feedback pubblico (§6, Guida 3.9) | Fatto (manca SPID/CIE/CNS) | Progetti (30 giorni) e Rapporti (20 giorni); pagina pubblica, documento pubblicato e bloccato, osservazioni numerate con email confermata e allegato, moderazione con motivazione facoltativa, firma «Partecipante» o nome a scelta dell'autore, risposte del Comune, errata corrige con ripartenza facoltativa del periodo; l'accesso con SPID/CIE/CNS richiesto dalla Guida 3.9 richiede l'adesione della Fondazione come fornitore di servizi |
 | Pagamenti (§7) | Fatto | Voci con la voce dello Schema tariffario e proposta degli importi (iscrizione, registrazione, emissione, vendita), incassi, operatore registrato e mostrato allo staff; attività sospese fino al saldo delle voci scadute, iscrizione da saldare prima della fase 5; visibili al Comune in sola lettura |
-| Back-office (§8) | Fatto | Cruscotto con scadenze/scaduti e, dal 22/10, fasi aperte senza scadenza; ricerca, azioni con motivazione |
+| Back-office (§8) | Fatto | Cruscotto con scadenze/scaduti e, dal 22/10, fasi aperte senza scadenza; dal 23/10 valore dei crediti in simulazione e in fase esecutiva (crediti ed euro; anche per i Comuni, solo i propri); ricerca, azioni con motivazione |
 | Uso da telefono | Fatto (22/10) | Menu a pannello, schede al posto delle tabelle in Dashboard e Audit, elenco e dettaglio delle pratiche uno alla volta, campi a 16 px, assistente a schermo intero; tabelle larghe che scorrono nel loro riquadro |
 | Notifiche (§9) | Fatto | Interne + email (Resend); messaggi Comune-Fondazione nella pratica; manca verifica dominio |
 | Audit (§10) | Fatto | Scritto dal database, immutabile, pagina di consultazione; dal 20/10 anche lo scaricamento dei documenti e la sezione Audit User (accessi e operazioni per utente, solo Amministratore principale) |
@@ -533,6 +534,22 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 23 ottobre 2026
+- **Dashboard: valore complessivo dei crediti** (richiesta di Luca delle
+  10:21: crediti in simulazione e in fase esecutiva; Amministratori tutto,
+  utenti solo i loro; unità scelta da Luca: crediti ed euro; per le altre
+  scelte nessuna preferenza, adottate le proposte). Ramo
+  `valore-crediti-dashboard`.
+  - Script `42_valore_crediti.sql` (prova `t42.sql`): `ricavi_totali`
+    degli scenari, prezzo di riferimento (32 €), `cruscotto_valore_crediti`.
+  - Simulazione: l'ultimo scenario aggiornato per ogni Comune, crediti
+    netti del periodo, euro = ricavi dello scenario (o crediti × prezzo di
+    riferimento per gli scenari salvati prima o senza valore del credito,
+    contati a parte). Fase esecutiva: calcoli ex post confermati e validi,
+    lotti emessi, vendite con il valore comunicato.
+  - Componente `ValoreCrediti.jsx` nella Dashboard (staff) e in «Le mie
+    pratiche» (Comuni, solo i propri dati); `PrezzoRiferimento.jsx` in
+    Impostazioni; il Simulatore salva i ricavi del periodo.
+  - Verificato a schermo su computer e telefono con dati finti.
 - **Utenze del passo 5a nel motore di calcolo** (richiesta di Luca delle
   9:39, «procediamo»). Ramo `utenze-nel-calcolo`.
   - `calcolo.js`: `utenzeInConferimenti` (una riga per frazione con i kg
@@ -1780,6 +1797,8 @@ main.jsx → App.jsx (route, Protetta: accesso, password temporanea, MFA)
 | `staff_autori_commenti` | 17 | staff | Nome ed email degli autori delle osservazioni |
 | `staff_errata_corrige` | 17 | staff | Errata corrige, eventuale ripartenza dei 30 giorni |
 | `staff_imposta_ente_validazione` | 17, 39 | staff | Ente di Validazione della pratica (non si toglie con la fase 5 aperta) |
+| `cruscotto_valore_crediti` | 42 | tutti con accesso (staff: tutto; Comuni: i propri) | Valore dei crediti in simulazione e in fase esecutiva, in crediti ed euro |
+| `admin_imposta_prezzo_riferimento` | 42 | admin | Prezzo di riferimento del credito (Impostazioni), con audit |
 | `cwp_utenze_controllo` | 41 | uso interno (trigger della conferma) | Numero di utenze del calcolo, senza categoria di simulazione e con categoria fuori delibera |
 | `staff_elenco_utenze`, `admin_utenze_calcolo`, `admin_svuota_utenze` | 40 | staff / admin | Banca Dati Utenze del calcolo: consultazione registrata nell'audit, lettura per il motore senza dati personali, svuotamento prima di un nuovo caricamento |
 | `admin_elenco_utenti`, `admin_aggiorna_utente`, `admin_imposta_organizzazioni`, `admin_imposta_attivo` | 05, 06, 10 | admin | Gestione utenti |
@@ -1856,7 +1875,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 165 file, 39.522 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 168 file, 39.902 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -1870,7 +1889,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 165 file, 39.522 righe 
 | File | Righe | Cosa contiene |
 |---|---|---|
 | `src/pages/Anagrafiche.jsx` | 214 | censimento di Organizzazioni ed Enti di Validazione (requisiti §3: l'Operatore «censisce Organizzazioni ed Enti di Validazione»). - Organizzazioni: elenco con ricerca, dati essenziali (tipo, codice fiscale, partita IVA, PEC,… |
-| `src/pages/AreaCliente.jsx` | 168 | il Comune/azienda vede l'elenco dei propri Progetti (schede compatte con stato) e, sotto, il dettaglio della pratica selezionata: fasi, documenti, integrazioni, messaggi. Link al Manuale Utente in PDF. Sul telefono (fino a 760… |
+| `src/pages/AreaCliente.jsx` | 173 | il Comune/azienda vede l'elenco dei propri Progetti (schede compatte con stato) e, sotto, il dettaglio della pratica selezionata: fasi, documenti, integrazioni, messaggi. Link al Manuale Utente in PDF. Sul telefono (fino a 760… |
 | `src/pages/Audit.jsx` | 175 | tabella degli eventi registrati (data, utente, operazione, pratica, passaggio di stato, motivazione), con ricerca testuale e pulsante per caricare eventi meno recenti (requisiti §10). Ogni colonna si ordina con un clic… |
 | `src/pages/AuditUtenti.jsx` | 477 | Nomi leggibili degli eventi di accesso. |
 | `src/pages/BackOffice.jsx` | 263 | a sinistra l'elenco dei Progetti (con ricerca oltre 4 voci), a destra il dettaglio della pratica scelta con le sue fasi, documenti, integrazioni, consultazione, pagamenti, rapporti. Pulsante «+ Nuovo progetto» per registrare un… |
@@ -1879,17 +1898,17 @@ Inventario generato da `strumenti/inventario_codice.py`: 165 file, 39.522 righe 
 | `src/pages/ConsultazioniPubbliche.jsx` | 331 | permettere a chiunque di leggere il Progetto (30 giorni) o il Rapporto di Monitoraggio (20 giorni) nel periodo di feedback pubblico (Guida al Programma 3.9 e 6.3.1) e inviare osservazioni, che Fondazione Operate modera e a cui… |
 | `src/pages/Crediti.jsx` | 240 | sezione del calcolo dei crediti di CO₂eq (Metodologia Carbon WastePrint® v1.2). Due viste: - «Calcoli»: elenco di tutti i calcoli (titolo, pratica, anno e tipo, crediti netti, stato bozza/confermato) e modulo «+ Nuovo calcolo»… |
 | `src/pages/CreditiEmessiPagina.jsx` | 83 | elenco di tutti i lotti di crediti emessi dai Rapporti di Monitoraggio (Guida al Programma 6.3.2 e 6.3.3; script 24), con il totale emessi / attivi / ritirati e, per lo staff, le azioni su ogni lotto (caricamento sul registro,… |
-| `src/pages/Cruscotto.jsx` | 304 | (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso, in scadenza, scadute, fase aperta senza scadenza — rilievo N04: una data mancante non conta come «in regola» —, in attesa del Cliente, integrazioni da verificare,… |
+| `src/pages/Cruscotto.jsx` | 310 | (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso, in scadenza, scadute, fase aperta senza scadenza — rilievo N04: una data mancante non conta come «in regola» —, in attesa del Cliente, integrazioni da verificare,… |
 | `src/pages/Documentazione.jsx` | 219 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
 | `src/pages/FormatoDati.jsx` | 136 | spiega lo standard dei dati da inviare per il calcolo dei crediti e permette di scaricare il tracciato Excel. Il link si può mandare a Comuni e gestori anche senza credenziali. Contiene: elenco dei fogli del tracciato,… |
 | `src/pages/GestioneUtenti.jsx` | 763 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
-| `src/pages/Impostazioni.jsx` | 60 | parametri del Programma modificabili dagli Amministratori: - Durata delle fasi del Progetto e del Rapporto di Monitoraggio (script 13 e 21, componente DurateFasi); - Documenti richiesti per fase (script 21, componente… |
+| `src/pages/Impostazioni.jsx` | 64 | parametri del Programma modificabili dagli Amministratori: - Durata delle fasi del Progetto e del Rapporto di Monitoraggio (script 13 e 21, componente DurateFasi); - Documenti richiesti per fase (script 21, componente… |
 | `src/pages/Login.jsx` | 275 | accesso con email e password; «Password dimenticata?» per farsi mandare il collegamento di reimpostazione; link alle pagine pubbliche (formato dei dati, consultazioni pubbliche, Manuale Utente in PDF). Dopo l'accesso riuscito… |
 | `src/pages/News.jsx` | 365 | Data breve in ora italiana: «oggi 14:07», «ieri», «18/10». |
 | `src/pages/Profilo.jsx` | 66 | mostra i dati dell'account (nome, email di accesso, ruolo), il collegamento al cambio password («/password») e i documenti da scaricare per il proprio ruolo: Manuale Utente per tutti; Manuale Amministratore e Registro sviluppo e… |
 | `src/pages/Programma.jsx` | 249 | la parte pubblica della piattaforma online richiesta dalla Guida al Programma (cap. 3.7) e dallo Standard CWP (cap. 2.3, 5 e 6): - informazioni del Programma: soggetto promotore del programma, PEC, email e sito ufficiale (Guida… |
 | `src/pages/Reclami.jsx` | 271 | reclami e richieste di chiarimento (Politica di reclamo del Programma; Guida al Programma cap. 8; script 24). - Chiunque abbia un account invia un reclamo o una richiesta di chiarimento dal portale e ne segue lo stato e la… |
-| `src/pages/Simulatore.jsx` | 1204 | stima ex ante, non certificabile, dei crediti che un Comune potrebbe generare in 7, 10 o 21 anni (Registro, backlog punto 37). - Elenco degli scenari raggruppati per Comune, con confronto dei totali; «+ Nuovo scenario» (Comune… |
+| `src/pages/Simulatore.jsx` | 1208 | stima ex ante, non certificabile, dei crediti che un Comune potrebbe generare in 7, 10 o 21 anni (Registro, backlog punto 37). - Elenco degli scenari raggruppati per Comune, con confronto dei totali; «+ Nuovo scenario» (Comune… |
 | `src/pages/TuoiDocumenti.jsx` | 185 | (requisiti §5) raccoglie i documenti GENERALI (non legati a una fase) di tutte le pratiche dell'organizzazione: contratto, allegati, documentazione amministrativa e altri documenti della Fondazione, raggruppati per tipologia,… |
 | `src/pages/VerificaMfa.jsx` | 169 | (requisiti §13) - primo accesso: attivazione con QR code da inquadrare con un'app di autenticazione (Google Authenticator, Microsoft Authenticator, Authy…), con chiave da inserire a mano in alternativa; - accessi successivi:… |
 
@@ -1917,6 +1936,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 165 file, 39.522 righe 
 | `src/components/Rapporti.jsx` | 134 | elenco dei Rapporti di Monitoraggio annuali di un Progetto (requisiti §2): uno per anno, in sequenza, fino a 10 con il periodo di riferimento di 10 anni o fino a 21 con 7 anni rinnovabili 3 volte (Standard 4.3.8, script 23).… |
 | `src/components/UscitaInattivita.jsx` | 123 | Ora dell'ultima attività (la più recente tra questa scheda e le altre). |
 | `src/components/UtentiOnline.jsx` | 204 | Ora italiana (hh:mm) di un istante; con il giorno se non è oggi. |
+| `src/components/ValoreCrediti.jsx` | 97 | mostrare il valore complessivo dei crediti, in crediti (tCO₂eq) e in euro: - in simulazione: per ogni Comune lo scenario del simulatore aggiornato più di recente, su tutto il periodo simulato; euro = ricavi dello scenario (o… |
 | `src/components/crediti/ImportaTracciato.jsx` | 283 | passo «Importa il tracciato» del calcolo dei crediti (backlog 1-5). L'Amministratore sceglie il tracciato dati del Comune: - dai documenti della pratica del calcolo (file .xlsx o .zip caricati dal Comune), oppure dal proprio… |
 | `src/components/crediti/RegistroCrediti.jsx` | 178 | registro dei crediti (backlog 7), vista «Registro» della pagina Calcolo crediti. Elenca i calcoli ex post confermati con il numero di registro assegnato dal database alla conferma (CWP-REG-AAAA-NNNN). Un calcolo corretto con una… |
 | `src/components/crediti/TabellaDati.jsx` | 208 | tabella di dati modificabile in pagina per il calcolo dei crediti CWP (conferimenti, utenze, riuso…), con aggiunta ed eliminazione di righe, importazione da CSV (anche salvato da Excel in italiano) e scaricamento di un modello… |
@@ -1926,6 +1946,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 165 file, 39.522 righe 
 | `src/components/impostazioni/EntiValidazione.jsx` | 147 | anagrafica degli Enti di Validazione (backlog 11), sezione della pagina Anagrafiche. Elenco degli enti con i Progetti a cui sono assegnati (requisiti §3), inserimento di un nuovo ente, modifica e disattivazione. L'ente non… |
 | `src/components/impostazioni/InfoProgramma.jsx` | 145 | informazioni del Programma pubblicate sulla pagina pubblica /programma (Guida al Programma 3.1 e 3.6): soggetto promotore del programma, PEC (anche per i reclami), email e sito ufficiale; e le metodologie approvate (Guida cap.… |
 | `src/components/impostazioni/ModelliDocumento.jsx` | 184 | modelli di documento (backlog 12), sezione della pagina Impostazioni. L'Amministratore carica i modelli che i Comuni scaricano: un modello può valere per una fase di un tipo di pratica (Progetto o |
+| `src/components/impostazioni/PrezzoRiferimento.jsx` | 57 | il prezzo in euro con cui la Dashboard dà un valore ai crediti calcolati ed emessi (riquadro «Crediti in fase esecutiva») e agli scenari del simulatore salvati senza valore del credito. Iniziale 32 €, come il valore proposto dal… |
 | `src/components/impostazioni/Registri.jsx` | 117 | elenco dei registri riconosciuti dal Programma (Guida al Programma 3.5, Standard CWP cap. 6), pubblicato sulla pagina pubblica /programma: piattaforme esterne su cui il promotore del progetto carica e vende i crediti. Requisiti… |
 | `src/components/stili.js` | 85 | oggetti di stile in linea condivisi dai componenti delle pratiche e delle impostazioni (stessa grafica del resto del portale: carta, verde Fondazione, bordi sottili) e la funzione dataOra per mostrare data e ora in formato… |
 
@@ -1952,7 +1973,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 165 file, 39.522 righe 
 | `src/lib/csv.js` | 184 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
 | `src/lib/cwpProgram.js` | 185 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
 | `src/lib/date.js` | 81 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO (anche la data italiana, indipendente dal fuso del computer). |
-| `src/lib/dati.js` | 1191 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
+| `src/lib/dati.js` | 1208 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
 | `src/lib/fascicolo.js` | 357 | ZIP con: riepilogo PDF (Riepilogo.pdf, src/lib/fascicoloPdf.js), dati della pratica con l'Ente di Validazione, fasi, tutti i documenti in tutte le versioni (cartella Validazione per il rapporto dell'Ente; per i Rapporti anche il… |
 | `src/lib/fascicoloPdf.js` | 137 | un documento leggibile da stampare o archiviare insieme ai file del fascicolo: dati della pratica e dell'Ente di Validazione, fasi, elenco dei documenti (con l'impronta SHA-256), integrazioni, consultazioni pubbliche, pagamenti… |
 | `src/lib/file.js` | 158 | prima di inviare un file all'archivio controlla formato ammesso, dimensione, contenuto reale (primi byte, "firma" del formato) e prepara un nome sicuro per il percorso nell'archivio. Traduce anche gli errori dello Storage di… |
@@ -2011,6 +2032,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 165 file, 39.522 righe 
 | `supabase/39_rilievi_n02_n03.sql` | 289 | correzioni dei rilievi N02 e N03 (terza sessione di collaudo, CWP_NUOVI_RILIEVI_A_MORETTI_V01_20261021, risposte in docs/collaudo/Rilievi_N01-N06_risposte.md). |
 | `supabase/40_utenze_calcolo.sql` | 426 | 40 — UTENZE DEL CALCOLO DEI CREDITI (UNA RIGA PER UTENZA) |
 | `supabase/41_utenze_nel_calcolo.sql` | 165 | 41 — UTENZE DEL CALCOLO NEL MOTORE: CONTROLLI DI CONFERMA |
+| `supabase/42_valore_crediti.sql` | 148 | 42 — DASHBOARD: VALORE COMPLESSIVO DEI CREDITI |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
@@ -2061,7 +2083,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 165 file, 39.522 righe 
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 588 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1384 | — |
+| `strumenti/revisioni_documenti.json` | 1426 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

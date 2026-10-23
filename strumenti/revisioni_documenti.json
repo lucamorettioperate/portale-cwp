@@ -185,6 +185,12 @@
       "data": "23/10/2026",
       "descrizione": "Banca Dati Utenze per utenza: come la Fondazione usa categoria tariffaria e kg di ogni frazione (vuoto diverso da 0).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.1",
+      "data": "23/10/2026",
+      "descrizione": "«Le mie pratiche»: riquadri del valore dei crediti della propria organizzazione (simulazione e fase esecutiva, crediti ed euro).",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -469,6 +475,12 @@
       "data": "23/10/2026",
       "descrizione": "Passo 5a: «Calcola» usa le utenze (categoria di simulazione come classe della delibera, kg misurati, frazioni per utenza); utenze senza categoria o fuori delibera escluse e conferma bloccata; fonte nei Risultati, nel CSV e nel PDF.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "5.7",
+      "data": "23/10/2026",
+      "descrizione": "Dashboard: valore dei crediti in simulazione e in fase esecutiva; Impostazioni: prezzo di riferimento del credito.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -716,6 +728,12 @@
       "rev": "3.20",
       "data": "23/10/2026",
       "descrizione": "Prove 7.26-7.26f: utenze del passo 5a nel calcolo, esclusioni, conferma, riquadro del 5b, calcoli solo tracciato, CSV.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.21",
+      "data": "23/10/2026",
+      "descrizione": "Prove 10.10m-10.10p: valore dei crediti in Dashboard e per i Comuni, prezzo di riferimento.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1079,6 +1097,12 @@
       "data": "23/10/2026",
       "descrizione": "Script 41 (utenze nel motore e controlli di conferma), cronologia del 23/10, capitolo 15, funzione cwp_utenze_controllo.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "7.0",
+      "data": "23/10/2026",
+      "descrizione": "Script 42 (valore dei crediti), funzioni cruscotto_valore_crediti e admin_imposta_prezzo_riferimento, cronologia del 23/10.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1170,6 +1194,12 @@
       "rev": "2.4",
       "data": "23/10/2026",
       "descrizione": "Script del database 01-41.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.5",
+      "data": "23/10/2026",
+      "descrizione": "Script del database 01-42.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1287,6 +1317,12 @@
       "data": "23/10/2026",
       "descrizione": "Emissioni di progetto dai kg misurati per utenza; Banca Dati Utenze con nomi visibili solo allo staff; stato al 23/10.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.8",
+      "data": "23/10/2026",
+      "descrizione": "Stato al 23/10: valore dei crediti nella Dashboard.",
+      "autore": "Fondazione Operate"
     }
   ],
   "issue": [
@@ -1378,6 +1414,12 @@
       "rev": "1.14",
       "data": "23/10/2026",
       "descrizione": "Prove utenzeNelCalcolo.test.mjs (7) e t41.sql; 18 serie.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.15",
+      "data": "23/10/2026",
+      "descrizione": "Prova t42.sql (valore dei crediti).",
       "autore": "Fondazione Operate"
     }
   ]

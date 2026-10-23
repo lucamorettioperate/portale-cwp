@@ -176,7 +176,7 @@ Si eseguono con `npm test` prima di ogni rilascio; l'ultimo esito è sempre «tu
 | `bancaDatiUtenze.test.mjs` | 6 | Banca Dati Utenze per utenza: file di prova con 20 + 20 utenze, righe sbagliate con foglio e riga, codice doppio, svuotamenti senza kg, virgola e categoria numerica, colonna mancante, controllo del modulo, riassunto degli eventi delle utenze nell'Audit |
 | `utenzeNelCalcolo.test.mjs` | 7 | Utenze del passo 5a nel motore: categoria di simulazione come classe e kg misurati, stessi numeri dei conferimenti del tracciato a parità di dati, frazioni contate per utenza, utenze senza categoria o fuori delibera escluse (avviso) e segnalate come errore di coerenza, priorità del 5a sul 5b, kg negativi bloccanti |
 
-**Ultima esecuzione:** 23/10/2026 10:30 (ramo `utenze-nel-calcolo`), 18 serie superate.
+**Ultima esecuzione:** 23/10/2026 11:00 (ramo `valore-crediti-dashboard`), 18 serie superate.
 
 ### Prove del database (banco locale)
 
@@ -184,6 +184,12 @@ Ogni script del database è provato su una copia locale di Postgres 16 con tutti
 
 Ultime prove:
 
+- `t42.sql` del 23/10/2026 (valore dei crediti nella Dashboard, script 42), tutte come attese:
+  - Amministratore: simulazione con un solo scenario per Comune (il più recente; il Comune non censito riconosciuto anche con il nome scritto diversamente), euro dai ricavi o al prezzo di riferimento, scenari a prezzo di riferimento contati; calcoli ex post confermati e validi (esclusi bozze, ex ante e versioni sostituite); lotti e vendite;
+  - Operatore: stessi totali; non cambia il prezzo;
+  - utente del Comune A: solo i dati del Comune A;
+  - prezzo a 40 €: euro ricalcolati, voce di audit; prezzo negativo rifiutato;
+  - anonimo: nessun accesso.
 - `t41.sql` del 23/10/2026 (utenze del calcolo nel motore, script 41), tutte come attese:
   - conteggi: 3 utenze, 1 senza categoria, 1 con categoria fuori delibera (classi numeriche o con spazi riconosciute);
   - conferma rifiutata con utenze senza categoria o fuori delibera; dopo la correzione dal modulo i conteggi tornano a zero;
@@ -258,3 +264,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 22/10/2026 14:50 | Rilascio in produzione di N01-N04, ISS-038 e script 38-39 |
 | 22/10/2026 16:50 | Prova `t40.sql` (Banca Dati Utenze) |
 | 23/10/2026 10:30 | Utenze del passo 5a nel motore: prove `utenzeNelCalcolo.test.mjs` (18 serie) e `t41.sql` |
+| 23/10/2026 11:00 | Valore dei crediti nella Dashboard: prova `t42.sql`; 18 serie |
