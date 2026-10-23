@@ -21,7 +21,7 @@
 import React, { useEffect, useState } from "react";
 import { COLORI as C, STATI_PRATICA, PERIODI_RIFERIMENTO } from "../lib/cwpProgram.js";
 import Badge from "./Badge.jsx";
-import { elencaRapporti, creaRapporto } from "../lib/dati.js";
+import { elencaRapporti, creaRapporto, progettoRegistrato } from "../lib/dati.js";
 import { useOrdinamento, SceltaOrdinamento } from "./Ordinamento.jsx";
 
 /* Rapporti di Monitoraggio annuali di un Progetto (requisiti §2):
@@ -64,6 +64,10 @@ export default function Rapporti({ progetto, staff, onApri, onCreato }) {
   const prossimo = rapporti.length + 1;
   // Massimo dal periodo di riferimento del Progetto (10 o 21).
   const massimo = (PERIODI_RIFERIMENTO[progetto.periodo_riferimento] || PERIODI_RIFERIMENTO["10 anni"]).rapporti;
+  // Il Rapporto si crea solo per un Progetto registrato (fase 6 completata),
+  // segnalazione di Luca del 23/10/2026; lo stesso controllo è nel
+  // database (rapporto_coerente, script 45).
+  const registrato = progettoRegistrato(progetto);
 
   // Ordinamento dei Rapporti («Ordina per»); senza scelta per anno.
   const ord = useOrdinamento(rapporti, {
@@ -77,12 +81,17 @@ export default function Rapporti({ progetto, staff, onApri, onCreato }) {
           Rapporti di Monitoraggio <span style={{ color: C.grafite, fontWeight: 600 }}>({rapporti.length}/{massimo})</span>
         </h3>
         {/* Nuovo Rapporto: solo staff, solo su Progetto attivo, entro il massimo */}
-        {staff && progetto.stato === "attiva" && prossimo <= massimo && (
+        {staff && progetto.stato === "attiva" && registrato && prossimo <= massimo && (
           <button onClick={nuovo} disabled={inCorso} style={btnPrimario}>
             {inCorso ? "Creazione…" : `+ Rapporto anno ${prossimo}`}
           </button>
         )}
       </div>
+      {staff && progetto.stato === "attiva" && !registrato && (
+        <div style={{ fontSize: 12.5, color: C.grafite, marginBottom: 8 }}>
+          I Rapporti di Monitoraggio si creano dopo la registrazione del Progetto (fase 6 «Seconda verifica documentale» completata).
+        </div>
+      )}
       {errore && <div style={{ color: C.red, fontSize: 12.5, marginBottom: 8 }}>{errore}</div>}
       {rapporti.length === 0 && (
         <div style={{ fontSize: 13, color: C.grafite }}>Nessun Rapporto di Monitoraggio ancora.</div>
