@@ -611,7 +611,18 @@ export async function leggiFasiPratiche(praticaIds) {
 // l'organizzazione del Progetto e la sequenza degli anni; il limite lo
 // garantisce anche il database (rapporto_coerente, script 23, e indice
 // uq_rapporto_anno). Il controllo qui serve solo a dare un messaggio chiaro.
+// Vero se il Progetto è registrato: fase 6 completata (o data di
+// registrazione presente, impostata dal database alla chiusura della fase 6,
+// script 23). Serve le fasi nella riga (leggiPratica le include).
+export function progettoRegistrato(progetto) {
+  if (progetto?.data_registrazione) return true;
+  return (progetto?.fasi || []).some((f) => f.numero === 6 && f.stato === "completata");
+}
+
 export async function creaRapporto(progetto) {
+  if (!progettoRegistrato(progetto)) {
+    return { data: null, error: { message: "Il Progetto non è ancora registrato: il Rapporto di Monitoraggio si crea dopo la fase 6 completata" } };
+  }
   const { data: esistenti } = await elencaRapporti(progetto.id);
   const anno = (esistenti || []).reduce((m, r) => Math.max(m, r.anno_monitoraggio || 0), 0) + 1;
   const massimo = (PERIODI_RIFERIMENTO[progetto.periodo_riferimento] || PERIODI_RIFERIMENTO["10 anni"]).rapporti;
