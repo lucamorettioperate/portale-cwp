@@ -130,10 +130,15 @@ export const VOCI_PAGAMENTO = {
 };
 
 // Stati di una fase.
+// Colori della scritta dello stato di una fase (richiesta di Luca Moretti
+// del 23/10/2026): VERDE completata, ARANCIO in corso (e in attesa di
+// integrazione, che è una fase ancora aperta), ROSSO non iniziata. Usati
+// dal badge della fase nella pratica (DettaglioPratica) e dalla colonna
+// «Fase corrente» della Dashboard (Cruscotto).
 export const STATI_FASE = {
-  non_iniziata: { label: "Non iniziata", bg: "#f0eee7", fg: "#8a8d82" },
-  in_corso: { label: "In corso", bg: "#e4ede1", fg: "#2f5d3a" },
-  in_attesa_integrazione: { label: "In attesa di integrazione", bg: "#f3e7d6", fg: "#c98a1a" },
+  non_iniziata: { label: "Non iniziata", bg: "#f8e3df", fg: "#a23b2c" },
+  in_corso: { label: "In corso", bg: "#fbe8d4", fg: "#b95a0b" },
+  in_attesa_integrazione: { label: "In attesa di integrazione", bg: "#fbe8d4", fg: "#b95a0b" },
   completata: { label: "Completata", bg: "#dfe9db", fg: "#2f5d3a" },
 };
 

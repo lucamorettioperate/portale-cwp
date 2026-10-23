@@ -146,12 +146,12 @@ I giorni sono le durate standard: la Fondazione può modificarle. Fa sempre fede
 
 Ogni fase ha uno stato:
 
-| Stato | Significato |
-| --- | --- |
-| Non iniziata | La fase non è ancora stata aperta |
-| In corso | La fase è aperta e ha una scadenza |
-| In attesa di integrazione | La Fondazione vi ha chiesto un documento o un chiarimento (capitolo 6) |
-| Completata | La fase è chiusa |
+| Stato | Colore della scritta | Significato |
+| --- | --- | --- |
+| Non iniziata | rosso | La fase non è ancora stata aperta |
+| In corso | arancio | La fase è aperta e ha una scadenza |
+| In attesa di integrazione | arancio | La Fondazione vi ha chiesto un documento o un chiarimento (capitolo 6) |
+| Completata | verde | La fase è chiusa |
 
 La fase aperta ha il bordo verde e il conto alla rovescia: «N gg alla scadenza» (in arancione negli ultimi 3 giorni), «scade oggi» oppure «scaduta da N gg» in rosso. Sotto il nome trovate, quando presenti, il **Responsabile** della fase, la data di apertura, la scadenza e la data di chiusura.
 
@@ -575,6 +575,8 @@ Gli utenti dei Comuni vedono gli stessi riquadri nella loro pagina **Le mie prat
 **Tabella.** Colonne Pratica, Organizzazione, Stato, Fase corrente, Scadenza (con «scaduta da N gg», «scade oggi», «tra N gg») e **Da fare** (integrazioni da verificare, in attesa del Cliente, feedback pubblico in corso). Fate clic su una riga per aprire la pratica.
 
 La *fase corrente* è l'ultima aperta; se nessuna è aperta, la prima non iniziata.
+
+**Colori dello stato delle fasi (dal 23/10/2026).** Nella Dashboard (colonna Fase corrente) e nelle fasi della pratica la scritta dello stato è **verde** per *Completata*, **arancio** per *In corso* e *In attesa di integrazione*, **rossa** per *Non iniziata*.
 
 ## Pratiche: Progetti e Rapporti di monitoraggio
 

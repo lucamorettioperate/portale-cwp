@@ -146,12 +146,12 @@ I giorni sono le durate standard: la Fondazione può modificarle. Fa sempre fede
 
 Ogni fase ha uno stato:
 
-| Stato | Significato |
-| --- | --- |
-| Non iniziata | La fase non è ancora stata aperta |
-| In corso | La fase è aperta e ha una scadenza |
-| In attesa di integrazione | La Fondazione vi ha chiesto un documento o un chiarimento (capitolo 6) |
-| Completata | La fase è chiusa |
+| Stato | Colore della scritta | Significato |
+| --- | --- | --- |
+| Non iniziata | rosso | La fase non è ancora stata aperta |
+| In corso | arancio | La fase è aperta e ha una scadenza |
+| In attesa di integrazione | arancio | La Fondazione vi ha chiesto un documento o un chiarimento (capitolo 6) |
+| Completata | verde | La fase è chiusa |
 
 La fase aperta ha il bordo verde e il conto alla rovescia: «N gg alla scadenza» (in arancione negli ultimi 3 giorni), «scade oggi» oppure «scaduta da N gg» in rosso. Sotto il nome trovate, quando presenti, il **Responsabile** della fase, la data di apertura, la scadenza e la data di chiusura.
 

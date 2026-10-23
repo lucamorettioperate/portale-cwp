@@ -546,6 +546,12 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 23 ottobre 2026
+- **Colori dello stato delle fasi** (richiesta di Luca delle 11:00): in
+  `STATI_FASE` (`src/lib/cwpProgram.js`) scritta verde per Completata,
+  arancio per In corso e In attesa di integrazione, rossa per Non
+  iniziata; valgono per il badge della fase nella pratica e per la colonna
+  «Fase corrente» della Dashboard. Verificato a schermo su computer e
+  telefono. Ramo `colori-stato-fasi`, nessuno script.
 - **Valore dei progetti (quanto paga il cliente) e listino Caso 1 / Caso 2**
   (richiesta di Luca delle 10:47). Ramo `valore-progetti-casi`.
   - Script `43_valore_progetti.sql` (prova `t43.sql`): caso del listino sul
@@ -1929,7 +1935,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 170 file, 40.367 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 170 file, 40.402 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -2025,7 +2031,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 170 file, 40.367 righe 
 | `src/lib/crediti/tracciato.js` | 708 | legge il file del tracciato compilato dal Comune o dal gestore, blocca l'import se trova dati personali, converte i fogli nei dati del motore di calcolo (calcolo.js) e segnala le incoerenze. |
 | `src/lib/crediti/utenzeCalcolo.js` | 91 | elenco a pagine con ricerca, conteggi, modulo di una singola utenza (nuova o modificata), cancellazione e caricamento dell'elenco completo dell'anno (sostituisce quello precedente). |
 | `src/lib/csv.js` | 184 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
-| `src/lib/cwpProgram.js` | 185 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
+| `src/lib/cwpProgram.js` | 190 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
 | `src/lib/date.js` | 81 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO (anche la data italiana, indipendente dal fuso del computer). |
 | `src/lib/dati.js` | 1218 | raccoglie in un solo posto tutte le letture e scritture del portale su tabelle, funzioni del database (RPC), archivi (Storage) ed Edge Functions, esclusi il calcolo crediti (src/lib/crediti/archivio.js) e l'autenticazione… |
 | `src/lib/fascicolo.js` | 357 | ZIP con: riepilogo PDF (Riepilogo.pdf, src/lib/fascicoloPdf.js), dati della pratica con l'Ente di Validazione, fasi, tutti i documenti in tutte le versioni (cartella Validazione per il rapporto dell'Ente; per i Rapporti anche il… |
@@ -2139,7 +2145,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 170 file, 40.367 righe 
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/presentazione/genera_presentazione.cjs` | 622 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1498 | — |
+| `strumenti/revisioni_documenti.json` | 1528 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
