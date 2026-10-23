@@ -102,6 +102,8 @@ Gli utenti dei Comuni vedono gli stessi riquadri nella loro pagina **Le mie prat
 
 La *fase corrente* è l'ultima aperta; se nessuna è aperta, la prima non iniziata.
 
+**Colori dello stato delle fasi (dal 23/10/2026).** Nella Dashboard (colonna Fase corrente) e nelle fasi della pratica la scritta dello stato è **verde** per *Completata*, **arancio** per *In corso* e *In attesa di integrazione*, **rossa** per *Non iniziata*.
+
 ## Pratiche: Progetti e Rapporti di monitoraggio
 
 La pagina **Pratiche** elenca a sinistra i Progetti (con più di 4 progetti compare il campo **Cerca…**) e mostra a destra il dettaglio di quello selezionato.

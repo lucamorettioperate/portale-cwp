@@ -268,3 +268,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 23/10/2026 10:30 | Utenze del passo 5a nel motore: prove `utenzeNelCalcolo.test.mjs` (18 serie) e `t41.sql` |
 | 23/10/2026 11:00 | Valore dei crediti nella Dashboard: prova `t42.sql`; 18 serie |
 | 23/10/2026 11:45 | Valore dei progetti (Caso 1 / Caso 2): prove `valoreProgetti.test.mjs` e `t43.sql`; 19 serie |
+| 23/10/2026 12:10 | Colori dello stato delle fasi: verifica a schermo (computer e telefono); 19 serie |

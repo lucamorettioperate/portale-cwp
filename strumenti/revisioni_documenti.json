@@ -203,6 +203,12 @@
       "data": "23/10/2026",
       "descrizione": "«Le mie pratiche»: valore del progetto (listino Caso 1 o Caso 2).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.4",
+      "data": "23/10/2026",
+      "descrizione": "Colori dello stato delle fasi (verde, arancio, rosso).",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -505,6 +511,12 @@
       "data": "23/10/2026",
       "descrizione": "Nuovo progetto e dati della pratica: listino Caso 1 / Caso 2 e valore del progetto; Dashboard: valore dei progetti per il cliente.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.0",
+      "data": "23/10/2026",
+      "descrizione": "Colori dello stato delle fasi in Dashboard e nella pratica.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -764,6 +776,12 @@
       "rev": "3.22",
       "data": "23/10/2026",
       "descrizione": "Prove 10.10q-10.10s: listino del Progetto e valore dei progetti.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.23",
+      "data": "23/10/2026",
+      "descrizione": "Prova 10.10t: colori dello stato delle fasi.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1145,6 +1163,12 @@
       "data": "23/10/2026",
       "descrizione": "Script 43 (valore dei progetti, listino Caso 1 / Caso 2), funzione cruscotto_valore_progetti, cronologia.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "7.3",
+      "data": "23/10/2026",
+      "descrizione": "Colori dello stato delle fasi (cronologia del 23/10).",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1492,6 +1516,12 @@
       "rev": "1.17",
       "data": "23/10/2026",
       "descrizione": "Prove valoreProgetti.test.mjs e t43.sql; 19 serie.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.18",
+      "data": "23/10/2026",
+      "descrizione": "Verifica dei colori dello stato delle fasi.",
       "autore": "Fondazione Operate"
     }
   ]
