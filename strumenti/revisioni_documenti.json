@@ -517,6 +517,12 @@
       "data": "23/10/2026",
       "descrizione": "Colori dello stato delle fasi in Dashboard e nella pratica.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.1",
+      "data": "23/10/2026",
+      "descrizione": "Nuovo capitolo «Marketing: Comuni, gestori e campagne» (banche dati, campagne, pagina Approfondisci, richieste).",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -782,6 +788,12 @@
       "rev": "3.23",
       "data": "23/10/2026",
       "descrizione": "Prova 10.10t: colori dello stato delle fasi.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.24",
+      "data": "23/10/2026",
+      "descrizione": "Prove 10.16-10.16i: sezione Marketing, campagne, pagina Approfondisci, richiesta di registrazione, disiscrizione.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1175,6 +1187,12 @@
       "data": "23/10/2026",
       "descrizione": "Script 34 eseguito in produzione il 23/10; tutti gli script 01-43 eseguiti.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "7.5",
+      "data": "23/10/2026",
+      "descrizione": "Sezione Marketing (script 44, funzione marketing, pagine /marketing e /scopri): pronta, da eseguire in produzione con l'OK di Luca; nuovo capitolo 16.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1284,6 +1302,12 @@
       "rev": "2.7",
       "data": "23/10/2026",
       "descrizione": "Script 34 in produzione: l'ordine 01-43 resta quello di ricostruzione.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "2.8",
+      "data": "23/10/2026",
+      "descrizione": "Script 01-44 e funzione marketing (Verify JWT disattivato).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1419,6 +1443,12 @@
       "data": "23/10/2026",
       "descrizione": "Valore dei progetti per il cliente nella slide delle novità.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.1",
+      "data": "23/10/2026",
+      "descrizione": "Nuova slide «Marketing: Comuni, gestori e campagne».",
+      "autore": "Fondazione Operate"
     }
   ],
   "issue": [
@@ -1540,6 +1570,12 @@
       "rev": "1.19",
       "data": "23/10/2026",
       "descrizione": "Prova t34.sql nell'ordine della produzione.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.20",
+      "data": "23/10/2026",
+      "descrizione": "Prova t44.sql (Marketing) con l'errore trovato e corretto; serie marketing.test.mjs.",
       "autore": "Fondazione Operate"
     }
   ]

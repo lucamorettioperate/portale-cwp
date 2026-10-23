@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Ultimo aggiornamento** | 23 ottobre 2026 |
-| **Versione del portale** | 0.43 (ultimo script database: `43_valore_progetti.sql`; tutti gli script 01-43 eseguiti) |
+| **Versione del portale** | 0.44 in preparazione (script `44_marketing.sql` e funzione `marketing` pronti nel ramo `marketing`, da eseguire in produzione con l'OK di Luca; in produzione gli script 01-43) |
 | **Indirizzo** | https://portale-cwp.vercel.app |
 | **Repository** | https://github.com/lucamorettioperate/portale-cwp (pubblico: solo codice, nessun dato) |
 | **Responsabile** | Luca Moretti — Fondazione Operate |
@@ -258,6 +258,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `32_utenti_online.sql` | Utenti online (backlog 38): tabella `presenza` (una riga per utente: ultima segnalazione, inizio del collegamento, pagina aperta; nessun IP, nessuno storico; RLS senza regole), `segnala_presenza(pagina)` e `presenza_uscita()` per ognuno solo per sé, `utenti_online()` (visti nelle ultime 24 ore, online se l'ultima segnalazione ha meno di 2 minuti) solo per l'Amministratore principale | 20/10/2026 — provato sul banco locale; **eseguito in produzione il 20/10** |
 | `33_audit_trail_user.sql` | Audit User (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **eseguito in produzione il 20/10** e provato dal vivo |
 | `34_sicurezza_avvisi.sql` | Sicurezza (backlog 14, 30): avvisi all'Amministratore principale (`cwp_avviso_sicurezza`, evento «sicurezza»): 5 accessi non riusciti in 15 minuti per email, 30 in un'ora in tutto, nuovo Amministratore (trigger `trg_profilo_avviso_admin`); `registra_uscita(p_motivo)` con l'uscita per inattività; rinforzi del Security Advisor: `search_path` fisso su tutte le funzioni, funzioni SECURITY DEFINER non eseguibili da anon (tranne `registra_accesso_fallito` e quelle usate nelle regole RLS) | 20/10/2026 — provato sul banco locale (`t34.sql`, regressioni `t33.sql`); **eseguito in produzione il 23/10/2026 alle 12:20** su incarico di Luca, dopo gli script 35-43 (prova sul banco nello stesso ordine: stesse 9 funzioni eseguibili senza accesso, `t41`-`t43` invariati) |
+| `44_marketing.sql` | Marketing (23/10/2026, richiesta di Luca; **pronto, non ancora eseguito in produzione**): tabelle `mkt_ente` (Comuni e gestori: chiave `istat:` / `albo:`, regione, provincia, abitanti, PEC, email generica con controllo «non PEC», sito, natura, numero e categorie dell'Albo, attività di raccolta e tariffa, fonti), `mkt_referente` (sindaco, tributi, ambiente, finanziario, tecnico, direttori, amministratore), `mkt_campagna`, `mkt_invio` (un invio per ente con codice casuale, stato, visita, simulazione, richiesta), `mkt_disiscrizione`, `mkt_richiesta` (richieste di registrazione dalla pagina /scopri; id uuid per l'audit); RLS solo Amministratori, nessun accesso anonimo; audit di campagne e richieste; `mkt_sembra_pec`, `admin_mkt_prepara_invii` (salta enti senza email e indirizzi disiscritti), `admin_mkt_riepilogo`. Prova `t44.sql` |
 | `43_valore_progetti.sql` | Valore dei progetti per il cliente (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026 alle 11:50**): `pratica.caso_listino` ('caso1' / 'caso2', solo Progetti, null = da indicare); `staff_crea_pratica` e `staff_aggiorna_dati_pratica` salvano il caso (messaggio italiano per valori non ammessi); `scenario_simulazione.costo_cliente_totale` (salvato dal simulatore con il Caso 1 o 2); `cruscotto_valore_progetti()` (ultimo scenario per Comune ed elenco dei Progetti aperti con caso, popolazione e periodo; staff tutto, Comuni i propri). Prova `t43.sql` |
 | `42_valore_crediti.sql` | Valore complessivo dei crediti nella Dashboard (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026 alle 11:10**): colonna `scenario_simulazione.ricavi_totali` (salvata dal simulatore); impostazione `prezzo_credito_riferimento` (32 €) e `admin_imposta_prezzo_riferimento` (solo Admin, 0-10.000 €, audit); `cruscotto_valore_crediti()` (JSON: simulazione con l'ultimo scenario per Comune, calcoli ex post confermati e validi, lotti emessi, vendite; staff tutto, utenti dei Comuni solo le proprie organizzazioni; anon negato). Prova `t42.sql` |
 | `41_utenze_nel_calcolo.sql` | Utenze del passo 5a nel motore di calcolo (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026 alle 10:14**): `cwp_utenze_controllo(calcolo, dati)` (security definer, solo numeri: utenze, senza categoria di simulazione, con categoria assente dalle classi della delibera); nuova `calcolo_coerenza` (alla conferma confronta anche `risultato.righe.utenze` con le utenze salvate; i risultati di prima valgono 0 utenze); nuova `calcolo_prerequisiti_conferma` (servono utenze del 5a o conferimenti del 5b; con le utenze nessuna senza categoria o con categoria fuori delibera). Prova `t41.sql` |
@@ -352,6 +353,7 @@ autenticazione, dal SQL Editor:
 | `consultazione-pubblica` | Pagine pubbliche del feedback pubblico (data di «oggi» in ora italiana dal 18/10; numero delle osservazioni dallo script 21; dalla sera del 18/10 anche i Rapporti di Monitoraggio, ripubblicata; azioni `programma` e `file` per la pagina pubblica /programma, script 24, ripubblicata la sera del 18/10, Verify JWT spento): elenco, dettaglio (documento, errata corrige, osservazioni ammesse), invio di un'osservazione con allegato facoltativo ed email di conferma, conferma dell'email (l'osservazione diventa *Ricevuto*) | Verify JWT **disattivato** di proposito (pubblico senza account): nessun dato personale restituito, 3 invii/ora per indirizzo e 100/ora per consultazione, campo trappola anti-robot, allegati max 10 MB con controllo del contenuto, token monouso 48 ore salvato come SHA-256 | Dashboard Supabase (editor web), 18/10 |
 | `recupera-password` | «Password dimenticata?»: genera il collegamento di recupero (`auth.admin.generateLink`) e spedisce con Resend l'email in italiano «Portale Carbon WastePrint (CWP) — Richiesta di reimpostazione della password», al posto del modello email di Supabase | Verify JWT **disattivato** di proposito (la chiama chi non ha fatto l'accesso): risponde sempre `ok` senza rivelare se l'indirizzo esiste; niente email agli utenti disattivati; massimo una richiesta ogni 2 minuti per indirizzo; il collegamento porta solo al portale | Dashboard Supabase (editor web), 18/10 |
 | `notizie` | Osservatorio News (21/10/2026): legge 24 canali RSS, 4 alla volta: 12 ricerche Bing News in italiano e inglese, Carbon Herald, CarbonCredits.com, Ecosystem Marketplace, Verra e 8 siti di notizie ambientali (Rinnovabili.it, QualEnergia, GreenReport, ESGnews, LifeGate, Climate Home News, edie, BusinessGreen; per questi pre-filtro con parole più strette, `PAROLE_STRETTE`; dal 22/10 Rinnovabili.it, che rifiuta i server con 403, e GreenReport, il cui feed non esiste più, si leggono con una ricerca Bing News limitata al sito). Google News non si usa: risponde 503 (pagina «Sorry…») a ogni richiesta dai server di Supabase e il tramite in Google Apps Script è stato bloccato dall'account Google («Questa app è bloccata»). Con `{"diagnosi": true}` prova i canali e restituisce gli esiti HTTP (nessuna scrittura, niente Claude), toglie doppioni e notizie già viste o più vecchie di 10 giorni, pre-filtro sulle parole chiave, valutazione di Claude a gruppi di 25 (massimo 100 per ricerca; attinente, categoria, rilevanza 1-5, titolo e sintesi in italiano, prezzi citati, motivo), salva in `notizia` e chiude `notizie_esecuzione`; modello `claude-haiku-5-5` (`NOTIZIE_MODELLO`); funzioni pure copiate identiche da `src/lib/notizie.js` | Verify JWT **disattivato** di proposito (la chiama pg_cron senza token): nessun dato ricevuto viene salvato; `notizie_puo_partire` (script 36) ammette una ricerca ogni 100 minuti senza token di Amministratore, ogni 10 minuti con il token (`app_is_admin`, MFA compresa); scrive con la chiave di servizio | **Pubblicata il 21/10** (dashboard Supabase, Verify JWT disattivato), ripubblicata alle 12:10 con Bing News |
+| `marketing` | Sezione Marketing (23/10/2026, script 44). Azioni degli Amministratori: `importa_comuni` (elenco ISTAT da `public/marketing/dati/comuni_istat.json`, poi IndicePA: PEC, email generica, sito, sindaco; uffici di tributi, ambiente, finanziario e tecnico a blocchi), `importa_albo` (iscritti all'Albo Gestori Ambientali per sezione regionale, solo categoria 1 ordinaria; PEC ed email dei gestori pubblici da IndicePA), `prova_campagna`, `invia_campagna` (a blocchi di 50, solo email generiche, intestazione List-Unsubscribe). Azioni pubbliche della pagina /scopri: `visita`, `simulata`, `disiscrivi`, `richiesta` (campo trappola, 3 richieste all'ora per email e 30 in tutto, notifica ed email a tutti gli Amministratori) | Verify JWT **disattivato** di proposito (pagina pubblica): le azioni riservate controllano da sole token e ruolo Amministratore | Da pubblicare con l'OK di Luca (segreti: `RESEND_API_KEY` già presente, `EMAIL_MITTENTE` e `PORTALE_URL` facoltativi) |
 | `invia-email-notifica` | Spedisce per email una notifica interna (pulsante "Apri nel portale") tramite Resend | Verify JWT **disattivato** di proposito: usa solo l'id ricevuto e rilegge tutto dal database; ogni notifica parte una volta sola | Dashboard Supabase; prima pubblicazione 17/10, aggiornata 17/10 (pulsante per tema scuro) |
 
 Sorgenti in `supabase/functions/<nome>/index.ts`. Si pubblicano dalla
@@ -377,6 +379,8 @@ fascicolo, file Excel del simulatore). Nessun server proprio: tutto passa da Sup
 | `/programma` | Piattaforma pubblica del Programma (Guida 3.7): informazioni, enti, registri, metodologie, documenti e modulistica, Progetti con documenti pubblici, Rapporti e crediti emessi, reclami | **pubblica**, senza login |
 | `/reclami` | Reclami e richieste di chiarimento: invio e stato (utenti), registrazione e gestione (staff) | tutti |
 | `/crediti-emessi` | Crediti emessi: tutti i lotti con vendite, cancellazioni e totali | Operatore, Admin |
+| `/scopri`, `/scopri/disiscrizione` | Pagina «Approfondisci» delle campagne: presentazione, micro simulazione di costi e ricavi (7, 10 o 21 anni, Caso 1 o 2), fascicolo PDF, richiesta di registrazione; pagina per non ricevere altre comunicazioni | **pubbliche**, senza login (codice casuale dell'invio nel collegamento) |
+| `/marketing` | Marketing: Comuni, Gestori, Campagne, Richieste, Importazioni | Admin |
 | `/formato-dati` | Formato dei dati per il calcolo crediti, download del tracciato Excel | **pubblica**, senza login |
 | `/` | Dashboard (staff) oppure Le mie pratiche (cliente) | tutti |
 | `/pratiche` | Back-office: elenco e dettaglio pratiche (`?id=` apre una pratica) | Operatore, Admin |
@@ -395,7 +399,7 @@ fascicolo, file Excel del simulatore). Nessun server proprio: tutto passa da Sup
 
 | Ruolo | Voci, nell'ordine |
 |---|---|
-| Amministratore principale | Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, **Audit User**, Documentazione, **Notizie CO2** (dal 21/10), *Marketplaces* (grigia, non cliccabile) |
+| Amministratore principale | Dashboard, Anagrafiche, Simulatore, Pratiche, Reclami, Calcolo crediti, Crediti emessi, Impostazioni, Utenti, Audit, **Audit User**, Documentazione, **Notizie CO2** (dal 21/10), **Marketing** (dal 23/10), *Marketplaces* (grigia, non cliccabile) |
 | Amministratore | come sopra, senza Audit User |
 | Operatore | Dashboard, Pratiche, Anagrafiche, Simulatore, Crediti emessi, Reclami, Manuale |
 | Utente dell'ente (cliente) | Le mie pratiche, I tuoi documenti, Reclami, Formato dati, Il Programma CWP, Manuali, *Marketplaces* (grigia, non cliccabile) |
@@ -416,7 +420,8 @@ Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), c
   `impostazioni/{DurateFasi,DocumentiRichiesti,EntiValidazione,ModelliDocumento,Registri,InfoProgramma}`,
   `crediti/{ImportaTracciato,RegistroCrediti,TabellaDati,UtenzeCalcolo}`,
   `ValoreCrediti` (valore dei crediti in Dashboard e Le mie pratiche),
-  `impostazioni/PrezzoRiferimento`.
+  `impostazioni/PrezzoRiferimento`,
+  `marketing/{ElencoEnti,Campagne,Richieste,Importazioni}` (sezione Marketing).
 - `src/lib/` — `dati.js` (accesso ai dati), `AuthContext.jsx` (sessione,
   ruolo, MFA), `file.js` (controlli sui file), `fascicolo.js` (export ZIP)
   e `fascicoloPdf.js` (riepilogo PDF del fascicolo),
@@ -427,14 +432,17 @@ Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), c
   (Banca Dati Utenze per utenza), `crediti/rapportoPdf.js`,
   `crediti/{simulatore,simulatoreExport,simulatorePdf,scenari}.js`
   (simulatore, Excel e PDF), `ordinamento.js`, `presenza.js` (testi di
-  Utenti online e Audit User).
+  Utenti online e Audit User), `marketing.js` (email della campagna, regole
+  di IndicePA, micro simulazione) e `marketingDati.js` (dati del Marketing).
+- `public/marketing/` — grafiche delle campagne, fascicolo informativo PDF
+  (`strumenti/genera_fascicolo_marketing.mjs`), elenco ISTAT dei Comuni.
 - `public/loghi/` — loghi Carbon WastePrint, Fondazione Operate, RINA,
   Carbon Credit. `public/modelli/` — tracciato dati Excel.
 - `test/` — test del motore crediti, del lettore CSV, dell'import del
   tracciato, delle date, dello Schema tariffario, della qualità dei dati,
   del simulatore e del suo export, dell'ordinamento e dei testi della
   presenza, dei collaudi, dell'assistente, delle notizie, dei rilievi N,
-  della Banca Dati Utenze e delle utenze nel calcolo (`npm test`, 18 file);
+  della Banca Dati Utenze e delle utenze nel calcolo e del Marketing (`npm test`, 20 file);
   `test/dati/` file di esempio.
 - `strumenti/genera_tracciato_dati.py` — rigenera il tracciato Excel;
   `strumenti/genera_esempi_tracciato.py` — file di esempio compilati.
@@ -464,6 +472,7 @@ Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), c
 | Reclami (Politica di reclamo, Guida 8) | Fatto | Invio dal portale, registrazione dei reclami arrivati via PEC, gestore, conferma, risposta scritta, costi, note interne, notifiche |
 | Calcolo crediti (Metodologia v1.2) | Fatto (scelte interpretative da confermare) | Motore formule 1-32, Tabelle 3-5, 8, 15, 16; import diretto del tracciato con aggregazione delle letture, blocco dei dati personali e controlli di coerenza; Banca Dati Utenze per utenza (passo 5a: file dell'anno, moduli, categoria tariffaria e di simulazione) usata dal motore dal 23/10/2026; controlli della Gestione qualità dei dati (Tabella 3 dello Standard ±30% con motivazione obbligatoria, completezza, unicità, letture a buon fine, tempestività); calcoli confermati immutabili con numero progressivo interno; rapporto PDF. Funzione migliorativa: per la Metodologia il calcolo lo fa il promotore nel Rapporto e l'ente lo verifica |
 | Amministrazione | Fatto | Utenti (più Amministratori, principale protetto, cancellazione dei mai attivi), audit, Audit User, utenti online, impostazioni: durata fasi, documenti richiesti, modelli di documento; simulatore con PDF ed Excel; assistente virtuale |
+| Marketing (richiesta del 23/10) | Pronto, da rilasciare | Banche dati di tutti i Comuni (ISTAT + IndicePA) e dei gestori dell'Albo in categoria 1 con PEC, email generica e referenti; campagne email con grafica verso i destinatari scelti (solo email generiche, mai PEC), pagina pubblica /scopri con micro simulazione, fascicolo PDF e richiesta di registrazione a tutti gli Amministratori. Mancano: esecuzione in produzione (OK di Luca), dominio email verificato, verifica legale delle email promozionali, verifica sui siti delle attività e dei referenti dei gestori |
 | Sicurezza (§13) | Parziale | RLS, audit, controlli file, registro degli accessi e dei tentativi non riusciti, avvisi di sicurezza all'Amministratore principale, uscita per inattività, intestazioni del sito (20/10); verifica OWASP in corso (22/10); mancano antivirus, ambiente di prova, verifica in due passaggi attiva |
 
 ---
@@ -546,6 +555,36 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 23 ottobre 2026
+- **Sezione Marketing** (richiesta di Luca del 23/10; scelte di Luca:
+  gestori = tutta la categoria 1 dell'Albo; nessun invio «a tutti», per
+  ogni campagna si scelgono Comuni e gestori). Ramo `marketing`, commit
+  `f8d3593` e seguenti. Dettaglio nel capitolo 16 «Marketing».
+  - Script `44_marketing.sql` (prova `t44.sql` sul banco ricostruito con
+    gli script 01-44: PEC rifiutata nel campo email, enti senza email e
+    indirizzi disiscritti saltati, niente doppioni, campagna inviata
+    bloccata, Comuni e anonimi senza accesso, audit di campagne e
+    richieste). La prova ha trovato un errore: l'audit vuole un id uuid,
+    `mkt_richiesta` lo aveva numerico; corretto prima del rilascio.
+  - Funzione del server `marketing` (importazioni, invio, azioni della
+    pagina pubblica); pagina `/marketing` (Comuni, Gestori, Campagne,
+    Richieste, Importazioni) e pagina pubblica `/scopri` con micro
+    simulazione (motore del simulatore), fascicolo PDF
+    (`public/marketing/Fascicolo_Carbon_WastePrint.pdf`, 6 pagine) e
+    richiesta di registrazione; due grafiche per l'intestazione delle
+    email.
+  - Prove `test/marketing.test.mjs` (8): copie identiche tra portale e
+    funzione, regole PEC uguali al database, email della campagna,
+    controlli e valori noti della micro simulazione (16.735 abitanti, 8.000
+    t, 2.400 t di secco, 10 anni, Caso 1: 20.445 crediti, ricavi 654.240 €,
+    costi 162.330 €, margine 491.910 €).
+  - Verificato a schermo su computer e telefono con dati finti (nessuno
+    scorrimento orizzontale; corretti la tabella delle Importazioni e il
+    grafico sul telefono).
+  - **Da fare con l'OK di Luca:** script 44 in produzione, pubblicazione
+    della funzione `marketing` (Verify JWT disattivato), primo
+    aggiornamento delle banche dati. Prima degli invii reali: dominio
+    email verificato su Resend e verifica legale delle email
+    promozionali.
 - **Script 34 in produzione** (OK di Luca delle 11:12). Prima, prova sul
   banco nello stesso ordine della produzione (script 01-33 e 35-43, poi
   34): 95 funzioni SECURITY DEFINER eseguibili senza accesso ridotte alle 9
@@ -1590,6 +1629,11 @@ completato (va barrato qui e annotato in Cronologia).
 aperte; il dettaglio è nei punti numerati qui sotto.
 
 *Azioni di Luca (Claude non le può fare: chiavi, pubblicazioni, account)*
+- **Marketing:** dare l'OK per eseguire lo script `44_marketing.sql` e
+  pubblicare la funzione `marketing` (poi Claude esegue le importazioni);
+  prima delle campagne reali verificare il dominio email su Resend
+  (`EMAIL_MITTENTE`) e far controllare a un legale le email promozionali
+  agli enti (art. 130 Codice privacy, informativa art. 14 GDPR).
 - **Installare il backup giornaliero dal Mac** (Google Drive per desktop e
   installatore `strumenti/backup/installa_backup_mac.sh`, con la chiave
   service_role inserita da Luca; Istruzioni di ripristino, capitolo
@@ -1947,13 +1991,13 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 170 file, 40.402 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 181 file, 42.919 righe in tutto.
 
 **Avvio e instradamento**
 
 | File | Righe | Cosa contiene |
 |---|---|---|
-| `src/App.jsx` | 269 | associa ogni indirizzo alla sua pagina e decide chi può aprirla. Le pagine riservate passano dal componente Protetta, che nell'ordine chiede: sessione attiva, eventuale nuova password (link di recupero o password temporanea),… |
+| `src/App.jsx` | 282 | associa ogni indirizzo alla sua pagina e decide chi può aprirla. Le pagine riservate passano dal componente Protetta, che nell'ordine chiede: sessione attiva, eventuale nuova password (link di recupero o password temporanea),… |
 | `src/main.jsx` | 32 | monta l'applicazione nell'elemento #root di index.html e la avvolge nei contesti globali: StrictMode (controlli di React in sviluppo), BrowserRouter (indirizzi /pratiche, /crediti, …) e AuthProvider (sessione, ruolo, MFA).… |
 
 **Pagine (src/pages)**
@@ -1976,10 +2020,12 @@ Inventario generato da `strumenti/inventario_codice.py`: 170 file, 40.402 righe 
 | `src/pages/GestioneUtenti.jsx` | 763 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
 | `src/pages/Impostazioni.jsx` | 64 | parametri del Programma modificabili dagli Amministratori: - Durata delle fasi del Progetto e del Rapporto di Monitoraggio (script 13 e 21, componente DurateFasi); - Documenti richiesti per fase (script 21, componente… |
 | `src/pages/Login.jsx` | 275 | accesso con email e password; «Password dimenticata?» per farsi mandare il collegamento di reimpostazione; link alle pagine pubbliche (formato dei dati, consultazioni pubbliche, Manuale Utente in PDF). Dopo l'accesso riuscito… |
+| `src/pages/Marketing.jsx` | 77 | Regioni italiane (nomi ISTAT, come nella banca dati). |
 | `src/pages/News.jsx` | 365 | Data breve in ora italiana: «oggi 14:07», «ieri», «18/10». |
 | `src/pages/Profilo.jsx` | 66 | mostra i dati dell'account (nome, email di accesso, ruolo), il collegamento al cambio password («/password») e i documenti da scaricare per il proprio ruolo: Manuale Utente per tutti; Manuale Amministratore e Registro sviluppo e… |
 | `src/pages/Programma.jsx` | 249 | la parte pubblica della piattaforma online richiesta dalla Guida al Programma (cap. 3.7) e dallo Standard CWP (cap. 2.3, 5 e 6): - informazioni del Programma: soggetto promotore del programma, PEC, email e sito ufficiale (Guida… |
 | `src/pages/Reclami.jsx` | 271 | reclami e richieste di chiarimento (Politica di reclamo del Programma; Guida al Programma cap. 8; script 24). - Chiunque abbia un account invia un reclamo o una richiesta di chiarimento dal portale e ne segue lo stato e la… |
+| `src/pages/Scopri.jsx` | 340 | — |
 | `src/pages/Simulatore.jsx` | 1213 | stima ex ante, non certificabile, dei crediti che un Comune potrebbe generare in 7, 10 o 21 anni (Registro, backlog punto 37). - Elenco degli scenari raggruppati per Comune, con confronto dei totali; «+ Nuovo scenario» (Comune… |
 | `src/pages/TuoiDocumenti.jsx` | 185 | (requisiti §5) raccoglie i documenti GENERALI (non legati a una fase) di tutte le pratiche dell'organizzazione: contratto, allegati, documentazione amministrativa e altri documenti della Fondazione, raggruppati per tipologia,… |
 | `src/pages/VerificaMfa.jsx` | 169 | (requisiti §13) - primo accesso: attivazione con QR code da inquadrare con un'app di autenticazione (Google Authenticator, Microsoft Authenticator, Authy…), con chiave da inserire a mano in alternativa; - accessi successivi:… |
@@ -1996,7 +2042,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 170 file, 40.402 righe 
 | `src/components/CreditiEmessi.jsx` | 319 | crediti di carbonio emessi da un Rapporto di Monitoraggio registrato (Guida al Programma 6.3.2 e 6.3.3, Tabella 5; Standard 6.2; script 24): - emissione di un lotto con ID univoci (solo Amministratori), anche collegata a un… |
 | `src/components/DettaglioPratica.jsx` | 940 | pagina di dettaglio di una pratica (Progetto o Rapporto di Monitoraggio) con le sue 7 fasi (Guida al Programma 6.2 e 6.3.1). |
 | `src/components/Documenti.jsx` | 325 | gestione documentale di una pratica: elenco con versioni, caricamento di nuovi file e download. Lo staff sceglie anche tipologia e visibilità (Cliente, Pubblico) e può cambiarle dopo il caricamento. |
-| `src/components/Header.jsx` | 292 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
+| `src/components/Header.jsx` | 294 | intestazione in cima a ogni pagina riservata. A sinistra i loghi (Carbon WastePrint, Fondazione Operate, RINA, Carbon Credit) con collegamento alla pagina iniziale; a destra, se l'utente ha fatto l'accesso: menu per ruolo,… |
 | `src/components/Integrazioni.jsx` | 266 | richieste di integrazione di una fase (requisiti §4). Ciclo: l'Operatore richiede → il Cliente carica un documento e risponde → l'Operatore chiude la richiesta. Con la chiusura della fase la possibilità di integrare termina. La… |
 | `src/components/Messaggi.jsx` | 129 | conversazione tra Comune e Fondazione Operate dentro una pratica (backlog 26). Mostra i messaggi in ordine di data, quelli dell'utente a destra, e permette di scriverne di nuovi. |
 | `src/components/NoteFase.jsx` | 108 | note scritte sotto una delle fasi di una pratica (backlog 10). Lo staff legge tutte le note e ne aggiunge di nuove, interne (solo Fondazione) o condivise con il Comune; il Comune vede solo le condivise. |
@@ -2020,6 +2066,10 @@ Inventario generato da `strumenti/inventario_codice.py`: 170 file, 40.402 righe 
 | `src/components/impostazioni/ModelliDocumento.jsx` | 184 | modelli di documento (backlog 12), sezione della pagina Impostazioni. L'Amministratore carica i modelli che i Comuni scaricano: un modello può valere per una fase di un tipo di pratica (Progetto o |
 | `src/components/impostazioni/PrezzoRiferimento.jsx` | 57 | il prezzo in euro con cui la Dashboard dà un valore ai crediti calcolati ed emessi (riquadro «Crediti in fase esecutiva») e agli scenari del simulatore salvati senza valore del credito. Iniziale 32 €, come il valore proposto dal… |
 | `src/components/impostazioni/Registri.jsx` | 117 | elenco dei registri riconosciuti dal Programma (Guida al Programma 3.5, Standard CWP cap. 6), pubblicato sulla pagina pubblica /programma: piattaforme esterne su cui il promotore del progetto carica e vende i crediti. Requisiti… |
+| `src/components/marketing/Campagne.jsx` | 288 | — |
+| `src/components/marketing/ElencoEnti.jsx` | 287 | Ricarica a ogni cambio di filtri o pagina (con un piccolo ritardo per il testo). |
+| `src/components/marketing/Importazioni.jsx` | 127 | Sezioni regionali dell'Albo (id usati dall'elenco pubblico degli iscritti). |
+| `src/components/marketing/Richieste.jsx` | 77 | — |
 | `src/components/stili.js` | 85 | oggetti di stile in linea condivisi dai componenti delle pratiche e delle impostazioni (stessa grafica del resto del portale: carta, verde Fondazione, bordi sottili) e la funzione dataOra per mostrare data e ora in formato… |
 
 **Librerie (src/lib)**
@@ -2050,6 +2100,8 @@ Inventario generato da `strumenti/inventario_codice.py`: 170 file, 40.402 righe 
 | `src/lib/fascicoloPdf.js` | 137 | un documento leggibile da stampare o archiviare insieme ai file del fascicolo: dati della pratica e dell'Ente di Validazione, fasi, elenco dei documenti (con l'impronta SHA-256), integrazioni, consultazioni pubbliche, pagamenti… |
 | `src/lib/file.js` | 158 | prima di inviare un file all'archivio controlla formato ammesso, dimensione, contenuto reale (primi byte, "firma" del formato) e prepara un nome sicuro per il percorso nell'archivio. Traduce anche gli errori dello Storage di… |
 | `src/lib/inattivita.js` | 20 | un solo posto per i tempi usati da src/components/ UscitaInattivita.jsx (richiesta di Luca del 20/10/2026, sicurezza). - Operatori e Amministratori: 30 minuti senza attività; - utenti degli enti: 60 minuti; - l'avviso «Sei… |
+| `src/lib/marketing.js` | 219 | - htmlCampagna / testoCampagna: l'email di una campagna (grafica in testa, testo, riquadro «risorse per 7, 10 o 21 anni», pulsante «Approfondisci» verso la landing page, informativa e disiscrizione). La STESSA funzione è copiata… |
+| `src/lib/marketingDati.js` | 155 | Applica i filtri dell'elenco a una lettura di mkt_ente. Filtri: tipo, |
 | `src/lib/notizie.js` | 225 | funzioni pure usate dalla funzione del server «notizie» (supabase/functions/notizie) e dalla pagina /news: - CANALI: dove si cercano le notizie (Bing News in italiano e in inglese con ricerche mirate, quattro siti specializzati… |
 | `src/lib/ordinamento.js` | 37 | logica pura (senza React) usata dal componente src/components/Ordinamento.jsx. Numeri come numeri, booleani (falso prima di vero), date ISO e testi in ordine alfabetico italiano senza distinguere maiuscole e con i numeri nel… |
 | `src/lib/password.js` | 70 | controllo delle regole della password prima dell'invio, generazione della password temporanea assegnata dall'Amministratore, traduzione in italiano degli errori di Supabase Auth. |
@@ -2106,6 +2158,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 170 file, 40.402 righe 
 | `supabase/41_utenze_nel_calcolo.sql` | 165 | 41 — UTENZE DEL CALCOLO NEL MOTORE: CONTROLLI DI CONFERMA |
 | `supabase/42_valore_crediti.sql` | 148 | 42 — DASHBOARD: VALORE COMPLESSIVO DEI CREDITI |
 | `supabase/43_valore_progetti.sql` | 169 | 43 — VALORE DEI PROGETTI: LISTINO CASO 1 / CASO 2 |
+| `supabase/44_marketing.sql` | 266 | 44 — MARKETING: BANCHE DATI DI COMUNI E GESTORI, CAMPAGNE, RICHIESTE |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
@@ -2116,6 +2169,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 170 file, 40.402 righe 
 | `supabase/functions/consultazione-pubblica/index.ts` | 432 | servizio della pagina pubblica delle consultazioni (requisiti §6, decisioni B e D del 18/10/2026). Chiunque, senza account, può: - "elenco": vedere le consultazioni aperte; - "dettaglio": leggere documento, errata corrige e… |
 | `supabase/functions/crea-utente/index.ts` | 263 | crea un nuovo utente con password temporanea e imposta ruolo + organizzazione. All'utente parte un'email con indirizzo del portale, email di accesso e password temporanea (Resend, funzione inviaEmailAccesso in fondo al file); se… |
 | `supabase/functions/invia-email-notifica/index.ts` | 160 | invia per email ogni nuova notifica del portale (requisiti §9: "email + notifica interna"). |
+| `supabase/functions/marketing/index.ts` | 483 | marketing — funzione del server dello strumento di marketing |
 | `supabase/functions/notizie/index.ts` | 487 | osservatorio News per gli Amministratori (richiesta di Luca Moretti del 21/10/2026). Ogni 2 ore cerca notizie sul mondo dei crediti di carbonio volontari (mercato volontario, marketplace e borse, prezzi dei crediti scambiati o… |
 | `supabase/functions/recupera-password/index.ts` | 155 | «Password dimenticata?» — genera il collegamento di recupero di Supabase Auth e spedisce l'email in italiano con Resend (stessa grafica delle notifiche), invece del modello email di Supabase. |
 | `supabase/functions/reimposta-password/index.ts` | 218 | l'Amministratore assegna una nuova password temporanea a un utente (Cliente od Operatore) che l'ha dimenticata. Al primo accesso il portale obbliga l'utente a sceglierne una personale (script 15). |
@@ -2132,6 +2186,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 170 file, 40.402 righe 
 | `test/csv.test.mjs` | 53 | verifica che i CSV salvati da Excel in italiano (BOM, separatore ";", virgola decimale, punto delle migliaia, testi tra virgolette con ";" dentro, righe vuote) siano letti correttamente; che intestazioni con maiuscole/accenti… |
 | `test/date.test.mjs` | 31 | verificare le date in ora italiana usate per aprire le consultazioni (30 giorni) e per i nomi dei file: oggiItalia() deve dare sempre aaaa-mm-gg in fuso Europe/Rome, aggiungiGiorni() deve contare i giorni sul calendario (fine… |
 | `test/inattivita.test.mjs` | 24 | — |
+| `test/marketing.test.mjs` | 111 | — |
 | `test/notizie.test.mjs` | 96 | verificare che - un feed di Google News, uno di Bing News e uno di un sito (WordPress) si leggano con titolo senza testata, indirizzo, fonte, data ed estratto senza HTML; - la stessa notizia da due ricerche dia la stessa chiave;… |
 | `test/ordinamento.test.mjs` | 36 | — |
 | `test/presenza.test.mjs` | 33 | — |
@@ -2156,8 +2211,8 @@ Inventario generato da `strumenti/inventario_codice.py`: 170 file, 40.402 righe 
 | `strumenti/genera_utenze_casuali.py` | 104 | riempie il modello public/modelli/Banca_dati_utenze_CWP_v1.xlsx con 20 utenze domestiche e 20 non domestiche inventate (richiesta di Luca |
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
-| `strumenti/presentazione/genera_presentazione.cjs` | 622 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1528 | — |
+| `strumenti/presentazione/genera_presentazione.cjs` | 640 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
+| `strumenti/revisioni_documenti.json` | 1582 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
@@ -2225,3 +2280,68 @@ blocchi senza transazione (un errore a metà lascia dati incompleti, che
 però non si possono confermare: ripetere l'import e «Calcola»); scelte interpretative da confermare (capitolo 11);
 regole di emissione e annullamento dei crediti in attesa dello Standard
 CWP (backlog 7).
+
+---
+
+## 16. Marketing
+
+Sezione **Marketing** (`/marketing`, solo Amministratori), richiesta di Luca
+Moretti del 23/10/2026: banche dati di Comuni e gestori, campagne email e
+pagina pubblica «Approfondisci» con micro simulazione.
+
+| Parte | File | Database / servizi |
+|---|---|---|
+| Pagina e schede | `src/pages/Marketing.jsx`, `src/components/marketing/{ElencoEnti,Campagne,Richieste,Importazioni}.jsx` | `mkt_*` (44) |
+| Dati | `src/lib/marketingDati.js` | `admin_mkt_prepara_invii`, `admin_mkt_riepilogo` (44) |
+| Email, regole, micro simulazione | `src/lib/marketing.js` (blocchi `INIZIO-EMAIL-CAMPAGNA` e `INIZIO-REGOLE-IPA` copiati identici nella funzione) | — |
+| Funzione del server | `supabase/functions/marketing/index.ts` | Resend, IndicePA, Albo Gestori Ambientali |
+| Pagina pubblica | `src/pages/Scopri.jsx` (`/scopri`, `/scopri/disiscrizione`) | funzione `marketing` (azioni pubbliche) |
+| Materiali | `public/marketing/` (grafiche, fascicolo PDF, `dati/comuni_istat.json`), `strumenti/genera_fascicolo_marketing.mjs` | — |
+| Prove | `test/marketing.test.mjs`, `t44.sql` sul banco | — |
+
+**Fonti dei dati**
+- *Comuni*: elenco ISTAT (7.904 Comuni con regione, provincia e abitanti,
+  copiato da matteocontrini/comuni-json nel file
+  `public/marketing/dati/comuni_istat.json`); **IndicePA** (open data
+  dell'Indice dei domicili digitali della PA, categoria L6 «Comuni e loro
+  Consorzi e Associazioni»): PEC, email generica, sito, sindaco; dalle unità
+  organizzative i responsabili degli uffici tributi, ambiente, finanziario e
+  tecnico (regole in `ruoloUfficio`).
+- *Gestori*: elenco pubblico degli iscritti all'**Albo Nazionale Gestori
+  Ambientali**, sezione per sezione, filtrato sulla categoria «1o»
+  (raccolta e trasporto di rifiuti urbani, ordinaria). L'elenco pubblico
+  non dà email né referenti: per i gestori pubblici PEC, email e sito
+  arrivano da IndicePA (codice fiscale); per le imprese private attività
+  (raccolta, gestione della tariffa), PEC, email e direttori/amministratori
+  si verificano sui siti e si registrano nella scheda (fonte annotata).
+  INI-PEC non si usa (CAPTCHA).
+
+**Regole delle campagne**
+- Destinatari scelti per ogni campagna (tipo, regioni, abitanti, natura,
+  attività); nessun invio automatico a tutti.
+- Solo **email generiche**: le PEC non sono mai usate (controllo nel
+  database `mkt_email_non_pec` e nella funzione).
+- Ogni email ha l'informativa (titolare, fonte pubblica dell'indirizzo) e
+  il collegamento «Non desidero ricevere altre comunicazioni»
+  (`mkt_disiscrizione`, escluso da tutte le campagne successive), anche
+  nell'intestazione List-Unsubscribe.
+- Invio a blocchi di 50 con pausa; piano gratuito di Resend: 100 email al
+  giorno; finché il dominio non è verificato le email arrivano solo al
+  titolare dell'account (prova «Invia una prova a me»).
+
+**Pagina «Approfondisci» (/scopri)**
+- Il collegamento dell'email porta il codice casuale dell'invio: la pagina
+  legge solo nome e abitanti dell'ente e registra visita, simulazione e
+  richiesta (statistiche della campagna).
+- Micro simulazione: abitanti, rifiuti totali e secco residuo (t/anno),
+  durata 7/10/21 anni, Caso 1 o 2 → stessa `simula` / `simulaEconomia` del
+  simulatore (metodo «per utenza», buffer della Metodologia, prezzo 32 €,
+  listino del caso; secco −30% e totale −5% pro capite entro l'ultimo
+  anno). Ipotesi sempre visibili.
+- Richiesta di registrazione: salvata in `mkt_richiesta`, notifica ed email
+  a tutti gli Amministratori attivi (`cwp_notifica`, evento
+  `richiesta_registrazione`); campo trappola contro i robot e limiti di
+  invio.
+- Fascicolo informativo: `node strumenti/genera_fascicolo_marketing.mjs`
+  (WeasyPrint); da rigenerare se cambiano prezzo, listini o regole.
+

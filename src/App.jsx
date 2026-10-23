@@ -49,6 +49,8 @@ import Programma from "./pages/Programma.jsx";
 import Reclami from "./pages/Reclami.jsx";
 import CreditiEmessiPagina from "./pages/CreditiEmessiPagina.jsx";
 import Simulatore from "./pages/Simulatore.jsx";
+import Marketing from "./pages/Marketing.jsx";
+import Scopri, { Disiscrizione } from "./pages/Scopri.jsx";
 import { COLORI as C } from "./lib/cwpProgram.js";
 
 // Schermata di caricamento mentre si verifica la sessione.
@@ -138,6 +140,9 @@ export default function App() {
       <Route path="/consultazioni" element={<ElencoConsultazioni />} />
       <Route path="/consultazioni/conferma" element={<ConfermaOsservazione />} />
       <Route path="/consultazioni/:id" element={<PaginaConsultazione />} />
+      {/* Landing page delle campagne di marketing, senza accesso (script 44, funzione marketing) */}
+      <Route path="/scopri" element={<Scopri />} />
+      <Route path="/scopri/disiscrizione" element={<Disiscrizione />} />
       {/* Da qui in poi: pagine riservate. Le pagine solo Admin (/audit,
           /crediti, /impostazioni, /utenti) controllano anche il ruolo al loro interno. */}
       <Route
@@ -242,6 +247,14 @@ export default function App() {
         element={
           <Protetta>
             <Simulatore />
+          </Protetta>
+        }
+      />
+      <Route
+        path="/marketing"
+        element={
+          <Protetta>
+            <Marketing />
           </Protetta>
         }
       />

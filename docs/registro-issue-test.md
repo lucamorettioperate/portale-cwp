@@ -177,10 +177,18 @@ Si eseguono con `npm test` prima di ogni rilascio; l'ultimo esito è sempre «tu
 | `utenzeNelCalcolo.test.mjs` | 7 | Utenze del passo 5a nel motore: categoria di simulazione come classe e kg misurati, stessi numeri dei conferimenti del tracciato a parità di dati, frazioni contate per utenza, utenze senza categoria o fuori delibera escluse (avviso) e segnalate come errore di coerenza, priorità del 5a sul 5b, kg negativi bloccanti |
 | `valoreProgetti.test.mjs` | 4 | Valore dei Progetti per il cliente: Caso 1 a 16.735 abitanti (16.232,95 €/anno, 10 anni), Caso 2 più caro, 7 anni come stima, Progetti senza listino o popolazione contati a parte |
 
-**Ultima esecuzione:** 23/10/2026 11:45 (ramo `valore-progetti-casi`), 19 serie superate.
+| `marketing.test.mjs` | 8 | Marketing: copie identiche tra portale e funzione del server, PEC riconosciute (stessa regola del database), ruoli dagli uffici, email della campagna con link e disiscrizione, controlli e valori noti della micro simulazione (16.735 ab., 10 anni, Caso 1: margine 491.910 €), Caso 2 più caro, durate 7/10/21 |
+
+**Ultima esecuzione:** 23/10/2026 (ramo `marketing`), 20 serie superate.
 
 ### Prove del database (banco locale)
 
+- `t44.sql` del 23/10/2026 (Marketing, script 44, banco ricostruito con gli script 01-44): tutte come attese dopo una correzione:
+  - PEC nel campo email generica rifiutata, accettata nel campo PEC;
+  - preparazione degli invii: enti senza email e indirizzi disiscritti saltati, seconda preparazione senza doppioni, campagna inviata bloccata;
+  - utente del Comune: nessun dato visibile, scrittura e riepilogo rifiutati; anonimo: nessun accesso;
+  - **errore trovato e corretto prima del rilascio**: l'audit delle richieste di registrazione falliva perché `mkt_richiesta` aveva un id numerico (l'audit vuole uuid); id portato a uuid, audit di campagne e richieste presente;
+  - `mkt_sembra_pec` riconosce pec.it, pecveneto.it, cert.provincia.it e non «pecora@».
 Ogni script del database è provato su una copia locale di Postgres 16 con tutti gli script, prima dell'esecuzione in produzione. Le prove sono nei file `t8.sql` … `t35.sql`: permessi per ruolo, rifiuti attesi, immutabilità dell'audit, conferma dei calcoli, emissioni, avvisi di sicurezza, vincoli del collaudo.
 
 Ultime prove:
@@ -271,3 +279,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 23/10/2026 11:45 | Valore dei progetti (Caso 1 / Caso 2): prove `valoreProgetti.test.mjs` e `t43.sql`; 19 serie |
 | 23/10/2026 12:10 | Colori dello stato delle fasi: verifica a schermo (computer e telefono); 19 serie |
 | 23/10/2026 12:20 | Script 34 in produzione dopo la prova `t34.sql` nell'ordine della produzione |
+| 23/10/2026 13:30 | Prova `t44.sql` (Marketing, script 44) con l'errore dell'id di `mkt_richiesta` trovato e corretto; nuova serie `marketing.test.mjs` (20 serie) |
