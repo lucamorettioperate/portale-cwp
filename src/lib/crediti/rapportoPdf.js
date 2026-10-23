@@ -260,7 +260,12 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
       (ind.fuoriPaniere?.length ? ` Comprende tipologie oltre le cinque nominate al cap. 5 della Metodologia (${ind.fuoriPaniere.map(tipNome).join(", ")}): paniere in attesa di conferma della Fondazione.` : "") +
       (ind.escluse?.length ? ` Escluse perché senza fattore: ${ind.escluse.map(tipNome).join(", ")}.` : ""));
   }
-  if (dati.importazione?.conteggi) {
+  if (r.fonte === "utenze") {
+    // Dal 23/10/2026: utenze del passo 5a (una riga per utenza, kg misurati,
+    // classe = categoria di simulazione); righe.utenze dal riepilogo salvato.
+    const tot = r.righe?.utenze ?? r.utenze.totale;
+    paragrafo(`Banca Dati Utenze: ${tot.toLocaleString("it-IT")} utenze caricate per il calcolo (passo 5a), con i kg misurati di ogni frazione; ciascuna è collocata nella classe della delibera indicata dalla sua categoria di simulazione.${r.utenze.escluse ? ` ${r.utenze.escluse.toLocaleString("it-IT")} utenze escluse perché senza categoria di simulazione o con una categoria assente dalla delibera.` : ""}`);
+  } else if (dati.importazione?.conteggi) {
     const k = dati.importazione.conteggi;
     paragrafo(`Banca Dati Utenze: ${(k.conferimenti || 0).toLocaleString("it-IT")} righe di conferimento per ${(k.utenze || 0).toLocaleString("it-IT")} utenze${k.letture ? `, ottenute da ${(k.lettureUsate || 0).toLocaleString("it-IT")} singole letture` : ""}; ${k.riuso || 0} righe di beni a riuso.`);
   }

@@ -114,6 +114,9 @@ export default function UtenzeCalcolo({ calcoloId, sola, onCambio }) {
       <h2 style={{ fontFamily: "'Archivo'", fontSize: 17, margin: "0 0 4px" }}>5a. Utenze del calcolo</h2>
       <p style={{ fontSize: 12.5, color: C.grafite, margin: "0 0 12px" }}>
         Elenco completo delle utenze dell'anno, una riga per utenza, caricato ogni anno dal modello «Banca dati utenze CWP».
+        Il calcolo usa queste utenze: la <b>categoria di simulazione</b> decide la classe della delibera (e quindi i rifiuti attesi),
+        i <b>kg</b> di ogni frazione sono i rifiuti prodotti; una frazione lasciata vuota non entra nel calcolo per quell'utenza.
+        Le utenze senza categoria restano fuori e il calcolo non si può confermare finché non la si assegna.
         Contiene dati personali: ogni consultazione e ogni modifica sono registrate nell'Audit.
       </p>
 
