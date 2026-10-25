@@ -558,6 +558,20 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 25 ottobre 2026
+- **Scenari del simulatore per i 5 Comuni dei Progetti** (richiesta di Luca
+  delle 13:23: «popola i dati di simulazione per i comuni mancanti coerente
+  alla metodologia»). Creati alle 13:35 nel SQL Editor, collegati
+  all'organizzazione, con lo stesso motore del Simulatore (calcolati prima
+  in locale, nessun errore nei dati) e la nota del metodo in ogni scenario:
+  Comuni di prova senza dati ISPRA, quindi scenario di riferimento dai
+  valori medi del cluster SOSE 4 della Tabella 3 (Standard 4.8.1, metodo
+  «cluster») × abitanti, riportato al 65% di differenziata; obiettivi −5%
+  rifiuti pro capite e −30% secco al 2036; metodo «bilancio del Comune»,
+  buffer 20%, 32 €/credito, Caso 1. Risultati in 10 anni (crediti netti,
+  ricavi, costo per il cliente): Borgoval 7.021,6 / 224.480 € / 232.162 €;
+  del col 1.812,7 / 57.792 € / 76.964 €; vvoli 3.038,3 / 97.056 € /
+  119.847 €; COLLAUDO V03 A 265,8 / 8.320 € / 12.500 €; B 531,8 / 16.832 € /
+  23.000 €. Da sostituire con i dati ISPRA dei Comuni quando disponibili.
 - **Abitanti dei 3 Progetti** (indicati da Luca alle 13:19), inseriti alle
   13:20 nel SQL Editor con la motivazione nell'audit «Popolazione residente
   indicata da Luca Moretti il 25/10/2026»: CWP-2026-0001 26.382,
