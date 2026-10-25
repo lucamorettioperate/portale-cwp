@@ -16,9 +16,9 @@
    con_referenti }], onFatto() per ricaricarlo.
    Registro sviluppo e deploy: capitolo «Marketing».
    ========================================================================= */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { COLORI as C } from "../../lib/cwpProgram.js";
-import { azioneMarketing } from "../../lib/marketingDati.js";
+import { azioneMarketing, riepilogoLettura, accodaLettura, attivaLettura } from "../../lib/marketingDati.js";
 import { btnPrimario, btnMini } from "../stili.js";
 
 // Sezioni regionali dell'Albo (id usati dall'elenco pubblico degli iscritti).
@@ -104,6 +104,8 @@ export default function Importazioni({ riepilogo, onFatto }) {
         </div>
       </section>
 
+      <LetturaSiti />
+
       <section style={sezione}>
         <h3 style={h3}>Aggiorna</h3>
         <p style={{ fontSize: 13, color: C.grafite, margin: "0 0 10px", lineHeight: 1.5 }}>
@@ -126,6 +128,99 @@ export default function Importazioni({ riepilogo, onFatto }) {
         )}
       </section>
     </div>
+  );
+}
+
+/* Lettore dei siti (script 46, richiesta di Luca del 25/10/2026): legge
+   i siti di Comuni e gestori e completa recapiti e referenti con la fonte,
+   con regole fisse e senza servizi a pagamento (scelta di Luca).
+   Coda, accensione e riepilogo; «Leggi ora 1 ente» per provare subito. */
+function LetturaSiti() {
+  const [r, setR] = useState(null);
+  const [msg, setMsg] = useState("");
+  const [prova, setProva] = useState(null);
+  const [lavoro, setLavoro] = useState(false);
+  async function carica() {
+    const { data, error } = await riepilogoLettura();
+    if (error) setMsg(error.message); else setR(data);
+  }
+  useEffect(() => {
+    carica();
+    const t = setInterval(carica, 20000);
+    return () => clearInterval(t);
+  }, []);
+  async function esegui(f, testo) {
+    setLavoro(true);
+    const { data, error } = await f();
+    setLavoro(false);
+    setMsg(error ? error.message : typeof testo === "function" ? testo(data) : testo);
+    carica();
+  }
+  async function leggiOra() {
+    setLavoro(true);
+    setProva(null);
+    const { data, error } = await azioneMarketing("leggi_siti", { quanti: 1 });
+    setLavoro(false);
+    if (error) setMsg(error.message); else { setProva(data?.risultati?.[0] || null); setMsg(data?.letti ? "" : "Nessun ente in coda."); }
+    carica();
+  }
+  const n = (k) => Number(r?.per_stato?.[k] || 0);
+  const righe = [["comune", "Comuni"], ["gestore", "Gestori"]];
+  return (
+    <section style={sezione}>
+      <h3 style={h3}>Lettura dei siti</h3>
+      <p style={{ fontSize: 13, color: C.grafite, margin: "0 0 10px", lineHeight: 1.5 }}>
+        Il portale legge il sito di ogni ente (home page, contatti, uffici, amministrazione trasparente, organigramma; rispetta robots.txt, una pagina alla volta) e completa email generica, PEC, telefono e referenti: per i Comuni gli uffici tributi e ambiente con i responsabili, per i gestori Comuni serviti, tariffa, direttori e amministratori. Riconosce i dati con regole fisse, senza servizi a pagamento. Riempie solo i campi vuoti; ogni referente ha la pagina da cui è preso. Accesa, legge 4 enti ogni 30 secondi.
+      </p>
+      {r && (
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 460 }}>
+            <thead><tr style={{ textAlign: "left", color: C.grafite, fontSize: 11.5 }}><th style={th}></th><th style={thN}>In coda</th><th style={thN}>In lettura</th><th style={thN}>Letti</th><th style={thN}>Errori</th></tr></thead>
+            <tbody>
+              {righe.map(([k, nome]) => (
+                <tr key={k} style={{ borderTop: `1px solid ${C.line}` }}>
+                  <td style={td}>{nome}</td><td style={tdN}>{num(n(k + ":in_coda"))}</td><td style={tdN}>{num(n(k + ":in_corso"))}</td><td style={tdN}>{num(n(k + ":fatto"))}</td><td style={tdN}>{num(n(k + ":errore"))}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {r && (
+        <div style={{ fontSize: 12.5, color: C.grafite, margin: "8px 0" }}>
+          Stato: <b style={{ color: r.attiva ? C.green : C.ink }}>{r.attiva ? "accesa" : "spenta"}</b>
+          {r.ultima ? ` · ultima lettura ${new Date(r.ultima).toLocaleString("it-IT")}` : ""}
+          {" · "}nessun costo: solo il codice del portale
+        </div>
+      )}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button disabled={lavoro} onClick={() => esegui(() => accodaLettura("comune"), (d) => `${num(d)} Comuni messi in coda.`)} style={btnMini}>Metti in coda i Comuni</button>
+        <button disabled={lavoro} onClick={() => esegui(() => accodaLettura("gestore"), (d) => `${num(d)} gestori con sito messi in coda.`)} style={btnMini}>Metti in coda i gestori con sito</button>
+        <button disabled={lavoro} onClick={leggiOra} style={btnMini}>Leggi ora 1 ente</button>
+        {r && (r.attiva
+          ? <button disabled={lavoro} onClick={() => esegui(() => attivaLettura(false), "Lettura spenta.")} style={btnMini}>Ferma</button>
+          : <button disabled={lavoro} onClick={() => esegui(() => attivaLettura(true), "Lettura accesa: parte entro 30 secondi.")} style={btnPrimario}>Avvia la lettura</button>)}
+        <button disabled={lavoro} onClick={() => esegui(() => accodaLettura(null, true), (d) => `${num(d)} enti rimessi in coda.`)} style={btnMini}>Rileggi tutti (anche già letti)</button>
+      </div>
+      {msg && <div style={{ fontSize: 12.5, marginTop: 8 }}>{msg}</div>}
+      {prova && (
+        <div style={{ marginTop: 10, background: C.paper, borderRadius: 10, padding: "8px 12px", fontSize: 12.5, lineHeight: 1.5 }}>
+          {prova.ok ? (
+            <>
+              <b>{prova.ente}</b>: {prova.pagine} pagine lette · email {prova.email || "—"} · PEC {prova.pec || "—"} · telefono {prova.telefono || "—"} · {prova.referenti} referenti
+              {(prova.esito?.uffici || []).map((u, i) => <div key={i}>{u.ruolo}: {[u.nome, u.cognome].filter(Boolean).join(" ") || "—"}{u.email ? ` · ${u.email}` : ""}{u.telefono ? ` · ${u.telefono}` : ""}</div>)}
+              {(prova.esito?.referenti || []).map((u, i) => <div key={"r" + i}>{u.ruolo.replace("_", " ")}: {[u.nome, u.cognome].filter(Boolean).join(" ")}</div>)}
+            </>
+          ) : <span style={{ color: C.red }}><b>{prova.ente}</b>: {prova.errore}</span>}
+        </div>
+      )}
+      {r?.ultimi_errori?.length > 0 && (
+        <details style={{ marginTop: 8, fontSize: 12.5 }}>
+          <summary>Ultimi errori</summary>
+          {r.ultimi_errori.map((e, i) => <div key={i}>{e.denominazione}: {e.errore}</div>)}
+        </details>
+      )}
+    </section>
   );
 }
 

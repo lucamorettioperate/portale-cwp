@@ -153,3 +153,19 @@ export async function azioneMarketing(azione, parametri = {}) {
 // Azioni pubbliche della landing page (visita, simulata, richiesta,
 // disiscrivi): stessa funzione, senza accesso.
 export const azionePubblica = azioneMarketing;
+
+// ---- Lettura dei siti (script 46) ----
+// Riepilogo: { attiva, per_stato: { "comune:fatto": n, … }, token_in,
+// token_out, ultima, ultimi_errori: [{ denominazione, errore }] }.
+export async function riepilogoLettura() {
+  return await supabase.rpc("admin_mkt_lettura_riepilogo");
+}
+// Mette in coda gli enti con sito (tipo "comune", "gestore" o null = tutti);
+// ripeti = true rimette in coda anche quelli già letti o in errore.
+export async function accodaLettura(tipo, ripeti = false) {
+  return await supabase.rpc("admin_mkt_lettura_accoda", { p_tipo: tipo, p_ripeti: ripeti });
+}
+// Accende o spegne la lettura automatica (ogni 30 secondi, 4 enti alla volta).
+export async function attivaLettura(attiva) {
+  return await supabase.rpc("admin_mkt_lettura_attiva", { p_attiva: attiva });
+}
