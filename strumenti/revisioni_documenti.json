@@ -535,6 +535,12 @@
       "data": "23/10/2026",
       "descrizione": "Rapporto di Monitoraggio solo per Progetti registrati.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.4",
+      "data": "25/10/2026",
+      "descrizione": "Marketing: Lettura dei siti.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -812,6 +818,12 @@
       "rev": "3.25",
       "data": "23/10/2026",
       "descrizione": "Prove 6.2b (Rapporto su Progetto non registrato) e 10.16j (elenco dei Comuni senza filtri).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.26",
+      "data": "25/10/2026",
+      "descrizione": "Prove 10.16k-m: lettura dei siti.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1229,6 +1241,12 @@
       "data": "23/10/2026",
       "descrizione": "Script 45 in produzione: Rapporto solo per Progetti registrati, Marketing più veloce; tutti gli script 01-45 eseguiti.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "7.9",
+      "data": "25/10/2026",
+      "descrizione": "Lettore dei siti (script 46, versione gratuita) in produzione; secondo lotto di gestori lombardi verificati; tutti gli script 01-46 eseguiti.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1350,6 +1368,12 @@
       "rev": "2.9",
       "data": "23/10/2026",
       "descrizione": "Script 01-45.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.0",
+      "data": "25/10/2026",
+      "descrizione": "Script 01-46, lavoro pianificato cwp_lettura_siti, impostazione url_marketing.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1491,6 +1515,12 @@
       "data": "23/10/2026",
       "descrizione": "Nuova slide «Marketing: Comuni, gestori e campagne».",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.2",
+      "data": "25/10/2026",
+      "descrizione": "Slide Marketing: lettura dei siti.",
+      "autore": "Fondazione Operate"
     }
   ],
   "issue": [
@@ -1630,6 +1660,12 @@
       "rev": "1.22",
       "data": "23/10/2026",
       "descrizione": "ISS-039 e ISS-040 corretti e in produzione; prova t45.sql.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.23",
+      "data": "25/10/2026",
+      "descrizione": "Prova t46.sql e prova del lettore dei siti in produzione.",
       "autore": "Fondazione Operate"
     }
   ]

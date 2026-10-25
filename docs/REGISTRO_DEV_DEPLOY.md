@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Ultimo aggiornamento** | 23 ottobre 2026 |
-| **Versione del portale** | 0.45 (ultimo script database: `45_rapporto_registrato_marketing_rls.sql`; tutti gli script 01-45 eseguiti) |
+| **Versione del portale** | 0.46 (ultimo script database: `46_lettura_siti.sql`; tutti gli script 01-46 eseguiti) |
 | **Indirizzo** | https://portale-cwp.vercel.app |
 | **Repository** | https://github.com/lucamorettioperate/portale-cwp (pubblico: solo codice, nessun dato) |
 | **Responsabile** | Luca Moretti — Fondazione Operate |
@@ -258,6 +258,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `32_utenti_online.sql` | Utenti online (backlog 38): tabella `presenza` (una riga per utente: ultima segnalazione, inizio del collegamento, pagina aperta; nessun IP, nessuno storico; RLS senza regole), `segnala_presenza(pagina)` e `presenza_uscita()` per ognuno solo per sé, `utenti_online()` (visti nelle ultime 24 ore, online se l'ultima segnalazione ha meno di 2 minuti) solo per l'Amministratore principale | 20/10/2026 — provato sul banco locale; **eseguito in produzione il 20/10** |
 | `33_audit_trail_user.sql` | Audit User (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **eseguito in produzione il 20/10** e provato dal vivo |
 | `34_sicurezza_avvisi.sql` | Sicurezza (backlog 14, 30): avvisi all'Amministratore principale (`cwp_avviso_sicurezza`, evento «sicurezza»): 5 accessi non riusciti in 15 minuti per email, 30 in un'ora in tutto, nuovo Amministratore (trigger `trg_profilo_avviso_admin`); `registra_uscita(p_motivo)` con l'uscita per inattività; rinforzi del Security Advisor: `search_path` fisso su tutte le funzioni, funzioni SECURITY DEFINER non eseguibili da anon (tranne `registra_accesso_fallito` e quelle usate nelle regole RLS) | 20/10/2026 — provato sul banco locale (`t34.sql`, regressioni `t33.sql`); **eseguito in produzione il 23/10/2026 alle 12:20** su incarico di Luca, dopo gli script 35-43 (prova sul banco nello stesso ordine: stesse 9 funzioni eseguibili senza accesso, `t41`-`t43` invariati) |
+| `46_lettura_siti.sql` | Lettore dei siti di Comuni e gestori (25/10/2026, richiesta di Luca; versione gratuita scelta da Luca; **eseguito in produzione il 25/10/2026 alle 11:45**): tabella `mkt_lettura` (coda: stato, tentativi, pagine lette, esito, errore), impostazioni `mkt_lettura_attiva`, `mkt_lettura_segreto` (codice casuale per il lavoro pianificato, non leggibile dal portale) e `url_marketing`; `admin_mkt_lettura_accoda`, `admin_mkt_lettura_attiva`, `admin_mkt_lettura_riepilogo`, `mkt_lettura_prendi` (solo chiave di servizio, `skip locked`, riprende le letture interrotte), `richiedi_lettura_siti` e lavoro pianificato `cwp_lettura_siti` ogni 30 secondi. Prova `t46.sql` |
 | `45_rapporto_registrato_marketing_rls.sql` | Segnalazioni di Luca del 23/10 alle 15:24 (**eseguito in produzione il 23/10/2026 alle 15:50**): `rapporto_coerente` rifiuta un nuovo Rapporto di Monitoraggio se il Progetto non è registrato (fase 6 completata o `data_registrazione`); il trigger resta solo sull'inserimento (i Rapporti già creati non si toccano). Regole RLS delle 6 tabelle `mkt_*` con `(select app_is_admin())`, calcolata una volta per lettura (l'elenco di tutti i Comuni superava il tempo massimo); indice `idx_mkt_ente_tipo_denominazione`. Prova `t45.sql` |
 | `44_marketing.sql` | Marketing (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026 alle 12:12**): tabelle `mkt_ente` (Comuni e gestori: chiave `istat:` / `albo:`, regione, provincia, abitanti, PEC, email generica con controllo «non PEC», sito, natura, numero e categorie dell'Albo, attività di raccolta e tariffa, fonti), `mkt_referente` (sindaco, tributi, ambiente, finanziario, tecnico, direttori, amministratore), `mkt_campagna`, `mkt_invio` (un invio per ente con codice casuale, stato, visita, simulazione, richiesta), `mkt_disiscrizione`, `mkt_richiesta` (richieste di registrazione dalla pagina /scopri; id uuid per l'audit); RLS solo Amministratori, nessun accesso anonimo; audit di campagne e richieste; `mkt_sembra_pec`, `admin_mkt_prepara_invii` (salta enti senza email e indirizzi disiscritti), `admin_mkt_riepilogo`. Prova `t44.sql` |
 | `43_valore_progetti.sql` | Valore dei progetti per il cliente (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026 alle 11:50**): `pratica.caso_listino` ('caso1' / 'caso2', solo Progetti, null = da indicare); `staff_crea_pratica` e `staff_aggiorna_dati_pratica` salvano il caso (messaggio italiano per valori non ammessi); `scenario_simulazione.costo_cliente_totale` (salvato dal simulatore con il Caso 1 o 2); `cruscotto_valore_progetti()` (ultimo scenario per Comune ed elenco dei Progetti aperti con caso, popolazione e periodo; staff tutto, Comuni i propri). Prova `t43.sql` |
@@ -354,7 +355,7 @@ autenticazione, dal SQL Editor:
 | `consultazione-pubblica` | Pagine pubbliche del feedback pubblico (data di «oggi» in ora italiana dal 18/10; numero delle osservazioni dallo script 21; dalla sera del 18/10 anche i Rapporti di Monitoraggio, ripubblicata; azioni `programma` e `file` per la pagina pubblica /programma, script 24, ripubblicata la sera del 18/10, Verify JWT spento): elenco, dettaglio (documento, errata corrige, osservazioni ammesse), invio di un'osservazione con allegato facoltativo ed email di conferma, conferma dell'email (l'osservazione diventa *Ricevuto*) | Verify JWT **disattivato** di proposito (pubblico senza account): nessun dato personale restituito, 3 invii/ora per indirizzo e 100/ora per consultazione, campo trappola anti-robot, allegati max 10 MB con controllo del contenuto, token monouso 48 ore salvato come SHA-256 | Dashboard Supabase (editor web), 18/10 |
 | `recupera-password` | «Password dimenticata?»: genera il collegamento di recupero (`auth.admin.generateLink`) e spedisce con Resend l'email in italiano «Portale Carbon WastePrint (CWP) — Richiesta di reimpostazione della password», al posto del modello email di Supabase | Verify JWT **disattivato** di proposito (la chiama chi non ha fatto l'accesso): risponde sempre `ok` senza rivelare se l'indirizzo esiste; niente email agli utenti disattivati; massimo una richiesta ogni 2 minuti per indirizzo; il collegamento porta solo al portale | Dashboard Supabase (editor web), 18/10 |
 | `notizie` | Osservatorio News (21/10/2026): legge 24 canali RSS, 4 alla volta: 12 ricerche Bing News in italiano e inglese, Carbon Herald, CarbonCredits.com, Ecosystem Marketplace, Verra e 8 siti di notizie ambientali (Rinnovabili.it, QualEnergia, GreenReport, ESGnews, LifeGate, Climate Home News, edie, BusinessGreen; per questi pre-filtro con parole più strette, `PAROLE_STRETTE`; dal 22/10 Rinnovabili.it, che rifiuta i server con 403, e GreenReport, il cui feed non esiste più, si leggono con una ricerca Bing News limitata al sito). Google News non si usa: risponde 503 (pagina «Sorry…») a ogni richiesta dai server di Supabase e il tramite in Google Apps Script è stato bloccato dall'account Google («Questa app è bloccata»). Con `{"diagnosi": true}` prova i canali e restituisce gli esiti HTTP (nessuna scrittura, niente Claude), toglie doppioni e notizie già viste o più vecchie di 10 giorni, pre-filtro sulle parole chiave, valutazione di Claude a gruppi di 25 (massimo 100 per ricerca; attinente, categoria, rilevanza 1-5, titolo e sintesi in italiano, prezzi citati, motivo), salva in `notizia` e chiude `notizie_esecuzione`; modello `claude-haiku-5-5` (`NOTIZIE_MODELLO`); funzioni pure copiate identiche da `src/lib/notizie.js` | Verify JWT **disattivato** di proposito (la chiama pg_cron senza token): nessun dato ricevuto viene salvato; `notizie_puo_partire` (script 36) ammette una ricerca ogni 100 minuti senza token di Amministratore, ogni 10 minuti con il token (`app_is_admin`, MFA compresa); scrive con la chiave di servizio | **Pubblicata il 21/10** (dashboard Supabase, Verify JWT disattivato), ripubblicata alle 12:10 con Bing News |
-| `marketing` | Sezione Marketing (23/10/2026, script 44). Azioni degli Amministratori: `importa_comuni` (elenco ISTAT da `public/marketing/dati/comuni_istat.json`, poi IndicePA: PEC, email generica, sito, sindaco; uffici di tributi, ambiente, finanziario e tecnico a blocchi), `importa_albo` (iscritti all'Albo Gestori Ambientali per sezione regionale, solo categoria 1 ordinaria; PEC ed email dei gestori pubblici da IndicePA), `prova_campagna`, `invia_campagna` (a blocchi di 50, solo email generiche, intestazione List-Unsubscribe). Azioni pubbliche della pagina /scopri: `visita`, `simulata`, `disiscrivi`, `richiesta` (campo trappola, 3 richieste all'ora per email e 30 in tutto, notifica ed email a tutti gli Amministratori) | Verify JWT **disattivato** di proposito (pagina pubblica): le azioni riservate controllano da sole token e ruolo Amministratore | Pubblicata il 23/10/2026 alle 12:15 (OK di Luca), Verify JWT disattivato; aggiornata alle 12:25 e 12:35 (correzioni dell'importazione). Segreti: `RESEND_API_KEY` già presente, `EMAIL_MITTENTE` e `PORTALE_URL` facoltativi |
+| `marketing` | Sezione Marketing (23/10/2026, script 44). Azioni degli Amministratori: `importa_comuni` (elenco ISTAT da `public/marketing/dati/comuni_istat.json`, poi IndicePA: PEC, email generica, sito, sindaco; uffici di tributi, ambiente, finanziario e tecnico a blocchi), `importa_albo` (iscritti all'Albo Gestori Ambientali per sezione regionale, solo categoria 1 ordinaria; PEC ed email dei gestori pubblici da IndicePA), `prova_campagna`, `invia_campagna` (a blocchi di 50, solo email generiche, intestazione List-Unsubscribe). Azioni pubbliche della pagina /scopri: `visita`, `simulata`, `disiscrivi`, `richiesta` (campo trappola, 3 richieste all'ora per email e 30 in tutto, notifica ed email a tutti gli Amministratori) | Verify JWT **disattivato** di proposito (pagina pubblica): le azioni riservate controllano da sole token e ruolo Amministratore | Pubblicata il 23/10/2026 alle 12:15 (OK di Luca), Verify JWT disattivato; aggiornata alle 12:25 e 12:35 (correzioni dell'importazione). Segreti: `RESEND_API_KEY` già presente, `EMAIL_MITTENTE` e `PORTALE_URL` facoltativi. Dal 25/10 anche l'azione `leggi_siti` (lettore dei siti, regole fisse, nessun servizio a pagamento), chiamata ogni 30 secondi dal lavoro pianificato con il codice segreto quando la lettura è accesa; ripubblicata alle 11:45 e 11:52 |
 | `invia-email-notifica` | Spedisce per email una notifica interna (pulsante "Apri nel portale") tramite Resend | Verify JWT **disattivato** di proposito: usa solo l'id ricevuto e rilegge tutto dal database; ogni notifica parte una volta sola | Dashboard Supabase; prima pubblicazione 17/10, aggiornata 17/10 (pulsante per tema scuro) |
 
 Sorgenti in `supabase/functions/<nome>/index.ts`. Si pubblicano dalla
@@ -554,6 +555,39 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 ## 9. Cronologia sviluppo e deploy
 
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
+
+### 25 ottobre 2026
+- **Lettore dei siti di Comuni e gestori** (richiesta di Luca delle 11:27:
+  «devi cercare nei singoli siti internet di ogni gestore e comune»).
+  Prima versione con Claude per leggere nomi e uffici (stima 40-60 $ una
+  tantum); **Luca ha scelto la versione gratuita** (11:39): regole fisse
+  nel codice, nessun servizio a pagamento. Ramo `lettore-siti`, main
+  `5be70e1` e `cb5c315`.
+  - `src/lib/marketingLettura.js` (copiato identico nella funzione
+    `marketing`): testo dall'HTML, collegamenti utili (contatti, uffici,
+    amministrazione trasparente, organigramma), robots.txt, `estraiDati`
+    (email generica sul dominio dell'ente, PEC, telefono; Comuni: uffici
+    tributi e ambiente con email, telefono e responsabile dopo
+    «Responsabile:», «Dirigente:»…; gestori: presidente, amministratore,
+    direttori, raccolta, tariffa, Comuni citati) e `controlloEsito` (solo
+    dati presenti nel testo, PEC separate, fonte = pagina letta).
+  - Script 46 eseguito alle 11:45 (lavoro `cwp_lettura_siti` ogni 30
+    secondi, lettura spenta all'inizio); funzione pubblicata; pagina
+    Importazioni con la sezione «Lettura dei siti».
+  - Prova su 11 enti: 8 letti (Lecco: protocollo, PEC, numero verde, email
+    TARI e ambiente; Desio: email tributi ed ecologia; CEM e G.ECO:
+    amministratori), 3 siti non raggiungibili. Due errori corretti subito
+    (email del gestore presa come email del Comune; «Capitale Sociale»
+    letto come nome) e dati sbagliati cancellati. Limite noto: i nomi dei
+    responsabili dei Comuni si trovano di rado con regole fisse.
+  - 11:59, OK di Luca: in coda tutti gli enti con sito (7.658), lettura
+    accesa: circa 6 enti al minuto, un giorno circa per finire.
+- **Gestori verificati a mano, secondo lotto**: Lombardia, le 10 imprese
+  rimaste delle classi A-B e le 88 di classe C (ricerca sul web con fonti;
+  scartati i dati incerti: un direttore del 2023, email su domini di altre
+  società, un sito con partita IVA diversa). Caricati 98 gestori: in
+  Lombardia tutte le 166 imprese delle classi A-C sono verificate (39 con
+  raccolta per Comuni, 10 con gestione della tariffa).
 
 ### 23 ottobre 2026
 - **Due segnalazioni di Luca (15:24), corrette e in produzione** (OK di
@@ -2045,7 +2079,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 183 file, 43.234 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 185 file, 44.428 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -2122,7 +2156,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 183 file, 43.234 righe 
 | `src/components/impostazioni/Registri.jsx` | 117 | elenco dei registri riconosciuti dal Programma (Guida al Programma 3.5, Standard CWP cap. 6), pubblicato sulla pagina pubblica /programma: piattaforme esterne su cui il promotore del progetto carica e vende i crediti. Requisiti… |
 | `src/components/marketing/Campagne.jsx` | 288 | — |
 | `src/components/marketing/ElencoEnti.jsx` | 287 | Ricarica a ogni cambio di filtri o pagina (con un piccolo ritardo per il testo). |
-| `src/components/marketing/Importazioni.jsx` | 137 | Sezioni regionali dell'Albo (id usati dall'elenco pubblico degli iscritti). |
+| `src/components/marketing/Importazioni.jsx` | 232 | Sezioni regionali dell'Albo (id usati dall'elenco pubblico degli iscritti). |
 | `src/components/marketing/Richieste.jsx` | 77 | — |
 | `src/components/stili.js` | 85 | oggetti di stile in linea condivisi dai componenti delle pratiche e delle impostazioni (stessa grafica del resto del portale: carta, verde Fondazione, bordi sottili) e la funzione dataOra per mostrare data e ora in formato… |
 
@@ -2155,7 +2189,8 @@ Inventario generato da `strumenti/inventario_codice.py`: 183 file, 43.234 righe 
 | `src/lib/file.js` | 158 | prima di inviare un file all'archivio controlla formato ammesso, dimensione, contenuto reale (primi byte, "firma" del formato) e prepara un nome sicuro per il percorso nell'archivio. Traduce anche gli errori dello Storage di… |
 | `src/lib/inattivita.js` | 20 | un solo posto per i tempi usati da src/components/ UscitaInattivita.jsx (richiesta di Luca del 20/10/2026, sicurezza). - Operatori e Amministratori: 30 minuti senza attività; - utenti degli enti: 60 minuti; - l'avviso «Sei… |
 | `src/lib/marketing.js` | 219 | - htmlCampagna / testoCampagna: l'email di una campagna (grafica in testa, testo, riquadro «risorse per 7, 10 o 21 anni», pulsante «Approfondisci» verso la landing page, informativa e disiscrizione). La STESSA funzione è copiata… |
-| `src/lib/marketingDati.js` | 155 | Applica i filtri dell'elenco a una lettura di mkt_ente. Filtri: tipo, |
+| `src/lib/marketingDati.js` | 171 | Applica i filtri dell'elenco a una lettura di mkt_ente. Filtri: tipo, |
+| `src/lib/marketingLettura.js` | 317 | INIZIO-LETTURA-SITI |
 | `src/lib/notizie.js` | 225 | funzioni pure usate dalla funzione del server «notizie» (supabase/functions/notizie) e dalla pagina /news: - CANALI: dove si cercano le notizie (Bing News in italiano e in inglese con ricerche mirate, quattro siti specializzati… |
 | `src/lib/ordinamento.js` | 37 | logica pura (senza React) usata dal componente src/components/Ordinamento.jsx. Numeri come numeri, booleani (falso prima di vero), date ISO e testi in ordine alfabetico italiano senza distinguere maiuscole e con i numeri nel… |
 | `src/lib/password.js` | 70 | controllo delle regole della password prima dell'invio, generazione della password temporanea assegnata dall'Amministratore, traduzione in italiano degli errori di Supabase Auth. |
@@ -2214,6 +2249,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 183 file, 43.234 righe 
 | `supabase/43_valore_progetti.sql` | 169 | 43 — VALORE DEI PROGETTI: LISTINO CASO 1 / CASO 2 |
 | `supabase/44_marketing.sql` | 266 | 44 — MARKETING: BANCHE DATI DI COMUNI E GESTORI, CAMPAGNE, RICHIESTE |
 | `supabase/45_rapporto_registrato_marketing_rls.sql` | 85 | 45 — RAPPORTI SOLO PER PROGETTI REGISTRATI; MARKETING PIÙ VELOCE |
+| `supabase/46_lettura_siti.sql` | 175 | 46 — MARKETING: LETTORE DEI SITI DI COMUNI E GESTORI |
 | `supabase/schema_completo.sql` | 434 | PORTALE CARBON WASTEPRINT — Schema del database (Supabase / PostgreSQL) |
 
 **Edge Functions (supabase/functions)**
@@ -2224,7 +2260,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 183 file, 43.234 righe 
 | `supabase/functions/consultazione-pubblica/index.ts` | 432 | servizio della pagina pubblica delle consultazioni (requisiti §6, decisioni B e D del 18/10/2026). Chiunque, senza account, può: - "elenco": vedere le consultazioni aperte; - "dettaglio": leggere documento, errata corrige e… |
 | `supabase/functions/crea-utente/index.ts` | 263 | crea un nuovo utente con password temporanea e imposta ruolo + organizzazione. All'utente parte un'email con indirizzo del portale, email di accesso e password temporanea (Resend, funzione inviaEmailAccesso in fondo al file); se… |
 | `supabase/functions/invia-email-notifica/index.ts` | 160 | invia per email ogni nuova notifica del portale (requisiti §9: "email + notifica interna"). |
-| `supabase/functions/marketing/index.ts` | 522 | marketing — funzione del server dello strumento di marketing |
+| `supabase/functions/marketing/index.ts` | 975 | marketing — funzione del server dello strumento di marketing |
 | `supabase/functions/notizie/index.ts` | 487 | osservatorio News per gli Amministratori (richiesta di Luca Moretti del 21/10/2026). Ogni 2 ore cerca notizie sul mondo dei crediti di carbonio volontari (mercato volontario, marketplace e borse, prezzi dei crediti scambiati o… |
 | `supabase/functions/recupera-password/index.ts` | 155 | «Password dimenticata?» — genera il collegamento di recupero di Supabase Auth e spedisce l'email in italiano con Resend (stessa grafica delle notifiche), invece del modello email di Supabase. |
 | `supabase/functions/reimposta-password/index.ts` | 218 | l'Amministratore assegna una nuova password temporanea a un utente (Cliente od Operatore) che l'ha dimenticata. Al primo accesso il portale obbliga l'utente a sceglierne una personale (script 15). |
@@ -2241,7 +2277,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 183 file, 43.234 righe 
 | `test/csv.test.mjs` | 53 | verifica che i CSV salvati da Excel in italiano (BOM, separatore ";", virgola decimale, punto delle migliaia, testi tra virgolette con ";" dentro, righe vuote) siano letti correttamente; che intestazioni con maiuscole/accenti… |
 | `test/date.test.mjs` | 31 | verificare le date in ora italiana usate per aprire le consultazioni (30 giorni) e per i nomi dei file: oggiItalia() deve dare sempre aaaa-mm-gg in fuso Europe/Rome, aggiungiGiorni() deve contare i giorni sul calendario (fine… |
 | `test/inattivita.test.mjs` | 24 | — |
-| `test/marketing.test.mjs` | 111 | — |
+| `test/marketing.test.mjs` | 219 | — |
 | `test/notizie.test.mjs` | 96 | verificare che - un feed di Google News, uno di Bing News e uno di un sito (WordPress) si leggano con titolo senza testata, indirizzo, fonte, data ed estratto senza HTML; - la stessa notizia da due ricerche dia la stessa chiave;… |
 | `test/ordinamento.test.mjs` | 36 | — |
 | `test/presenza.test.mjs` | 33 | — |
@@ -2268,7 +2304,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 183 file, 43.234 righe 
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/marketing_arricchimento_sql.py` | 107 | — |
 | `strumenti/presentazione/genera_presentazione.cjs` | 640 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1636 | — |
+| `strumenti/revisioni_documenti.json` | 1666 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
@@ -2393,6 +2429,18 @@ pagina pubblica «Approfondisci» con micro simulazione.
 - Invio a blocchi di 50 con pausa; piano gratuito di Resend: 100 email al
   giorno; finché il dominio non è verificato le email arrivano solo al
   titolare dell'account (prova «Invia una prova a me»).
+
+**Lettore dei siti (dal 25/10, script 46)**
+- Coda `mkt_lettura`; il lavoro `cwp_lettura_siti` ogni 30 secondi chiama
+  `leggi_siti` (4 enti alla volta) solo se `mkt_lettura_attiva` = 'si'.
+- Per ogni ente: robots.txt, home page, fino a 5 pagine utili e 2 di
+  secondo livello, una ogni 0,7 secondi; regole fisse (`estraiDati`) e
+  controllo (`controlloEsito`); riempie solo i campi vuoti di `mkt_ente`,
+  referenti con chiave `sito:<ruolo>:<cognome|ufficio>` e fonte.
+- Nessun servizio a pagamento (scelta di Luca del 25/10/2026): le colonne
+  `token_in`/`token_out` restano a zero.
+- Pagina Importazioni → «Lettura dei siti»: coda, letti, errori, Avvia /
+  Ferma, «Leggi ora 1 ente», ultimi errori.
 
 **Pagina «Approfondisci» (/scopri)**
 - Il collegamento dell'email porta il codice casuale dell'invio: la pagina
