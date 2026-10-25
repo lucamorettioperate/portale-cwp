@@ -609,7 +609,7 @@ Vengono create le 7 fasi: la 1 (Adesione) già *In corso*, le altre *Non iniziat
 | progetto ritirato | Progetto ritirato |
 | non registrato (pratica annullata) | pratica annullata |
 
-**Dati del Progetto e del Rapporto.** Sotto l'intestazione un riquadro riporta: **Territorio (codici ISTAT)**, **Co-promotori** (gli altri soggetti promotori, Guida 3.3.1), **Periodo di riferimento**, **Popolazione residente**, **Crediti previsti nel periodo** (Progetto) o **Crediti previsti nell'anno** (Rapporto) e, dopo la chiusura della fase 6, la data di registrazione (**Registrato il** per il Progetto, che è la sua data di inizio secondo lo Standard 4.5; **Crediti registrati il** per il Rapporto) e, per il Progetto, il **Listino** (Caso 1 o Caso 2, «da indicare» per i Progetti aperti prima del 23/10/2026) con il **Valore del progetto per il cliente** (in 10 anni e all'anno). Il Comune li vede in sola lettura.
+**Dati del Progetto e del Rapporto.** Sotto l'intestazione un riquadro riporta: **Territorio (codici ISTAT)**, **Co-promotori** (gli altri soggetti promotori, Guida 3.3.1), **Periodo di riferimento**, **Popolazione residente**, **Crediti previsti nel periodo** (Progetto) o **Crediti previsti nell'anno** (Rapporto) e, dopo la chiusura della fase 6, la data di registrazione (**Registrato il** per il Progetto, che è la sua data di inizio secondo lo Standard 4.5; **Crediti registrati il** per il Rapporto) e, per il Progetto, il **Listino** (Caso 1 o Caso 2, sempre obbligatorio: i Progetti aperti prima del 23/10/2026 sono passati a Caso 1 il 25/10/2026, su indicazione di Luca Moretti, con la voce nell'Audit) con il **Valore del progetto per il cliente** (in 10 anni e all'anno). Il Comune li vede in sola lettura.
 
 Per cambiarli:
 

@@ -541,6 +541,12 @@
       "data": "25/10/2026",
       "descrizione": "Marketing: Lettura dei siti.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.5",
+      "data": "25/10/2026",
+      "descrizione": "Listino sempre obbligatorio; Progetti esistenti a Caso 1.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -824,6 +830,12 @@
       "rev": "3.26",
       "data": "25/10/2026",
       "descrizione": "Prove 10.16k-m: lettura dei siti.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.27",
+      "data": "25/10/2026",
+      "descrizione": "Prova 10.10u: listino obbligatorio.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1247,6 +1259,12 @@
       "data": "25/10/2026",
       "descrizione": "Lettore dei siti (script 46, versione gratuita) in produzione; secondo lotto di gestori lombardi verificati; tutti gli script 01-46 eseguiti.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "8.0",
+      "data": "25/10/2026",
+      "descrizione": "Listino obbligatorio (script 47), Progetti esistenti a Caso 1; tutti gli script 01-47 eseguiti.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1374,6 +1392,12 @@
       "rev": "3.0",
       "data": "25/10/2026",
       "descrizione": "Script 01-46, lavoro pianificato cwp_lettura_siti, impostazione url_marketing.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.1",
+      "data": "25/10/2026",
+      "descrizione": "Script 01-47.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1666,6 +1690,12 @@
       "rev": "1.23",
       "data": "25/10/2026",
       "descrizione": "Prova t46.sql e prova del lettore dei siti in produzione.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.24",
+      "data": "25/10/2026",
+      "descrizione": "Prova t47.sql.",
       "autore": "Fondazione Operate"
     }
   ]
