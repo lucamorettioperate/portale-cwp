@@ -204,4 +204,16 @@ prova2("Lettore: regole fisse per i gestori (direttori, raccolta, tariffa, Comun
   assert.equal(v.uffici.filter((u) => u.cognome).length, 0);
 });
 
+prova2("Lettore: correzioni dopo la prova del 25/10 (dominio, Capitale sociale, titolo ufficio)", () => {
+  assert.equal(L.dominioBase("www.comune.desio.mb.it"), "desio.mb.it");
+  assert.equal(L.dominioBase("www.cemambiente.it"), "cemambiente.it");
+  const d = L.estraiDati([{ url: "https://www.comune.desio.mb.it/x", testo: "Raccolta rifiuti: info@gelsiambiente.it\nprotocollo@comune.desio.mb.it\nTARI : tel.: 0362 392217\ntributi@comune.desio.mb.it" }], "comune", "www.comune.desio.mb.it");
+  assert.equal(d.email, "protocollo@comune.desio.mb.it");
+  const t = d.uffici.find((u) => u.ruolo === "tributi");
+  assert.equal(t.email, "tributi@comune.desio.mb.it");
+  assert.equal(t.ufficio, null); // «TARI : tel.: …» non è un nome di ufficio
+  const g = L.estraiDati([{ url: "u", testo: "Amministratore Unico\nCapitale Sociale i.v. 1.000.000\nPresidente: Mario Verdi" }], "gestore", "x.it");
+  assert.deepEqual(g.referenti.map((r) => r.cognome), ["Verdi"]);
+});
+
 console.log(`${m} prove superate (lettore dei siti).`);
