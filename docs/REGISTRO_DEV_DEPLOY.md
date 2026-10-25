@@ -558,6 +558,13 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 25 ottobre 2026
+- **Abitanti dei 3 Progetti** (indicati da Luca alle 13:19), inseriti alle
+  13:20 nel SQL Editor con la motivazione nell'audit «Popolazione residente
+  indicata da Luca Moretti il 25/10/2026»: CWP-2026-0001 26.382,
+  CWP-2026-003 6.811, cwp-026-005 11.414. Con il Caso 1 il valore per il
+  cliente in 10 anni è 232.161,60 €, 76.964,30 € e 119.847,00 €; con i due
+  Progetti di collaudo il «Valore dei progetti» della Dashboard arriva a
+  464.472,90 €.
 - **Listino obbligatorio** (richiesta di Luca delle 12:07: «per i dati
   esistenti imposta a tutti caso 1, poi rendi obbligatoria la selezione
   del campo per i nuovi inserimenti»). Script 47 in produzione alle 12:15:
