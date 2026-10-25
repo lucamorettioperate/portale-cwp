@@ -560,7 +560,7 @@ function DocumentiRichiesti({ richiesti, documenti }) {
    co-promotori (Guida 3.3.1), periodo di riferimento (Standard 4.3.8),
    popolazione e crediti previsti (per le tariffe dello Schema tariffario),
    data di registrazione (Standard 4.5: data di inizio del progetto) e, dal
-   23/10/2026, il listino del Progetto (Caso 1 o Caso 2, script 43) con il
+   23/10/2026, il listino del Progetto (Caso 1 o Caso 2, script 43; obbligatorio dal 25/10, script 47) con il
    valore del progetto per il cliente (valoreProgettoCaso di simulatore.js).
    Il Comune li vede; lo staff li modifica con staff_aggiorna_dati_pratica.
    Props: pratica, staff, onFatto() dopo il salvataggio. */
@@ -588,6 +588,7 @@ function DatiPratica({ pratica, staff, onFatto }) {
   // uno per riga. Il database controlla formato e unicità del territorio.
   async function salva() {
     setErrore("");
+    if (progetto && !modulo.caso) return setErrore("Scegli il listino: Caso 1 (progetto volontario) o Caso 2 (obbligatorio da bando di gara).");
     setInCorso(true);
     const dati = { popolazione: String(modulo.popolazione).trim(), crediti_previsti: String(modulo.crediti).trim() };
     if (progetto) {
@@ -651,7 +652,8 @@ function DatiPratica({ pratica, staff, onFatto }) {
               <label style={lbl}>
                 Listino (quanto paga il cliente)
                 <select value={modulo.caso} onChange={(e) => setModulo({ ...modulo, caso: e.target.value })} style={campo}>
-                  <option value="">— da indicare —</option>
+                  {/* Obbligatorio dal 25/10/2026 (script 47): nessuna voce «da indicare». */}
+                  {!modulo.caso && <option value="" disabled>— scegli —</option>}
                   {Object.entries(CASI_COSTI).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </label>
@@ -703,6 +705,7 @@ function EnteValidazione({ pratica, staff, onFatto }) {
   // Salva la scelta; «— nessuno —» toglie l'ente dalla pratica.
   async function salva() {
     setErrore("");
+    if (progetto && !modulo.caso) return setErrore("Scegli il listino: Caso 1 (progetto volontario) o Caso 2 (obbligatorio da bando di gara).");
     const { error } = await impostaEntePratica(pratica.id, scelta || null);
     if (error) return setErrore(error.message);
     setEnti(null);
