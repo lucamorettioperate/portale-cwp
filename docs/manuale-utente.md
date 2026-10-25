@@ -43,6 +43,8 @@ Le credenziali vi arrivano per email da Fondazione Operate, con oggetto «Portal
 
 In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Reclami**, **Formato dati**, **Il Programma CWP**, **Manuali**; **Marketplaces** è in grigio perché la sezione è in arrivo), la campanella delle notifiche, l'indicazione *Cliente*, il vostro indirizzo email con il collegamento **Il mio profilo** e il pulsante **Esci** per uscire.
 
+![Il menu del portale per i Comuni, con la campanella delle notifiche e il collegamento a Il mio profilo](public/manuali/immagini/menu-comune.png)
+
 | Voce del menu | Cosa trovate |
 | --- | --- |
 | Le mie pratiche | I vostri Progetti e Rapporti (capitolo 3) |
@@ -60,6 +62,8 @@ In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Reclami**,
 **Il manuale.** La voce **Manuali** del menu (per gli Operatori **Manuale**), la pagina **I tuoi documenti** e la pagina **Il mio profilo** permettono di aprire e scaricare questo manuale in PDF, sempre nella revisione più recente.
 
 **Il mio profilo.** Fate clic sul vostro indirizzo email in alto (sotto c'è scritto **Il mio profilo**): trovate i dati del vostro account, il pulsante **Cambia password** e il manuale da scaricare.
+
+![La pagina Il mio profilo: dati dell'account, cambio password e manuale](public/manuali/immagini/profilo.png)
 
 **Cambiare la password.** In **Il mio profilo** premete **Cambia password**, inserite la password attuale e due volte quella nuova, poi premete **Salva la password**.
 
@@ -81,11 +85,15 @@ La pagina elenca i Progetti della vostra organizzazione (o delle organizzazioni 
 - **Crediti in fase esecutiva**: crediti **calcolati** nei Rapporti di Monitoraggio confermati, crediti **emessi** e crediti **venduti** con il valore comunicato dal registro. Calcolati ed emessi sono valorizzati al prezzo di riferimento indicato nel riquadro; non si sommano, perché i crediti emessi vengono dai calcoli.
 - **Valore dei progetti**: quanto costa il vostro Progetto secondo il listino concordato con la Fondazione (Caso 1, progetto volontario, oppure Caso 2, progetto da bando di gara), in totale e all'anno, e quanto prevede l'ultima simulazione. Lo stesso valore compare nei dati del Progetto, alla voce **Valore del progetto per il cliente**.
 
+![I riquadri Crediti in simulazione e Crediti in fase esecutiva](public/manuali/immagini/valore-crediti.png)
+
 **Dal telefono.** Il portale si usa anche dallo smartphone. In alto restano i loghi, la campanella delle notifiche e il pulsante **☰ Menu**, che apre l'elenco delle pagine, **Il mio profilo** ed **Esci**. Con più pratiche si vede prima l'elenco: toccandone una si apre il dettaglio e **← Tutte le pratiche** riporta all'elenco. Con una sola pratica il dettaglio si apre subito. L'assistente è il pulsante tondo ✦ in basso a destra e, aperto, occupa tutto lo schermo.
 
 **Ordinare gli elenchi.** Con più pratiche o documenti, in alto compare **Ordina per**: scegliete il campo (titolo, codice, stato, data…) e con il pulsante ▲/▼ l'ordine crescente o decrescente. Nelle tabelle basta fare clic sull'intestazione della colonna.
 
 Ogni riquadro mostra il titolo del progetto, lo stato e il codice della pratica con il nome dell'ente. In alto a destra c'è la **barra di avanzamento a LED**: 7 luci, una per fase; le fasi completate sono accese (ambra, la settima verde), quella in corso ha il contorno ambra, accanto il conteggio (es. «4/7»). Passando il mouse su una luce compaiono nome e stato della fase. La stessa barra compare in alto a destra nella pratica aperta.
+
+![L'elenco delle pratiche con la barra di avanzamento a LED](public/manuali/immagini/elenco-pratiche.png)
 
 | Stato | Significato |
 | --- | --- |
@@ -107,6 +115,8 @@ Se non vedete pratiche compare il messaggio «Non risultano ancora pratiche a tu
 - lo stato **Nel Programma** (tabella sotto).
 
 Se la pratica non è attiva è indicata anche la **Motivazione**. Il pulsante **Scarica documentazione** scarica in un unico file ZIP tutti i documenti della pratica (tutte le versioni), un riepilogo in PDF (Riepilogo.pdf) e i riepiloghi in formato CSV, comprese le osservazioni del feedback pubblico con i loro allegati, le note condivise e i messaggi.
+
+![L'intestazione di una pratica: ID progetto, stato, stato nel Programma e dati principali](public/manuali/immagini/intestazione-pratica.png)
 
 **Lo stato nel Programma.** Accanto allo stato della pratica compare «Nel Programma: …», con i nomi usati dalla Guida al Programma. Si aggiorna da solo quando la Fondazione chiude le fasi.
 
@@ -188,6 +198,10 @@ Dentro ogni fase trovate, quando presenti:
 
 I documenti si caricano in due punti della pratica: in **Documenti della fase**, dentro la fase a cui si riferiscono, oppure in **Documenti generali**, in fondo alla pratica, per quelli non legati a una fase.
 
+![Una fase in corso: documenti richiesti, pulsante + Carica e scelta del tipo di documento](public/manuali/immagini/fase-in-corso.png)
+
+![Ogni caricamento crea una nuova versione; le precedenti restano consultabili](public/manuali/immagini/documenti-versioni.png)
+
 1. Aprite la pratica e individuate il riquadro giusto (fase o generali).
 2. Se la fase ha documenti richiesti, scegliete in «Che documento state caricando?» quale state caricando: così la fase segna il documento come presente.
 3. Premete **+ Carica** e scegliete il file dal computer.
@@ -229,6 +243,10 @@ Quando la fase è chiusa compare la scritta «La fase è chiusa: non è più pos
 
 Nella fase 3 la Fondazione apre il **feedback pubblico**: per un periodo stabilito chiunque può leggere la documentazione e inviare osservazioni. Il periodo dura 30 giorni per il Progetto e 20 giorni per ogni Rapporto di Monitoraggio. All'apertura ricevete la notifica «Aperto il periodo di feedback pubblico». Il periodo comprende l'ultimo giorno indicato e non si chiude prima: la fase 3 si conclude insieme al feedback, dal giorno successivo al termine. Il riquadro **Feedback pubblico** si trova nel dettaglio della pratica e mostra il periodo, i giorni rimanenti e il documento pubblicato.
 
+![Il riquadro Feedback pubblico nella pratica, con le osservazioni ricevute](public/manuali/immagini/feedback-pratica.png)
+
+![La pagina pubblica del feedback, aperta a tutti](public/manuali/immagini/feedback-pubblico.png)
+
 **Dove si partecipa.** Il feedback pubblico si svolge sulla pagina pubblica del portale **Feedback pubblico** ([portale-cwp.vercel.app/consultazioni](https://portale-cwp.vercel.app/consultazioni)), raggiungibile senza credenziali anche dal link nella pagina di accesso. Chiunque può leggere il documento e inviare un'osservazione: per farla arrivare deve confermare il proprio indirizzo email con il collegamento che riceve. Il link alla pagina pubblica del vostro Progetto o Rapporto compare nel riquadro **Feedback pubblico**: potete diffonderlo ai cittadini.
 
 **Osservazioni.** La Fondazione modera le osservazioni: voi vedete solo quelle *Pubblicate* o già *Risposte*, con il numero (**Osservazione n. 3**), firmate *Partecipante* oppure con il nome, se l'autore ha scelto di pubblicarlo. Se un'osservazione ha un allegato compare il collegamento **Allegato**. Quando la Fondazione pubblica una nuova osservazione ricevete la notifica «Nuova osservazione a cui rispondere».
@@ -249,6 +267,8 @@ Se volete inviare anche voi un'osservazione, usate la pagina pubblica come tutti
 
 In ogni pratica, sotto le fasi, la sezione **Messaggi** è una conversazione tra il vostro ente e Fondazione Operate su quella pratica.
 
+![La sezione Messaggi della pratica](public/manuali/immagini/messaggi.png)
+
 1. Scrivete il testo nel campo «Scrivi un messaggio…».
 2. Premete **Invia**.
 
@@ -257,6 +277,10 @@ I vostri messaggi compaiono a destra; quelli della Fondazione, firmati «Fondazi
 ## Rapporti di monitoraggio e pagamenti
 
 Ogni anno si presenta un **Rapporto di Monitoraggio**. Il numero massimo dipende dal periodo di riferimento del Progetto:
+
+![L'elenco dei Rapporti di Monitoraggio dentro il Progetto](public/manuali/immagini/rapporti-elenco.png)
+
+![Un Rapporto di Monitoraggio aperto, con il collegamento Torna al Progetto](public/manuali/immagini/rapporto-monitoraggio.png)
 
 | Periodo di riferimento | Rapporti al massimo |
 | --- | --- |
@@ -298,6 +322,8 @@ Quando la Fondazione emette un lotto ricevete la notifica «Crediti emessi». Le
 
 La pagina **I tuoi documenti** (menu in alto) raccoglie in un solo posto i documenti generali di tutte le vostre pratiche, Progetti e Rapporti: contratto, allegati, documentazione amministrativa e così via. I documenti delle singole fasi restano dentro le fasi.
 
+![La pagina I tuoi documenti, con i modelli del Programma da scaricare](public/manuali/immagini/tuoi-documenti.png)
+
 - I documenti sono raggruppati per tipologia, con i nomi ufficiali del Programma (elenco sotto). I file caricati da voi senza tipologia finiscono in *Senza tipologia*.
 - Per ogni documento vedete nome, versione, codice della pratica, ente e data, e il pulsante **Scarica**.
 - Di norma vedete solo la versione corrente. Per vedere anche le precedenti spuntate **Mostra anche le versioni precedenti**.
@@ -313,6 +339,8 @@ Da questa pagina non si caricano documenti: per caricare usate la pratica (capit
 ## Notifiche ed email
 
 Il portale vi avvisa degli eventi delle vostre pratiche con la **campanella** in alto e con un'**email** all'indirizzo con cui accedete.
+
+![Il pannello delle notifiche: le non lette sono evidenziate](public/manuali/immagini/notifiche.png)
 
 - Il numero rosso sulla campanella indica le notifiche non lette.
 - Fate clic sulla campanella per vedere l'elenco. Fate clic su una notifica per aprire direttamente la pratica: la notifica diventa letta.
@@ -345,6 +373,8 @@ Le email partono da un indirizzo automatico: non rispondete all'email, scrivete 
 ## Dati per il calcolo dei crediti
 
 I dati per il calcolo dei crediti si inviano con un unico modello Excel, il **Tracciato dati CWP**, uguale per tutti gli enti. Il modello si scarica dalla pagina pubblica [Formato dei dati](https://portale-cwp.vercel.app/formato-dati), raggiungibile anche dal link nella pagina di accesso e dalla voce **Formato dati** del menu.
+
+![La pagina pubblica Formato dei dati, da cui si scarica il Tracciato dati CWP](public/manuali/immagini/formato-dati.png)
 
 1. Scaricate il file con il pulsante **Scarica il tracciato dati (Excel)**.
 2. Leggete il foglio **Istruzioni**: per ogni foglio c'è la descrizione delle colonne e una riga di esempio.
@@ -413,6 +443,8 @@ Il calcolo dei crediti usa un formato **per utenza**. Quando la Fondazione ve lo
 
 La voce **Reclami** del menu apre la pagina **Reclami e richieste di chiarimento**, secondo la Politica di reclamo del Programma. Potete scrivere in qualsiasi momento: ricevete una conferma e poi una risposta scritta. Qui si trattano soprattutto l'interpretazione delle regole e dei criteri del Programma. Per una questione con un ente di validazione e verifica o con un registro, rivolgetevi prima a loro.
 
+![Il modulo per inviare un reclamo o una richiesta di chiarimento](public/manuali/immagini/reclami.png)
+
 **Inviare un reclamo o una richiesta:**
 
 1. Nel riquadro **Nuovo invio** scegliete il **Tipo**: *Richiesta di chiarimento* oppure *Reclamo*.
@@ -434,6 +466,8 @@ Si può presentare un reclamo anche per iscritto alla PEC indicata nella pagina 
 
 La pagina **Il Programma** ([portale-cwp.vercel.app/programma](https://portale-cwp.vercel.app/programma)) è pubblica: chiunque la apre senza credenziali. Si raggiunge dalla voce **Il Programma CWP** del menu, dal link nella pagina di accesso e dall'intestazione delle pagine pubbliche.
 
+![La pagina pubblica Il Programma](public/manuali/immagini/programma.png)
+
 La pagina contiene:
 
 - **Il Programma**: soggetto promotore del programma, PEC, email, sito ufficiale e il collegamento ai periodi di feedback pubblico aperti;
@@ -447,6 +481,8 @@ Anche il vostro Progetto compare qui da quando è in fase di validazione. Sono p
 ## L'assistente virtuale
 
 In basso a destra di ogni pagina trovate il pulsante **✦ Assistente**: apre una chat con un assistente basato su intelligenza artificiale (Claude) che risponde alle domande sul portale e sul Programma, per esempio come caricare un documento, cosa fare con una richiesta di integrazione o quanto costa una voce del Programma.
+
+![Il pannello dell'assistente virtuale](public/manuali/immagini/assistente.png)
 
 1. Premete **✦ Assistente**.
 2. Scrivete la domanda, oppure scegliete uno degli esempi, e premete **Invio**. Mentre prepara la risposta compare «Un attimo…»: di solito bastano pochi secondi.

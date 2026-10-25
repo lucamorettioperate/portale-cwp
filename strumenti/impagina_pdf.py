@@ -135,6 +135,9 @@ DOCUMENTI = {
 # speciali (copertina, iniziali, apertura dei capitoli), tabelle, riquadri,
 # schema delle fasi. Non inserire commenti "#" qui dentro: è testo CSS.
 CSS = r"""
+figure.schermata { margin: 4mm 0 5mm 0; text-align: center; page-break-inside: avoid; }
+figure.schermata img { max-width: 100%; max-height: 150mm; border: 0.3mm solid #D9D4C5; border-radius: 1.5mm; }
+figure.schermata figcaption { font-size: 8.5pt; font-style: italic; color: #5A5E54; margin-top: 1.5mm; }
 @page {
   size: A4;
   margin: 24mm 20mm 22mm 20mm;
@@ -324,6 +327,9 @@ def md_html(testo):
     testo = re.sub(r"~~(.+?)~~", r"<del>\1</del>", prepara(testo))
     h = markdown.markdown(testo, extensions=["tables", "fenced_code", "sane_lists"])
     h = h.replace("<ol>", '<ol class="passi">')
+    # figure: riga "![didascalia](percorso)" → immagine con didascalia
+    h = re.sub(r'<p><img alt="([^"]*)" src="([^"]+)"\s*/?></p>',
+               r'<figure class="schermata"><img src="\2" alt="\1"><figcaption>\1</figcaption></figure>', h)
     # tabelle senza intestazione (prima riga vuota) → schede chiave/valore
     h = re.sub(r"<table>\s*<thead>\s*<tr>\s*(<th>\s*</th>\s*)+</tr>\s*</thead>", '<table class="senza-testa">', h)
     # riquadri: paragrafi che iniziano con un'etichetta in grassetto prevista

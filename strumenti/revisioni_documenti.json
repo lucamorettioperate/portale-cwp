@@ -209,6 +209,12 @@
       "data": "23/10/2026",
       "descrizione": "Colori dello stato delle fasi (verde, arancio, rosso).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.5",
+      "data": "25/10/2026",
+      "descrizione": "Aggiunte le schermate del portale (vista Comune e pagine pubbliche) nei capitoli principali.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [

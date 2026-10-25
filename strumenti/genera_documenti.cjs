@@ -168,7 +168,7 @@ function leggi(file) {
 
 // Inizi di riga che chiudono un paragrafo (tabella, elenco, codice, citazione,
 // sottotitolo, linea orizzontale).
-const SPECIALE = /^(\||- |\d+\. |```|> ?|### |---\s*$)/;
+const SPECIALE = /^(\||- |\d+\. |```|> ?|### |---\s*$|!\[)/;
 
 // Blocchi: paragrafo, sottotitolo, elenchi, tabella, codice, riquadro.
 // Parametro: righe di Markdown. Restituisce un array di { tipo, … } che
@@ -199,6 +199,9 @@ function blocchi(righe) {
       out.push({ tipo: "riquadro", blocchi: blocchi(dentro) });
       continue;
     }
+    // figura: riga "![didascalia](percorso dal repository)" (schermate dei manuali)
+    const fig = r.match(/^!\[(.*?)\]\((.+?)\)\s*$/);
+    if (fig) { out.push({ tipo: "figura", didascalia: fig[1], file: fig[2] }); i++; continue; }
     if (/^### /.test(r)) { out.push({ tipo: "sottotitolo", testo: r.slice(4).trim() }); i++; continue; }
     if (/^\|/.test(r)) {
       const t = [];
@@ -355,6 +358,14 @@ function rendi(bl, opz = {}) {
           children: [new TextRun({ text: l.replace(/ /g, " ") || " ", font: "Consolas", size: 14, color: INK })],
         }))
       );
+    } else if (b.tipo === "figura") {
+      // immagine PNG a tutta larghezza (al massimo 16 cm, ~605 px a 96 dpi),
+      // proporzioni lette dall'intestazione del PNG; didascalia in corsivo sotto
+      const dati = fs.readFileSync(path.join(RADICE, b.file));
+      const larg = dati.readUInt32BE(16), alt = dati.readUInt32BE(20);
+      const w = Math.min(605, larg), h = Math.round((w * alt) / larg);
+      out.push(new Paragraph({ alignment: AlignmentType.CENTER, keepNext: true, spacing: { before: 120, after: 60 }, children: [new ImageRun({ type: "png", data: dati, transformation: { width: w, height: h } })] }));
+      out.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 }, children: [new TextRun({ text: b.didascalia, italics: true, font: FONT, size: 18, color: GRAFITE })] }));
     } else if (b.tipo === "riquadro") {
       out.push(...rendi(b.blocchi, { riquadro: true }));
       out.push(spazio(120));

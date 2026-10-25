@@ -24,7 +24,7 @@ const fs = require("fs");
 const path = require("path");
 
 const RADICE = path.resolve(__dirname, "..");
-const leggi = (f) => fs.readFileSync(path.join(RADICE, f), "utf8").replace(/<!--[\s\S]*?-->/g, "").trim();
+const leggi = (f) => fs.readFileSync(path.join(RADICE, f), "utf8").replace(/<!--[\s\S]*?-->/g, "").replace(/\n\n!\[[^\n]*\]\([^\n]*\)[ \t]*(?=\n)/g, "").trim(); // senza commenti né righe-figura
 const oggi = new Date().toLocaleDateString("it-IT", { timeZone: "Europe/Rome" });
 
 // Ogni parte ha un titolo che l'assistente può citare come fonte.
