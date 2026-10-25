@@ -179,11 +179,29 @@ prova2("Lettore: solo dati presenti nel testo, PEC separate", () => {
   assert.deepEqual(g.comuni_serviti, ["Prova"]);
 });
 
-prova2("Lettore: estratto con le righe utili e limiti di lunghezza", () => {
-  const pagine = [{ url: "https://a.it/", testo: Array.from({ length: 400 }, (_, i) => (i === 200 ? "Ufficio Ambiente: ambiente@a.it" : "riga qualunque " + i)).join("\n") }];
-  const x = L.estratto(pagine, 3500, 14000);
-  assert.ok(x.includes("ambiente@a.it") && x.includes("=== PAGINA: https://a.it/ ==="));
-  assert.ok(x.length < 1000);
+prova2("Lettore: regole fisse per i Comuni (uffici tributi e ambiente)", () => {
+  const pag = [{ url: "https://www.comune.prova.it/uffici", testo: "Ufficio Tributi\nResponsabile: dott.ssa Maria Rossi\nTel. 0362 123456\nEmail: tributi@comune.prova.it\nArea Ambiente ed Ecologia\nResponsabile del Servizio: ing. BIANCHI Luca\necologia@comune.prova.it\nPEC protocollo@pec.comune.prova.it\nprotocollo@comune.prova.it\nprivacy@comune.prova.it" }];
+  const d = L.estraiDati(pag, "comune", "www.comune.prova.it");
+  assert.equal(d.email, "protocollo@comune.prova.it");
+  assert.equal(d.pec, "protocollo@pec.comune.prova.it");
+  const t = d.uffici.find((u) => u.ruolo === "tributi"), a = d.uffici.find((u) => u.ruolo === "ambiente");
+  assert.deepEqual([t.nome, t.cognome, t.email, t.telefono], ["Maria", "Rossi", "tributi@comune.prova.it", "0362 123456"]);
+  assert.deepEqual([a.nome, a.cognome, a.email], ["Luca", "BIANCHI", "ecologia@comune.prova.it"]);
+  const e = L.controlloEsito(d, pag[0].testo, [pag[0].url], "comune");
+  assert.equal(e.uffici.length, 2);
+});
+
+prova2("Lettore: regole fisse per i gestori (direttori, raccolta, tariffa, Comuni)", () => {
+  const g = [{ url: "https://www.gest.it/chi-siamo", testo: "Gest Ambiente SpA\nPresidente del CdA: Mario Verdi\nDirettore Generale ing. Paolo Neri\nSvolgiamo la raccolta porta a porta per i Comuni soci: Comune di Monza, Comune di Seregno.\nSportello TARI\ninfo@gest.it  centralino 039 1234567" }];
+  const d = L.estraiDati(g, "gestore", "www.gest.it");
+  assert.deepEqual(d.referenti.map((r) => [r.ruolo, r.nome, r.cognome]), [["amministratore", "Mario", "Verdi"], ["direttore_generale", "Paolo", "Neri"]]);
+  assert.equal(d.email, "info@gest.it");
+  assert.equal(d.telefono, "039 1234567");
+  assert.equal(d.attivita_raccolta, true);
+  assert.equal(d.attivita_tariffa, true);
+  assert.deepEqual(d.comuni_serviti, ["Monza", "Seregno"]);
+  const v = L.estraiDati([{ url: "u", testo: "Responsabile: Ufficio Tributi\nPresidente: Consiglio Comunale" }], "comune", "x.it");
+  assert.equal(v.uffici.filter((u) => u.cognome).length, 0);
 });
 
 console.log(`${m} prove superate (lettore dei siti).`);

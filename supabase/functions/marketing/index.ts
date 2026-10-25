@@ -20,8 +20,8 @@
 //   - leggi_siti { quanti? }: legge i siti dei prossimi enti in coda
 //       (script 46, al massimo 4); la stessa azione arriva ogni 30 secondi
 //       dal lavoro pianificato con il codice segreto { segreto } quando la
-//       lettura è accesa. Usa Claude (ANTHROPIC_API_KEY, modello MKT_MODELLO
-//       o ASSISTENTE_MODELLO) per riconoscere recapiti e referenti;
+//       lettura è accesa. Recapiti e referenti si riconoscono con regole
+//       fisse (estraiDati), senza servizi a pagamento;
 //   - prova_campagna { campagna }: spedisce la campagna solo all'indirizzo
 //       dell'Amministratore che la prova.
 //   - invia_campagna { campagna, quanti? }: spedisce un blocco di invii
@@ -327,25 +327,128 @@ export function robotsConsente(robots, percorso, agente = "cwpportalebot") {
   return !migliore || migliore.consenti;
 }
 
-const PAROLE_UTILI = /tribut|entrate|\btari\b|ambient|ecolog|rifiut|igiene|responsabil|dirigent|direttor|amministrator|presidente|consiglier|\bpec\b|e-?mail|posta|tel\.?|telefon|centralino|@|sede|uffici|settore|area |servizi|raccolta|tariff|comuni (soci|serviti)|bacino|igiene urbana|capitale sociale|partita iva|p\.? ?iva/i;
+const RE_PEC = /@(([^@]*[.-])?(pec|cert[.]|legalmail|postacert|arubapec|pecsicura|certimprese|certifymail|cgn\.legalmail|pec\.it))/i;
 
-// Estratto del testo da mandare a Claude: righe con parole utili (più una
-// riga prima e una dopo), per ogni pagina al massimo maxPagina caratteri,
-// in tutto al massimo maxTotale.
-export function estratto(pagine, maxPagina = 3500, maxTotale = 14000) {
-  let out = "";
-  for (const p of pagine) {
-    const righe = String(p.testo || "").split("\n");
-    const tieni = new Set();
-    righe.forEach((r, i) => { if (PAROLE_UTILI.test(r)) { tieni.add(i - 1); tieni.add(i); tieni.add(i + 1); } });
-    let parte = [...tieni].filter((i) => i >= 0 && i < righe.length).sort((a, b) => a - b).map((i) => righe[i].slice(0, 300)).join("\n");
-    if (!parte) parte = righe.slice(0, 15).join("\n");
-    parte = parte.slice(0, maxPagina);
-    const blocco = `\n=== PAGINA: ${p.url} ===\n${parte}\n`;
-    if (out.length + blocco.length > maxTotale) { out += blocco.slice(0, Math.max(0, maxTotale - out.length)); break; }
-    out += blocco;
+// Nomi propri dopo un'etichetta («Responsabile: dott.ssa Maria Rossi»,
+// «Presidente ROSSI Mario»): due o tre parole con l'iniziale maiuscola o
+// tutte maiuscole. Parole che non sono nomi (Ufficio, Area…) escluse.
+const NON_NOMI = new Set(["area", "settore", "servizio", "servizi", "ufficio", "uffici", "comune", "tributi", "tributo", "entrate", "ambiente", "ecologia", "responsabile", "dirigente", "del", "della", "dello", "dei", "delle", "di", "e", "posta", "telefono", "tel", "email", "mail", "pec", "orari", "orario", "sede", "via", "piazza", "dott", "dott.ssa", "dr", "ing", "arch", "geom", "rag", "avv", "sig", "sig.ra", "segretario", "generale", "tecnico", "direttore", "presidente", "consiglio", "amministrazione", "amministratore", "delegato", "unico", "società", "spa", "srl", "s.p.a.", "s.r.l.", "lavori", "pubblici", "polizia", "locale", "finanziario", "economico", "gestione", "rifiuti", "tari", "igiene", "urbana", "nessuno", "vacante", "contatti", "home", "chi", "siamo"]);
+const TITOLI = /^(?:(?:dott\.?ssa|dott|dr|dr\.ssa|ing|arch|geom|rag|avv|sig\.?ra|sig|p\.?\s?i|prof)\.?\s+)+/i;
+function nomeDopo(testo) {
+  const t = String(testo || "").replace(/^[\s:–—\-|,.]+/, "").replace(TITOLI, "");
+  const m = t.match(/^([A-ZÀ-Ý][A-Za-zÀ-ÿ'’]+(?:[ \t]+[A-ZÀ-Ý][A-Za-zÀ-ÿ'’]+){1,2})/);
+  if (!m) return null;
+  // Nomi composti da una sola riga: «Paolo Neri» e non «Paolo Neri Svolgiamo».
+  const parole = m[1].split(/[ \t]+/).filter((w) => !NON_NOMI.has(w.toLowerCase()));
+  if (parole.length < 2 || parole.length !== m[1].split(/[ \t]+/).length) return null;
+  // «ROSSI Maria» → cognome in maiuscolo per primo; altrimenti «Maria Rossi».
+  const maiuscole = parole.filter((w) => w.length > 1 && w === w.toUpperCase());
+  if (maiuscole.length && maiuscole.length < parole.length && parole[0] === parole[0].toUpperCase()) {
+    return { nome: parole.filter((w) => !maiuscole.includes(w)).join(" "), cognome: maiuscole.join(" ") };
   }
-  return out.trim();
+  return { nome: parole[0], cognome: parole.slice(1).join(" ") };
+}
+
+const RE_EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+const RE_TEL = /(?:tel(?:efono)?|centralino|t\.|ph(?:one)?|numero verde)\s*[.:]?\s*((?:\+39[\s.]?)?(?:0\d{1,3}|800|3\d{2})[\s./-]?\d{2,4}[\s./-]?\d{2,4}(?:[\s./-]?\d{1,4})?)/i;
+const ESCLUSE = /^(webmaster|privacy|dpo|rpd|noreply|no-reply|newsletter|gdpr|whistleblowing|curriculum|cv|lavoraconnoi|jobs|recruiting)@/i;
+const ETICHETTA_COMUNE = /(responsabile|dirigente|referente|funzionari[oa]|capo\s+(?:settore|area|servizio|ufficio)|titolare\s+(?:di\s+)?(?:p\.?\s?o\.?|posizione organizzativa|incarico di elevata qualificazione))(?:\s+(?:del|dell['’]|della|dei|di)\s+(?:servizio|settore|area|ufficio)?[^:\n]{0,50}?)?\s*[:\-–]/i;
+const ETICHETTE_GESTORE = [
+  [/presidente(?:\s+del\s+(?:c\.?d\.?a\.?|consiglio\s+di\s+amministrazione))?/i, "amministratore"],
+  [/amministratore\s+(?:delegato|unico)/i, "amministratore"],
+  [/direttore\s+generale/i, "direttore_generale"],
+  [/direttore\s+tecnico/i, "direttore_tecnico"],
+];
+
+// Riconosce i dati nelle pagine lette, con regole fisse (nessun servizio
+// a pagamento). pagine: [{ url, testo }]. Restituisce lo stesso formato che
+// controlloEsito si aspetta, con la pagina di provenienza di ogni dato.
+export function estraiDati(pagine, tipo, hostBase = "") {
+  const dominio = dominioBase(hostBase);
+  const tutte = [];
+  for (const p of pagine) {
+    for (const e of String(p.testo || "").match(RE_EMAIL) || []) {
+      const x = e.toLowerCase().replace(/\.$/, "");
+      if (!tutte.some((t) => t.email === x)) tutte.push({ email: x, fonte: p.url });
+    }
+  }
+  const pec = tutte.filter((t) => RE_PEC.test(t.email));
+  const ordinarie = tutte.filter((t) => !RE_PEC.test(t.email) && !ESCLUSE.test(t.email));
+  const sulDominio = (t) => !dominio || t.email.endsWith("@" + dominio) || t.email.endsWith("." + dominio);
+  const preferite = tipo === "comune" ? /^(protocollo|info|urp|segreteria|comune|municipio|ufficio\.?protocollo)[@.]/ : /^(info|segreteria|amministrazione|commerciale|contatti|ufficio|clienti|direzione)[@.]/;
+  const generica = ordinarie.find((t) => preferite.test(t.email) && sulDominio(t)) || ordinarie.find((t) => preferite.test(t.email)) || null;
+  const pecScelta = pec.find((t) => /^(protocollo|comune|segreteria|info|amministrazione)/.test(t.email)) || pec[0] || null;
+  let telefono = null;
+  for (const p of pagine) {
+    const m = String(p.testo || "").match(RE_TEL);
+    if (m) { telefono = m[1].trim(); break; }
+  }
+  const out = { email: generica?.email || null, pec: pecScelta?.email || null, telefono, uffici: [], referenti: [], attivita_raccolta: null, attivita_tariffa: null, comuni_serviti: [], note: "" };
+
+  if (tipo === "comune") {
+    const RUOLI = [["tributi", /tribut|entrate|\btari\b/i], ["ambiente", /ambient|ecolog|rifiut|igiene urbana/i]];
+    for (const [ruolo, re] of RUOLI) {
+      let migliore = null;
+      for (const p of pagine) {
+        const righe = String(p.testo || "").split("\n");
+        const altri = RUOLI.filter(([x]) => x !== ruolo).map(([, y]) => y);
+        righe.forEach((r, i) => {
+          if (!re.test(r) || r.length > 220) return;
+          // La finestra va dalla riga dell'ufficio alle 4 seguenti, e si
+          // ferma dove comincia l'altro ufficio.
+          const parte = [r];
+          for (let k = i + 1; k < Math.min(righe.length, i + 5); k++) {
+            if (altri.some((y) => y.test(righe[k]))) break;
+            parte.push(righe[k]);
+          }
+          const finestra = parte.join("\n");
+          const emails = (finestra.match(RE_EMAIL) || []).map((e) => e.toLowerCase()).filter((e) => !RE_PEC.test(e) && !ESCLUSE.test(e));
+          const email = emails.find((e) => re.test(e.split("@")[0])) || emails[0] || null;
+          const tel = (finestra.match(RE_TEL) || [])[1] || null;
+          let persona = null;
+          const et = finestra.match(ETICHETTA_COMUNE);
+          if (et) persona = nomeDopo(finestra.slice(et.index + et[0].length, et.index + et[0].length + 80));
+          const punti = (email ? 2 : 0) + (persona ? 2 : 0) + (tel ? 1 : 0) + (email && re.test(email.split("@")[0]) ? 2 : 0) + (r.includes("@") ? 0 : 1);
+          if (punti > 0 && (!migliore || punti > migliore.punti)) {
+            migliore = { punti, ruolo, ufficio: r.slice(0, 150), nome: persona?.nome || null, cognome: persona?.cognome || null, email, telefono: tel ? tel.trim() : null, fonte: p.url };
+          }
+        });
+      }
+      // Email dell'ufficio riconoscibile dal nome (es. tributi@comune.x.it).
+      if (!migliore || !migliore.email) {
+        const t = ordinarie.find((x) => re.test(x.email.split("@")[0]));
+        if (t) migliore = { ...(migliore || { ruolo, ufficio: null, nome: null, cognome: null, telefono: null }), email: t.email, fonte: migliore?.fonte || t.fonte, punti: 2 };
+      }
+      if (migliore) { delete migliore.punti; out.uffici.push(migliore); }
+    }
+  } else {
+    const visti = new Set();
+    for (const p of pagine) {
+      const testo = String(p.testo || "");
+      for (const [re, ruolo] of ETICHETTE_GESTORE) {
+        const g = new RegExp(re.source, "gi");
+        let m;
+        while ((m = g.exec(testo)) && out.referenti.length < 6) {
+          const persona = nomeDopo(testo.slice(m.index + m[0].length, m.index + m[0].length + 80));
+          if (!persona) continue;
+          const k = ruolo + "|" + persona.cognome.toLowerCase();
+          if (visti.has(k)) continue;
+          visti.add(k);
+          out.referenti.push({ ruolo, nome: persona.nome, cognome: persona.cognome, fonte: p.url });
+        }
+      }
+    }
+    const tutto = pagine.map((p) => p.testo).join("\n");
+    if (/raccolta\s+(?:porta\s+a\s+porta|differenziata|dei\s+rifiuti\s+urbani|rifiuti\s+urbani)|igiene\s+urbana|spazzamento/i.test(tutto) && /\bcomun[ei]\b/i.test(tutto)) out.attivita_raccolta = true;
+    if (/tariffa\s+puntuale|\btarip\b|\btari\b|bollettazione|sportello\s+(?:utenti|tari|tariffa)/i.test(tutto)) out.attivita_tariffa = true;
+    const comuni = new Set();
+    for (const m of tutto.matchAll(/Comune\s+di\s+([A-ZÀ-Ý][A-Za-zÀ-ÿ'’]+(?:[\s-][A-ZÀ-Ý][A-Za-zÀ-ÿ'’]+){0,3})/g)) {
+      if (comuni.size >= 40) break;
+      comuni.add(m[1].trim());
+    }
+    out.comuni_serviti = [...comuni];
+  }
+  return out;
 }
 
 // Tutte le email presenti nel testo (minuscole, senza doppioni).
@@ -354,9 +457,7 @@ export function emailNelTesto(testo) {
   return [...new Set(m.map((e) => e.replace(/\.$/, "")))];
 }
 
-const RE_PEC = /@(([^@]*[.-])?(pec|cert[.]|legalmail|postacert|arubapec|pecsicura|certimprese|certifymail|cgn\.legalmail|pec\.it))/i;
-
-// Controlla la risposta di Claude contro il testo letto: tiene solo email,
+// Controlla i dati riconosciuti contro il testo letto: tiene solo email,
 // telefoni e nomi che compaiono davvero nel testo e solo fonti tra le
 // pagine lette; separa PEC ed email generiche. Restituisce l'esito pulito.
 export function controlloEsito(grezzo, testo, pagineLette, tipo) {
@@ -409,8 +510,6 @@ export function controlloEsito(grezzo, testo, pagineLette, tipo) {
 // FINE-LETTURA-SITI
 
 const UA_LETTORE = "Mozilla/5.0 (compatible; CWPPortaleBot/1.0; +https://portale-cwp.vercel.app/programma)";
-const CHIAVE_CLAUDE = Deno.env.get("ANTHROPIC_API_KEY") || "";
-const MODELLO_LETTURA = Deno.env.get("MKT_MODELLO") || Deno.env.get("ASSISTENTE_MODELLO") || "claude-haiku-5-5";
 const pausa = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // Scarica una pagina HTML (al massimo 700.000 caratteri, 12 secondi).
@@ -484,66 +583,18 @@ async function leggiSito(ente: { tipo: string; denominazione: string; sito: stri
       if (r.ok) pagine.push({ url: r.url, html: r.html });
     }
   }
-  return pagine.map((p) => ({ url: p.url, testo: htmlInTesto(p.html) }));
-}
-
-function istruzioniClaude(tipo: string) {
-  const comune = `{"email": "email generica dell'ente (protocollo, info, URP), non PEC, oppure null",
- "pec": "PEC dell'ente oppure null", "telefono": "centralino oppure null",
- "uffici": [{"ruolo": "tributi" oppure "ambiente", "ufficio": "nome dell'ufficio o del servizio",
-   "nome": "nome del responsabile", "cognome": "cognome del responsabile",
-   "email": "email dell'ufficio o del responsabile (non PEC)", "telefono": "telefono dell'ufficio",
-   "fonte": "URL della pagina da cui è preso"}],
- "note": "breve nota in italiano"}
-Per «tributi» valgono anche ufficio entrate, TARI, tributi e tasse; per «ambiente» anche ecologia, rifiuti, igiene urbana, servizi ambientali.`;
-  const gestore = `{"email": "email generica dell'impresa (info, segreteria, commerciale), non PEC, oppure null",
- "pec": "PEC dell'impresa oppure null", "telefono": "centralino oppure null",
- "attivita_raccolta": true se il testo dice che l'impresa fa la raccolta dei rifiuti urbani (igiene urbana) per uno o più Comuni, false se fa chiaramente solo altro (rifiuti industriali, rottami, trasporti, spurghi), null se non è chiaro,
- "attivita_tariffa": true se gestisce la tariffa rifiuti (TARI, tariffa puntuale, bollettazione, sportello utenti) per Comuni, altrimenti null,
- "comuni_serviti": ["nomi dei Comuni serviti citati nel testo"],
- "referenti": [{"ruolo": "direttore_generale" oppure "direttore_tecnico" oppure "amministratore" (amministratore delegato, amministratore unico, presidente del consiglio di amministrazione),
-   "nome": "nome", "cognome": "cognome", "fonte": "URL della pagina"}],
- "note": "breve nota in italiano"}`;
-  return tipo === "comune" ? comune : gestore;
-}
-
-// Chiede a Claude i dati presenti nell'estratto; restituisce JSON e token.
-async function chiediClaude(ente: { tipo: string; denominazione: string; comune_sede: string | null }, testo: string) {
-  if (!CHIAVE_CLAUDE) throw new Error("ANTHROPIC_API_KEY non impostata");
-  const ctl = new AbortController();
-  const timer = setTimeout(() => ctl.abort(), 60000);
-  try {
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      signal: ctl.signal,
-      headers: { "x-api-key": CHIAVE_CLAUDE, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({
-        model: MODELLO_LETTURA,
-        max_tokens: 1500,
-        system: "Estrai recapiti e referenti da pagine web di un ente italiano. Usa SOLO informazioni scritte nel testo fornito: se un dato manca usa null o un elenco vuoto, non inventare e non dedurre. Nome e cognome separati, scritti come nel testo. Rispondi solo con un oggetto JSON, senza altro testo.",
-        messages: [{ role: "user", content: `Ente: ${ente.denominazione} (${ente.tipo === "comune" ? "Comune" : "impresa di gestione rifiuti"}${ente.comune_sede ? ", sede a " + ente.comune_sede : ""}).\n\nEstratti delle pagine lette:\n${testo}\n\nRestituisci un JSON con questa forma:\n${istruzioniClaude(ente.tipo)}` }],
-      }),
-    });
-    const j = await r.json().catch(() => null);
-    if (!r.ok) throw new Error(`Claude: ${j?.error?.message || r.status}`);
-    const risposta = (j?.content || []).filter((c: { type: string }) => c.type === "text").map((c: { text: string }) => c.text).join("");
-    const inizio = risposta.indexOf("{"), fine = risposta.lastIndexOf("}");
-    let dati = {};
-    try { dati = inizio >= 0 ? JSON.parse(risposta.slice(inizio, fine + 1)) : {}; } catch { dati = {}; }
-    return { dati, token_in: j?.usage?.input_tokens || 0, token_out: j?.usage?.output_tokens || 0 };
-  } finally {
-    clearTimeout(timer);
-  }
+  return { host: hostBase, pagine: pagine.map((p) => ({ url: p.url, testo: htmlInTesto(p.html) })) };
 }
 
 // Legge un ente e salva i dati trovati (solo nei campi vuoti) e i referenti.
 async function leggiESalva(admin: ReturnType<typeof createClient>, ente: { ente_id: number; tipo: string; denominazione: string; sito: string; comune_sede: string | null }) {
-  const pagine = await leggiSito(ente);
+  const { host, pagine } = await leggiSito(ente);
   const urls = pagine.map((p) => p.url);
   const tuttoIlTesto = pagine.map((p) => p.testo).join("\n");
-  const testo = estratto(pagine);
-  const { dati, token_in, token_out } = await chiediClaude(ente, testo);
+  // Regole fisse, nessun servizio a pagamento (scelta di Luca del 25/10/2026).
+  const dati = estraiDati(pagine, ente.tipo, host);
   const esito = controlloEsito(dati, tuttoIlTesto, urls, ente.tipo);
+  const token_in = 0, token_out = 0;
   const { data: attuale } = await admin.from("mkt_ente").select("email, pec, telefono, attivita_raccolta, attivita_tariffa, fonti, note").eq("id", ente.ente_id).single();
   const patch: Record<string, unknown> = { verificato_il: new Date().toISOString().slice(0, 10) };
   if (!attuale?.email && esito.email) patch.email = esito.email;

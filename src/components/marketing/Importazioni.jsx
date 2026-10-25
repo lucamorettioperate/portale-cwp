@@ -132,7 +132,8 @@ export default function Importazioni({ riepilogo, onFatto }) {
 }
 
 /* Lettore dei siti (script 46, richiesta di Luca del 25/10/2026): legge
-   i siti di Comuni e gestori e completa recapiti e referenti con la fonte.
+   i siti di Comuni e gestori e completa recapiti e referenti con la fonte,
+   con regole fisse e senza servizi a pagamento (scelta di Luca).
    Coda, accensione e riepilogo; «Leggi ora 1 ente» per provare subito. */
 function LetturaSiti() {
   const [r, setR] = useState(null);
@@ -165,13 +166,11 @@ function LetturaSiti() {
   }
   const n = (k) => Number(r?.per_stato?.[k] || 0);
   const righe = [["comune", "Comuni"], ["gestore", "Gestori"]];
-  // Stima del costo (Claude Haiku: circa 1 $ per milione di token in entrata e 5 $ in uscita).
-  const costo = r ? (Number(r.token_in) / 1e6) * 1 + (Number(r.token_out) / 1e6) * 5 : 0;
   return (
     <section style={sezione}>
       <h3 style={h3}>Lettura dei siti</h3>
       <p style={{ fontSize: 13, color: C.grafite, margin: "0 0 10px", lineHeight: 1.5 }}>
-        Il portale legge il sito di ogni ente (home page, contatti, uffici, amministrazione trasparente, organigramma; rispetta robots.txt, una pagina alla volta) e completa email generica, PEC, telefono e referenti: per i Comuni gli uffici tributi e ambiente con i responsabili, per i gestori Comuni serviti, tariffa, direttori e amministratori. Riempie solo i campi vuoti; ogni referente ha la pagina da cui è preso. Accesa, legge 4 enti ogni 30 secondi.
+        Il portale legge il sito di ogni ente (home page, contatti, uffici, amministrazione trasparente, organigramma; rispetta robots.txt, una pagina alla volta) e completa email generica, PEC, telefono e referenti: per i Comuni gli uffici tributi e ambiente con i responsabili, per i gestori Comuni serviti, tariffa, direttori e amministratori. Riconosce i dati con regole fisse, senza servizi a pagamento. Riempie solo i campi vuoti; ogni referente ha la pagina da cui è preso. Accesa, legge 4 enti ogni 30 secondi.
       </p>
       {r && (
         <div style={{ overflowX: "auto" }}>
@@ -191,7 +190,7 @@ function LetturaSiti() {
         <div style={{ fontSize: 12.5, color: C.grafite, margin: "8px 0" }}>
           Stato: <b style={{ color: r.attiva ? C.green : C.ink }}>{r.attiva ? "accesa" : "spenta"}</b>
           {r.ultima ? ` · ultima lettura ${new Date(r.ultima).toLocaleString("it-IT")}` : ""}
-          {" · "}token {num(r.token_in)} in entrata, {num(r.token_out)} in uscita (circa {costo.toLocaleString("it-IT", { style: "currency", currency: "USD" })})
+          {" · "}nessun costo: solo il codice del portale
         </div>
       )}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

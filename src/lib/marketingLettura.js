@@ -2,14 +2,15 @@
    marketingLettura.js — regole del «lettore dei siti» della sezione
    Marketing (richiesta di Luca Moretti del 25/10/2026: «devi cercare nei
    singoli siti internet di ogni gestore e comune»).
-   Il lettore gira nella funzione del server «marketing» (azioni
-   leggi_siti e prova_lettura, script 46): per ogni ente con sito legge la
-   home page e le pagine di contatti, uffici, amministrazione trasparente e
-   organigramma (rispettando robots.txt, una pagina alla volta), prepara un
-   estratto del testo e chiede a Claude di trovare email generica, PEC,
-   telefono, uffici tributi e ambiente con i responsabili (Comuni) oppure
-   Comuni serviti, tariffa, direttori e amministratori (gestori). Ogni dato
-   è accettato solo se compare davvero nel testo letto (controlloEsito).
+   Il lettore gira nella funzione del server «marketing» (azione
+   leggi_siti, script 46): per ogni ente con sito legge la home page e le
+   pagine di contatti, uffici, amministrazione trasparente e organigramma
+   (rispettando robots.txt, una pagina alla volta) e riconosce con REGOLE
+   FISSE (estraiDati, nessun servizio a pagamento: scelta di Luca del
+   25/10/2026) email generica, PEC, telefono, uffici tributi e ambiente con
+   i responsabili (Comuni) oppure Comuni serviti, tariffa, direttori e
+   amministratori (gestori). Ogni dato è accettato solo se compare davvero
+   nel testo letto (controlloEsito).
    Le funzioni tra INIZIO-LETTURA-SITI e FINE-LETTURA-SITI sono copie
    IDENTICHE nella funzione del server (controllo in test/marketing.test.mjs).
    Registro sviluppo e deploy: capitolo 16 «Marketing».
@@ -125,25 +126,128 @@ export function robotsConsente(robots, percorso, agente = "cwpportalebot") {
   return !migliore || migliore.consenti;
 }
 
-const PAROLE_UTILI = /tribut|entrate|\btari\b|ambient|ecolog|rifiut|igiene|responsabil|dirigent|direttor|amministrator|presidente|consiglier|\bpec\b|e-?mail|posta|tel\.?|telefon|centralino|@|sede|uffici|settore|area |servizi|raccolta|tariff|comuni (soci|serviti)|bacino|igiene urbana|capitale sociale|partita iva|p\.? ?iva/i;
+const RE_PEC = /@(([^@]*[.-])?(pec|cert[.]|legalmail|postacert|arubapec|pecsicura|certimprese|certifymail|cgn\.legalmail|pec\.it))/i;
 
-// Estratto del testo da mandare a Claude: righe con parole utili (più una
-// riga prima e una dopo), per ogni pagina al massimo maxPagina caratteri,
-// in tutto al massimo maxTotale.
-export function estratto(pagine, maxPagina = 3500, maxTotale = 14000) {
-  let out = "";
-  for (const p of pagine) {
-    const righe = String(p.testo || "").split("\n");
-    const tieni = new Set();
-    righe.forEach((r, i) => { if (PAROLE_UTILI.test(r)) { tieni.add(i - 1); tieni.add(i); tieni.add(i + 1); } });
-    let parte = [...tieni].filter((i) => i >= 0 && i < righe.length).sort((a, b) => a - b).map((i) => righe[i].slice(0, 300)).join("\n");
-    if (!parte) parte = righe.slice(0, 15).join("\n");
-    parte = parte.slice(0, maxPagina);
-    const blocco = `\n=== PAGINA: ${p.url} ===\n${parte}\n`;
-    if (out.length + blocco.length > maxTotale) { out += blocco.slice(0, Math.max(0, maxTotale - out.length)); break; }
-    out += blocco;
+// Nomi propri dopo un'etichetta («Responsabile: dott.ssa Maria Rossi»,
+// «Presidente ROSSI Mario»): due o tre parole con l'iniziale maiuscola o
+// tutte maiuscole. Parole che non sono nomi (Ufficio, Area…) escluse.
+const NON_NOMI = new Set(["area", "settore", "servizio", "servizi", "ufficio", "uffici", "comune", "tributi", "tributo", "entrate", "ambiente", "ecologia", "responsabile", "dirigente", "del", "della", "dello", "dei", "delle", "di", "e", "posta", "telefono", "tel", "email", "mail", "pec", "orari", "orario", "sede", "via", "piazza", "dott", "dott.ssa", "dr", "ing", "arch", "geom", "rag", "avv", "sig", "sig.ra", "segretario", "generale", "tecnico", "direttore", "presidente", "consiglio", "amministrazione", "amministratore", "delegato", "unico", "società", "spa", "srl", "s.p.a.", "s.r.l.", "lavori", "pubblici", "polizia", "locale", "finanziario", "economico", "gestione", "rifiuti", "tari", "igiene", "urbana", "nessuno", "vacante", "contatti", "home", "chi", "siamo"]);
+const TITOLI = /^(?:(?:dott\.?ssa|dott|dr|dr\.ssa|ing|arch|geom|rag|avv|sig\.?ra|sig|p\.?\s?i|prof)\.?\s+)+/i;
+function nomeDopo(testo) {
+  const t = String(testo || "").replace(/^[\s:–—\-|,.]+/, "").replace(TITOLI, "");
+  const m = t.match(/^([A-ZÀ-Ý][A-Za-zÀ-ÿ'’]+(?:[ \t]+[A-ZÀ-Ý][A-Za-zÀ-ÿ'’]+){1,2})/);
+  if (!m) return null;
+  // Nomi composti da una sola riga: «Paolo Neri» e non «Paolo Neri Svolgiamo».
+  const parole = m[1].split(/[ \t]+/).filter((w) => !NON_NOMI.has(w.toLowerCase()));
+  if (parole.length < 2 || parole.length !== m[1].split(/[ \t]+/).length) return null;
+  // «ROSSI Maria» → cognome in maiuscolo per primo; altrimenti «Maria Rossi».
+  const maiuscole = parole.filter((w) => w.length > 1 && w === w.toUpperCase());
+  if (maiuscole.length && maiuscole.length < parole.length && parole[0] === parole[0].toUpperCase()) {
+    return { nome: parole.filter((w) => !maiuscole.includes(w)).join(" "), cognome: maiuscole.join(" ") };
   }
-  return out.trim();
+  return { nome: parole[0], cognome: parole.slice(1).join(" ") };
+}
+
+const RE_EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+const RE_TEL = /(?:tel(?:efono)?|centralino|t\.|ph(?:one)?|numero verde)\s*[.:]?\s*((?:\+39[\s.]?)?(?:0\d{1,3}|800|3\d{2})[\s./-]?\d{2,4}[\s./-]?\d{2,4}(?:[\s./-]?\d{1,4})?)/i;
+const ESCLUSE = /^(webmaster|privacy|dpo|rpd|noreply|no-reply|newsletter|gdpr|whistleblowing|curriculum|cv|lavoraconnoi|jobs|recruiting)@/i;
+const ETICHETTA_COMUNE = /(responsabile|dirigente|referente|funzionari[oa]|capo\s+(?:settore|area|servizio|ufficio)|titolare\s+(?:di\s+)?(?:p\.?\s?o\.?|posizione organizzativa|incarico di elevata qualificazione))(?:\s+(?:del|dell['’]|della|dei|di)\s+(?:servizio|settore|area|ufficio)?[^:\n]{0,50}?)?\s*[:\-–]/i;
+const ETICHETTE_GESTORE = [
+  [/presidente(?:\s+del\s+(?:c\.?d\.?a\.?|consiglio\s+di\s+amministrazione))?/i, "amministratore"],
+  [/amministratore\s+(?:delegato|unico)/i, "amministratore"],
+  [/direttore\s+generale/i, "direttore_generale"],
+  [/direttore\s+tecnico/i, "direttore_tecnico"],
+];
+
+// Riconosce i dati nelle pagine lette, con regole fisse (nessun servizio
+// a pagamento). pagine: [{ url, testo }]. Restituisce lo stesso formato che
+// controlloEsito si aspetta, con la pagina di provenienza di ogni dato.
+export function estraiDati(pagine, tipo, hostBase = "") {
+  const dominio = dominioBase(hostBase);
+  const tutte = [];
+  for (const p of pagine) {
+    for (const e of String(p.testo || "").match(RE_EMAIL) || []) {
+      const x = e.toLowerCase().replace(/\.$/, "");
+      if (!tutte.some((t) => t.email === x)) tutte.push({ email: x, fonte: p.url });
+    }
+  }
+  const pec = tutte.filter((t) => RE_PEC.test(t.email));
+  const ordinarie = tutte.filter((t) => !RE_PEC.test(t.email) && !ESCLUSE.test(t.email));
+  const sulDominio = (t) => !dominio || t.email.endsWith("@" + dominio) || t.email.endsWith("." + dominio);
+  const preferite = tipo === "comune" ? /^(protocollo|info|urp|segreteria|comune|municipio|ufficio\.?protocollo)[@.]/ : /^(info|segreteria|amministrazione|commerciale|contatti|ufficio|clienti|direzione)[@.]/;
+  const generica = ordinarie.find((t) => preferite.test(t.email) && sulDominio(t)) || ordinarie.find((t) => preferite.test(t.email)) || null;
+  const pecScelta = pec.find((t) => /^(protocollo|comune|segreteria|info|amministrazione)/.test(t.email)) || pec[0] || null;
+  let telefono = null;
+  for (const p of pagine) {
+    const m = String(p.testo || "").match(RE_TEL);
+    if (m) { telefono = m[1].trim(); break; }
+  }
+  const out = { email: generica?.email || null, pec: pecScelta?.email || null, telefono, uffici: [], referenti: [], attivita_raccolta: null, attivita_tariffa: null, comuni_serviti: [], note: "" };
+
+  if (tipo === "comune") {
+    const RUOLI = [["tributi", /tribut|entrate|\btari\b/i], ["ambiente", /ambient|ecolog|rifiut|igiene urbana/i]];
+    for (const [ruolo, re] of RUOLI) {
+      let migliore = null;
+      for (const p of pagine) {
+        const righe = String(p.testo || "").split("\n");
+        const altri = RUOLI.filter(([x]) => x !== ruolo).map(([, y]) => y);
+        righe.forEach((r, i) => {
+          if (!re.test(r) || r.length > 220) return;
+          // La finestra va dalla riga dell'ufficio alle 4 seguenti, e si
+          // ferma dove comincia l'altro ufficio.
+          const parte = [r];
+          for (let k = i + 1; k < Math.min(righe.length, i + 5); k++) {
+            if (altri.some((y) => y.test(righe[k]))) break;
+            parte.push(righe[k]);
+          }
+          const finestra = parte.join("\n");
+          const emails = (finestra.match(RE_EMAIL) || []).map((e) => e.toLowerCase()).filter((e) => !RE_PEC.test(e) && !ESCLUSE.test(e));
+          const email = emails.find((e) => re.test(e.split("@")[0])) || emails[0] || null;
+          const tel = (finestra.match(RE_TEL) || [])[1] || null;
+          let persona = null;
+          const et = finestra.match(ETICHETTA_COMUNE);
+          if (et) persona = nomeDopo(finestra.slice(et.index + et[0].length, et.index + et[0].length + 80));
+          const punti = (email ? 2 : 0) + (persona ? 2 : 0) + (tel ? 1 : 0) + (email && re.test(email.split("@")[0]) ? 2 : 0) + (r.includes("@") ? 0 : 1);
+          if (punti > 0 && (!migliore || punti > migliore.punti)) {
+            migliore = { punti, ruolo, ufficio: r.slice(0, 150), nome: persona?.nome || null, cognome: persona?.cognome || null, email, telefono: tel ? tel.trim() : null, fonte: p.url };
+          }
+        });
+      }
+      // Email dell'ufficio riconoscibile dal nome (es. tributi@comune.x.it).
+      if (!migliore || !migliore.email) {
+        const t = ordinarie.find((x) => re.test(x.email.split("@")[0]));
+        if (t) migliore = { ...(migliore || { ruolo, ufficio: null, nome: null, cognome: null, telefono: null }), email: t.email, fonte: migliore?.fonte || t.fonte, punti: 2 };
+      }
+      if (migliore) { delete migliore.punti; out.uffici.push(migliore); }
+    }
+  } else {
+    const visti = new Set();
+    for (const p of pagine) {
+      const testo = String(p.testo || "");
+      for (const [re, ruolo] of ETICHETTE_GESTORE) {
+        const g = new RegExp(re.source, "gi");
+        let m;
+        while ((m = g.exec(testo)) && out.referenti.length < 6) {
+          const persona = nomeDopo(testo.slice(m.index + m[0].length, m.index + m[0].length + 80));
+          if (!persona) continue;
+          const k = ruolo + "|" + persona.cognome.toLowerCase();
+          if (visti.has(k)) continue;
+          visti.add(k);
+          out.referenti.push({ ruolo, nome: persona.nome, cognome: persona.cognome, fonte: p.url });
+        }
+      }
+    }
+    const tutto = pagine.map((p) => p.testo).join("\n");
+    if (/raccolta\s+(?:porta\s+a\s+porta|differenziata|dei\s+rifiuti\s+urbani|rifiuti\s+urbani)|igiene\s+urbana|spazzamento/i.test(tutto) && /\bcomun[ei]\b/i.test(tutto)) out.attivita_raccolta = true;
+    if (/tariffa\s+puntuale|\btarip\b|\btari\b|bollettazione|sportello\s+(?:utenti|tari|tariffa)/i.test(tutto)) out.attivita_tariffa = true;
+    const comuni = new Set();
+    for (const m of tutto.matchAll(/Comune\s+di\s+([A-ZÀ-Ý][A-Za-zÀ-ÿ'’]+(?:[\s-][A-ZÀ-Ý][A-Za-zÀ-ÿ'’]+){0,3})/g)) {
+      if (comuni.size >= 40) break;
+      comuni.add(m[1].trim());
+    }
+    out.comuni_serviti = [...comuni];
+  }
+  return out;
 }
 
 // Tutte le email presenti nel testo (minuscole, senza doppioni).
@@ -152,9 +256,7 @@ export function emailNelTesto(testo) {
   return [...new Set(m.map((e) => e.replace(/\.$/, "")))];
 }
 
-const RE_PEC = /@(([^@]*[.-])?(pec|cert[.]|legalmail|postacert|arubapec|pecsicura|certimprese|certifymail|cgn\.legalmail|pec\.it))/i;
-
-// Controlla la risposta di Claude contro il testo letto: tiene solo email,
+// Controlla i dati riconosciuti contro il testo letto: tiene solo email,
 // telefoni e nomi che compaiono davvero nel testo e solo fonti tra le
 // pagine lette; separa PEC ed email generiche. Restituisce l'esito pulito.
 export function controlloEsito(grezzo, testo, pagineLette, tipo) {

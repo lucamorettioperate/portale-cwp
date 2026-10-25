@@ -2,9 +2,11 @@
 --  46 — MARKETING: LETTORE DEI SITI DI COMUNI E GESTORI
 --
 --  Richiesta di Luca Moretti del 25/10/2026: «devi cercare nei singoli
---  siti internet di ogni gestore e comune» (recapiti e referenti). OK di
---  Luca alle 11:28 anche per l'uso di Claude (chiave dell'assistente) per
---  leggere nomi e uffici dalle pagine.
+--  siti internet di ogni gestore e comune» (recapiti e referenti).
+--  Versione GRATUITA scelta da Luca alle 11:39: i dati si riconoscono con
+--  regole fisse nel codice (src/lib/marketingLettura.js, estraiDati),
+--  nessun servizio a pagamento. Le colonne token_in e token_out restano a
+--  zero (servirebbero solo se in futuro si usasse un servizio a consumo).
 --
 --  Come funziona:
 --  - mkt_lettura: coda di lettura, una riga per ente con sito (stato
