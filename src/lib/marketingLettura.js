@@ -65,11 +65,15 @@ export function collegamenti(html, base) {
   return out;
 }
 
-// Dominio «di base» (ultimi due livelli; tre per i domini come comune.x.it
-// non servono: basta che l'host finisca con il dominio di base del sito).
+// Dominio «di base» del sito: ultimi due livelli (cemambiente.it), tre
+// quando il penultimo è una sigla di provincia o «gov» (desio.mb.it).
 export function dominioBase(host) {
   const p = String(host || "").toLowerCase().replace(/^www\./, "").split(".");
-  return p.length <= 2 ? p.join(".") : p.slice(-2).join(".");
+  if (p.length <= 2) return p.join(".");
+  // Domini come comune.desio.mb.it o comune.x.gov.it: la sigla di provincia
+  // (due lettere) o «gov» non bastano come dominio dell'ente.
+  const secondo = p[p.length - 2];
+  return (secondo.length === 2 || ["gov", "edu", "comune"].includes(secondo)) && p.length >= 3 ? p.slice(-3).join(".") : p.slice(-2).join(".");
 }
 
 // Punteggio di un collegamento per il tipo di ente: più alto = più utile.
@@ -131,7 +135,7 @@ const RE_PEC = /@(([^@]*[.-])?(pec|cert[.]|legalmail|postacert|arubapec|pecsicur
 // Nomi propri dopo un'etichetta («Responsabile: dott.ssa Maria Rossi»,
 // «Presidente ROSSI Mario»): due o tre parole con l'iniziale maiuscola o
 // tutte maiuscole. Parole che non sono nomi (Ufficio, Area…) escluse.
-const NON_NOMI = new Set(["area", "settore", "servizio", "servizi", "ufficio", "uffici", "comune", "tributi", "tributo", "entrate", "ambiente", "ecologia", "responsabile", "dirigente", "del", "della", "dello", "dei", "delle", "di", "e", "posta", "telefono", "tel", "email", "mail", "pec", "orari", "orario", "sede", "via", "piazza", "dott", "dott.ssa", "dr", "ing", "arch", "geom", "rag", "avv", "sig", "sig.ra", "segretario", "generale", "tecnico", "direttore", "presidente", "consiglio", "amministrazione", "amministratore", "delegato", "unico", "società", "spa", "srl", "s.p.a.", "s.r.l.", "lavori", "pubblici", "polizia", "locale", "finanziario", "economico", "gestione", "rifiuti", "tari", "igiene", "urbana", "nessuno", "vacante", "contatti", "home", "chi", "siamo"]);
+const NON_NOMI = new Set(["area", "settore", "servizio", "servizi", "ufficio", "uffici", "comune", "tributi", "tributo", "entrate", "ambiente", "ecologia", "responsabile", "dirigente", "del", "della", "dello", "dei", "delle", "di", "e", "posta", "telefono", "tel", "email", "mail", "pec", "orari", "orario", "sede", "via", "piazza", "dott", "dott.ssa", "dr", "ing", "arch", "geom", "rag", "avv", "sig", "sig.ra", "segretario", "generale", "tecnico", "direttore", "presidente", "consiglio", "amministrazione", "amministratore", "delegato", "unico", "società", "spa", "srl", "s.p.a.", "s.r.l.", "lavori", "pubblici", "polizia", "locale", "finanziario", "economico", "gestione", "rifiuti", "tari", "igiene", "urbana", "nessuno", "vacante", "contatti", "home", "chi", "siamo", "capitale", "sociale", "versato", "partita", "iva", "codice", "fiscale", "registro", "imprese", "numero", "verde", "euro", "legale", "operativa", "collegio", "sindacale", "revisore", "revisori", "organismo", "vigilanza", "trasparenza", "anticorruzione", "bilancio", "nomina", "curriculum", "compensi", "comunicato", "stampa"]);
 const TITOLI = /^(?:(?:dott\.?ssa|dott|dr|dr\.ssa|ing|arch|geom|rag|avv|sig\.?ra|sig|p\.?\s?i|prof)\.?\s+)+/i;
 function nomeDopo(testo) {
   const t = String(testo || "").replace(/^[\s:–—\-|,.]+/, "").replace(TITOLI, "");
@@ -175,7 +179,8 @@ export function estraiDati(pagine, tipo, hostBase = "") {
   const ordinarie = tutte.filter((t) => !RE_PEC.test(t.email) && !ESCLUSE.test(t.email));
   const sulDominio = (t) => !dominio || t.email.endsWith("@" + dominio) || t.email.endsWith("." + dominio);
   const preferite = tipo === "comune" ? /^(protocollo|info|urp|segreteria|comune|municipio|ufficio\.?protocollo)[@.]/ : /^(info|segreteria|amministrazione|commerciale|contatti|ufficio|clienti|direzione)[@.]/;
-  const generica = ordinarie.find((t) => preferite.test(t.email) && sulDominio(t)) || ordinarie.find((t) => preferite.test(t.email)) || null;
+  // Solo email sul dominio dell'ente (es. non info@gestore.it sul sito del Comune).
+  const generica = ordinarie.find((t) => preferite.test(t.email) && sulDominio(t)) || null;
   const pecScelta = pec.find((t) => /^(protocollo|comune|segreteria|info|amministrazione)/.test(t.email)) || pec[0] || null;
   let telefono = null;
   for (const p of pagine) {
@@ -192,7 +197,7 @@ export function estraiDati(pagine, tipo, hostBase = "") {
         const righe = String(p.testo || "").split("\n");
         const altri = RUOLI.filter(([x]) => x !== ruolo).map(([, y]) => y);
         righe.forEach((r, i) => {
-          if (!re.test(r) || r.length > 220) return;
+          if (!re.test(r) || r.length > 120) return;
           // La finestra va dalla riga dell'ufficio alle 4 seguenti, e si
           // ferma dove comincia l'altro ufficio.
           const parte = [r];
@@ -202,20 +207,23 @@ export function estraiDati(pagine, tipo, hostBase = "") {
           }
           const finestra = parte.join("\n");
           const emails = (finestra.match(RE_EMAIL) || []).map((e) => e.toLowerCase()).filter((e) => !RE_PEC.test(e) && !ESCLUSE.test(e));
-          const email = emails.find((e) => re.test(e.split("@")[0])) || emails[0] || null;
+          const proprie = emails.filter((e) => !dominio || e.endsWith("@" + dominio) || e.endsWith("." + dominio));
+          const email = proprie.find((e) => re.test(e.split("@")[0])) || proprie[0] || null;
           const tel = (finestra.match(RE_TEL) || [])[1] || null;
           let persona = null;
           const et = finestra.match(ETICHETTA_COMUNE);
           if (et) persona = nomeDopo(finestra.slice(et.index + et[0].length, et.index + et[0].length + 80));
           const punti = (email ? 2 : 0) + (persona ? 2 : 0) + (tel ? 1 : 0) + (email && re.test(email.split("@")[0]) ? 2 : 0) + (r.includes("@") ? 0 : 1);
           if (punti > 0 && (!migliore || punti > migliore.punti)) {
-            migliore = { punti, ruolo, ufficio: r.slice(0, 150), nome: persona?.nome || null, cognome: persona?.cognome || null, email, telefono: tel ? tel.trim() : null, fonte: p.url };
+            // Nome dell'ufficio solo se la riga è un titolo (corta, senza recapiti).
+            const titolo = r.length <= 80 && !/@|tel|e-?mail|\bpec\b|\d{5,}/i.test(r) ? r : null;
+            migliore = { punti, ruolo, ufficio: titolo, nome: persona?.nome || null, cognome: persona?.cognome || null, email, telefono: tel ? tel.trim() : null, fonte: p.url };
           }
         });
       }
       // Email dell'ufficio riconoscibile dal nome (es. tributi@comune.x.it).
       if (!migliore || !migliore.email) {
-        const t = ordinarie.find((x) => re.test(x.email.split("@")[0]));
+        const t = ordinarie.find((x) => re.test(x.email.split("@")[0]) && sulDominio(x));
         if (t) migliore = { ...(migliore || { ruolo, ufficio: null, nome: null, cognome: null, telefono: null }), email: t.email, fonte: migliore?.fonte || t.fonte, punti: 2 };
       }
       if (migliore) { delete migliore.punti; out.uffici.push(migliore); }
