@@ -185,6 +185,7 @@ Si eseguono con `npm test` prima di ogni rilascio; l'ultimo esito è sempre «tu
 
 ### Prove del database (banco locale)
 
+- `t46.sql` del 25/10/2026 (lettore dei siti, script 46), tutte come attese: messa in coda senza doppioni, accensione e riepilogo; l'Amministratore non può prendere enti dalla coda (solo la funzione del server); `mkt_lettura_prendi` non dà due volte lo stesso ente e rimette in coda le letture interrotte da più di 10 minuti; «rileggi» rimette in coda i letti; Comune e anonimo senza accesso. Prova in produzione su 11 enti (8 letti, 3 siti non raggiungibili) con due regole corrette subito (email di un altro dominio, «Capitale Sociale» letto come nome).
 - `t45.sql` del 23/10/2026 (script 45), tutte come attese:
   - Progetto senza fase 6 completata: nuovo Rapporto rifiutato con il messaggio «non è ancora registrato»; dopo la fase 6 completata il Rapporto nasce (CWP-…-RM1);
   - i Rapporti esistenti si aggiornano ancora (trigger solo sull'inserimento);
@@ -292,3 +293,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 23/10/2026 12:05 | Prova `t44.sql` (Marketing, script 44) con l'errore dell'id di `mkt_richiesta` trovato e corretto; nuova serie `marketing.test.mjs` (20 serie) |
 | 23/10/2026 12:50 | Rilascio del Marketing: due errori dell'importazione da IndicePA trovati al primo aggiornamento in produzione (righe doppie per Comune, lettura degli uffici troppo grande) e corretti; banche dati caricate |
 | 23/10/2026 16:00 | ISS-039 (Rapporto su Progetto non registrato) e ISS-040 (elenco dei Comuni vuoto) corretti e in produzione con lo script 45; prova `t45.sql` |
+| 25/10/2026 12:05 | Lettore dei siti (script 46, versione gratuita): prova `t46.sql`, prova in produzione su 11 enti, serie `marketing.test.mjs` estesa (15 prove) |

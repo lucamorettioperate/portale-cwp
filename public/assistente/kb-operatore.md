@@ -1,4 +1,4 @@
-# Base di conoscenza del Portale Carbon WastePrint — Operatori di back-office (generata il 23/10/2026)
+# Base di conoscenza del Portale Carbon WastePrint — Operatori di back-office (generata il 25/10/2026)
 
 === DOCUMENTO: Manuale Utente ===
 
@@ -1165,6 +1165,31 @@ residuo (tonnellate all'anno), durata (7, 10 o 21 anni) e tipo di progetto
 costi e margine anno per anno con un grafico e le ipotesi della stima. Si
 può scaricare il **fascicolo informativo** (PDF) e inviare la **richiesta
 di registrazione**.
+
+### Lettura dei siti
+
+In **Importazioni → Lettura dei siti** il portale legge da solo il sito di
+ogni Comune e gestore e completa i dati che mancano:
+- email generica (solo sul dominio dell'ente), PEC e telefono;
+- per i Comuni gli uffici **tributi** e **ambiente**, con email, telefono e,
+  quando la pagina lo scrive come «Responsabile: …», il nome del
+  responsabile;
+- per i gestori presidente, amministratore delegato o unico, direttori,
+  se fanno raccolta per i Comuni e se gestiscono la tariffa.
+
+Riempie solo i campi vuoti e per ogni referente salva la pagina da cui è
+preso. Usa regole fisse, senza servizi a pagamento. Rispetta le
+indicazioni dei siti per i programmi automatici e legge una pagina alla
+volta. Accesa, legge 4 enti ogni 30 secondi.
+
+Pulsanti: **Metti in coda i Comuni**, **Metti in coda i gestori con sito**,
+**Avvia la lettura** / **Ferma**, **Leggi ora 1 ente** (prova immediata con
+il risultato a schermo), **Rileggi tutti**. La tabella mostra quanti enti
+sono in coda, letti e in errore (siti che non rispondono); gli ultimi
+errori si aprono sotto i pulsanti.
+
+I nomi dei responsabili dei Comuni si trovano solo quando la pagina li
+indica in modo chiaro: negli altri casi resta l'email dell'ufficio.
 
 ### Richieste di registrazione
 
