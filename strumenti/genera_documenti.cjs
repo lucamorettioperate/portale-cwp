@@ -14,6 +14,8 @@
    - Registro sviluppo/deploy docs/REGISTRO_DEV_DEPLOY.md
                               → public/documentazione/Registro_Dev_Deploy_Portale_CWP.{docx,pdf}
    - Istruzioni di ripristino docs/ripristino.md
+   - DPIA Banca Dati Utenze   docs/dpia.md
+                              → public/documentazione/DPIA_Banca_Dati_Utenze_Portale_CWP.{docx,pdf}
                               → public/documentazione/Istruzioni_Ripristino_Portale_CWP.{docx,pdf}
 
    Le revisioni stanno in strumenti/revisioni_documenti.json (l'ultima di
@@ -33,7 +35,7 @@
    quello tipografico di impagina_pdf.py, se WeasyPrint è installato.
 
    Uso:  node strumenti/genera_documenti.cjs            (tutti)
-         node strumenti/genera_documenti.cjs registro   (uno solo: manuale | amministratore | test | registro | issue | ripristino)
+         node strumenti/genera_documenti.cjs registro   (uno solo: manuale | amministratore | test | registro | issue | ripristino | dpia)
    Richiede la libreria "docx" (npm install --no-save docx), LibreOffice
    (numeri di pagina del sommario del Word) e pdftotext; il PDF finale è
    impaginato da strumenti/impagina_pdf.py (pip install weasyprint markdown).
@@ -136,6 +138,19 @@ const DOCUMENTI = {
     destinatari: "Amministratori del portale e sviluppatori — documento riservato",
     numeraCapitoli: true,
     nota: (r) => `Istruzioni alla revisione ${r.rev} del ${r.data}. Si aggiornano quando cambiano servizi, piani, script del database, funzioni o chiavi; una copia è dentro ogni archivio di backup e la versione corrente si scarica dall'area Documentazione del portale (solo Amministratori).`,
+  },
+  // DPIA della Banca Dati Utenze: traccia della valutazione d'impatto
+  // (art. 35 GDPR) che il Comune completa con il suo DPO (26/10/2026).
+  dpia: {
+    sorgente: "docs/dpia.md",
+    uscita: "public/documentazione",
+    nome: "DPIA_Banca_Dati_Utenze_Portale_CWP",
+    titolo: "DPIA BANCA DATI UTENZE",
+    breve: "DPIA Banca Dati Utenze",
+    sottotitolo: "Traccia di valutazione d'impatto sulla protezione dei dati (art. 35 GDPR) da completare con il Comune",
+    destinatari: "Amministratori della Fondazione, Comuni e loro DPO — documento riservato",
+    numeraCapitoli: true,
+    nota: (r) => `Traccia alla revisione ${r.rev} del ${r.data}, preparata dalla Fondazione Operate: descrive il portale; le parti segnate «da completare» spettano al Comune e al suo DPO. Non è un parere legale. Si aggiorna quando cambia il trattamento delle utenze nel portale; la versione corrente (anche in Word, da completare) si scarica dall'area Documentazione del portale (solo Amministratori).`,
   },
 };
 

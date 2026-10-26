@@ -24,7 +24,7 @@
 """
 Impaginazione tipografica in PDF dei documenti del portale (WeasyPrint).
 
-Uso:  python3 strumenti/impagina_pdf.py manuale|amministratore|test|registro|issue|ripristino
+Uso:  python3 strumenti/impagina_pdf.py manuale|amministratore|test|registro|issue|ripristino|dpia
 Legge lo stesso testo e le stesse revisioni del Word (strumenti/genera_documenti.cjs)
 e scrive il PDF accanto al .docx, sostituendo quello convertito da LibreOffice.
 
@@ -127,6 +127,19 @@ DOCUMENTI = {
         "numera": True,
         "riservato": True,
         "intro": "Queste istruzioni spiegano dove stanno il codice e i dati del portale, quali copie di sicurezza fare e come rimettere in funzione GitHub, Vercel, Supabase, Resend e il progetto Claude se qualcosa va perso.",
+    },
+    # DPIA della Banca Dati Utenze (traccia da completare con il Comune).
+    "dpia": {
+        "sorgente": "docs/dpia.md",
+        "uscita": "public/documentazione/DPIA_Banca_Dati_Utenze_Portale_CWP.pdf",
+        "sopratitolo": "DPIA Banca Dati Utenze",
+        "titolo": "Portale Carbon WastePrint®",
+        "sottotitolo": "Traccia di valutazione d'impatto sulla protezione dei dati (art. 35 GDPR) da completare con il Comune",
+        "breve": "DPIA Banca Dati Utenze",
+        "destinatari": "Amministratori della Fondazione, Comuni e loro DPO — documento riservato",
+        "numera": True,
+        "riservato": True,
+        "intro": "Questa traccia descrive come il portale tratta la Banca Dati Utenze (dati, flussi, chi vede cosa, servizi usati, misure di sicurezza) e propone la valutazione dei rischi. Il Comune, titolare del trattamento, la completa con il suo DPO nelle parti segnate «da completare». Non è un parere legale.",
     },
 }
 
