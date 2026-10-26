@@ -1173,7 +1173,7 @@ Il calcolo dei crediti usa un formato **per utenza**: ogni anno il Comune o il g
 - La produzione totale deve corrispondere alla somma delle frazioni: il portale segnala le differenze oltre l'1%.
 - Oltre 1 milione di righe o 50 MB: un CSV per foglio, con lo stesso nome, dentro uno ZIP.
 
-**Dati personali.** Questo modello contiene nomi e indirizzi, a differenza del tracciato attuale. Nel portale li vedono solo Operatori e Amministratori. Ogni consultazione dell'elenco finisce nell'Audit («consultazione utenze»), così come ogni caricamento («caricamento utenze», con il solo numero di utenze) e ogni cancellazione. Nomi e indirizzi non compaiono nei rapporti di calcolo, nei fascicoli né nelle pagine pubbliche. Prima dell'uso con dati reali servono la valutazione d'impatto (DPIA) e l'accordo sul trattamento con ogni Comune.
+**Dati personali.** Questo modello contiene nomi e indirizzi, a differenza del tracciato attuale. Nel portale li vedono solo Operatori e Amministratori. Ogni consultazione dell'elenco finisce nell'Audit («consultazione utenze»), così come ogni caricamento («caricamento utenze», con il solo numero di utenze) e ogni cancellazione. Nomi e indirizzi non compaiono nei rapporti di calcolo, nei fascicoli né nelle pagine pubbliche. Prima dell'uso con dati reali servono la valutazione d'impatto (DPIA) e l'accordo sul trattamento con ogni Comune: la **traccia della DPIA** è nella pagina *Documentazione* (dal 26/10/2026). Si scarica in Word, si manda al Comune, che la completa con il suo DPO nelle parti «da completare»; propone anche di caricare solo i codici delle utenze, senza nomi e indirizzi (pseudonimizzazione).
 
 **Gestire le utenze nel portale.** Nel calcolo aprite il passo **5a. Utenze del calcolo**.
 
@@ -1550,6 +1550,7 @@ Dalla voce **Documentazione** del menu (e da **Il mio profilo**) l'Amministrator
 | Registro sviluppo e deploy | solo Amministratori | Architettura, servizi, database, codice, cronologia dei rilasci, decisioni e backlog |
 | Registro issue e test | solo Amministratori | Tutte le segnalazioni con data e ora, chi le ha fatte, azione correttiva, prove e rilascio; registro dei test e dei collaudi. Aggiornato a ogni variazione |
 | Istruzioni di ripristino | solo Amministratori | Copie di sicurezza e ripristino di GitHub, Vercel, Supabase, Resend e del progetto Claude |
+| DPIA – Banca Dati Utenze (traccia) | solo Amministratori | Valutazione d'impatto sulla protezione dei dati (art. 35 GDPR) per le utenze: si scarica in Word e si manda al Comune, che la completa con il suo DPO prima di caricare utenze reali |
 | Presentazione di riepilogo | solo Amministratori | Recap del portale in slide (PDF e PowerPoint): metodologia, funzioni, novità, punti aperti, simulatore, piani a pagamento, scelte da prendere |
 
 **Documenti ufficiali del Programma.** In fondo alla pagina Documentazione ci sono gli **8 documenti ufficiali del Programma Carbon WastePrint® versione 1.2** (04/09/2025): 0. Guida al Programma, 1. Definizioni, 2. Normativa di riferimento, 3. Standard, 4. Metodologia, 5. Politica di reclamo, 6. Schema tariffario, 7. Gestione della qualità dei dati. **Apri PDF** li apre in una nuova scheda, **Scarica** li salva. Sono gli stessi pubblicati sulla pagina pubblica del Programma e si aggiornano da Impostazioni → Modelli (categoria «programma»).

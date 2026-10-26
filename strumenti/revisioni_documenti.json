@@ -559,6 +559,12 @@
       "data": "26/10/2026",
       "descrizione": "Lettura dei siti: siti che rifiutano i programmi automatici.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.7",
+      "data": "26/10/2026",
+      "descrizione": "Traccia DPIA della Banca Dati Utenze nella pagina Documentazione.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -1289,6 +1295,12 @@
       "data": "26/10/2026",
       "descrizione": "Revisione generale del 26/10: lettura dei siti completata (primo giro), funzionalità e «Da fare subito» aggiornati.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "8.2",
+      "data": "26/10/2026",
+      "descrizione": "Traccia DPIA della Banca Dati Utenze (cronologia, artefatti, Da fare subito).",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1738,6 +1750,14 @@
       "rev": "1.25",
       "data": "26/10/2026",
       "descrizione": "Riepilogo al 26/10.",
+      "autore": "Fondazione Operate"
+    }
+  ],
+  "dpia": [
+    {
+      "rev": "1.0",
+      "data": "26/10/2026",
+      "descrizione": "Prima stesura della traccia (richiesta di Luca del 26/10): descrizione del trattamento, servizi e luogo dei dati (Supabase in Germania), rischi, misure presenti, piano d'azione, parti da completare dal Comune e dal DPO.",
       "autore": "Fondazione Operate"
     }
   ]

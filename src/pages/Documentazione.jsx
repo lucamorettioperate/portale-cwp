@@ -5,7 +5,8 @@
      - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli
        Amministratori).
      - Manuale Amministratore, Manuale Test, Registro sviluppo e deploy,
-       Istruzioni di ripristino e la Presentazione di riepilogo (PDF e
+       Istruzioni di ripristino, la traccia DPIA della Banca Dati Utenze
+       (dal 26/10/2026) e la Presentazione di riepilogo (PDF e
        PowerPoint, strumenti/presentazione/genera_presentazione.cjs): solo
        Amministratori.
      - Per gli Amministratori, in fondo, gli 8 documenti ufficiali del
@@ -81,6 +82,13 @@ const DOCUMENTI = [
     titolo: "Istruzioni di ripristino",
     descrizione: "Dove stanno codice e dati, quali copie di sicurezza fare e come rimettere in funzione GitHub, Vercel, Supabase, Resend e il progetto Claude se qualcosa va perso. Documento riservato agli Amministratori.",
     percorso: "/documentazione/Istruzioni_Ripristino_Portale_CWP",
+    soloAdmin: true,
+  },
+  {
+    chiave: "dpia",
+    titolo: "DPIA – Banca Dati Utenze (traccia)",
+    descrizione: "Traccia della valutazione d'impatto sulla protezione dei dati (art. 35 GDPR) per la Banca Dati Utenze: dati trattati, chi li vede, servizi e luogo dei dati, rischi, misure del portale e piano d'azione. Si scarica in Word e si manda al Comune, che la completa con il suo DPO prima di caricare le utenze reali. Non è un parere legale. Documento riservato agli Amministratori.",
+    percorso: "/documentazione/DPIA_Banca_Dati_Utenze_Portale_CWP",
     soloAdmin: true,
   },
   {

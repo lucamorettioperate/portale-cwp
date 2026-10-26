@@ -558,6 +558,23 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 26 ottobre 2026
+- **Traccia DPIA della Banca Dati Utenze** (richiesta di Luca: «puoi
+  scriverla e pubblicarla nell'area admin?»): nuovo documento
+  `docs/dpia.md` → `public/documentazione/DPIA_Banca_Dati_Utenze_Portale_CWP.docx`
+  e `.pdf` (rev. 1.0), nell'area Documentazione solo per gli
+  Amministratori, con Word da mandare al Comune. Contiene: perché serve
+  (criteri WP248), dati trattati, ciclo di vita, chi vede cosa, servizi e
+  luogo dei dati (Supabase in Germania; copia di sicurezza su Mac e Google
+  Drive con le utenze), ruoli (Comune titolare, Fondazione responsabile da
+  confermare), base giuridica da completare, proporzionalità con due
+  proposte (pseudonimizzazione: solo codici utenza; conservazione delle
+  utenze), 10 rischi con livello prima e dopo il piano, misure presenti,
+  piano d'azione A1-A12, parere del DPO e approvazione del titolare in
+  bianco. Non è un parere legale. Configurazione in
+  `strumenti/genera_documenti.cjs`, `strumenti/impagina_pdf.py`,
+  `strumenti/revisioni_documenti.json` («dpia») e
+  `src/pages/Documentazione.jsx`. Verifica: PDF di 22 pagine controllato
+  a schermo, prove e build.
 - **Lettura dei siti: primo giro completo** (dalle 11:59 del 25/10 alle
   04:00 del 26/10, gratuita). Comuni: 5.365 letti, 2.126 non letti (985
   siti chiedono ai programmi automatici di non essere letti — robots.txt,
@@ -1665,6 +1682,7 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 | Controlli sui file | `docs/controlli-file.md` | Regole di caricamento, opzioni antivirus |
 | Crediti volontari dalla raccolta differenziata: valore e criticità | https://claude.ai/artifact/CLvQ82y6UwHznZBUujHy9J (15/10) | Analisi di contesto correlata al Programma |
 | Documenti di riferimento | allegati in chat del 17/10 | *Requisiti della piattaforma* (15/09/2026), *Metodologia CWP v1.2* |
+| Traccia DPIA della Banca Dati Utenze in Word/PDF (dal 26/10/2026) | `docs/dpia.md` → `public/documentazione/DPIA_Banca_Dati_Utenze_Portale_CWP.docx` e `.pdf`, scaricabile da `/documentazione` (Admin) | Valutazione d'impatto (art. 35 GDPR) da completare dal Comune e dal suo DPO prima di caricare utenze reali; si aggiorna quando cambia il trattamento delle utenze |
 | Istruzioni di ripristino in Word/PDF | `docs/ripristino.md` → `public/documentazione/Istruzioni_Ripristino_Portale_CWP.docx` e `.pdf`, scaricabile da `/documentazione` (Admin) | Copie di sicurezza e ripristino di GitHub, Vercel, Supabase, Resend e progetto Claude |
 | Archivio di backup completo | File `Portale_CWP_backup_completo_<data>.zip` consegnato a Luca (prima copia 19/10/2026) e ramo GitHub `snapshot-2026-10-19` | Codice con storia completa, manuali, presentazione, documenti ufficiali, progetto Claude, artefatti in PDF |
 
@@ -1784,7 +1802,7 @@ aperte; il dettaglio è nei punti numerati qui sotto.
   «Backup»). Il backup in Google Apps Script è stato tolto (bloccato da
   Google).
 - ~~Eseguire lo script `34_sicurezza_avvisi.sql`~~ — fatto il 23/10 alle 12:20 su incarico di Luca.
-- DPIA e accordo sul trattamento (art. 28 GDPR) con i Comuni prima di caricare utenze reali nella Banca Dati Utenze per utenza.
+- DPIA e accordo sul trattamento (art. 28 GDPR) con i Comuni prima di caricare utenze reali nella Banca Dati Utenze per utenza. **Traccia DPIA pronta dal 26/10** (area Documentazione, Word da mandare al Comune): decidere la pseudonimizzazione (solo codici utenza), accendere la verifica in due passaggi, accettare i DPA di Supabase e Google, proteggere le copie di sicurezza (piano d'azione A1-A12 della traccia).
 - Inoltrare alla Fondazione le domande in ATTESA_REGOLA (R01-R04, R06, riuso, N05, N06, frazioni vuote nel calcolo per utenza) e decidere gli interventi sui dati proposti (fase 5 senza ente, fasi senza scadenza, codici).
 - Attivare gli avvisi automatici di GitHub (Settings → Code security → Dependabot alerts) e decidere sul CAPTCHA delle pagine pubbliche.
 - ~~Eseguire gli script 32 e 33 e rieseguire lo script 30~~ — fatto il
@@ -2140,7 +2158,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 186 file, 44.591 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 186 file, 44.647 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -2164,7 +2182,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 186 file, 44.591 righe 
 | `src/pages/Crediti.jsx` | 240 | sezione del calcolo dei crediti di CO₂eq (Metodologia Carbon WastePrint® v1.2). Due viste: - «Calcoli»: elenco di tutti i calcoli (titolo, pratica, anno e tipo, crediti netti, stato bozza/confermato) e modulo «+ Nuovo calcolo»… |
 | `src/pages/CreditiEmessiPagina.jsx` | 83 | elenco di tutti i lotti di crediti emessi dai Rapporti di Monitoraggio (Guida al Programma 6.3.2 e 6.3.3; script 24), con il totale emessi / attivi / ritirati e, per lo staff, le azioni su ogni lotto (caricamento sul registro,… |
 | `src/pages/Cruscotto.jsx` | 310 | (requisiti §8) riquadri di sintesi cliccabili (pratiche in corso, in scadenza, scadute, fase aperta senza scadenza — rilievo N04: una data mancante non conta come «in regola» —, in attesa del Cliente, integrazioni da verificare,… |
-| `src/pages/Documentazione.jsx` | 219 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
+| `src/pages/Documentazione.jsx` | 227 | elenco dei documenti del portale da aprire in PDF o scaricare in Word, ciascuno con la revisione più recente e la sua data. - Manuale Utente: per tutti i ruoli (in PDF; il Word solo agli Amministratori). - Manuale… |
 | `src/pages/FormatoDati.jsx` | 136 | spiega lo standard dei dati da inviare per il calcolo dei crediti e permette di scaricare il tracciato Excel. Il link si può mandare a Comuni e gestori anche senza credenziali. Contiene: elenco dei fogli del tracciato,… |
 | `src/pages/GestioneUtenti.jsx` | 763 | elenco di tutti gli utenti (nome, email, organizzazioni, ruolo, stato) con, per ciascuno: modifica di ruolo e organizzazioni, reimpostazione della password temporanea, disattivazione/riattivazione. Pulsante «+ Nuovo utente» per… |
 | `src/pages/Impostazioni.jsx` | 64 | parametri del Programma modificabili dagli Amministratori: - Durata delle fasi del Progetto e del Rapporto di Monitoraggio (script 13 e 21, componente DurateFasi); - Documenti richiesti per fase (script 21, componente… |
@@ -2358,15 +2376,15 @@ Inventario generato da `strumenti/inventario_codice.py`: 186 file, 44.591 righe 
 |---|---|---|
 | `strumenti/genera_banca_dati_utenze.py` | 259 | genera public/modelli/Banca_dati_utenze_CWP_v1.xlsx, il file che il Comune o il gestore compila OGNI ANNO con l'elenco COMPLETO delle utenze (richiesta di Luca Moretti del 22/10/2026: il calcolo dei crediti è per utenza e le… |
 | `strumenti/genera_base_conoscenza.cjs` | 88 | unisce i testi dei manuali e delle tariffe in due file che la funzione del server «assistente» (supabase/functions/assistente) legge e passa a Claude come contesto: - public/assistente/kb-comune.md: per gli utenti degli enti… |
-| `strumenti/genera_documenti.cjs` | 583 | genera in Word (.docx) e PDF i documenti del portale, con copertina e loghi, registro delle revisioni, sommario con numeri di pagina, intestazione e piè di pagina: |
+| `strumenti/genera_documenti.cjs` | 598 | genera in Word (.docx) e PDF i documenti del portale, con copertina e loghi, registro delle revisioni, sommario con numeri di pagina, intestazione e piè di pagina: |
 | `strumenti/genera_esempi_tracciato.py` | 101 | genera i file di prova del tracciato dati per i test automatici (test/tracciato.test.mjs) e per il collaudo manuale (Manuale Test): - test/dati/tracciato_esempio.xlsx : tracciato compilato, Banca Dati con totali (foglio 5) -… |
 | `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
 | `strumenti/genera_utenze_casuali.py` | 104 | riempie il modello public/modelli/Banca_dati_utenze_CWP_v1.xlsx con 20 utenze domestiche e 20 non domestiche inventate (richiesta di Luca |
-| `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
+| `strumenti/impagina_pdf.py` | 455 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/marketing_arricchimento_sql.py` | 107 | — |
 | `strumenti/presentazione/genera_presentazione.cjs` | 672 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1744 | — |
+| `strumenti/revisioni_documenti.json` | 1764 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
