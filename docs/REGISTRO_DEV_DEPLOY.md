@@ -558,6 +558,45 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
 ### 26 ottobre 2026
+- **Dati di prova di Borgoval: simulatore e calcolo dei crediti** (richiesta
+  di Luca delle 10:07). Fonte: Catasto rifiuti ISPRA 2024 del Comune di
+  Casalmaggiore (CR): 8.877,8 t, differenziata 79,7%; popolazione 15.095
+  (2025). Le quantità per tipologia sono riportate ai 26.382 abitanti di
+  Borgoval (×1,7477): 14.964,9 t, 567,2 kg/ab, secco 119,6 kg/ab,
+  differenziata 78,9% sulle tipologie CWP (escluse pulizia stradale,
+  selettiva e «altro»; la frazione organica ISPRA comprende il verde).
+  - Scenario «ISPRA Casalmaggiore 2024 - differenziata all'87% (per
+    utenza)», 2027-2036: produzione pro capite invariata, differenziata dal
+    79,7% del 2027 all'87% del 2036; metodo per utenza (secco e organico
+    misurati, variabilità 30%), buffer 40%; Caso 1, 32 € a credito. Crediti
+    netti da 4.918 (2027) a 6.845 (2036), 58.640 in tutto; ricavi
+    1.876.352 €, costi 232.162 €, margine positivo ogni anno (1.644.190 €).
+    Con il metodo «bilancio del Comune» i crediti sarebbero quasi zero
+    (spostare il secco nella differenziata a parità di totale non genera
+    crediti).
+  - Calcolo «PROVA Borgoval 2027 - utenze generate (ISPRA Casalmaggiore) -
+    non confermare» (bozza, ex post, Progetto CWP-2026-0001): rifiuti del
+    territorio = scenario di riferimento 2027 al 65%; delibera di prova (PEF
+    70/30, Kb e Kd indicativi sul modello del DPR 158/1999); 9.000 utenze
+    domestiche UtD1-UtD9000 e 1.778 non domestiche UtND1-UtND1778 (quota non
+    domestica dei rifiuti / produzione media della delibera), con kg e
+    svuotamenti di secco e organico intorno ai valori attesi × rapporto
+    progetto/riferimento dello scenario. Risultato: 7.688 utenze virtuose su
+    10.778, crediti lordi 5.129,4, buffer 40%, **crediti netti 3.077,7
+    tCO₂eq** (98.464 € a 32 €, contro 23.216 € di costi annui del Caso 1).
+    Il simulatore per lo stesso anno stima 4.918 crediti netti: conta le
+    utenze virtuose frazione per frazione, mentre il calcolo compensa in
+    ogni utenza il secco evitato con l'organico in più (differenza da
+    portare alla Fondazione).
+  - Script `strumenti/borgoval_prova.mjs` → `strumenti/borgoval_prova.sql`
+    (numeri pseudo-casuali riproducibili, rieseguibile), eseguito in
+    produzione alle 10:21.
+- **Correzione ISS-041 (calcolo con più di 1.000 utenze)**: la prova di
+  Borgoval ha mostrato che il motore leggeva solo le prime 1.000 utenze del
+  passo 5a (limite di righe dell'API di Supabase).
+  `leggiUtenzeCalcolo` ora legge a blocchi di 1.000 finché arrivano righe
+  (main `c8ab6c8`, in produzione alle 10:25); verificato sul calcolo di
+  Borgoval (10.778 utenze, risultato identico al motore fuori dal portale).
 - **Traccia DPIA della Banca Dati Utenze** (richiesta di Luca: «puoi
   scriverla e pubblicarla nell'area admin?»): nuovo documento
   `docs/dpia.md` → `public/documentazione/DPIA_Banca_Dati_Utenze_Portale_CWP.docx`
@@ -2158,7 +2197,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 186 file, 44.647 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 186 file, 44.672 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -2258,7 +2297,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 186 file, 44.647 righe 
 | `src/lib/crediti/simulatoreExport.js` | 494 | Campo vuoto (non indicato) e numero da testo con la virgola decimale. |
 | `src/lib/crediti/simulatorePdf.js` | 444 | Colori RGB, uguali alla palette del portale e al rapporto di calcolo. |
 | `src/lib/crediti/tracciato.js` | 708 | legge il file del tracciato compilato dal Comune o dal gestore, blocca l'import se trova dati personali, converte i fogli nei dati del motore di calcolo (calcolo.js) e segnala le incoerenze. |
-| `src/lib/crediti/utenzeCalcolo.js` | 91 | elenco a pagine con ricerca, conteggi, modulo di una singola utenza (nuova o modificata), cancellazione e caricamento dell'elenco completo dell'anno (sostituisce quello precedente). |
+| `src/lib/crediti/utenzeCalcolo.js` | 98 | elenco a pagine con ricerca, conteggi, modulo di una singola utenza (nuova o modificata), cancellazione e caricamento dell'elenco completo dell'anno (sostituisce quello precedente). |
 | `src/lib/csv.js` | 184 | leggere i CSV caricati nel calcolo crediti (tabelle dati e file del tracciato), convertirli in oggetti secondo uno schema di colonne, produrre CSV da scaricare (export, modelli vuoti, registro crediti). |
 | `src/lib/cwpProgram.js` | 190 | costanti condivise da tutto il portale, allineate all'analisi funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di fase (con i colori dei badge), la palette e le tipologie di… |
 | `src/lib/date.js` | 81 | formattare le date del database (gg/mm/aaaa), contare i giorni alle scadenze e ottenere la data di oggi in formato ISO (anche la data italiana, indipendente dal fuso del computer). |
@@ -2384,7 +2423,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 186 file, 44.647 righe 
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/marketing_arricchimento_sql.py` | 107 | — |
 | `strumenti/presentazione/genera_presentazione.cjs` | 672 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1764 | — |
+| `strumenti/revisioni_documenti.json` | 1782 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

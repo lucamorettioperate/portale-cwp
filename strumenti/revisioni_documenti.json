@@ -565,6 +565,12 @@
       "data": "26/10/2026",
       "descrizione": "Traccia DPIA della Banca Dati Utenze nella pagina Documentazione.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.8",
+      "data": "26/10/2026",
+      "descrizione": "Prova di Borgoval (simulatore e calcolo con 10.778 utenze).",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -1301,6 +1307,12 @@
       "data": "26/10/2026",
       "descrizione": "Traccia DPIA della Banca Dati Utenze (cronologia, artefatti, Da fare subito).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "8.3",
+      "data": "26/10/2026",
+      "descrizione": "Dati di prova di Borgoval (ISPRA Casalmaggiore 2024, differenziata all'87%, 10.778 utenze) e correzione ISS-041.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1750,6 +1762,12 @@
       "rev": "1.25",
       "data": "26/10/2026",
       "descrizione": "Riepilogo al 26/10.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.26",
+      "data": "26/10/2026",
+      "descrizione": "ISS-041 (calcolo con più di 1.000 utenze) corretto e verificato; prova di carico di Borgoval.",
       "autore": "Fondazione Operate"
     }
   ],

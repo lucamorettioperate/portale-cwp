@@ -31,11 +31,11 @@ Dal 21/10/2026 ogni nuova voce riporta l'ora esatta della segnalazione.
 
 **Chi segnala:** Luca = Luca Moretti; Collaudo = Amministratori collaudatori (Andrea Valentini, Albina Ambrogio, Andrea Pavan, Gianluca Tapparini, Luca Belfiore); Revisione = rilettura del codice da parte dello sviluppo; Sviluppo = prova dello sviluppo o messaggio di errore di un servizio.
 
-## Riepilogo al 26/10/2026 (ore 08:00)
+## Riepilogo al 26/10/2026 (ore 10:30)
 
 | Stato | Numero | Voci |
 |---|---|---|
-| CHIUSO | 33 | ISS-001 … ISS-034 tranne ISS-012 e ISS-020; ISS-036 |
+| CHIUSO | 34 | ISS-001 … ISS-034 tranne ISS-012 e ISS-020; ISS-036; ISS-041 |
 | CORRETTO_DA_RITESTARE | 21 | D01, D02, D03, D04, D05, D06, D07, R05, R07, R08, D05-R1, O01, ISS-035, ISS-037, ISS-038, ISS-039, ISS-040, N01, N02, N03, N04 (ISS-039 e ISS-040 in produzione dal 23/10 alle 15:50; N01-N04 e ISS-038 in produzione dal 22/10 alle 14:30; N01-N04 con una domanda residua alla Fondazione) |
 | ATTESA_REGOLA | 8 | R01, R02, R03, R04, R06, riuso, N05, N06 |
 | APERTO | 2 voci, 1 causa | ISS-012 e D08 (email ai destinatari diversi dal titolare) |
@@ -114,6 +114,7 @@ Ordine cronologico. Una data senza ora vuol dire «ora della segnalazione non re
 | N06 | 21/10 (terza sessione) | **Metodologia** — Paniere del fattore dell'indifferenziato più ampio delle cinque frazioni nominate al cap. 5. Segnalato da: Collaudo | ATTESA_REGOLA (P1) | 22/10 08:04 (`18a4653`; in produzione il 22/10): solo trasparenza (quota, tonnellate, FE, frazioni oltre le cinque ed escluse) nei risultati e nel PDF; formula invariata |
 | ISS-039 | 23/10 15:24 | **Pratiche** — Si poteva creare un Rapporto di Monitoraggio per un Progetto non ancora registrato (es. CWP-2026-003). Segnalato da: Luca | CORRETTO_DA_RITESTARE (P2) | 23/10, in produzione alle 15:50 (script 45, main `1188a51`): pulsante «+ Rapporto» solo con la fase 6 completata, controllo anche nel database. I Rapporti già creati (CWP-2026-0001-RM1, CWP-2026-003-RM1) non sono stati toccati |
 | ISS-040 | 23/10 15:24 | **Marketing** — Elenco dei Comuni senza filtri vuoto («0 Comuni»), con il filtro per regione funzionava. Segnalato da: Luca | CORRETTO_DA_RITESTARE (P2) | 23/10, in produzione alle 15:50 (script 45): la regola di accesso ora si calcola una volta per lettura; tutti i Comuni in 44 ms invece di oltre il tempo massimo |
+| ISS-041 | 26/10 10:23 | **Calcolo crediti** — Con più di 1.000 utenze nel passo 5a il motore ne usava solo le prime 1.000: l'API di Supabase restituisce al massimo 1.000 righe per richiesta e la lettura a blocchi di 5.000 si fermava al primo blocco «corto». Trovato nella prova di Borgoval (10.778 utenze: «708 / 1000» utenze, 119 crediti netti invece di 3.078). Segnalato da: Sviluppo | CHIUSO (P0) | 26/10, in produzione alle 10:25 (main `c8ab6c8`): blocchi di 1.000 e lettura finché arrivano righe. Verificato in produzione sul calcolo di prova di Borgoval: 10.778 utenze lette, risultato uguale al motore eseguito fuori dal portale (3.077,657 crediti netti). Nessun calcolo confermato era interessato (gli unici calcoli con utenze avevano 40 utenze) |
 
 ## Schede delle segnalazioni del collaudo
 
@@ -256,6 +257,13 @@ Ultime prove:
 
 Da ripetere ogni tre mesi su un progetto Supabase di prova.
 
+**Prova di carico del calcolo dei crediti: Borgoval (26/10/2026 10:25).**
+- **Dati:** scenario del simulatore e calcolo 2027 del Progetto CWP-2026-0001 generati da `strumenti/borgoval_prova.mjs` (script `borgoval_prova.sql`, eseguito in produzione su richiesta di Luca): dati ISPRA 2024 di Casalmaggiore riportati a 26.382 abitanti, 9.000 utenze domestiche e 1.778 non domestiche inventate, kg e svuotamenti di secco e organico.
+- **Esito:**
+  - al primo «Calcola» il motore usava 1.000 utenze su 10.778 (ISS-041, corretto e in produzione alle 10:25);
+  - dopo la correzione 10.778 utenze lette in pochi secondi; crediti netti 3.077,657 tCO₂eq, identici al motore eseguito fuori dal portale con gli stessi dati;
+  - scenario del simulatore: margine positivo in tutti i 10 anni, totale 1.644.190 €, uguale al calcolo fuori dal portale.
+
 ### Campagne di collaudo
 
 | Campagna | Date | Chi | Esito |
@@ -297,3 +305,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 25/10/2026 12:05 | Lettore dei siti (script 46, versione gratuita): prova `t46.sql`, prova in produzione su 11 enti, serie `marketing.test.mjs` estesa (15 prove) |
 | 25/10/2026 12:20 | Listino obbligatorio (script 47) e Progetti esistenti a Caso 1; prova `t47.sql` |
 | 26/10/2026 08:10 | Revisione generale: riepilogo aggiornato al 26/10; nessuna nuova segnalazione aperta dopo ISS-040 |
+| 26/10/2026 10:30 | ISS-041 (calcolo con più di 1.000 utenze) trovato con la prova di Borgoval, corretto, in produzione e verificato; prova di Borgoval nel registro dei test |
