@@ -1,4 +1,4 @@
-# Base di conoscenza del Portale Carbon WastePrint — Operatori di back-office (generata il 25/10/2026)
+# Base di conoscenza del Portale Carbon WastePrint — Operatori di back-office (generata il 26/10/2026)
 
 === DOCUMENTO: Manuale Utente ===
 
@@ -75,7 +75,7 @@ La pagina elenca i Progetti della vostra organizzazione (o delle organizzazioni 
 **Valore dei crediti della vostra organizzazione.** In cima alla pagina due riquadri, in crediti (1 credito = 1 tCO₂eq) e in euro, con i soli dati della vostra organizzazione:
 - **Crediti in simulazione**: la stima dell'ultima simulazione che la Fondazione ha preparato per il vostro Comune, su tutto il periodo simulato. È una stima, non un credito certificato.
 - **Crediti in fase esecutiva**: crediti **calcolati** nei Rapporti di Monitoraggio confermati, crediti **emessi** e crediti **venduti** con il valore comunicato dal registro. Calcolati ed emessi sono valorizzati al prezzo di riferimento indicato nel riquadro; non si sommano, perché i crediti emessi vengono dai calcoli.
-- **Valore dei progetti**: quanto costa il vostro Progetto secondo il listino concordato con la Fondazione (Caso 1, progetto volontario, oppure Caso 2, progetto da bando di gara), in totale e all'anno, e quanto prevede l'ultima simulazione. Lo stesso valore compare nei dati del Progetto, alla voce **Valore del progetto per il cliente**.
+- **Valore dei progetti**: quanto costa il vostro Progetto secondo il listino concordato con la Fondazione (Caso 1, progetto volontario, oppure Caso 2, progetto da bando di gara: ogni Progetto ne ha sempre uno), in totale e all'anno, e quanto prevede l'ultima simulazione. Lo stesso valore compare nei dati del Progetto, alla voce **Valore del progetto per il cliente**.
 
 **Dal telefono.** Il portale si usa anche dallo smartphone. In alto restano i loghi, la campanella delle notifiche e il pulsante **☰ Menu**, che apre l'elenco delle pagine, **Il mio profilo** ed **Esci**. Con più pratiche si vede prima l'elenco: toccandone una si apre il dettaglio e **← Tutte le pratiche** riporta all'elenco. Con una sola pratica il dettaglio si apre subito. L'assistente è il pulsante tondo ✦ in basso a destra e, aperto, occupa tutto lo schermo.
 
@@ -1190,6 +1190,12 @@ errori si aprono sotto i pulsanti.
 
 I nomi dei responsabili dei Comuni si trovano solo quando la pagina li
 indica in modo chiaro: negli altri casi resta l'email dell'ufficio.
+
+Alcuni siti (circa uno su otto tra i Comuni) chiedono ai programmi
+automatici di non essere letti: il portale rispetta la richiesta e li segna
+tra gli errori («Il sito chiede di non essere letto…»). Per questi enti i
+dati si completano a mano dalla scheda. Gli enti con il sito che non ha
+risposto si possono rimettere in coda con **Rileggi tutti**.
 
 ### Richieste di registrazione
 

@@ -31,7 +31,7 @@ Dal 21/10/2026 ogni nuova voce riporta l'ora esatta della segnalazione.
 
 **Chi segnala:** Luca = Luca Moretti; Collaudo = Amministratori collaudatori (Andrea Valentini, Albina Ambrogio, Andrea Pavan, Gianluca Tapparini, Luca Belfiore); Revisione = rilettura del codice da parte dello sviluppo; Sviluppo = prova dello sviluppo o messaggio di errore di un servizio.
 
-## Riepilogo al 23/10/2026 (ore 16:00)
+## Riepilogo al 26/10/2026 (ore 08:00)
 
 | Stato | Numero | Voci |
 |---|---|---|
@@ -296,3 +296,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 23/10/2026 16:00 | ISS-039 (Rapporto su Progetto non registrato) e ISS-040 (elenco dei Comuni vuoto) corretti e in produzione con lo script 45; prova `t45.sql` |
 | 25/10/2026 12:05 | Lettore dei siti (script 46, versione gratuita): prova `t46.sql`, prova in produzione su 11 enti, serie `marketing.test.mjs` estesa (15 prove) |
 | 25/10/2026 12:20 | Listino obbligatorio (script 47) e Progetti esistenti a Caso 1; prova `t47.sql` |
+| 26/10/2026 08:10 | Revisione generale: riepilogo aggiornato al 26/10; nessuna nuova segnalazione aperta dopo ISS-040 |

@@ -449,6 +449,37 @@ async function icona(Comp, colore) {
   ]), { x: 8.65, y: 1.45, w: 3.9, h: 5.3, fontSize: 13.5, valign: "top", margin: 0, paraSpaceAfter: 5, isTextBox: true });
   s.addNotes("Sezione Marketing, richiesta di Luca del 23 ottobre 2026, solo Amministratori. Banche dati: tutti i Comuni italiani (elenco ISTAT con abitanti, poi dall'Indice dei domicili digitali della PA, IndicePA, PEC, email generica, sito, sindaco e responsabili degli uffici tributi, ambiente, finanziario e tecnico) e i gestori iscritti all'Albo Nazionale Gestori Ambientali in categoria 1 ordinaria, sezione per sezione, con verifica sui siti delle attività di raccolta e di gestione della tariffa e dei referenti. Campagne: testo con grafica, invito a scoprire le risorse economiche per 7, 10 o 21 anni; per ogni campagna si scelgono i destinatari (Comuni e gestori, regioni, abitanti, attività); invio solo agli indirizzi email generici, mai alle PEC, con informativa e collegamento per non ricevere altre comunicazioni. Il pulsante «Approfondisci» porta alla pagina pubblica /scopri: il Comune inserisce abitanti, rifiuti totali e secco residuo, durata e listino e vede crediti, ricavi, costi e margine anno per anno con il motore del simulatore; può scaricare il fascicolo informativo e chiedere la registrazione, che arriva a tutti gli Amministratori. Dal 25 ottobre il portale legge da solo i siti di Comuni e gestori (contatti, uffici, amministrazione trasparente, organigramma) e completa email generica, PEC, telefono, uffici tributi e ambiente e amministratori, con la pagina di provenienza: regole fisse nel codice, nessun servizio a pagamento. Prima degli invii reali: dominio email verificato su Resend e verifica legale delle comunicazioni promozionali via email.");
 
+  // ---------------------------------------------------------------- Novità del 25-26 ottobre
+  s = pres.addSlide({ masterName: "CONTENUTO", sectionTitle: "Novità" });
+  s.addText("Novità del 25 e 26 ottobre", { placeholder: "title" });
+  [
+    ["7.904", "Comuni in banca dati", "6.182 con email generica, 7.504 con PEC"],
+    ["3.092", "Comuni con email tributi o ambiente", "lette dai siti, con la pagina di provenienza"],
+    ["5.535", "siti letti in automatico", "gratis; 985 rifiutano i programmi automatici"],
+  ].forEach(([n, t, d], i) => {
+    const x = 0.6 + i * 2.6;
+    card(s, x, 1.3, 2.4, 1.55, i === 0 ? C.accent3 : C.background2, "Numero " + t);
+    s.addText([{ text: n, options: { bold: true, fontSize: 26, color: C.text2, breakLine: true } }, { text: t, options: { bold: true, fontSize: 12, color: C.text1, breakLine: true } }, { text: d, options: { fontSize: 10.5, color: C.text1 } }],
+      { x: x + 0.15, y: 1.3, w: 2.1, h: 1.55, valign: "middle", margin: 0, isTextBox: true });
+  });
+  card(s, 0.6, 3.1, 7.6, 2.2, C.background2, "Lettura dei siti");
+  s.addText([
+    { text: "Lettura dei siti di Comuni e gestori", options: { bold: true, color: C.text2, breakLine: true } },
+    { text: "Il portale legge da solo home page, contatti, uffici, amministrazione trasparente e organigramma (rispetta robots.txt, una pagina alla volta) e completa email generica, PEC, telefono, uffici tributi e ambiente con i responsabili, amministratori e direttori dei gestori. Regole fisse nel codice, nessun servizio a pagamento (scelta di Luca). Riempie solo i campi vuoti; ogni dato ha la pagina da cui è preso. Gestori: 166 imprese lombarde delle classi A-C verificate a mano; per i circa 5.650 gestori senza sito il sito va prima trovato.", options: { fontSize: 12.5, color: C.text1 } },
+  ], { x: 0.8, y: 3.2, w: 7.2, h: 2.0, fontSize: 13.5, valign: "top", margin: 0, isTextBox: true });
+  card(s, 8.45, 1.3, 4.25, 5.55, C.background2, "Elenco novità 25-26 ottobre");
+  const novita3 = [
+    ["Pratiche", "Rapporto di Monitoraggio solo per Progetti registrati (fase 6 completata)"],
+    ["Listino", "Caso 1 o Caso 2 obbligatorio per ogni Progetto; i 5 Progetti esistenti a Caso 1 con abitanti"],
+    ["Simulatore", "scenari di stima per i 5 Comuni dei Progetti (cluster SOSE 4, Tabella 3)"],
+    ["Marketing", "elenco dei Comuni senza filtri veloce; lettura automatica dei siti"],
+  ];
+  s.addText(novita3.flatMap(([t, d], j) => [
+    { text: t, options: { bold: true, color: C.text2, breakLine: true } },
+    { text: d, options: { color: C.text1, fontSize: 12, breakLine: j < novita3.length - 1 } },
+  ]), { x: 8.65, y: 1.45, w: 3.9, h: 5.3, fontSize: 13.5, valign: "top", margin: 0, paraSpaceAfter: 5, isTextBox: true });
+  s.addNotes("Novità del 25 e 26 ottobre 2026. Pratiche: un Rapporto di Monitoraggio si crea solo per un Progetto registrato, cioè con la fase 6 completata (script 45). Listino: ogni Progetto ha sempre il Caso 1 o il Caso 2 (script 47); i 5 Progetti esistenti sono passati a Caso 1 con la voce nell'audit e hanno gli abitanti, quindi la Dashboard mostra il valore dei progetti. Simulatore: scenari di stima per i 5 Comuni dei Progetti con i valori medi del cluster SOSE 4 della Tabella 3, perché sono Comuni di prova senza dati ISPRA; con il metodo bilancio del Comune i ricavi risultano inferiori al costo del Caso 1, da discutere con la Fondazione. Marketing: l'elenco dei Comuni senza filtri ora si carica subito (regole di accesso più veloci); il portale legge in automatico e gratis i siti di Comuni e gestori: nel primo giro 5.535 siti letti, 985 rifiutano i programmi automatici; 6.182 Comuni con email generica e 3.092 con l'email dell'ufficio tributi o ambiente. Per i gestori senza sito conosciuto il sito va prima trovato con una ricerca, a giri di circa 90 imprese.");
+
   // ---------------------------------------------------------------- 4. Punti aperti
   pres.addSection({ title: "Punti aperti" });
   s = pres.addSlide({ masterName: "CONTENUTO", sectionTitle: "Punti aperti" });
