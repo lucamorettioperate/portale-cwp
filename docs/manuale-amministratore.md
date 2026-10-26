@@ -1221,6 +1221,12 @@ errori si aprono sotto i pulsanti.
 I nomi dei responsabili dei Comuni si trovano solo quando la pagina li
 indica in modo chiaro: negli altri casi resta l'email dell'ufficio.
 
+Alcuni siti (circa uno su otto tra i Comuni) chiedono ai programmi
+automatici di non essere letti: il portale rispetta la richiesta e li segna
+tra gli errori («Il sito chiede di non essere letto…»). Per questi enti i
+dati si completano a mano dalla scheda. Gli enti con il sito che non ha
+risposto si possono rimettere in coda con **Rileggi tutti**.
+
 ### Richieste di registrazione
 
 Ogni richiesta arriva a tutti gli Amministratori come notifica nel portale

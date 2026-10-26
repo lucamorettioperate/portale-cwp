@@ -209,6 +209,12 @@
       "data": "23/10/2026",
       "descrizione": "Colori dello stato delle fasi (verde, arancio, rosso).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.5",
+      "data": "26/10/2026",
+      "descrizione": "Listino sempre presente sul Progetto.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -547,6 +553,12 @@
       "data": "25/10/2026",
       "descrizione": "Listino sempre obbligatorio; Progetti esistenti a Caso 1.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.6",
+      "data": "26/10/2026",
+      "descrizione": "Lettura dei siti: siti che rifiutano i programmi automatici.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -836,6 +848,12 @@
       "rev": "3.27",
       "data": "25/10/2026",
       "descrizione": "Prova 10.10u: listino obbligatorio.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.28",
+      "data": "26/10/2026",
+      "descrizione": "Revisione del 26/10.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1265,6 +1283,12 @@
       "data": "25/10/2026",
       "descrizione": "Listino obbligatorio (script 47), Progetti esistenti a Caso 1; tutti gli script 01-47 eseguiti.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "8.1",
+      "data": "26/10/2026",
+      "descrizione": "Revisione generale del 26/10: lettura dei siti completata (primo giro), funzionalità e «Da fare subito» aggiornati.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1398,6 +1422,12 @@
       "rev": "3.1",
       "data": "25/10/2026",
       "descrizione": "Script 01-47.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.2",
+      "data": "26/10/2026",
+      "descrizione": "Revisione del 26/10.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1544,6 +1574,12 @@
       "rev": "4.2",
       "data": "25/10/2026",
       "descrizione": "Slide Marketing: lettura dei siti.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.3",
+      "data": "26/10/2026",
+      "descrizione": "Nuova slide «Novità del 25 e 26 ottobre».",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1696,6 +1732,12 @@
       "rev": "1.24",
       "data": "25/10/2026",
       "descrizione": "Prova t47.sql.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.25",
+      "data": "26/10/2026",
+      "descrizione": "Riepilogo al 26/10.",
       "autore": "Fondazione Operate"
     }
   ]

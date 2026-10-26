@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Ultimo aggiornamento** | 23 ottobre 2026 |
+| **Ultimo aggiornamento** | 26 ottobre 2026 |
 | **Versione del portale** | 0.47 (ultimo script database: `47_listino_obbligatorio.sql`; tutti gli script 01-47 eseguiti) |
 | **Indirizzo** | https://portale-cwp.vercel.app |
 | **Repository** | https://github.com/lucamorettioperate/portale-cwp (pubblico: solo codice, nessun dato) |
@@ -452,13 +452,13 @@ Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), c
 
 ---
 
-## 7. Funzionalità per area (stato al 23/10/2026)
+## 7. Funzionalità per area (stato al 26/10/2026)
 
 | Area (requisiti) | Stato | Dettaglio |
 |---|---|---|
 | Accesso e ruoli (§3, §13) | Fatto | Email+password, tre ruoli, utenti multi-organizzazione, disattivazione; password temporanea da cambiare al primo accesso, cambio e recupero password, reimpostazione dall'Admin; MFA pronta ma spenta |
 | Anagrafiche (§3) | Fatto | Organizzazioni (tipi dello Standard 4.4, fino a 2 delegati), Enti di Validazione e Registri censiti da Operatori e Admin, con le pratiche collegate; un solo account cliente attivo per Organizzazione (Guida 7.2) |
-| Pratiche (§2) | Fatto | Progetti e Rapporti di Monitoraggio annuali con le stesse 7 fasi (Guida 6.2 e 6.3.1), ID automatico, stato nel Programma (Guida, Tabelle 3 e 4), data di registrazione, territorio con codici ISTAT (un solo Progetto per territorio), co-promotori, periodo di riferimento (10 o 21 Rapporti), popolazione e crediti previsti; stati attiva/sospesa/annullata/chiusa/ritirata con motivazione, ritiro e rientro; avviso dopo 2 anni senza Rapporti |
+| Pratiche (§2) | Fatto | Progetti e Rapporti di Monitoraggio annuali con le stesse 7 fasi (Guida 6.2 e 6.3.1), ID automatico, stato nel Programma (Guida, Tabelle 3 e 4), data di registrazione, territorio con codici ISTAT (un solo Progetto per territorio), co-promotori, periodo di riferimento (10 o 21 Rapporti), popolazione e crediti previsti; stati attiva/sospesa/annullata/chiusa/ritirata con motivazione, ritiro e rientro; avviso dopo 2 anni senza Rapporti. Dal 23/10 il Rapporto si crea solo per un Progetto registrato (fase 6 completata, script 45); dal 25/10 il listino Caso 1 / Caso 2 è obbligatorio per ogni Progetto (script 47) |
 | Fasi (§4) | Fatto | Apertura con scadenza automatica, chiusura, modifica scadenza; durate per Progetto e Rapporto modificabili dall'Admin; verifica sull'accuratezza (+15 gg) e fino a 3 accertamenti (+10 gg) nelle fasi 2 e 6 (Guida 6.5.2); note di fase interne o condivise; documenti richiesti per fase preconfigurati dalla Guida (indicatore); il Comune carica solo nelle fasi aperte. Dal 22/10 (script 39): la fase 3 è il feedback pubblico e si chiude con esso, solo dopo il termine; la fase 5 si apre solo con un ente di validazione e verifica attivo assegnato. |
 | Documenti (§5) | Fatto (manca antivirus) | Versioni mai sovrascritte, hash SHA-256, visibilità Cliente/Fondazione/Pubblico, per fase o generali; tipologie con i nomi ufficiali della Guida; contratto con l'ente e versione privata del Modulo mai pubblici; limite 50 MB, formati ammessi, controllo contenuto |
 | Integrazioni (§4) | Fatto | Richiesta → risposta del Cliente con documento → chiusura; fase "in attesa di integrazione" |
@@ -475,7 +475,7 @@ Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), c
 | Reclami (Politica di reclamo, Guida 8) | Fatto | Invio dal portale, registrazione dei reclami arrivati via PEC, gestore, conferma, risposta scritta, costi, note interne, notifiche |
 | Calcolo crediti (Metodologia v1.2) | Fatto (scelte interpretative da confermare) | Motore formule 1-32, Tabelle 3-5, 8, 15, 16; import diretto del tracciato con aggregazione delle letture, blocco dei dati personali e controlli di coerenza; Banca Dati Utenze per utenza (passo 5a: file dell'anno, moduli, categoria tariffaria e di simulazione) usata dal motore dal 23/10/2026; controlli della Gestione qualità dei dati (Tabella 3 dello Standard ±30% con motivazione obbligatoria, completezza, unicità, letture a buon fine, tempestività); calcoli confermati immutabili con numero progressivo interno; rapporto PDF. Funzione migliorativa: per la Metodologia il calcolo lo fa il promotore nel Rapporto e l'ente lo verifica |
 | Amministrazione | Fatto | Utenti (più Amministratori, principale protetto, cancellazione dei mai attivi), audit, Audit User, utenti online, impostazioni: durata fasi, documenti richiesti, modelli di documento; simulatore con PDF ed Excel; assistente virtuale |
-| Marketing (richiesta del 23/10) | Fatto (in produzione dal 23/10) | Banche dati di tutti i Comuni (ISTAT + IndicePA) e dei gestori dell'Albo in categoria 1 con PEC, email generica e referenti; campagne email con grafica verso i destinatari scelti (solo email generiche, mai PEC), pagina pubblica /scopri con micro simulazione, fascicolo PDF e richiesta di registrazione a tutti gli Amministratori. Banche dati caricate il 23/10: 7.904 Comuni (5.642 con email generica, 7.504 con PEC e referenti) e 5.818 gestori in categoria 1. Mancano: dominio email verificato, verifica legale delle email promozionali, verifica sui siti delle attività e dei referenti dei gestori |
+| Marketing (richiesta del 23/10) | Fatto (in produzione dal 23/10) | Banche dati di tutti i Comuni (ISTAT + IndicePA) e dei gestori dell'Albo in categoria 1 con PEC, email generica e referenti; campagne email con grafica verso i destinatari scelti (solo email generiche, mai PEC), pagina pubblica /scopri con micro simulazione, fascicolo PDF e richiesta di registrazione a tutti gli Amministratori. Banche dati caricate il 23/10: 7.904 Comuni e 5.818 gestori in categoria 1. Dal 25/10 lettura automatica e gratuita dei siti (script 46): al 26/10 7.904 Comuni con 6.182 email generiche, 7.504 PEC, 3.866 telefoni, email degli uffici tributi o ambiente per 3.092 Comuni; gestori: 166 lombardi delle classi A-C verificati a mano, 135 email generiche. Mancano: dominio email verificato, verifica legale delle email promozionali, sito e recapiti di circa 5.650 gestori senza sito conosciuto |
 | Sicurezza (§13) | Parziale | RLS, audit, controlli file, registro degli accessi e dei tentativi non riusciti, avvisi di sicurezza all'Amministratore principale, uscita per inattività, intestazioni del sito (20/10); verifica OWASP in corso (22/10); mancano antivirus, ambiente di prova, verifica in due passaggi attiva |
 
 ---
@@ -556,6 +556,25 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 ## 9. Cronologia sviluppo e deploy
 
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
+
+### 26 ottobre 2026
+- **Lettura dei siti: primo giro completo** (dalle 11:59 del 25/10 alle
+  04:00 del 26/10, gratuita). Comuni: 5.365 letti, 2.126 non letti (985
+  siti chiedono ai programmi automatici di non essere letti — robots.txt,
+  rispettato —, 688 senza risposta in tempo, 374 connessioni rifiutate, 96
+  errori HTTP, 3 letture interrotte). Gestori: 170 letti, 21 non letti.
+  Risultato nelle banche dati: Comuni con email generica da 5.642 a 6.182,
+  con telefono 3.866; dai siti 1.819 referenti «tributi» e 1.210
+  «ambiente» (email o telefono dell'ufficio; 298 referenti con il nome),
+  124 amministratori e 36 direttori generali di gestori; 3.092 Comuni con
+  l'email dell'ufficio tributi o ambiente. Alle 08:05 rimessi in coda una
+  volta i 1.162 siti che non avevano risposto (non quelli che rifiutano i
+  programmi automatici).
+- **Revisione generale dei documenti** (richiesta di Luca delle 07:59):
+  Registro (intestazione, funzionalità, «Da fare subito», capitolo 16),
+  manuali, registro issue, istruzioni di ripristino, presentazione (nuova
+  slide «Novità del 25 e 26 ottobre»), base di conoscenza dell'assistente
+  e analisi dei requisiti nel Progetto claude.ai.
 
 ### 25 ottobre 2026
 - **Scenari del simulatore per i 5 Comuni dei Progetti** (richiesta di Luca
@@ -1748,10 +1767,14 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 Numerazione stabile: un punto mantiene il suo numero anche quando è
 completato (va barrato qui e annotato in Cronologia).
 
-**Da fare subito (stato al 23/10/2026)** — riepilogo delle azioni
+**Da fare subito (stato al 26/10/2026)** — riepilogo delle azioni
 aperte; il dettaglio è nei punti numerati qui sotto.
 
 *Azioni di Luca (Claude non le può fare: chiavi, pubblicazioni, account)*
+- Decidere con la Fondazione quale impostazione del simulatore usare per le
+  stime ufficiali: con il metodo «bilancio del Comune» i 5 Comuni di prova
+  hanno ricavi inferiori al costo del Caso 1 (scenari del 25/10), con il
+  metodo «per utenza» della pagina /scopri le stime sono più alte.
 - **Marketing** (in produzione dal 23/10): prima delle campagne reali verificare il dominio email su Resend
   (`EMAIL_MITTENTE`) e far controllare a un legale le email promozionali
   agli enti (art. 130 Codice privacy, informativa art. 14 GDPR).
@@ -1792,6 +1815,11 @@ aperte; il dettaglio è nei punti numerati qui sotto.
   dominio verificato su Resend (punto 17).
 
 *Sviluppo (Claude)*
+- **Gestori senza sito** (circa 5.650): trovare sito e recapiti a giri di
+  circa 90 imprese, prima le classi A-C fuori dalla Lombardia (circa
+  1.000); poi la lettura automatica completa i dati dai siti.
+- Lettura dei siti: seconda lettura dei 1.162 siti che non avevano
+  risposto (in corso dal 26/10), poi conteggio finale.
 - ~~Utenti online (punto 38)~~, ~~messaggi d'errore dell'assistente in
   italiano (punto 39)~~ e ~~PDF ed Excel del simulatore (punto 37)~~ —
   fatti il 20/10 e attivi in produzione.
@@ -2112,7 +2140,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 186 file, 44.518 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 186 file, 44.591 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -2337,8 +2365,8 @@ Inventario generato da `strumenti/inventario_codice.py`: 186 file, 44.518 righe 
 | `strumenti/impagina_pdf.py` | 442 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/marketing_arricchimento_sql.py` | 107 | — |
-| `strumenti/presentazione/genera_presentazione.cjs` | 641 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1702 | — |
+| `strumenti/presentazione/genera_presentazione.cjs` | 672 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
+| `strumenti/revisioni_documenti.json` | 1744 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
@@ -2464,7 +2492,9 @@ pagina pubblica «Approfondisci» con micro simulazione.
   giorno; finché il dominio non è verificato le email arrivano solo al
   titolare dell'account (prova «Invia una prova a me»).
 
-**Lettore dei siti (dal 25/10, script 46)**
+**Lettore dei siti (dal 25/10, script 46)** — primo giro completo il
+26/10: 5.365 Comuni e 170 gestori letti; 985 siti rifiutano i programmi
+automatici (robots.txt, rispettato); risultati nella cronologia.
 - Coda `mkt_lettura`; il lavoro `cwp_lettura_siti` ogni 30 secondi chiama
   `leggi_siti` (4 enti alla volta) solo se `mkt_lettura_attiva` = 'si'.
 - Per ogni ente: robots.txt, home page, fino a 5 pagine utili e 2 di
