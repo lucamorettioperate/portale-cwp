@@ -77,15 +77,22 @@ export async function sostituisciUtenze(calcoloId, utenze, onAvanzamento) {
 
 // Tutte le utenze del calcolo per il motore, SENZA nomi e indirizzi
 // (admin_utenze_calcolo, solo Amministratore, nessuna voce di audit), a
-// blocchi di 5.000. Restituisce { data: righe, error }. Aggiunta il
-// 23/10/2026: il motore usa le utenze del passo 5a.
-const BLOCCO_LETTURA = 5000;
+// blocchi. Restituisce { data: righe, error }. Aggiunta il 23/10/2026: il
+// motore usa le utenze del passo 5a.
+// Correzione del 26/10/2026 (prova di Borgoval con 10.778 utenze): l'API di
+// Supabase restituisce al massimo 1.000 righe per richiesta anche se la
+// funzione ne chiede 5.000; il ciclo si fermava al primo blocco «corto» e il
+// calcolo usava solo le prime 1.000 utenze. Ora i blocchi sono di 1.000 e
+// il ciclo va avanti finché arrivano righe (avanza di quante ne sono
+// arrivate), quindi non dipende più dal limite dell'API.
+const BLOCCO_LETTURA = 1000;
 export async function leggiUtenzeCalcolo(calcoloId) {
   const tutte = [];
-  for (let da = 0; ; da += BLOCCO_LETTURA) {
+  for (let da = 0; ; ) {
     const { data, error } = await supabase.rpc("admin_utenze_calcolo", { p_calcolo: calcoloId, p_da: da, p_quanti: BLOCCO_LETTURA });
     if (error) return { data: tutte, error };
-    tutte.push(...(data || []));
-    if (!data || data.length < BLOCCO_LETTURA) return { data: tutte, error: null };
+    if (!data || data.length === 0) return { data: tutte, error: null };
+    tutte.push(...data);
+    da += data.length;
   }
 }
