@@ -1187,6 +1187,8 @@ Ogni modifica azzera il risultato della bozza (va premuto di nuovo **Calcola**).
 
 **Calcolo di prova.** Dal 22/10/2026 c'è il calcolo «PROVA Banca Dati Utenze - dati casuali (non confermare)» sul Progetto CWP-2026-003, con 20 utenze domestiche e 20 non domestiche inventate (codici PROVA-…): serve a provare il passo 5a e si può eliminare quando non serve più.
 
+**Prova di Borgoval (26/10/2026).** Sul Progetto CWP-2026-0001 c'è il calcolo «PROVA Borgoval 2027 - utenze generate (ISPRA Casalmaggiore) - non confermare», con 9.000 utenze domestiche (UtD1…UtD9000) e 1.778 non domestiche (UtND1…UtND1778) inventate, kg e svuotamenti di secco e organico. Va insieme allo scenario del simulatore «ISPRA Casalmaggiore 2024 - differenziata all'87% (per utenza)» del Comune di Borgoval: dati ISPRA 2024 di Casalmaggiore riportati a 26.382 abitanti, differenziata fino all'87%, margine positivo ogni anno. Serve a vedere il portale con un Comune di dimensioni reali; non va confermato e si può eliminare quando non serve più.
+
 **Come «Calcola» usa le utenze (dal 23/10/2026).** Se il calcolo ha utenze nel passo 5a, il motore usa quelle; i conferimenti del passo **5b. Conferimenti (tracciato)** valgono solo per i calcoli senza utenze (il 5b lo ricorda con un riquadro arancione). I beni a riuso vengono sempre dal passo 5b.
 
 1. Ogni utenza va nella classe della **delibera** (passo 3) indicata dalla sua **categoria di simulazione**: da lì prende i rifiuti attesi. Le categorie devono essere scritte come le classi della delibera (es. «2» e non «2 componenti»).
