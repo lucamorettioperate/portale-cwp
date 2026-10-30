@@ -1769,6 +1769,12 @@
       "data": "26/10/2026",
       "descrizione": "ISS-041 (calcolo con più di 1.000 utenze) corretto e verificato; prova di carico di Borgoval.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.27",
+      "data": "30/10/2026",
+      "descrizione": "Rilievi TEST_PORTALE_CWP T01-T31 registrati e verificati.",
+      "autore": "Fondazione Operate"
     }
   ],
   "dpia": [

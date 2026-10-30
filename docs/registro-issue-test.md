@@ -31,7 +31,7 @@ Dal 21/10/2026 ogni nuova voce riporta l'ora esatta della segnalazione.
 
 **Chi segnala:** Luca = Luca Moretti; Collaudo = Amministratori collaudatori (Andrea Valentini, Albina Ambrogio, Andrea Pavan, Gianluca Tapparini, Luca Belfiore); Revisione = rilettura del codice da parte dello sviluppo; Sviluppo = prova dello sviluppo o messaggio di errore di un servizio.
 
-## Riepilogo al 26/10/2026 (ore 10:30)
+## Riepilogo al 30/10/2026 (ore 16:00)
 
 | Stato | Numero | Voci |
 |---|---|---|
@@ -42,6 +42,8 @@ Dal 21/10/2026 ogni nuova voce riporta l'ora esatta della segnalazione.
 | NON_RIPRODOTTO | 1 | ISS-020 |
 
 ISS-012 e D08 hanno la stessa causa, segnalata in più momenti (17/10, 18/10, 21/10).
+
+**Rilievi TEST_PORTALE_CWP (29/10, ricevuti il 30/10): T01-T31**, verificati il 30/10, nessuno ancora corretto. 16 confermati da correggere (T02, T03, T07, T08, T10, T11, T12, T15, T17, T18, T19, T20, T22, T25, T30, T31), 8 in attesa di regola (T01, T04, T06, T14 = N05, T16, T21 = N06, T27, T29), 3 migliorie (T05, T09, T26), T23 testo dell'avviso, T28 già presente in parte, 2 esterni (T13, T24). Risposte punto per punto nel documento di progetto `claude/test-portale-cwp-risposte.md`.
 
 ## Elenco delle segnalazioni
 
@@ -115,6 +117,37 @@ Ordine cronologico. Una data senza ora vuol dire «ora della segnalazione non re
 | ISS-039 | 23/10 15:24 | **Pratiche** — Si poteva creare un Rapporto di Monitoraggio per un Progetto non ancora registrato (es. CWP-2026-003). Segnalato da: Luca | CORRETTO_DA_RITESTARE (P2) | 23/10, in produzione alle 15:50 (script 45, main `1188a51`): pulsante «+ Rapporto» solo con la fase 6 completata, controllo anche nel database. I Rapporti già creati (CWP-2026-0001-RM1, CWP-2026-003-RM1) non sono stati toccati |
 | ISS-040 | 23/10 15:24 | **Marketing** — Elenco dei Comuni senza filtri vuoto («0 Comuni»), con il filtro per regione funzionava. Segnalato da: Luca | CORRETTO_DA_RITESTARE (P2) | 23/10, in produzione alle 15:50 (script 45): la regola di accesso ora si calcola una volta per lettura; tutti i Comuni in 44 ms invece di oltre il tempo massimo |
 | ISS-041 | 26/10 10:23 | **Calcolo crediti** — Con più di 1.000 utenze nel passo 5a il motore ne usava solo le prime 1.000: l'API di Supabase restituisce al massimo 1.000 righe per richiesta e la lettura a blocchi di 5.000 si fermava al primo blocco «corto». Trovato nella prova di Borgoval (10.778 utenze: «708 / 1000» utenze, 119 crediti netti invece di 3.078). Segnalato da: Sviluppo | CHIUSO (P0) | 26/10, in produzione alle 10:25 (main `c8ab6c8`): blocchi di 1.000 e lettura finché arrivano righe. Verificato in produzione sul calcolo di prova di Borgoval: 10.778 utenze lette, risultato uguale al motore eseguito fuori dal portale (3.077,657 crediti netti). Nessun calcolo confermato era interessato (gli unici calcoli con utenze avevano 40 utenze) |
+| T01 | 29/10 | **Dashboard** — 7 fasi nel portale, 6 nella Guida. Segnalato da: Collaudo (TEST_PORTALE_CWP) | ATTESA_REGOLA | Togliere la fase 7 «Chiusura» o rinominarla «Registrazione del progetto» (30/10: verificato, non ancora corretto) |
+| T02 | 29/10 | **Dashboard** — Fase 5 del Progetto «Validazione e verifica» invece di «Validazione del progetto». Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO | Rinominare (il Rapporto ha già «Verifica del rapporto») (30/10: verificato, non ancora corretto) |
+| T03 | 29/10 | **Dashboard** — Stato della Guida visibile solo nella pratica. Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO | Mostrarlo in Dashboard e nell'elenco delle pratiche (30/10: verificato, non ancora corretto) |
+| T04 | 29/10 | **Dashboard / Simulatore** — Da dove viene il prezzo di 32 €?. Segnalato da: Collaudo (TEST_PORTALE_CWP) | ATTESA_REGOLA | Valore proposto da Luca, non del Programma: chiamarlo «valore ipotetico» e farlo decidere alla Fondazione (30/10: verificato, non ancora corretto) |
+| T05 | 29/10 | **Dashboard** — Ente, fatture a 30 giorni, vendite a 10 giorni. Segnalato da: Collaudo (TEST_PORTALE_CWP) | GIÀ PRESENTE nelle pratiche; MIGLIORIA in Dashboard | Colonna Ente e riquadri «fatture scadute», «dichiarazioni di cancellazione in scadenza» (30/10: verificato, non ancora corretto) |
+| T06 | 29/10 | **Anagrafiche** — Tipologie non ammesse come promotori; manca la delega di Comuni ed EGATO. Segnalato da: Collaudo (TEST_PORTALE_CWP) | ATTESA_REGOLA | Solo le 3 categorie per i promotori; campo «delegato alla gestione dei rifiuti» (30/10: verificato, non ancora corretto) |
+| T07 | 29/10 | **Anagrafiche** — Data di approvazione degli enti di validazione. Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO | Campo «Approvato il», come per i registri (30/10: verificato, non ancora corretto) |
+| T08 | 29/10 | **Anagrafiche** — Codice fiscale e partita IVA non controllati. Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO (in parte) | Controllo del formato e della cifra di controllo; obbligatori prima della fattura (30/10: verificato, non ancora corretto) |
+| T09 | 29/10 | **Anagrafiche** — Co-promotori solo come testo libero. Segnalato da: Collaudo (TEST_PORTALE_CWP) | MIGLIORIA | Sceglierli dalle organizzazioni in anagrafica (30/10: verificato, non ancora corretto) |
+| T10 | 29/10 | **Simulatore** — Riferimento portato sempre al 65%, anche col cluster. Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO rispetto allo Standard (era una scelta di Luca del 19/10) | Seguire lo Standard: anno reale 64-66% o cluster senza ricalcolo (30/10: verificato, non ancora corretto) |
+| T11 | 29/10 | **Simulatore** — Taratura dal risultato e confronto con l'Allegato A EsaCom. Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO | Togliere la taratura e i riferimenti EsaCom dalle stime ufficiali (30/10: verificato, non ancora corretto) |
+| T12 | 29/10 | **Pratiche** — Fasi chiuse senza i documenti richiesti. Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO rispetto alla Guida (era una scelta di Luca) | Bloccare la chiusura delle fasi 2 e 6 senza i documenti richiesti (30/10: verificato, non ancora corretto) |
+| T13 | 29/10 | **Pratiche** — Feedback senza SPID, CIE o CNS. Segnalato da: Collaudo (TEST_PORTALE_CWP) | ESTERNO (già nei punti aperti) | Serve l'adesione della Fondazione come fornitore di servizi (30/10: verificato, non ancora corretto) |
+| T14 | 29/10 | **Pratiche** — Codici delle pratiche non uniformi. Segnalato da: Collaudo (TEST_PORTALE_CWP) | ATTESA_REGOLA (= N05) | Codice sempre automatico, senza campo manuale (30/10: verificato, non ancora corretto) |
+| T15 | 29/10 | **Pratiche** — Codici ISTAT non obbligatori. Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO | Obbligatori per chiudere la prima verifica documentale (30/10: verificato, non ancora corretto) |
+| T16 | 29/10 | **Pratiche** — Due listini diversi (Schema tariffario e Caso 1/2). Segnalato da: Collaudo (TEST_PORTALE_CWP) | ATTESA_REGOLA | La Fondazione sceglie il listino ufficiale; poi un solo listino ovunque (30/10: verificato, non ancora corretto) |
+| T17 | 29/10 | **Reclami** — Manca il «ricorso». Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO | Aggiungere il tipo «Ricorso» (30/10: verificato, non ancora corretto) |
+| T18 | 29/10 | **Reclami** — Costi: data della comunicazione e costi non dovuti. Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO | Due campi nuovi (30/10: verificato, non ancora corretto) |
+| T19 | 29/10 | **Calcolo crediti** — «Anno di riferimento» ha un altro significato; manca l'anno ISPRA o il cluster. Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO | «Anno di monitoraggio» + campi «Anno di riferimento» e «Fonte» (30/10: verificato, non ancora corretto) |
+| T20 | 29/10 | **Calcolo crediti** — Ex post su un anno futuro e su un Progetto non registrato. Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO (il caso è un calcolo di prova) | Bloccare l'ex post su anni non conclusi e su Progetti non registrati (30/10: verificato, non ancora corretto) |
+| T21 | 29/10 | **Calcolo crediti** — Paniere del fattore del secco. Segnalato da: Collaudo (TEST_PORTALE_CWP) | ATTESA_REGOLA (= N06) | Decisione della Fondazione (30/10: verificato, non ancora corretto) |
+| T22 | 29/10 | **Calcolo crediti** — Buffer diverso dalle impostazioni. Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO (avviso mancante) | Avviso «risultati non aggiornati» quando le impostazioni cambiano (30/10: verificato, non ancora corretto) |
+| T23 | 29/10 | **Calcolo crediti** — Organico misurato oltre il totale del territorio. Segnalato da: Collaudo (TEST_PORTALE_CWP) | Spiegato; testo da correggere | Il confronto è con l'anno di riferimento: avviso da riformulare (30/10: verificato, non ancora corretto) |
+| T24 | 29/10 | **Impostazioni** — Mancano gli 8 moduli. Segnalato da: Collaudo (TEST_PORTALE_CWP) | ESTERNO | Servono i file dalla Fondazione; il portale li pubblica subito (30/10: verificato, non ancora corretto) |
+| T25 | 29/10 | **Impostazioni** — Delega di rappresentanza tra i documenti richiesti. Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO | Aggiungerla alla fase 1 (30/10: verificato, non ancora corretto) |
+| T26 | 29/10 | **Utenti** — Account e delegato non collegati. Segnalato da: Collaudo (TEST_PORTALE_CWP) | MIGLIORIA | Account creato solo per un delegato dell'organizzazione (30/10: verificato, non ancora corretto) |
+| T27 | 29/10 | **Utenti** — L'ente di validazione non accede. Segnalato da: Collaudo (TEST_PORTALE_CWP) | ATTESA_REGOLA | Accesso dell'ente oppure file firmato digitalmente e caricato per suo conto (30/10: verificato, non ancora corretto) |
+| T28 | 29/10 | **Audit** — Manca l'esportazione. Segnalato da: Collaudo (TEST_PORTALE_CWP) | GIÀ PRESENTE in parte | Il fascicolo ha già `audit.csv`; aggiungere «Scarica CSV» nella pagina Audit (30/10: verificato, non ancora corretto) |
+| T29 | 29/10 | **Documentazione** — Nomi e indirizzi nella Banca Dati Utenze. Segnalato da: Collaudo (TEST_PORTALE_CWP) | ATTESA_REGOLA | Solo il codice utenza (pseudonimizzazione, azione A1 della DPIA) (30/10: verificato, non ancora corretto) |
+| T30 | 29/10 | **Marketing** — Gestori privati che non possono essere promotori. Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO | Campagne solo verso gestori pubblici, misti o della tariffa (30/10: verificato, non ancora corretto) |
+| T31 | 29/10 | **Marketing** — Email di persone e caselle non generiche. Segnalato da: Collaudo (TEST_PORTALE_CWP) | CONFERMATO | Classificare le email ed escludere quelle personali dalle campagne (30/10: verificato, non ancora corretto) |
 
 ## Schede delle segnalazioni del collaudo
 
@@ -306,3 +339,4 @@ Da ripetere ogni tre mesi su un progetto Supabase di prova.
 | 25/10/2026 12:20 | Listino obbligatorio (script 47) e Progetti esistenti a Caso 1; prova `t47.sql` |
 | 26/10/2026 08:10 | Revisione generale: riepilogo aggiornato al 26/10; nessuna nuova segnalazione aperta dopo ISS-040 |
 | 26/10/2026 10:30 | ISS-041 (calcolo con più di 1.000 utenze) trovato con la prova di Borgoval, corretto, in produzione e verificato; prova di Borgoval nel registro dei test |
+| 30/10/2026 16:00 | Rilievi TEST_PORTALE_CWP T01-T31 registrati e verificati (risposte nel documento di progetto), nessuna correzione ancora fatta |
