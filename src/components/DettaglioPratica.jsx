@@ -98,6 +98,17 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
   const [versione, setVersione] = useState(0); // per ricaricare i documenti
 
   const staff = ruolo === "operatore" || ruolo === "admin";
+  // Rilievo T12 (script 48): documenti obbligatori mancanti nelle fasi
+  // precedenti alla verifica documentale numero «numero» (2 o 6). Una voce
+  // è presente se nella fase con quel numero c'è un documento corrente con
+  // quella tipologia (stessa regola di cwp_documenti_mancanti).
+  function documentiMancanti(numero) {
+    const numeroFase = new Map((pratica?.fasi || []).map((x) => [x.id, x.numero]));
+    return richiesti
+      .filter((r) => r.tipo_pratica === pratica?.tipo && r.attivo !== false && r.obbligatorio !== false && r.fase_numero < numero)
+      .filter((r) => !documenti.some((d) => d.corrente && d.tipologia === r.tipologia && numeroFase.get(d.fase_id) === r.fase_numero))
+      .map((r) => `${r.tipologia} (fase ${r.fase_numero})`);
+  }
 
   // Legge in parallelo pratica (con fasi, organizzazione, ente),
   // integrazioni, note di fase, modelli attivi, documenti richiesti e
@@ -223,6 +234,8 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
             modelli={modelli.filter((m) => m.fase_numero === f.numero && (m.tipo_pratica || "progetto") === pratica.tipo)}
             richiesti={richiesti.filter((r) => r.fase_numero === f.numero && r.tipo_pratica === pratica.tipo)}
             documentiFase={documenti.filter((d) => d.fase_id === f.id)}
+            mancanti={FASI_VERIFICA_DOCUMENTALE.includes(f.numero) ? documentiMancanti(f.numero) : []}
+            admin={ruolo === "admin"}
             onCaricato={ricaricaDocumenti}
             versione={versione}
             onCambio={dopoAzione}
@@ -262,7 +275,7 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
    onCaricato() (dopo un caricamento di documento).
    Le azioni (apri, chiudi, richiedi integrazione, modifica scadenza)
    compaiono solo allo staff e solo su pratica attiva. */
-function Fase({ fase: f, pratica, staff, richieste, note, modelli, richiesti, documentiFase, versione, onCambio, onCaricato }) {
+function Fase({ fase: f, pratica, staff, admin, richieste, note, modelli, richiesti, documentiFase, mancanti = [], versione, onCambio, onCaricato }) {
   const [form, setForm] = useState(null); // null | "integrazione" | "scadenza" | "chiusura" | "accuratezza" | "accertamento"
   // Testo del modulo aperto: descrizione dell'integrazione o motivazione.
   const [testo, setTesto] = useState("");
@@ -309,6 +322,23 @@ function Fase({ fase: f, pratica, staff, richieste, note, modelli, richiesti, do
   // («Chiudi comunque») invia la motivazione. La stessa regola è applicata
   // da staff_chiudi_fase nel database (script 08).
   function chiudi() {
+    // Rilievo T15: la prima verifica documentale del Progetto controlla il
+    // territorio (Standard 4.6). Lo impone anche il database (script 48).
+    if (f.numero === 2 && pratica.tipo === "progetto" && !(pratica.codici_istat || []).length) {
+      setErrore("Indica il territorio del Progetto (almeno un codice ISTAT, riquadro «Dati del progetto») prima di chiudere la prima verifica documentale (Standard 4.6).");
+      return;
+    }
+    // Rilievo T12: le verifiche documentali (fasi 2 e 6) si chiudono solo
+    // con i documenti obbligatori delle fasi precedenti; l'Amministratore
+    // può derogare con una motivazione (script 48).
+    if (mancanti.length && form !== "documenti") {
+      apriForm("documenti");
+      return;
+    }
+    if (form === "documenti") {
+      esegui(() => chiudiFase(f.id, testo.trim() || null));
+      return;
+    }
     // Con integrazioni aperte la chiusura è un'eccezione: chiede la motivazione.
     if (integrAperte > 0 && form !== "chiusura") {
       apriForm("chiusura");
@@ -465,6 +495,30 @@ function Fase({ fase: f, pratica, staff, richieste, note, modelli, richiesti, do
                 />
               </>
             )}
+            {form === "documenti" && (
+              <>
+                <div style={{ fontSize: 12.5, color: C.red, marginBottom: 8, lineHeight: 1.5 }}>
+                  La verifica documentale si chiude solo con la documentazione completa (Guida 6.2.4 e 6.5). Mancano:
+                  <ul style={{ margin: "4px 0 0 18px", padding: 0 }}>
+                    {mancanti.map((m) => <li key={m}>{m}</li>)}
+                  </ul>
+                </div>
+                {admin ? (
+                  <>
+                    <label style={lbl}>
+                      Deroga dell'Amministratore: motivazione (obbligatoria, resta nell'audit)
+                      <input value={testo} onChange={(e) => setTesto(e.target.value)} style={campo} placeholder="Es. documento ricevuto via PEC, in caricamento" />
+                    </label>
+                    <Bottoni inCorso={inCorso} conferma="Chiudi con deroga" onConferma={chiudi} onAnnulla={() => setForm(null)} />
+                  </>
+                ) : (
+                  <div style={{ fontSize: 12.5, color: C.grafite }}>
+                    Caricate i documenti mancanti e chiudete di nuovo la fase. Solo un Amministratore può chiuderla con una deroga motivata.{" "}
+                    <button onClick={() => setForm(null)} style={btnMini}>Chiudi il riquadro</button>
+                  </div>
+                )}
+              </>
+            )}
             {form === "chiusura" && (
               <>
                 <div style={{ fontSize: 12.5, color: C.ocra, marginBottom: 8 }}>
@@ -525,13 +579,15 @@ function ModelliFase({ modelli }) {
 
 /* Documenti richiesti per la fase (configurati dall'Amministratore in
    Impostazioni, script 21). Una voce è «presente» se nella fase c'è almeno
-   un documento corrente con quella tipologia. È solo un indicatore: non
-   blocca la chiusura della fase (decisione di Luca del 18/10/2026).
+   un documento corrente con quella tipologia. Dal 30/10/2026 (rilievo
+   T12) i documenti obbligatori bloccano la chiusura delle verifiche
+   documentali (fasi 2 e 6); le voci «se applicabile» (obbligatorio =
+   false, es. la delega di rappresentanza) restano un indicatore.
    Props: richiesti (voci di documento_richiesto per questo tipo e numero di
    fase), documenti (documenti della fase visibili a chi guarda). */
 function DocumentiRichiesti({ richiesti, documenti }) {
   const presenti = new Set(documenti.filter((d) => d.corrente).map((d) => d.tipologia));
-  const mancano = richiesti.filter((r) => !presenti.has(r.tipologia)).length;
+  const mancano = richiesti.filter((r) => r.obbligatorio !== false && !presenti.has(r.tipologia)).length;
   return (
     <div style={{ marginTop: 12 }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: C.grafite, marginBottom: 6 }}>
@@ -542,7 +598,7 @@ function DocumentiRichiesti({ richiesti, documenti }) {
           const ok = presenti.has(r.tipologia);
           return (
             <div key={r.id} style={{ fontSize: 12.5, display: "flex", gap: 8, alignItems: "baseline" }}>
-              <span style={{ fontWeight: 700, color: ok ? C.green : C.amber, minWidth: 64 }}>{ok ? "✓ presente" : "○ manca"}</span>
+              <span style={{ fontWeight: 700, color: ok ? C.green : r.obbligatorio === false ? C.grafite : C.amber, minWidth: 78, whiteSpace: "nowrap" }}>{ok ? "✓ presente" : r.obbligatorio === false ? "○ se serve" : "○ manca"}</span>
               <span>
                 {r.tipologia}
                 {r.descrizione && <span style={{ color: C.grafite }}> — {r.descrizione}</span>}

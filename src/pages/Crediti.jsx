@@ -160,7 +160,7 @@ export default function Crediti() {
                 <input value={nuovo.titolo} onChange={(e) => setNuovo({ ...nuovo, titolo: e.target.value })} style={campo} placeholder="Es. Monitoraggio 2025" />
               </label>
               <label style={lbl}>
-                Anno di riferimento
+                Anno di monitoraggio
                 <input type="number" value={nuovo.anno} onChange={(e) => setNuovo({ ...nuovo, anno: e.target.value })} style={campo} />
               </label>
               <label style={lbl}>
@@ -175,6 +175,14 @@ export default function Crediti() {
                 <input type="date" value={nuovo.dataAvvio} onChange={(e) => setNuovo({ ...nuovo, dataAvvio: e.target.value })} style={campo} />
               </label>
             </div>
+            {/* Rilievo T20 (script 48): il database rifiuta l'ex post su un anno
+                non concluso o su un Progetto non registrato. */}
+            {nuovo.tipo === "ex_post" && (
+              <div style={{ fontSize: 12, color: C.grafite, marginTop: 8 }}>
+                Il calcolo ex post si fa solo per un anno già concluso e per un Progetto registrato (fase 6 completata) o un suo Rapporto
+                (Standard 4.5). Per una previsione usate il calcolo ex ante.
+              </div>
+            )}
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               <button onClick={crea} style={btnPrimario}>Crea e apri</button>
               <button onClick={() => setNuovo(null)} style={btnMini}>Annulla</button>

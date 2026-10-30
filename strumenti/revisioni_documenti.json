@@ -215,6 +215,12 @@
       "data": "26/10/2026",
       "descrizione": "Listino sempre presente sul Progetto.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.6",
+      "data": "30/10/2026",
+      "descrizione": "Nomi delle fasi, ricorso, Banca Dati Utenze senza nomi e indirizzi.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -571,6 +577,12 @@
       "data": "26/10/2026",
       "descrizione": "Prova di Borgoval (simulatore e calcolo con 10.778 utenze).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.9",
+      "data": "30/10/2026",
+      "descrizione": "Rilievi TEST_PORTALE_CWP: nomi delle fasi, stato nel Programma e nuovi riquadri in Dashboard, verifiche documentali complete, codice sempre automatico, codice fiscale e partita IVA, data di approvazione degli enti, ricorso e costi dei reclami, anno di monitoraggio e anno di riferimento nel calcolo, ex post solo su anni conclusi e Progetti registrati, risultati non aggiornati, riferimento del simulatore come da Standard, niente taratura, valore ipotetico del credito, Banca Dati Utenze senza nomi e indirizzi, CSV dell'Audit.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -866,6 +878,12 @@
       "rev": "3.28",
       "data": "26/10/2026",
       "descrizione": "Revisione del 26/10.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.29",
+      "data": "30/10/2026",
+      "descrizione": "Nomi delle fasi e prove 11.1-11.16 dei rilievi TEST_PORTALE_CWP.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1313,6 +1331,12 @@
       "data": "26/10/2026",
       "descrizione": "Dati di prova di Borgoval (ISPRA Casalmaggiore 2024, differenziata all'87%, 10.778 utenze) e correzione ISS-041.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "8.4",
+      "data": "30/10/2026",
+      "descrizione": "Rilievi TEST_PORTALE_CWP: script 48 e correzioni sul ramo correzioni-rilievi-t.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1452,6 +1476,12 @@
       "rev": "3.2",
       "data": "26/10/2026",
       "descrizione": "Revisione del 26/10.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.3",
+      "data": "30/10/2026",
+      "descrizione": "Script del database 01-48.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1604,6 +1634,12 @@
       "rev": "4.3",
       "data": "26/10/2026",
       "descrizione": "Nuova slide «Novità del 25 e 26 ottobre».",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.4",
+      "data": "30/10/2026",
+      "descrizione": "Nuova slide «Collaudo del 29 ottobre: Standard e Guida»; valore ipotetico del credito e riferimento del simulatore.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1775,6 +1811,12 @@
       "data": "30/10/2026",
       "descrizione": "Rilievi TEST_PORTALE_CWP T01-T31 registrati e verificati.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.28",
+      "data": "30/10/2026",
+      "descrizione": "Rilievi T: 21 correzioni sul ramo, prove t48.sql e rilievi_t.test.mjs.",
+      "autore": "Fondazione Operate"
     }
   ],
   "dpia": [
@@ -1782,6 +1824,12 @@
       "rev": "1.0",
       "data": "26/10/2026",
       "descrizione": "Prima stesura della traccia (richiesta di Luca del 26/10): descrizione del trattamento, servizi e luogo dei dati (Supabase in Germania), rischi, misure presenti, piano d'azione, parti da completare dal Comune e dal DPO.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.1",
+      "data": "30/10/2026",
+      "descrizione": "Pseudonimizzazione applicata nel portale (azione A1): Banca Dati Utenze senza nomi e indirizzi.",
       "autore": "Fondazione Operate"
     }
   ]

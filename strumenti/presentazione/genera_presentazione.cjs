@@ -403,7 +403,7 @@ async function icona(Comp, colore) {
   s.addText("Dashboard: valore dei crediti, dati di prova", { x: 0.6, y: 1.3 + 7.6 * 260 / 1210 + 0.05, w: 7.6, h: 0.25, fontSize: 10, italic: true, color: C.accent6, margin: 0, isTextBox: true });
   [
     ["In simulazione", "ultimo scenario per Comune, crediti ed euro del periodo"],
-    ["In fase esecutiva", "calcolati, emessi e venduti; prezzo di riferimento 32 €"],
+    ["In fase esecutiva", "calcolati, emessi e venduti; valore ipotetico 32 € (non stabilito dal Programma)"],
     ["Valore progetti", "quanto paga il cliente, listino Caso 1 o Caso 2 scelto sul Progetto"],
   ].forEach(([t, d], i) => {
     const x = 0.6 + i * 2.6;
@@ -480,6 +480,38 @@ async function icona(Comp, colore) {
   ]), { x: 8.65, y: 1.45, w: 3.9, h: 5.3, fontSize: 13.5, valign: "top", margin: 0, paraSpaceAfter: 5, isTextBox: true });
   s.addNotes("Novità del 25 e 26 ottobre 2026. Pratiche: un Rapporto di Monitoraggio si crea solo per un Progetto registrato, cioè con la fase 6 completata (script 45). Listino: ogni Progetto ha sempre il Caso 1 o il Caso 2 (script 47); i 5 Progetti esistenti sono passati a Caso 1 con la voce nell'audit e hanno gli abitanti, quindi la Dashboard mostra il valore dei progetti. Simulatore: scenari di stima per i 5 Comuni dei Progetti con i valori medi del cluster SOSE 4 della Tabella 3, perché sono Comuni di prova senza dati ISPRA; con il metodo bilancio del Comune i ricavi risultano inferiori al costo del Caso 1, da discutere con la Fondazione. Marketing: l'elenco dei Comuni senza filtri ora si carica subito (regole di accesso più veloci); il portale legge in automatico e gratis i siti di Comuni e gestori: nel primo giro 5.535 siti letti, 985 rifiutano i programmi automatici; 6.182 Comuni con email generica e 3.092 con l'email dell'ufficio tributi o ambiente. Per i gestori senza sito conosciuto il sito va prima trovato con una ricerca, a giri di circa 90 imprese.");
 
+  // ---------------------------------------------------------------- Rilievi del 29-30 ottobre
+  s = pres.addSlide({ masterName: "CONTENUTO", sectionTitle: "Novità" });
+  s.addText("Collaudo del 29 ottobre: Standard e Guida", { placeholder: "title" });
+  [
+    ["31", "rilievi verificati", "documento TEST_PORTALE_CWP"],
+    ["21", "correzioni pronte", "script 48 e pagine, da pubblicare"],
+    ["8", "domande alla Fondazione", "fasi, prezzo, listino, ricorso, paniere…"],
+  ].forEach(([n, t, d], i) => {
+    const x = 0.6 + i * 2.6;
+    card(s, x, 1.3, 2.4, 1.55, i === 0 ? C.accent3 : C.background2, "Numero " + t);
+    s.addText([{ text: n, options: { bold: true, fontSize: 26, color: C.text2, breakLine: true } }, { text: t, options: { bold: true, fontSize: 12, color: C.text1, breakLine: true } }, { text: d, options: { fontSize: 10.5, color: C.text1 } }],
+      { x: x + 0.15, y: 1.3, w: 2.1, h: 1.55, valign: "middle", margin: 0, isTextBox: true });
+  });
+  card(s, 0.6, 3.1, 7.6, 2.2, C.background2, "Scelte di Luca");
+  s.addText([
+    { text: "Scelte di Luca del 30 ottobre", options: { bold: true, color: C.text2, breakLine: true } },
+    { text: "Dove il portale si scostava da Standard e Guida si segue il Programma: riferimento del simulatore come da Standard 4.8.1, niente taratura né riferimenti EsaCom, verifiche documentali solo con i documenti obbligatori (deroga motivata dell'Amministratore), codice della pratica sempre automatico, Banca Dati Utenze senza nomi e indirizzi. Il Marketing resta invariato.", options: { fontSize: 12.5, color: C.text1 } },
+  ], { x: 0.8, y: 3.2, w: 7.2, h: 2.0, fontSize: 13.5, valign: "top", margin: 0, isTextBox: true });
+  card(s, 8.45, 1.3, 4.25, 5.55, C.background2, "Elenco correzioni del 30 ottobre");
+  const novita4 = [
+    ["Fasi", "Validazione del progetto; fase 7 Registrazione del progetto (Rapporto: Emissione dei crediti)"],
+    ["Dashboard", "stato nel Programma, ente, fatture scadute e in scadenza, dichiarazioni di cancellazione"],
+    ["Anagrafiche", "codice fiscale e partita IVA controllati; data di approvazione degli enti"],
+    ["Calcolo", "anno di monitoraggio e anno di riferimento; ex post solo per anni conclusi e Progetti registrati"],
+    ["Reclami", "ricorso; costi comunicati e non dovuti"],
+  ];
+  s.addText(novita4.flatMap(([t, d], j) => [
+    { text: t, options: { bold: true, color: C.text2, breakLine: true } },
+    { text: d, options: { color: C.text1, fontSize: 12, breakLine: j < novita4.length - 1 } },
+  ]), { x: 8.65, y: 1.45, w: 3.9, h: 5.3, fontSize: 13.5, valign: "top", margin: 0, paraSpaceAfter: 5, isTextBox: true });
+  s.addNotes("Rilievi del documento TEST_PORTALE_CWP del 29 ottobre 2026: 31 punti verificati su portale, codice, database e documenti del Programma. Scelte di Luca del 30 ottobre: correggere tutto tranne il Marketing. Correzioni (script 48 e pagine, da pubblicare con l'OK di Luca): nomi delle fasi come nella Guida; Dashboard con lo stato nel Programma, l'ente di validazione, le fatture scadute e in scadenza e le dichiarazioni di cancellazione dei crediti venduti da ricevere; controllo di codice fiscale e partita IVA e data di approvazione degli enti; verifiche documentali (fasi 2 e 6) solo con i documenti obbligatori e con i codici ISTAT, con deroga motivata dell'Amministratore; codice della pratica sempre automatico; ricorso e costi dei reclami; nel calcolo anno di monitoraggio e anno di riferimento dello Standard 4.8.1, ex post solo per anni conclusi e Progetti registrati, avviso dei risultati non aggiornati; simulatore con il riferimento come da Standard, senza taratura e senza riferimenti EsaCom, valore ipotetico del credito; CSV dell'Audit; Banca Dati Utenze senza nomi e indirizzi. Domande alla Fondazione: fase 7, valore del credito, tipologie di promotori, listino ufficiale, iter del ricorso, paniere del secco, accesso degli enti, invio degli 8 moduli.");
+
   // ---------------------------------------------------------------- 4. Punti aperti
   pres.addSection({ title: "Punti aperti" });
   s = pres.addSlide({ masterName: "CONTENUTO", sectionTitle: "Punti aperti" });
@@ -538,7 +570,7 @@ async function icona(Comp, colore) {
     ["2", "Scenario di riferimento (Standard 4.8.1)", "Anno con il 65% di differenziata o valori medi del cluster SOSE; situazione attuale come partenza"],
     ["3", "Obiettivi anno per anno", "Produzione totale e pro capite prevista, secco residuo pro capite obiettivo"],
     ["4", "% di differenziata", "Ricalcolata ogni anno: (totale − secco) / totale"],
-    ["5", "Crediti e conti economici", "Bilancio del Comune o per utenza (come l'Allegato A EsaCom); ricavi a 32 € anno per anno; costi Caso 1 o 2; margine"],
+    ["5", "Crediti e conti economici", "Bilancio del Comune o per utenza (solo utenze virtuose); ricavi a un valore ipotetico del credito; costi Caso 1 o 2; margine"],
   ];
   passi.forEach(([n, t, d], i) => {
     const y = 2.8 + i * 0.78;
@@ -604,7 +636,7 @@ async function icona(Comp, colore) {
     { text: "Bilancio del Comune: ", options: { bold: true } },
     { text: "6.707 crediti, € 214.464; Caso 1 +€ 52.134, Caso 2 −€ 28.193", options: { breakLine: true } },
     { text: " ", options: { fontSize: 6, breakLine: true } },
-    { text: "Il Caso 1 riproduce i costi dei contratti EsaCom, il metodo per utenza le loro stime (0,19-0,23 crediti per abitante all'anno).", options: { italic: true, color: C.accent6 } },
+    { text: "Dal 30/10 lo scenario di riferimento segue lo Standard 4.8.1: anno con il 64-66% di differenziata o valori del cluster, senza ricalcoli.", options: { italic: true, color: C.accent6 } },
   ], { x: 8.35, y: 1.42, w: 4.15, h: 5.25, fontSize: 12, color: C.text1, valign: "top", margin: 0, paraSpaceAfter: 3, isTextBox: true });
   s.addNotes("Il simulatore stima anche la parte economica per il Comune o il gestore. Ricavi: crediti netti stimati per anno × valore del credito, digitato anno per anno (proposto 32 €). Costi: il simulatore chiede se usare il Caso 1 (progetto volontario) o il Caso 2 (progetto obbligatorio, per esempio da bando di gara di un Comune che ha inserito il CWP come metodo), con le tabelle «Costi per il Soggetto Promotore» di Fondazione Operate del 28/07/2026: sei voci (Progetto, Rapporto di Monitoraggio, registrazione del Progetto, dei crediti del Progetto, del Rapporto e dei crediti del Rapporto), costo per abitante per fascia di popolazione con interpolazione e arrotondamento per eccesso, minimo e massimo annuo, una tantum ammortizzati in 10 anni; validazione dell'ente esclusa. Esempio con i dati ISPRA 2021 di Bovisio-Masciago (16.735 abitanti), obiettivo 400 kg/ab e 50 kg/ab di secco al 2036, 32 € a credito. Con il metodo per utenza (solo utenze virtuose, secco e organico misurati, tariffa puntuale, variabilità tra utenze 30%, buffer 30%): 34.188 crediti netti in 10 anni (0,20 per abitante all'anno, nell'intervallo 0,19-0,23 dell'Allegato A EsaCom), ricavi 1.093.792 €; Caso 1 costi 162.330 € (9,70 € per abitante) e margine +931.463 €; Caso 2 costi 242.658 € e margine +851.135 €. Con il bilancio del Comune (il metodo più prudente): 6.707 crediti, ricavi 214.464 €, Caso 1 +52.134 € (rientro nel 2034), Caso 2 −28.193 €. La differenza viene soprattutto dal fatto che Bovisio ha già l'84% di differenziata: il secco delle utenze è molto sotto il riferimento al 65%. Il Caso 1 con 154.247 abitanti riproduce le cifre dei contratti tipo EsaCom. L'Allegato A indica 6,08 € per abitante di costo contro 5,36 delle tabelle: la differenza potrebbe essere l'ente di validazione e verifica. Stima indicativa, non un piano finanziario.");
 
@@ -648,7 +680,7 @@ async function icona(Comp, colore) {
     ["Importi delle tariffe da applicare", "Lo Schema tariffario indica tariffe massime, IVA esclusa", "Fondazione"],
     ["Scelte interpretative del calcolo (FEdes, segno del riuso, buffer, Tabella 16, frazioni vuote per utenza)", "Determinano il valore dei crediti", "Fondazione con l'ente"],
     ["Procedura di fine conservazione e ambito dell'assistente virtuale", "12 anni (Guida 6.2.1); assistente fuori dal flusso decisionale", "Fondazione"],
-    ["Simulatore: metodo per le proposte, variabilità tra utenze (ipotesi 30%), chi vede gli scenari", "Solo utenze virtuose con buffer (Metodologia 4.6 e Cap. 7), come l'Allegato A EsaCom", "Fondazione"],
+    ["Simulatore: metodo per le proposte, variabilità tra utenze (ipotesi 30%), chi vede gli scenari", "Solo utenze virtuose con buffer (Metodologia 4.6 e Cap. 7)", "Fondazione"],
     ["Qualificazione ACN del portale", "Valutata non necessaria: qualifica il modello, il Comune non acquista un servizio cloud", "Parere legale"],
     ["Servizi: dominio operate.it, piani a pagamento, verifica in due passaggi, antivirus, DPIA e accordo art. 28 per i dati delle utenze, Comune per il collaudo", "Avvio in esercizio", "Fondazione e Luca Moretti"],
   ];

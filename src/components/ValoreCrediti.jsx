@@ -69,7 +69,7 @@ export default function ValoreCrediti({ titolo = "Valore dei crediti e dei proge
           <div style={{ ...grande, fontSize: 20, color: C.green }}>{euro(s.euro)}</div>
           <div style={nota}>
             {s.comuni ? `${s.comuni} ${s.comuni === 1 ? "Comune" : "Comuni"}: per ognuno l'ultimo scenario aggiornato, su tutto il periodo simulato.` : propri ? "Nessuna simulazione per la tua organizzazione." : "Nessuno scenario simulato."}
-            {s.a_prezzo_riferimento > 0 && ` ${s.a_prezzo_riferimento} ${s.a_prezzo_riferimento === 1 ? "scenario valorizzato" : "scenari valorizzati"} a ${prezzo} €/credito (prezzo di riferimento) perché senza valore del credito salvato.`}
+            {s.a_prezzo_riferimento > 0 && ` ${s.a_prezzo_riferimento} ${s.a_prezzo_riferimento === 1 ? "scenario valorizzato" : "scenari valorizzati"} a ${prezzo} €/credito (valore ipotetico, non stabilito dal Programma) perché senza valore del credito salvato.`}
             {" "}Stima ex ante, non certificabile.
           </div>
         </div>
@@ -79,7 +79,7 @@ export default function ValoreCrediti({ titolo = "Valore dei crediti e dei proge
           <Riga titolo="Calcolati (ex post confermati)" n={k.crediti} e={k.euro} dettaglio={`${k.calcoli} ${k.calcoli === 1 ? "calcolo" : "calcoli"}`} />
           <Riga titolo="Emessi" n={e.crediti} e={e.euro} dettaglio={`${e.lotti} ${e.lotti === 1 ? "lotto" : "lotti"}`} />
           <Riga titolo="Venduti" n={v.crediti} e={v.euro} dettaglio={v.senza_valore ? `valore comunicato; ${v.senza_valore} ${v.senza_valore === 1 ? "vendita" : "vendite"} senza valore` : "valore comunicato dal registro"} />
-          <div style={nota}>Calcolati ed emessi valorizzati a {prezzo} €/credito (prezzo di riferimento{propri ? "" : ", modificabile in Impostazioni"}); i crediti emessi provengono dai calcoli, quindi le righe non si sommano.</div>
+          <div style={nota}>Calcolati ed emessi valorizzati a {prezzo} €/credito (valore ipotetico, non stabilito dal Programma{propri ? "" : "; si cambia in Impostazioni"}); i crediti emessi provengono dai calcoli, quindi le righe non si sommano.</div>
         </div>
         {/* Valore dei progetti: quanto paga il cliente (Caso 1 / Caso 2) */}
         {progetti && vp && (

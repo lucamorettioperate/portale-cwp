@@ -161,14 +161,15 @@ export default function Programma() {
 
           {/* Reclami */}
           <section style={scheda}>
-            <h2 style={h2}>Reclami e richieste di chiarimento</h2>
+            <h2 style={h2}>Reclami, ricorsi e richieste di chiarimento</h2>
             <p style={{ fontSize: 13.5, color: C.grafite, lineHeight: 1.55, margin: 0 }}>
-              Chiunque può presentare un reclamo o chiedere un chiarimento in qualsiasi momento, per iscritto
+              Chiunque può presentare un reclamo o un ricorso, o chiedere un chiarimento, in qualsiasi momento, per iscritto
               {info.pec ? <> alla PEC <b>{info.pec}</b></> : " all'indirizzo PEC del soggetto promotore del programma"}, indicando nome,
               organizzazione, contatti, i dettagli della questione e un eventuale conflitto di interessi. Si riceve una
               conferma via email e poi una risposta scritta. I reclami verso un promotore del progetto, un ente di validazione e
               verifica o un registro vanno prima rivolti a loro (Politica di reclamo del Programma). Gli utenti del portale
-              possono scrivere anche dalla pagina «Reclami».
+              possono scrivere anche dalla pagina «Reclami». Le spese sostenute dal soggetto promotore del programma per un
+              reclamo o un ricorso sono comunicate al momento della richiesta e non sono dovute se porta ad annullare un'azione.
             </p>
           </section>
         </div>

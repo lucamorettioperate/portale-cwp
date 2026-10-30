@@ -1,5 +1,5 @@
 /* =========================================================================
-   PrezzoRiferimento — sezione «Prezzo di riferimento del credito» della
+   PrezzoRiferimento — sezione «Valore ipotetico del credito» (prima «Prezzo di riferimento», rilievo T04) della
    pagina Impostazioni (richiesta di Luca Moretti del 23/10/2026).
    Scopo: il prezzo in euro con cui la Dashboard dà un valore ai crediti
      calcolati ed emessi (riquadro «Crediti in fase esecutiva») e agli
@@ -41,14 +41,16 @@ export default function PrezzoRiferimento() {
 
   return (
     <section style={{ ...riquadro, marginBottom: 18 }}>
-      <h2 style={{ fontFamily: "'Archivo'", fontSize: 17, margin: "0 0 6px" }}>Prezzo di riferimento del credito</h2>
+      <h2 style={{ fontFamily: "'Archivo'", fontSize: 17, margin: "0 0 6px" }}>Valore ipotetico del credito</h2>
       <p style={{ fontSize: 13, color: C.grafite, margin: "0 0 12px", lineHeight: 1.5 }}>
-        Serve alla Dashboard per dare un valore in euro ai crediti calcolati ed emessi e agli scenari del simulatore salvati senza
-        valore del credito. Le vendite usano invece il valore comunicato dal registro. Ogni modifica è registrata nell'Audit.
+        Il Programma non stabilisce un prezzo del credito: questo è un <strong>valore ipotetico</strong>, da decidere con la Fondazione
+        (per confronto, per il caso di Terre Roveresche si cita un valore di 7,50 €). Serve alla Dashboard per dare un valore in euro ai crediti
+        calcolati ed emessi e agli scenari del simulatore salvati senza valore del credito. Le vendite usano invece il valore comunicato
+        dal registro. Ogni modifica è registrata nell'Audit.
       </p>
       <label style={{ ...etichetta, maxWidth: 220 }}>
         € per credito (1 tCO₂eq)
-        <input value={valore} onChange={(e) => setValore(e.target.value)} inputMode="decimal" style={campo} aria-label="Prezzo di riferimento del credito in euro" />
+        <input value={valore} onChange={(e) => setValore(e.target.value)} inputMode="decimal" style={campo} aria-label="Valore ipotetico del credito in euro" />
       </label>
       <button onClick={salva} style={btnPrimario}>Salva</button>
       {esito && <span style={{ color: esito.errore ? C.red : C.green, fontSize: 12.5, marginLeft: 10 }}>{esito.testo}</span>}

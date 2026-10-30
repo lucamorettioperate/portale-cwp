@@ -53,7 +53,8 @@ await prova("righe sbagliate: file non caricato, foglio e riga nel messaggio", (
       rigaUd("A2", { 7: null }),               // manca l'indifferenziato
       rigaUd("A3", { 4: 2.5 }),                // componenti decimali
       rigaUd("A4", { 8: -5 }),                 // kg negativi
-      rigaUd("A5", { 1: "" }),                 // manca il capofamiglia
+      rigaUd("A5", { 1: "" }),                 // senza capofamiglia: ammesso (T29)
+      rigaUd("A6", { 6: -1 }),                 // produzione negativa
     ],
   };
   const r = interpretaBancaDati(fogli);
@@ -62,7 +63,7 @@ await prova("righe sbagliate: file non caricato, foglio e riga nel messaggio", (
   assert.match(r.errori[0], /Utenze_domestiche, riga 3 \(A2\):.*mancano i kg di indifferenziato/);
   assert.match(r.errori[1], /riga 4 \(A3\): componenti «2.5»/);
   assert.match(r.errori[2], /riga 5 \(A4\): kg di organico non validi/);
-  assert.match(r.errori[3], /riga 6 \(A5\): manca il nome del capofamiglia/);
+  assert.match(r.errori[3], /riga 7 \(A6\): produzione totale mancante o non valida/);
 });
 
 await prova("codice doppio tra i fogli, svuotamenti senza kg, virgola, categoria numerica", () => {
@@ -85,8 +86,8 @@ await prova("codice doppio tra i fogli, svuotamenti senza kg, virgola, categoria
 });
 
 await prova("colonna obbligatoria mancante e file vuoto", () => {
-  const r = interpretaBancaDati({ Utenze_domestiche: [intestUd.filter((h) => h !== "Indirizzo"), rigaUd("A1")] });
-  assert.match(r.errori[0], /mancano le colonne Indirizzo/);
+  const r = interpretaBancaDati({ Utenze_domestiche: [intestUd.map((h) => (h === "Produzione totale (kg)" ? "Totale?" : h)), rigaUd("A1")] });
+  assert.match(r.errori[0], /mancano le colonne Produzione totale \(kg\)/);
   const v = interpretaBancaDati({ Utenze_domestiche: [intestUd] });
   assert.match(v.errori[0], /non contiene utenze/);
 });
@@ -100,6 +101,16 @@ await prova("modulo: componenti su non domestica, totale diverso, senza categori
   assert.ok(a.avvisi.some((x) => /senza categoria/.test(x)));
   assert.deepEqual(controllaUtenza({ ...base, tipo: "UD", categoria_simulazione: "2" }).avvisi, []);
   assert.ok(controllaUtenza({ ...base, tipo: "UD", frazioni: { indifferenziato: { kg: 10, svuotamenti: 1.5 } } }).errori.some((e) => /svuotamenti/.test(e)));
+});
+
+await prova("T29: nomi e indirizzi del file ignorati, con avviso; utenza senza nome valida", () => {
+  const r = interpretaBancaDati({ Utenze_domestiche: [intestUd, rigaUd("A1")] });
+  assert.deepEqual(r.errori, []);
+  assert.equal(r.utenze[0].nominativo, null);
+  assert.equal(r.utenze[0].indirizzo, null);
+  assert.ok(r.avvisi.some((a) => /Nome capofamiglia, Indirizzo sono state ignorate/.test(a)));
+  const senza = { codice: "X", tipo: "UD", produzione_totale_kg: 100, frazioni: { indifferenziato: { kg: 100 } }, categoria_simulazione: "1" };
+  assert.deepEqual(controllaUtenza(senza).errori, []);
 });
 
 await prova("audit: riassunto degli eventi delle utenze", () => {

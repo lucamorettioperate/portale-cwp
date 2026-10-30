@@ -32,9 +32,9 @@ export const FASI = [
   { numero: 2, nome: "Prima verifica documentale", g_da: 0, g_a: 10, responsabile: PROGR },
   { numero: 3, nome: "Feedback pubblico", g_da: 10, g_a: 40, responsabile: PROGR },
   { numero: 4, nome: "Risposta ai commenti / pubblicazione", g_da: 40, g_a: 60, responsabile: PROG },
-  { numero: 5, nome: "Validazione e verifica", g_da: 60, g_a: 135, responsabile: ENTE },
+  { numero: 5, nome: "Validazione del progetto", g_da: 60, g_a: 135, responsabile: ENTE },
   { numero: 6, nome: "Seconda verifica documentale", g_da: 135, g_a: 150, responsabile: PROGR },
-  { numero: 7, nome: "Chiusura", g_da: 150, g_a: 150, responsabile: PROGR },
+  { numero: 7, nome: "Registrazione del progetto", g_da: 150, g_a: 150, responsabile: PROGR },
 ];
 
 // Le 7 fasi di un Rapporto di Monitoraggio annuale (Guida al Programma
@@ -48,7 +48,7 @@ export const FASI_RAPPORTO = [
   { numero: 4, nome: "Risposta ai commenti", g_da: 30, g_a: 45, responsabile: PROG },
   { numero: 5, nome: "Verifica del rapporto", g_da: 45, g_a: 105, responsabile: ENTE },
   { numero: 6, nome: "Seconda verifica documentale", g_da: 105, g_a: 115, responsabile: PROGR },
-  { numero: 7, nome: "Chiusura", g_da: 115, g_a: 115, responsabile: PROGR },
+  { numero: 7, nome: "Emissione dei crediti", g_da: 115, g_a: 115, responsabile: PROGR },
 ];
 
 // Fasi della verifica documentale, in cui la Fondazione può avviare la

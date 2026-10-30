@@ -20,6 +20,11 @@
      Tutti i filtri lavorano nel browser su queste righe.
      In alto, dal 23/10/2026, i riquadri «Crediti in simulazione» e
      «Crediti in fase esecutiva» (componente ValoreCrediti, script 42).
+     Dal 30/10/2026 (rilievi T03 e T05, script 48): stato della pratica nel
+     Programma con i nomi della Guida sotto lo stato interno; ente di
+     validazione; riquadri delle fatture scadute e in scadenza (Guida
+     6.2.1 e 6.2.4: 30 giorni) e delle dichiarazioni di cancellazione dei
+     crediti venduti da ricevere (Guida 6.3.3: 10 giorni).
    Sicurezza: staff_cruscotto rifiuta chi non è staff (app_is_staff, che
      richiede anche la verifica a due fattori se attiva). La pagina non ha
      un proprio controllo di ruolo: un cliente non ci arriva perché
@@ -28,7 +33,7 @@
    ========================================================================= */
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { COLORI as C, STATI_PRATICA, STATI_FASE } from "../lib/cwpProgram.js";
+import { COLORI as C, STATI_PRATICA, STATI_FASE, statoProgramma } from "../lib/cwpProgram.js";
 import Header from "../components/Header.jsx";
 import Badge from "../components/Badge.jsx";
 import { leggiCruscotto, leggiFasiPratiche } from "../lib/dati.js";
@@ -56,6 +61,12 @@ const RIQUADRI = [
   { id: "attesa_cliente", label: "In attesa del Cliente", test: (p) => p.integrazioni_in_attesa > 0 },
   { id: "da_verificare", label: "Integrazioni da verificare", test: (p) => p.integrazioni_da_verificare > 0 },
   { id: "consultazioni", label: "Feedback pubblico aperti", test: (p) => p.consultazione_attiva },
+  // Rilievo T05 (script 48): fatture da saldare entro 30 giorni (Guida
+  // 6.2.1 e 6.2.4) e dichiarazioni di cancellazione dei crediti venduti
+  // entro 10 giorni (Guida 6.3.3).
+  { id: "fatture_scadute", label: "Fatture scadute", test: (p) => p.fatture_scadute > 0, tono: "red" },
+  { id: "fatture_in_scadenza", label: `Fatture in scadenza (≤ ${SOGLIA_SCADENZA} gg)`, test: (p) => p.fatture_in_scadenza > 0, tono: "amber" },
+  { id: "dichiarazioni", label: "Dichiarazioni di cancellazione da ricevere", test: (p) => p.dichiarazioni_da_ricevere > 0, tono: "amber" },
 ];
 
 /* Cruscotto del back-office: riquadri di sintesi e ricerca delle pratiche
@@ -258,9 +269,16 @@ export default function Cruscotto() {
                         {p.tipo === "rapporto" ? `Rapporto anno ${p.anno_monitoraggio}` : p.titolo || "Progetto"}
                       </div>
                     </td>
-                    <td style={td} data-etichetta="Organizzazione">{p.organizzazione}</td>
+                    <td style={td} data-etichetta="Organizzazione">
+                      {p.organizzazione}
+                      <div style={{ fontSize: 11.5, color: C.grafite }}>Ente: {p.ente_validazione || "non assegnato"}</div>
+                    </td>
                     <td style={{ ...td, verticalAlign: "middle" }} data-etichetta="Avanzamento"><BarraFasi fasi={fasiPerPratica[p.id] || []} /></td>
-                    <td style={td} data-etichetta="Stato"><Badge bg={sp.bg} fg={sp.fg}>{sp.label}</Badge></td>
+                    <td style={td} data-etichetta="Stato">
+                      <Badge bg={sp.bg} fg={sp.fg}>{sp.label}</Badge>
+                      {/* Rilievo T03: stato nel Programma con i nomi della Guida. */}
+                      <div style={{ fontSize: 11.5, color: C.grafite, marginTop: 3 }}>{statoProgramma(p, fasiPerPratica[p.id] || [])}</div>
+                    </td>
                     <td style={td} data-etichetta="Fase corrente">
                       {p.fase_numero ? (
                         <>
@@ -282,6 +300,13 @@ export default function Cruscotto() {
                       {p.integrazioni_da_verificare > 0 && <div>{p.integrazioni_da_verificare} integrazione/i da verificare</div>}
                       {p.integrazioni_in_attesa > 0 && <div style={{ color: C.grafite }}>{p.integrazioni_in_attesa} in attesa del Cliente</div>}
                       {p.consultazione_attiva && <div style={{ color: C.grafite }}>Consultazione fino al {formatoData(p.consultazione_chiusura)}</div>}
+                      {p.fatture_scadute > 0 && <div style={{ color: C.red, fontWeight: 600 }}>{p.fatture_scadute} fattura/e scaduta/e</div>}
+                      {p.fatture_in_scadenza > 0 && <div style={{ color: C.amber }}>{p.fatture_in_scadenza} fattura/e in scadenza</div>}
+                      {p.dichiarazioni_da_ricevere > 0 && (
+                        <div style={{ color: p.dichiarazioni_scadute > 0 ? C.red : C.amber }}>
+                          {p.dichiarazioni_da_ricevere} dichiarazione/i di cancellazione da ricevere{p.dichiarazioni_scadute > 0 ? ` (${p.dichiarazioni_scadute} oltre i 10 giorni)` : ""}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );

@@ -19,7 +19,7 @@ Nel portale potete:
 - scrivere alla Fondazione nella sezione Messaggi di ogni pratica;
 - vedere le voci di pagamento e scaricare i modelli di documento;
 - vedere i crediti emessi dai vostri Rapporti di Monitoraggio;
-- inviare reclami e richieste di chiarimento;
+- inviare reclami, ricorsi e richieste di chiarimento;
 - ricevere notifiche nel portale e per email;
 - scaricare il tracciato per inviare i dati utili al calcolo dei crediti.
 
@@ -48,7 +48,7 @@ In alto trovate il menu (**Le mie pratiche**, **I tuoi documenti**, **Reclami**,
 | Le mie pratiche | I vostri Progetti e Rapporti (capitolo 3) |
 | I tuoi documenti | I documenti generali di tutte le pratiche (capitolo 11) |
 | Formato dati | Il tracciato per i dati del calcolo dei crediti (capitolo 13) |
-| Reclami | Reclami e richieste di chiarimento (capitolo 14) |
+| Reclami | Reclami, ricorsi e richieste di chiarimento (capitolo 14) |
 | Il Programma | La pagina pubblica del Programma (capitolo 15) |
 | Manuale | Questo manuale in PDF |
 
@@ -142,9 +142,9 @@ Ogni Progetto e ogni Rapporto di Monitoraggio attraversano 7 fasi. Le apre e le 
 | 2 | **Prima verifica documentale** | 10 | **Prima verifica documentale** | 10 | Promotore del programma (la Fondazione) |
 | 3 | **Feedback pubblico** | 30 | **Feedback pubblico** | 20 | Promotore del programma |
 | 4 | **Risposta ai commenti / pubblicazione** | 20 | **Risposta ai commenti** | 15 | Promotore del progetto |
-| 5 | **Validazione e verifica** | 75 | **Verifica del rapporto** | 60 | Ente di validazione e verifica |
+| 5 | **Validazione del progetto** | 75 | **Verifica del rapporto** | 60 | Ente di validazione e verifica |
 | 6 | **Seconda verifica documentale** | 15 | **Seconda verifica documentale** | 10 | Promotore del programma |
-| 7 | **Chiusura** | 0 | **Chiusura** | 0 | Promotore del programma |
+| 7 | **Registrazione del progetto** | 0 | **Emissione dei crediti** | 0 | Promotore del programma |
 
 I giorni sono le durate standard: la Fondazione può modificarle. Fa sempre fede la scadenza mostrata nella fase.
 
@@ -376,8 +376,6 @@ Il calcolo dei crediti usa un formato **per utenza**. Quando la Fondazione ve lo
 | Colonna | Obbligatoria | Cosa contiene |
 | --- | --- | --- |
 | Codice utenza | sì | Codice dell'utenza nel sistema del Comune o del gestore (es. codice TARI); unico nel file |
-| Nome capofamiglia | sì | Nome e cognome dell'intestatario |
-| Indirizzo | sì | Via, numero civico ed eventuale interno |
 | Categoria tariffaria | no | Classe della quota variabile nella delibera TARI (di solito il numero di componenti: 1, 2, … 6 e oltre). Se presente, il portale la propone come **categoria di simulazione** |
 | N. componenti | no | Componenti del nucleo familiare: colloca l'utenza nella classe della delibera (Kb); se manca si usano i valori medi |
 | Mq abitazione | no | Superficie dell'abitazione in m² |
@@ -390,7 +388,6 @@ Il calcolo dei crediti usa un formato **per utenza**. Quando la Fondazione ve lo
 
 | Colonna | Obbligatoria | Cosa contiene |
 | --- | --- | --- |
-| Ragione sociale | sì | Al posto del nome del capofamiglia |
 | Categoria tariffaria | no, ma da compilare se nota | Numero della categoria della delibera TARI (DPR 158/1999, es. 22 = ristoranti; il foglio Categorie ha l'elenco di riferimento). Se presente, il portale la propone come **categoria di simulazione** |
 | Mq locali | no | Superficie tassata dei locali in m² (al posto dei mq dell'abitazione); se manca si usano i valori medi della categoria |
 | N. componenti | — | Non c'è: vale solo per le domestiche |
@@ -405,17 +402,17 @@ Il calcolo dei crediti usa un formato **per utenza**. Quando la Fondazione ve lo
 
 **Come la Fondazione usa questi dati.** Ogni utenza è confrontata con i rifiuti attesi per la sua classe o categoria della delibera TARI (per questo è importante la **categoria tariffaria**), usando i kg indicati per ogni frazione. Una frazione lasciata vuota non conta per quell'utenza; scrivete 0 solo se la frazione è raccolta e l'utenza non ne ha prodotta.
 
-**Dati personali.** A differenza del tracciato, questo modello contiene nomi e indirizzi. Il Comune ne è titolare e la Fondazione li tratta per suo conto solo per il calcolo dei crediti, secondo l'accordo sul trattamento dei dati. Il file si carica **solo nel portale**, mai per email. Nel portale lo vedono solo gli Operatori e gli Amministratori della Fondazione, ogni consultazione è registrata e nomi e indirizzi non compaiono nei rapporti né nelle pagine pubbliche. Non aggiungete altri dati personali (codice fiscale, telefono, email).
+**Dati personali.** Il modello **non contiene nomi né indirizzi** (dal 30/10/2026): ogni utenza è indicata solo con il suo **codice**, e la corrispondenza tra codice e intestatario resta a voi (pseudonimizzazione). Non aggiungete colonne con nomi, indirizzi, codici fiscali, telefoni o email: se ci sono, il portale le ignora. Kg e svuotamenti restano dati da proteggere: il file va trasmesso solo con il canale concordato con la Fondazione, che li tratta per vostro conto solo per il calcolo dei crediti, secondo l'accordo sul trattamento dei dati.
 
 **Simulazione dei crediti.** La Fondazione può preparare per il vostro Comune uno o più **scenari** su 7, 10 o 21 anni. Partendo dai dati di raccolta attuali e dagli obiettivi che indicate per ogni anno (produzione di rifiuti totale e pro capite, secco residuo pro capite), il simulatore calcola la percentuale di raccolta differenziata e **stima i crediti** che il Comune potrebbe generare anno per anno. Lo scenario comprende anche una **stima economica**: ricavi dalla vendita dei crediti (con il valore del credito anno per anno) e costi a carico del Comune secondo le tabelle della Fondazione per progetti volontari (Caso 1) o obbligatori da bando di gara (Caso 2). Chiedetelo alla Fondazione: oggi gli scenari li vede solo lo staff. È una stima a scopo di pianificazione: i crediti veri si calcolano a consuntivo, con i dati del tracciato.
 
-## Reclami e richieste di chiarimento
+## Reclami, ricorsi e richieste di chiarimento
 
-La voce **Reclami** del menu apre la pagina **Reclami e richieste di chiarimento**, secondo la Politica di reclamo del Programma. Potete scrivere in qualsiasi momento: ricevete una conferma e poi una risposta scritta. Qui si trattano soprattutto l'interpretazione delle regole e dei criteri del Programma. Per una questione con un ente di validazione e verifica o con un registro, rivolgetevi prima a loro.
+La voce **Reclami** del menu apre la pagina **Reclami, ricorsi e richieste di chiarimento**, secondo la Politica di reclamo del Programma. Potete scrivere in qualsiasi momento: ricevete una conferma e poi una risposta scritta. Qui si trattano soprattutto l'interpretazione delle regole e dei criteri del Programma. Per una questione con un ente di validazione e verifica o con un registro, rivolgetevi prima a loro.
 
 **Inviare un reclamo o una richiesta:**
 
-1. Nel riquadro **Nuovo invio** scegliete il **Tipo**: *Richiesta di chiarimento* oppure *Reclamo*.
+1. Nel riquadro **Nuovo invio** scegliete il **Tipo**: *Richiesta di chiarimento*, *Reclamo* oppure *Ricorso*.
 2. Se riguarda un vostro Progetto, sceglietelo in **Progetto (facoltativo)**.
 3. Scrivete l'**Oggetto** e i **Dettagli** (almeno 10 caratteri).
 4. Compilate **Dichiarazione di eventuali conflitti di interesse** (ad esempio «nessuno»).

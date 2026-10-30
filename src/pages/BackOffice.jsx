@@ -21,7 +21,7 @@
    ========================================================================= */
 import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams, Navigate } from "react-router-dom";
-import { COLORI as C, STATI_PRATICA } from "../lib/cwpProgram.js";
+import { COLORI as C, STATI_PRATICA, statoProgramma } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Header from "../components/Header.jsx";
 import Badge from "../components/Badge.jsx";
@@ -213,6 +213,10 @@ export default function BackOffice() {
                     {p.codice || "senza codice"} · {p.titolo || "—"}
                   </span>
                   <Badge bg={st.bg} fg={st.fg}>{st.label}</Badge>
+                </div>
+                {/* Rilievo T03 (30/10/2026): stato nel Programma (Guida, Tabelle 3 e 4). */}
+                <div style={{ fontSize: 11.5, color: C.grafite, marginTop: 2, textAlign: "right" }}>
+                  {statoProgramma(p, p.fasi || [])}
                 </div>
               </button>
             );

@@ -20,6 +20,7 @@
      registrata nell'audit.
    Registro sviluppo e deploy: capitolo «Portale (frontend)», tabella Pagine.
    ========================================================================= */
+import { erroriDatiFiscali, cfValido } from "../lib/codiciFiscali.js";
 import React, { useEffect, useMemo, useState } from "react";
 import { COLORI as C } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
@@ -118,6 +119,10 @@ function Organizzazioni({ pratiche }) {
   async function salva() {
     setErrore("");
     if (!modulo.denominazione?.trim()) return setErrore("Indica la denominazione.");
+    // Rilievo T08: codice fiscale e partita IVA controllati prima di salvare
+    // (il database ripete il controllo, script 48).
+    const fisc = erroriDatiFiscali(modulo);
+    if (fisc.length) return setErrore(fisc.join(" "));
     setInCorso(true);
     const pulito = (v) => (v || "").trim() || null;
     const { error } = await salvaOrganizzazione({
@@ -160,6 +165,8 @@ function Organizzazioni({ pratiche }) {
                 <b>{o.denominazione}</b>{o.tipo && <span style={{ color: C.grafite }}> · {o.tipo}</span>}
                 <div style={{ fontSize: 11.5, color: C.grafite }}>
                   {[o.codice_fiscale && `C.F. ${o.codice_fiscale}`, o.partita_iva && `P.IVA ${o.partita_iva}`, o.pec].filter(Boolean).join(" · ") || "Dati fiscali non indicati"}
+                  {/* T08: senza un codice fiscale valido non si registrano le fatture di iscrizione e registrazione. */}
+                  {!cfValido(o.codice_fiscale) && <span style={{ color: C.amber, fontWeight: 600 }}> · codice fiscale {o.codice_fiscale ? "non valido" : "mancante"}: serve per le fatture</span>}
                 </div>
                 {(o.delegati || []).length > 0 && (
                   <div style={{ fontSize: 11.5, color: C.grafite }}>Delegati: {o.delegati.join(", ")}</div>

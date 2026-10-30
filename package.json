@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node test/crediti.test.mjs && node test/csv.test.mjs && node test/tracciato.test.mjs && node test/date.test.mjs && node test/tariffe.test.mjs && node test/qualita.test.mjs && node test/simulatore.test.mjs && node test/ordinamento.test.mjs && node test/presenza.test.mjs && node test/simulatoreExport.test.mjs && node test/inattivita.test.mjs && node test/collaudo_v01.test.mjs && node test/collaudo_v05.test.mjs && node test/assistente.test.mjs && node test/notizie.test.mjs && node test/rilievi_n.test.mjs && node test/bancaDatiUtenze.test.mjs && node test/utenzeNelCalcolo.test.mjs && node test/valoreProgetti.test.mjs && node test/marketing.test.mjs"
+    "test": "node test/crediti.test.mjs && node test/csv.test.mjs && node test/tracciato.test.mjs && node test/date.test.mjs && node test/tariffe.test.mjs && node test/qualita.test.mjs && node test/simulatore.test.mjs && node test/ordinamento.test.mjs && node test/presenza.test.mjs && node test/simulatoreExport.test.mjs && node test/inattivita.test.mjs && node test/collaudo_v01.test.mjs && node test/collaudo_v05.test.mjs && node test/assistente.test.mjs && node test/notizie.test.mjs && node test/rilievi_n.test.mjs && node test/bancaDatiUtenze.test.mjs && node test/utenzeNelCalcolo.test.mjs && node test/valoreProgetti.test.mjs && node test/marketing.test.mjs && node test/rilievi_t.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

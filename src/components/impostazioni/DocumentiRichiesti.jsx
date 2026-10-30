@@ -64,6 +64,14 @@ export default function DocumentiRichiesti() {
     carica();
   }
 
+  // Rende una voce obbligatoria o «se applicabile» (rilievo T12, script 48).
+  async function cambiaObbligatorio(v, obbligatorio) {
+    setErrore("");
+    const { error } = await salvaDocumentoRichiesto({ id: v.id, obbligatorio });
+    if (error) setErrore(error.message);
+    carica();
+  }
+
   // Toglie o rimette una voce.
   async function cambiaAttivo(v, attivo) {
     setErrore("");
@@ -86,7 +94,9 @@ export default function DocumentiRichiesti() {
       </div>
       <p style={{ fontSize: 13, color: C.grafite, margin: "6px 0 14px", lineHeight: 1.5 }}>
         I documenti che ci si aspetta in ogni fase. Nella pratica la fase mostra quali sono presenti e quali mancano
-        (un documento conta se ha quella tipologia); la fase si può chiudere comunque.
+        (un documento conta se ha quella tipologia). Dal 30/10/2026 le <strong>verifiche documentali</strong> (fasi 2 e 6) si chiudono
+        solo con tutti i documenti <strong>obbligatori</strong> delle fasi precedenti (Guida 6.2.4 e 6.5); l'Amministratore può derogare con
+        una motivazione, che resta nell'audit. Le voci «se applicabile» sono solo un promemoria.
       </p>
 
       {voci.length === 0 && !modulo && <div style={{ fontSize: 13, color: C.grafite }}>Nessun documento richiesto.</div>}
@@ -100,6 +110,9 @@ export default function DocumentiRichiesti() {
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {!v.attivo && <Badge bg={C.paperWarm} fg={C.grafite}>tolto</Badge>}
+              <button onClick={() => cambiaObbligatorio(v, v.obbligatorio === false)} style={btnMini} title="Le voci obbligatorie bloccano la chiusura delle verifiche documentali (fasi 2 e 6)">
+                {v.obbligatorio === false ? "Se applicabile" : "Obbligatorio"}
+              </button>
               <button onClick={() => cambiaAttivo(v, !v.attivo)} style={btnMini}>{v.attivo ? "Togli" : "Rimetti"}</button>
             </div>
           </div>

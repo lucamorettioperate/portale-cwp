@@ -122,3 +122,20 @@ export function indicatoriQualita({ anno, annoDati, classiUd = [], classiUnd = [
   }
   return out;
 }
+
+/* Percentuale di raccolta differenziata dei rifiuti del territorio
+   (passo 2 del calcolo: righe { tipologia, qtot, considerato }). Serve al
+   controllo dell'anno di riferimento dello Standard 4.8.1 (64-66%, rilievo
+   T19 del 30/10/2026). Restituisce null se mancano il totale o il secco. */
+export function rdTerritorio(rifiuti = []) {
+  let tot = 0;
+  let secco = 0;
+  (rifiuti || []).forEach((r) => {
+    if (r.considerato === false || !r.tipologia) return;
+    const q = Number(String(r.qtot ?? "").replace(",", "."));
+    if (!Number.isFinite(q) || q <= 0) return;
+    tot += q;
+    if (r.tipologia === "indifferenziato") secco += q;
+  });
+  return tot > 0 && secco > 0 ? ((tot - secco) / tot) * 100 : null;
+}

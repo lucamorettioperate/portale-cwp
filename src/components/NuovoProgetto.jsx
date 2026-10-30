@@ -2,7 +2,8 @@
    NuovoProgetto
    Scopo: finestra (sovrapposta alla pagina) per creare un nuovo Progetto.
      Si sceglie un'organizzazione esistente o se ne crea una nuova, si
-     indicano codice (facoltativo, è l'ID univoco del progetto), titolo,
+     indicano titolo (il codice, ID univoco del progetto, lo assegna
+     sempre il portale: rilievo T14 del 30/10/2026),
      territorio (codici ISTAT dei Comuni: un solo progetto per territorio,
      Standard 4.6), periodo di riferimento (10 anni oppure 7 rinnovabili,
      Standard 4.3.8), popolazione e crediti previsti (servono alle tariffe)
@@ -17,10 +18,8 @@
    Sicurezza (garantita dal database): solo lo staff può creare
      organizzazioni e pratiche (RLS org_insert e funzione
      staff_crea_pratica, script 20-23, che crea pratica e fasi insieme).
-     Codice vuoto: lo assegna un trigger (CWP-AAAA-NNNN, script 09); un
-     codice scritto a mano viene mantenuto così com'è, con un avviso se
-     non segue quel formato (rilievo N05: formato dei codici manuali in
-     attesa di regola della Fondazione). Il database rifiuta
+     Il codice lo assegna sempre un trigger (CWP-AAAA-NNNN, script 09 e
+     48: un codice scritto a mano si ignora). Il database rifiuta
      codici ISTAT non validi o già in un altro progetto attivo (script 23).
      Un'organizzazione nuova resta creata anche se poi fallisce la pratica.
    Registro sviluppo e deploy: capitolo «Portale (frontend)»
@@ -46,7 +45,6 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
   const [modoOrg, setModoOrg] = useState("esistente"); // 'esistente' | 'nuova'
   const [orgId, setOrgId] = useState("");
   const [nuovaOrg, setNuovaOrg] = useState({ denominazione: "", tipo: "" });
-  const [codice, setCodice] = useState("");
   const [titolo, setTitolo] = useState("");
   // Dati del progetto (script 23): codici ISTAT separati da virgole.
   const [codiciIstat, setCodiciIstat] = useState("");
@@ -107,8 +105,8 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
     const { data: pratica, error } = await creaPratica({
       tipo: "progetto",
       organizzazione_id: organizzazioneId,
-      // null = codice automatico assegnato dal database.
-      codice: codice.trim() || null,
+      // Il codice lo assegna sempre il database (T14).
+      codice: null,
       titolo: titolo.trim() || null,
       stato: "attiva",
       codici_istat: codiciIstat.split(/[\s,;]+/).map((c) => c.trim()).filter(Boolean),
@@ -196,19 +194,12 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
           </div>
 
           {/* Dati progetto */}
-          {/* Rilievo N05: vuoto = codice automatico CWP-AAAA-NNNN (trigger
-              dello script 09). Un codice scritto a mano resta com'è; se non
-              segue il formato automatico compare solo un avviso: la regola
-              sul formato è in attesa della Fondazione (ATTESA_REGOLA). */}
-          <label style={lbl}>
-            Codice pratica (lasciare vuoto: lo assegna il portale, CWP-AAAA-NNNN)
-            <input placeholder="vuoto = automatico" value={codice} onChange={(e) => setCodice(e.target.value)} style={campo} />
-            {codice.trim() && !/^CWP-\d{4}-\d{4}$/.test(codice.trim()) && (
-              <span style={{ fontSize: 11.5, color: C.ocra, fontWeight: 400 }}>
-                Il codice non segue il formato automatico CWP-AAAA-NNNN: verrà salvato così come è scritto.
-              </span>
-            )}
-          </label>
+          {/* Rilievi N05 e T14 (30/10/2026): il codice lo assegna sempre il
+              portale (CWP-AAAA-NNNN, Guida 6.2.1: l'ID univoco lo assegna il
+              soggetto promotore del programma); nessun campo manuale. */}
+          <div style={{ fontSize: 12.5, color: C.grafite, margin: "0 0 10px" }}>
+            Il <strong>codice della pratica</strong> lo assegna il portale alla creazione (CWP-AAAA-NNNN).
+          </div>
           <label style={lbl}>
             Titolo
             <input placeholder="Descrizione breve del progetto" value={titolo} onChange={(e) => setTitolo(e.target.value)} style={campo} />

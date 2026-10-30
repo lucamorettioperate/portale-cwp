@@ -65,16 +65,12 @@ FRAZIONI = [
 # tipo: "testo", "intero" (>= 1), "decimale" (> 0).
 ANAG_UD = [
     ("Codice utenza", 14, True, "testo", "Codice dell'utenza nel sistema del Comune o del gestore (es. codice TARI). Unico nel file: due righe non possono avere lo stesso codice."),
-    ("Nome capofamiglia", 26, True, "testo", "Nome e cognome dell'intestatario dell'utenza domestica."),
-    ("Indirizzo", 32, True, "testo", "Indirizzo dell'utenza: via, numero civico ed eventuale interno."),
     ("Categoria tariffaria", 12, False, "testo", "Classe della quota variabile nella delibera TARI del Comune (di solito il numero di componenti: 1, 2, … 6 e oltre). Se presente, il portale la propone come categoria di simulazione, modificabile."),
     ("N. componenti", 11, False, "intero", "Numero di componenti del nucleo familiare (facoltativo). Serve a collocare l'utenza nella classe della delibera TARI; se manca si usano i valori medi."),
     ("Mq abitazione", 11, False, "decimale", "Superficie dell'abitazione in metri quadrati (facoltativa)."),
 ]
 ANAG_UND = [
     ("Codice utenza", 14, True, "testo", "Codice dell'utenza nel sistema del Comune o del gestore (es. codice TARI). Unico nel file."),
-    ("Ragione sociale", 28, True, "testo", "Denominazione dell'attività (ditta, società, ente)."),
-    ("Indirizzo", 32, True, "testo", "Indirizzo dei locali dell'utenza."),
     ("Categoria tariffaria", 12, False, "testo", "Numero della categoria della delibera TARI del Comune (DPR 158/1999, es. 22 per ristoranti; elenco di riferimento nel foglio Categorie). Se presente, il portale la propone come categoria di simulazione; se manca, la Fondazione la assegna nel portale. Compilatela sempre se la conoscete."),
     ("Mq locali", 11, False, "decimale", "Superficie tassata dei locali in metri quadrati (facoltativa; se manca si usano i valori medi della categoria)."),
 ]
@@ -98,9 +94,9 @@ def colonne(anag):
 COL_UD = colonne(ANAG_UD)
 COL_UND = colonne(ANAG_UND)
 
-ES_UD = ["UD000123", "Mario Rossi", "Via Roma 12, int. 3", "3", 3, 95, 630, 210, 180, 110, 50, 70, 10, None, None, None, None, None, None,
+ES_UD = ["UD000123", "3", 3, 95, 630, 210, 180, 110, 50, 70, 10, None, None, None, None, None, None,
          26, 52, 13, 26, 13, None, None, None, None, None, None, None]
-ES_UND = ["UND000045", "Bar Centrale s.r.l.", "Piazza Duomo 2", "24", 80, 4200, 1300, 900, 600, 400, 1000, None, None, None, None, None, None, None,
+ES_UND = ["UND000045", "24", 80, 4200, 1300, 900, 600, 400, 1000, None, None, None, None, None, None, None,
           104, 156, 52, 52, 52, None, None, None, None, None, None, None]
 
 # Categorie per le utenze non domestiche, DPR 158/1999 (Comuni con più di
@@ -195,10 +191,10 @@ def riga(testo, font=f_base, fill=None, altezza=None):
     r += 1
 
 riga("Programma Carbon WastePrint® — Banca Dati Utenze per il calcolo dei crediti", f_tit, altezza=24)
-riga("Versione 1.0 · ottobre 2026 · Fondazione Operate", f_sub)
+riga("Versione 1.1 · 30 ottobre 2026 (senza nomi e indirizzi) · Fondazione Operate", f_sub)
 r += 1
 riga("A cosa serve", f_sez)
-riga("Il calcolo dei crediti di carbonio è fatto utenza per utenza. Ogni anno il Comune o il gestore del servizio di raccolta compila questo file con l'ELENCO COMPLETO delle utenze dell'anno di riferimento, domestiche e non domestiche, e lo carica nel portale nel calcolo dell'anno. L'elenco si ricarica sempre per intero, perché le utenze cambiano di continuo (nuove utenze, cessazioni, traslochi, cambi di categoria).", altezza=58)
+riga("Il calcolo dei crediti di carbonio è fatto utenza per utenza. Ogni anno il Comune o il gestore del servizio di raccolta compila questo file con l'ELENCO COMPLETO delle utenze dell'anno monitorato, domestiche e non domestiche, e lo carica nel portale nel calcolo dell'anno. L'elenco si ricarica sempre per intero, perché le utenze cambiano di continuo (nuove utenze, cessazioni, traslochi, cambi di categoria).", altezza=58)
 r += 1
 riga("Come compilarlo", f_sez)
 for p in [
@@ -206,7 +202,7 @@ for p in [
     "2. Foglio Utenze_non_domestiche: una riga per ogni utenza non domestica (attività, enti, uffici).",
     "3. Partite dalla riga 2, sotto le intestazioni. Non cambiate, spostate o cancellate le intestazioni: il portale le usa per riconoscere le colonne.",
     "4. Le colonne con l'intestazione arancione sono obbligatorie; quelle verdi sono facoltative e si possono lasciare vuote.",
-    "5. Numeri senza unità di misura e senza testo; i decimali possono avere la virgola. Kg e svuotamenti sono i totali dell'anno di riferimento.",
+    "5. Numeri senza unità di misura e senza testo; i decimali possono avere la virgola. Kg e svuotamenti sono i totali dell'anno monitorato.",
     "6. Per ogni utenza: produzione totale in kg, kg di indifferenziato (obbligatorio, anche 0) e kg delle altre frazioni raccolte. Una frazione non raccolta o non misurata per l'utenza si lascia vuota (vuoto è diverso da 0).",
     "7. La produzione totale deve essere uguale alla somma delle frazioni (il portale segnala le differenze oltre l'1%).",
     "8. Categoria tariffaria: indicate la classe (domestiche) o la categoria (non domestiche) della vostra delibera TARI. Nel portale ogni utenza ha anche una «categoria di simulazione», quella usata dal calcolo per i rifiuti attesi: il portale la propone uguale alla tariffaria e la Fondazione può cambiarla.",
@@ -215,7 +211,7 @@ for p in [
     riga(p, altezza=30)
 r += 1
 riga("Dati personali", Font(name=F, size=12, bold=True, color=ROSSO))
-riga("Questo file contiene dati personali (nomi e indirizzi). Va trasmesso SOLO caricandolo nel portale Carbon WastePrint, mai per email. Il Comune è titolare del trattamento; la Fondazione Operate tratta i dati per suo conto solo per il calcolo dei crediti, secondo l'accordo sul trattamento dei dati. Nel portale i dati li vedono solo gli Operatori e gli Amministratori della Fondazione, ogni consultazione è registrata e nomi e indirizzi non compaiono nei rapporti né nelle pagine pubbliche. Non inserite altri dati personali (codice fiscale, telefono, email).", Font(name=F, size=10, color=ROSSO), fill=PatternFill("solid", fgColor="F6DCD6"), altezza=84)
+riga("Il file NON contiene nomi né indirizzi: ogni utenza è indicata solo con il suo codice, e la corrispondenza tra codice e intestatario resta al Comune (pseudonimizzazione, valutazione d'impatto sulla protezione dei dati). Non aggiungete colonne con nomi, indirizzi, codici fiscali, telefoni o email: se ci sono, il portale le ignora. Kg e svuotamenti di un'utenza restano comunque dati da proteggere: il file va trasmesso solo con il canale concordato con la Fondazione Operate, che li tratta per conto del Comune secondo l'accordo sul trattamento dei dati.", Font(name=F, size=10, color=ROSSO), fill=PatternFill("solid", fgColor="F6DCD6"), altezza=84)
 r += 1
 
 def spiegazione(titolo, cols, esempio):

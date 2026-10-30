@@ -7,8 +7,9 @@
      - Editor dello scenario in quattro parti:
        1. Impostazioni: nome, note, durata (menu 7 / 10 / 21 anni), anno di
           inizio, metodo di stima («bilancio del Comune» oppure «per utenza,
-          solo utenze virtuose» come nell'Allegato A dei contratti EsaCom,
-          con rifiuti misurati, variabilità tra utenze e taratura), buffer
+          solo utenze virtuose», con rifiuti misurati e variabilità tra
+          utenze come ipotesi dichiarata; dal 30/10/2026 senza taratura e
+          senza riferimenti a documenti esterni al Programma, rilievo T11), buffer
           con il calcolo guidato del Capitolo 7 (Tabelle 15-16);
        2. Scenario di riferimento (Standard 4.8.1): l'anno in cui il
           Comune ha raggiunto il 65% di differenziata (a mano o, per gli
@@ -51,7 +52,7 @@ import { formatoData } from "../lib/date.js";
 import {
   DURATE, TIPOLOGIE, datiIniziali, riepilogoAnnoBase, rifiutiDaCluster, rifiutiDaCalcolo,
   anniDelPeriodo, traiettoriaLineare, simula, righeCsv, puntoDiPartenza, RD_SOGLIA, simulaEconomia, economiaIniziale, prezziPerAnni, PREZZO_PROPOSTO, costiPerCaso, listinoDi, CASI_COSTI, NOTA_UNA_TANTUM,
-  METODI_STIMA, RIFIUTI_MISURATI, UTENZE_MONITORATE, STIMA_PREDEFINITA, bufferMetodologia, taraVariabilita, erroriScenario, erroriEconomia,
+  METODI_STIMA, RIFIUTI_MISURATI, UTENZE_MONITORATE, STIMA_PREDEFINITA, bufferMetodologia, erroriScenario, erroriEconomia,
 } from "../lib/crediti/simulatore.js";
 import { elencaScenari, leggiScenario, creaScenario, salvaScenario, duplicaScenario, eliminaScenario } from "../lib/crediti/scenari.js";
 import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
@@ -336,10 +337,6 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
   const [traiettoria, setTraiettoria] = useState({ proCapiteFinale: "", seccoProCapiteFinale: "" });
   const [calcoli, setCalcoli] = useState(null);
   const [calcoloScelto, setCalcoloScelto] = useState("");
-  // Taratura della variabilità: crediti per abitante all'anno da riprodurre
-  // (es. 0,19 dell'Allegato A EsaCom) ed esito dell'ultima taratura.
-  const [taraObiettivo, setTaraObiettivo] = useState("");
-  const [taraEsito, setTaraEsito] = useState("");
 
   // Anni del periodo allineati a durata e primo anno (senza perdere i valori).
   const anni = useMemo(
@@ -439,16 +436,6 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
   const popMedia = risultato.righe.length ? risultato.righe.reduce((s, r) => s + r.popolazione, 0) / risultato.righe.length : 0;
   const perAbitante = t && popMedia ? t.mediaAnnuaNetti / popMedia : null;
 
-  // Cerca la variabilità che riproduce i crediti per abitante indicati.
-  function tara() {
-    const v = taraVariabilita({ ...dati, anni }, String(taraObiettivo).replace(",", "."));
-    if (v == null) {
-      setTaraEsito("Valore non raggiungibile con questi dati: con variabilità 0% i crediti sono già più alti, oppure servirebbe oltre il 150%.");
-      return;
-    }
-    cambiaStima({ variabilita: v });
-    setTaraEsito(`Variabilità impostata a ${String(v).replace(".", ",")}%.`);
-  }
 
   return (
     // minmax(0, 1fr): le tabelle larghe scorrono dentro il loro riquadro
@@ -514,10 +501,10 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
           <p style={{ ...nota, margin: "0 0 10px" }}>
             {metodoStima === "utenze" ? (
               <>
-                <strong>Per utenza, solo utenze virtuose</strong> (formula 32 con buffer, come nelle stime dell'Allegato A dei contratti EsaCom):
+                <strong>Per utenza, solo utenze virtuose</strong> (formula 32 con l'opzione del Capitolo 4.6 e buffer del Capitolo 7):
                 si contano i rifiuti misurati per utenza (es. secco e organico con tariffa puntuale) e solo le utenze che ne producono meno del
                 valore atteso; i debiti delle altre li copre il buffer. Senza Banca Dati Utenze la differenza tra utenze si rappresenta con la
-                <em> variabilità tra utenze</em>: è un'ipotesi, da tarare sui dati reali del gestore.
+                <em> variabilità tra utenze</em>: è un'ipotesi dichiarata (predefinita 30%), da sostituire con i dati reali della Banca Dati Utenze quando ci sono.
               </>
             ) : (
               <>
@@ -564,16 +551,6 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
               <button className="no-stampa" style={btnMini} onClick={() => cambiaDati({ bufferPct: bufferCap7.totale })}>Usa questo buffer</button>
             )}
           </div>
-          {metodoStima === "utenze" && (
-            <div className="no-stampa" style={{ display: "flex", gap: 8, alignItems: "flex-end", flexWrap: "wrap", marginTop: 10 }}>
-              <label style={{ ...lbl, marginBottom: 0 }}>
-                Taratura: crediti netti per abitante all'anno da riprodurre
-                <input style={{ ...campo, maxWidth: 160 }} inputMode="decimal" placeholder="es. 0,19" value={taraObiettivo} onChange={(e) => setTaraObiettivo(e.target.value)} />
-              </label>
-              <button style={btnMini} onClick={tara} disabled={!taraObiettivo}>Trova la variabilità</button>
-              {taraEsito && <span style={{ fontSize: 12, color: C.grafite }}>{taraEsito}</span>}
-            </div>
-          )}
         </div>
         <label style={{ ...lbl, marginTop: 10 }}>
           Note
@@ -673,8 +650,10 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
             <Cifra etichetta="Raccolta differenziata" valore={`${fmt(base.rd)}%`} forte />
             {base.totale > 0 && (
               <div style={{ fontSize: 12, padding: "6px 10px", borderRadius: 8, background: C.greenSoft, lineHeight: 1.45 }}>
-                <strong>Nel calcolo il riferimento è sempre alla soglia del {RD_SOGLIA}%</strong> (Standard 4.8.1): stessa produzione totale, secco al{" "}
-                {100 - RD_SOGLIA}% ({fmt((base.proCapite * (100 - RD_SOGLIA)) / 100)} kg/ab). Ogni anno i risultati si calcolano per differenza da questa soglia.
+                <strong>Il riferimento si usa così com'è</strong> (Standard 4.8.1):{" "}
+                {metodo === "cluster"
+                  ? "valori medi del cluster (Tabella 3) × popolazione, senza ricalcoli."
+                  : `l'anno indicato deve avere tra il 64% e il 66% di differenziata (Catasto ISPRA); fuori da questo intervallo il simulatore non calcola e chiede un altro anno o il cluster.`}
               </div>
             )}
             <Cifra etichetta="Fattore del secco (formule 16-17)" valore={base.feSecco == null ? "—" : `${fmt(base.feSecco, 2)} kgCO₂eq/kg`} />
@@ -798,8 +777,8 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 10, marginBottom: 14 }}>
               <Tile etichetta={`Crediti netti in ${t.anni} anni`} valore={fmt(t.netti, 0)} unita="tCO₂eq" principale />
               <Tile etichetta="Media annua" valore={fmt(t.mediaAnnuaNetti, 0)} unita="tCO₂eq/anno" />
-              <Tile etichetta="Per abitante all'anno" valore={perAbitante != null ? fmt(perAbitante, 3) : "—"} unita="crediti netti (Allegato A EsaCom: 0,19-0,23)" />
-              <Tile etichetta={`Differenziata nel ${risultato.righe[risultato.righe.length - 1].anno}`} valore={`${fmt(t.rdFinale)}%`} unita={`soglia di riferimento: ${RD_SOGLIA}%`} />
+              <Tile etichetta="Per abitante all'anno" valore={perAbitante != null ? fmt(perAbitante, 3) : "—"} unita="crediti netti per abitante" />
+              <Tile etichetta={`Differenziata nel ${risultato.righe[risultato.righe.length - 1].anno}`} valore={`${fmt(t.rdFinale)}%`} unita={`riferimento: ${fmt(base.rd)}% · obiettivo di legge ${RD_SOGLIA}%`} />
               <Tile etichetta="Rifiuti evitati nel periodo" valore={fmt(t.riduzione, 0)} unita="t rispetto al riferimento" />
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 14, marginBottom: 14 }}>
@@ -860,7 +839,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
           {metodoStima === "utenze" && (
             <>
               <strong>Metodo per utenza.</strong> Contano i rifiuti misurati ({(RIFIUTI_MISURATI.find((x) => x.id === su.rifiuti) || RIFIUTI_MISURATI[1]).nome.toLowerCase()})
-              che le utenze virtuose producono in meno rispetto al valore atteso dello scenario di riferimento al {RD_SOGLIA}%. Se il Comune ha già
+              che le utenze virtuose producono in meno rispetto al valore atteso dello scenario di riferimento. Se il Comune ha già
               una differenziata alta, il secco delle utenze è molto sotto il riferimento e i crediti crescono anche senza ridurre la produzione
               totale: per questo il risultato è più alto del bilancio del Comune (colonna di confronto nella tabella).
               <br />
@@ -868,7 +847,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
           )}
           <strong>Da dove vengono i crediti{metodoStima === "utenze" ? " nel bilancio del Comune" : ""}.</strong> Il simulatore applica le formule della Metodologia CWP v1.2: ogni tonnellata di rifiuti
           prodotta pesa con il suo fattore di emissione e il secco con la media dei fattori della differenziata (formule 16-17). Perciò i crediti
-          nascono dai <strong>rifiuti evitati</strong> rispetto allo scenario di riferimento, portato alla soglia del {RD_SOGLIA}% di differenziata (produzione pro capite del riferimento × popolazione):
+          nascono dai <strong>rifiuti evitati</strong> rispetto allo scenario di riferimento (quantità dell'anno di riferimento o del cluster, riportate alla popolazione):
           {unTonnellata != null && <> con i dati di questo Comune, <strong>1 t in meno ≈ {fmt(unTonnellata, 2)} tCO₂eq</strong> prima del buffer.</>} Spostare
           rifiuti dal secco alla differenziata alza la percentuale di raccolta differenziata ma, a parità di produzione totale, non genera crediti.
           <br />
@@ -885,11 +864,13 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
         <h3 style={h3}>Ricavi dalla vendita dei crediti</h3>
         <p style={{ ...nota, margin: "0 0 8px" }}>
           Il valore del credito si digita <strong>anno per anno</strong> nella colonna «Valore» della tabella qui sotto. Per compilare tutti gli anni in
-          una volta indicate il valore proposto (e, se volete, una variazione annua) e premete «Applica a tutti gli anni».
+          una volta indicate il valore ipotetico (e, se volete, una variazione annua) e premete «Applica a tutti gli anni». Il Programma non
+          stabilisce un prezzo del credito: il valore iniziale di {PREZZO_PROPOSTO} € è un'ipotesi da confermare con la Fondazione; con minimo e
+          massimo si vede la forbice (per esempio da 7,50 €, il valore citato per il caso di Terre Roveresche).
         </p>
         <div className="no-stampa" style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
           <label style={{ ...lbl, marginBottom: 0 }}>
-            Valore proposto (€ per credito)
+            Valore ipotetico (€ per credito)
             <input style={{ ...campo, width: 170, fontWeight: 700 }} inputMode="decimal" value={economia.prezzo ?? ""} placeholder={String(PREZZO_PROPOSTO)} onChange={(e) => cambiaEconomia({ prezzo: e.target.value })} />
           </label>
           <label style={{ ...lbl, marginBottom: 0 }}>
@@ -981,7 +962,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
             <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>{erroriEco.map((a) => <li key={a}>{a}</li>)}</ul>
           </div>
         )}
-        {!eco && !erroriEco.length && <div style={{ marginTop: 12, fontSize: 13, color: C.grafite }}>Indicate il <strong>valore del credito</strong> (proposto {PREZZO_PROPOSTO} €) per vedere ricavi, costi e margine anno per anno.</div>}
+        {!eco && !erroriEco.length && <div style={{ marginTop: 12, fontSize: 13, color: C.grafite }}>Indicate il <strong>valore del credito</strong> (ipotesi iniziale {PREZZO_PROPOSTO} €, non stabilita dal Programma) per vedere ricavi, costi e margine anno per anno.</div>}
         {eco && (
           <>
             {eco.avvisi.length > 0 && (
