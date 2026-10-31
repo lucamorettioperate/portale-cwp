@@ -221,6 +221,12 @@
       "data": "30/10/2026",
       "descrizione": "Nomi delle fasi, ricorso, Banca Dati Utenze senza nomi e indirizzi.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.7",
+      "data": "31/10/2026",
+      "descrizione": "Rilievi del collaudo in produzione dal 31/10/2026 (date delle novità aggiornate); valore ipotetico del credito nei riquadri della Dashboard.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -583,6 +589,12 @@
       "data": "30/10/2026",
       "descrizione": "Rilievi TEST_PORTALE_CWP: nomi delle fasi, stato nel Programma e nuovi riquadri in Dashboard, verifiche documentali complete, codice sempre automatico, codice fiscale e partita IVA, data di approvazione degli enti, ricorso e costi dei reclami, anno di monitoraggio e anno di riferimento nel calcolo, ex post solo su anni conclusi e Progetti registrati, risultati non aggiornati, riferimento del simulatore come da Standard, niente taratura, valore ipotetico del credito, Banca Dati Utenze senza nomi e indirizzi, CSV dell'Audit.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.10",
+      "data": "31/10/2026",
+      "descrizione": "Rilievi del collaudo in produzione dal 31/10/2026 (date delle novità aggiornate); Dashboard con il valore ipotetico del credito; simulatore senza taratura.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -884,6 +896,12 @@
       "rev": "3.29",
       "data": "30/10/2026",
       "descrizione": "Nomi delle fasi e prove 11.1-11.16 dei rilievi TEST_PORTALE_CWP.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.30",
+      "data": "31/10/2026",
+      "descrizione": "Prove 8b.2b (anno di riferimento fuori 64-66% = errore), 8b.3c (senza taratura), 10.10m e 10.10o aggiornate; ritest 11.1-11.16 sul portale in produzione dal 31/10/2026.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1337,6 +1355,12 @@
       "data": "30/10/2026",
       "descrizione": "Rilievi TEST_PORTALE_CWP: script 48 e correzioni sul ramo correzioni-rilievi-t.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "8.5",
+      "data": "31/10/2026",
+      "descrizione": "Script 48 eseguito in produzione il 31/10/2026 alle 09:12 e rilascio dei rilievi T (commit 38c262c); pulizia del simulatore; versione 0.48; «Da fare subito» al 31/10.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1641,6 +1665,12 @@
       "data": "30/10/2026",
       "descrizione": "Nuova slide «Collaudo del 29 ottobre: Standard e Guida»; valore ipotetico del credito e riferimento del simulatore.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.5",
+      "data": "31/10/2026",
+      "descrizione": "Slide del collaudo del 29 ottobre: 21 correzioni in produzione dal 31 ottobre.",
+      "autore": "Fondazione Operate"
     }
   ],
   "issue": [
@@ -1817,6 +1847,12 @@
       "data": "30/10/2026",
       "descrizione": "Rilievi T: 21 correzioni sul ramo, prove t48.sql e rilievi_t.test.mjs.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.29",
+      "data": "31/10/2026",
+      "descrizione": "I 21 rilievi T corretti sono in produzione dal 31/10/2026 alle 09:12: riepilogo aggiornato (42 da ritestare).",
+      "autore": "Fondazione Operate"
     }
   ],
   "dpia": [
@@ -1830,6 +1866,12 @@
       "rev": "1.1",
       "data": "30/10/2026",
       "descrizione": "Pseudonimizzazione applicata nel portale (azione A1): Banca Dati Utenze senza nomi e indirizzi.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.2",
+      "data": "31/10/2026",
+      "descrizione": "Pseudonimizzazione (azione A1) in produzione dal 31/10/2026.",
       "autore": "Fondazione Operate"
     }
   ]

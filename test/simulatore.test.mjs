@@ -18,7 +18,7 @@ import assert from "node:assert/strict";
 import {
   DURATE, riepilogoAnnoBase, rifiutiDaCluster, rifiutiDaCalcolo, anniDelPeriodo,
   traiettoriaLineare, simula, righeCsv, fattoriPredefiniti, puntoDiPartenza, simulaEconomia, economiaIniziale, prezziPerAnni, costiPerCaso, costoUnitario,
-  bufferMetodologia, quotaVirtuose, taraVariabilita,
+  bufferMetodologia, quotaVirtuose,
 } from "../src/lib/crediti/simulatore.js";
 
 let n = 0;
@@ -268,16 +268,6 @@ prova("metodo per utenza: solo utenze virtuose, confronto con il bilancio del Co
   assert.equal(r.debito, 0);
   // Buffer più basso del minimo del Capitolo 7: avviso.
   assert.ok(simula({ annoBase, anni, bufferPct: 10, metodoStima: "utenze", stimaUtenze: { rifiuti: "rur_org" } }).avvisi.some((a) => a.includes("buffer minimo")));
-});
-
-prova("taratura della variabilità su una stima di crediti per abitante", () => {
-  const anni = [{ anno: 2027, popolazione: 10000, totale: 4000, seccoProCapite: 140 }];
-  const dati = { annoBase, anni, bufferPct: 30, stimaUtenze: { rifiuti: "rur_org" } };
-  const v = taraVariabilita(dati, 0.19);
-  assert.ok(v > 0 && v < 150);
-  const r = simula({ ...dati, metodoStima: "utenze", stimaUtenze: { rifiuti: "rur_org", variabilita: v } });
-  vicino(r.righe[0].netti / 10000, 0.19, 0.002);
-  assert.equal(taraVariabilita(dati, 50), null); // irraggiungibile
 });
 
 console.log(`${n} prove superate`);

@@ -230,7 +230,7 @@ Stima ex ante, non certificabile.
 
 **Modello (semplificato, da confermare con la Fondazione)**
 
-- Scenario di riferimento dell'anno *a*, sempre alla soglia del 65% di differenziata (richiesta di Luca del 19/10): Tot_rif(a) = Tot_rif × Pop(a) / Pop_rif; secco = 35% di Tot_rif(a); frazione *r* = 65% di Tot_rif(a) × quota di *r* nella differenziata del riferimento. Tot_rif dall'anno di riferimento dello Standard 4.8.1 o dalla Tabella 3.
+- Scenario di riferimento dell'anno *a* come da Standard 4.8.1 (dal 31/10/2026, rilievo T10; prima era sempre riportato alla soglia del 65%): Q_rif(r, a) = Q_rif(r) × Pop(a) / Pop_rif per ogni tipologia, con le quantità dell'anno di riferimento (differenziata tra 64% e 66%, altrimenti errore) o i valori medi del cluster SOSE (Tabella 3) senza ricalcoli. La sola micro simulazione della pagina /scopri (Marketing, invariato) riporta ancora la situazione attuale al 65%.
 - Scenario simulato: Q(secco, a) = secco pro capite(a) × Pop(a); Q(r, a) =
   (Totale(a) − Q(secco, a)) × quota di *r* nella differenziata dell'anno base.
 - Emissioni: E = − Σ Q(r) × FErid(r) (formule 13 e 25); FE del secco =
@@ -254,7 +254,7 @@ Costo per abitante interpolato linearmente tra 5.000 e 20.000 e tra 20.000 e 100
 
 In tutti i casi si aggiungono ente di validazione (una tantum), ente di verifica (ogni anno) e altri costi annui. Uscite: ricavi (con intervallo), costi, margine e cumulato per anno, anno di rientro, costo e ricavo per abitante nel periodo (come gli indicatori dell'Allegato A). Funzione `simulaEconomia` di `simulatore.js`.
 
-**Confronto con le stime dei contratti EsaCom (analisi del 19/10/2026).** L'Allegato A del contratto di partecipazione EsaCom stima 29.077 crediti all'anno (anni 1-4), 32.500 (anni 5-7) e 35.356 (anni 8-10) per 154.247 abitanti, cioè 0,19-0,23 crediti per abitante all'anno, «contabilizzando il rifiuto urbano residuo e la frazione organica con tariffazione puntuale». Il simulatore nella prima versione faceva solo il **bilancio del Comune** e dava molto meno (Bovisio-Masciago: 0,04). La differenza è di metodo, non un errore di calcolo: l'Allegato A usa l'opzione della formula 32 che **conta solo le utenze virtuose** (Capitolo 4.6), con il buffer del Capitolo 7.
+**Confronto con le stime dei contratti EsaCom (analisi storica del 19/10/2026; dal 31/10/2026 il portale non cita più documenti esterni al Programma e non ha più la taratura, rilievo T11).** L'Allegato A del contratto di partecipazione EsaCom stima 29.077 crediti all'anno (anni 1-4), 32.500 (anni 5-7) e 35.356 (anni 8-10) per 154.247 abitanti, cioè 0,19-0,23 crediti per abitante all'anno, «contabilizzando il rifiuto urbano residuo e la frazione organica con tariffazione puntuale». Il simulatore nella prima versione faceva solo il **bilancio del Comune** e dava molto meno (Bovisio-Masciago: 0,04). La differenza è di metodo, non un errore di calcolo: l'Allegato A usa l'opzione della formula 32 che **conta solo le utenze virtuose** (Capitolo 4.6), con il buffer del Capitolo 7.
 
 Il simulatore ha ora i due metodi:
 
@@ -265,7 +265,7 @@ Il simulatore ha ora i due metodi:
 
 Con il metodo per utenza Bovisio-Masciago ricade nell'intervallo dell'Allegato A. La parte maggiore dei crediti non viene dalla variabilità ipotizzata (con variabilità 0% resterebbe oltre 0,19) ma dal fatto che il Comune ha già l'84% di differenziata: il secco delle utenze è molto sotto il valore atteso dello scenario di riferimento al 65%, e misurando solo secco e organico lo spostamento verso carta, vetro e plastica non si compensa (è il motivo del buffer della Tabella 16).
 
-Modello della stima per utenza: per ogni rifiuto misurato, con A = quantità attesa (riferimento al 65%), m = produzione prevista / A e σ = variabilità tra utenze, i rifiuti evitati dalle sole utenze virtuose sono A × [d·Φ(d/σ) + σ·φ(d/σ)] con d = 1 − m (media di max(0, 1 − X) per X normale di media m e scarto σ); crediti lordi = Σ rifiuti evitati × |FErid|. Funzioni `quotaVirtuose`, `bufferMetodologia` e `taraVariabilita` di `simulatore.js`. Lettura prudente del Capitolo 7: la tariffa puntuale dimezza la parte della Tabella 16, non il 20% delle utenze virtuose.
+Modello della stima per utenza: per ogni rifiuto misurato, con A = quantità attesa (scenario di riferimento), m = produzione prevista / A e σ = variabilità tra utenze, i rifiuti evitati dalle sole utenze virtuose sono A × [d·Φ(d/σ) + σ·φ(d/σ)] con d = 1 − m (media di max(0, 1 − X) per X normale di media m e scarto σ); crediti lordi = Σ rifiuti evitati × |FErid|. Funzioni `quotaVirtuose`, `bufferMetodologia` e `taraVariabilita` di `simulatore.js`. Lettura prudente del Capitolo 7: la tariffa puntuale dimezza la parte della Tabella 16, non il 20% delle utenze virtuose.
 
 Altre osservazioni sull'Allegato A:
 - i costi: le tabelle del 28/07/2026 con 154.247 abitanti danno 82.614 € all'anno (826.139 € in 10 anni, 5,36 € per abitante; le voci «una tantum» sono pagate in 10 rate annuali, come dicono i contratti). L'Allegato indica 6,08 € per abitante: la differenza (circa 111.700 € in 10 anni) potrebbe essere il costo dell'ente di validazione e verifica, che le tabelle escludono. Da chiarire con chi ha preparato l'Allegato;
@@ -277,7 +277,7 @@ Altre osservazioni sull'Allegato A:
 |---|---|---|
 | Durata | Standard 4.3.8: 7 anni ripetibili tre volte o 10 anni | Menu 7 / 10 / 21 anni |
 | Scenario di riferimento | Standard 4.8 e 4.8.1: anno con differenziata 64-66% o Tabella 3 × popolazione ISPRA 2022 | I due metodi, con controllo dell'intervallo |
-| Addizionalità normativa | Standard 4.9.1 | Avviso se l'anno di riferimento è fuori 64-66% |
+| Addizionalità normativa | Standard 4.9.1 | Errore se l'anno di riferimento è fuori 64-66% (dal 31/10/2026; prima era un avviso) |
 | Qualità dei dati | Gestione qualità 3.1.2: ±30% dalla Tabella 3 | Avviso per tipologia |
 | Stima ex ante aggregata | Metodologia 6.1 (semplificazione a) e 6.2 | Valori medi su tutto il Comune |
 | Emissioni | Formule 13 e 25, FErid Tabelle 3-4 | Stesse formule e fattori di `parametri.js` |

@@ -45,8 +45,7 @@
    genera crediti; i crediti nascono dalla riduzione dei rifiuti prodotti
    rispetto allo scenario di riferimento (prevenzione).
 
-   Due metodi di stima (aggiunti il 19/10/2026 dopo il confronto con
-   l'Allegato A dei contratti tipo EsaCom):
+   Due metodi di stima (aggiunti il 19/10/2026):
    - «territorio» (bilancio del Comune): ΔI = EP − EA sui totali, tutte le
      utenze insieme (formula 32 senza buffer di utenza): le utenze che
      peggiorano compensano quelle che migliorano;
@@ -55,13 +54,13 @@
      valore atteso e si trattiene il buffer del 20% (Cap. 7). Senza Banca
      Dati Utenze la produzione delle singole utenze si rappresenta con una
      distribuzione normale intorno al valore medio dell'anno, con una
-     «variabilità tra utenze» (coefficiente di variazione, ipotesi da
-     tarare sui dati reali): per ogni rifiuto misurato i rifiuti evitati
+     «variabilità tra utenze» (coefficiente di variazione, ipotesi
+     dichiarata, predefinita 30%, da sostituire con i dati reali della
+     Banca Dati Utenze): per ogni rifiuto misurato i rifiuti evitati
      dalle utenze virtuose valgono A × [d·Φ(d/σ) + σ·φ(d/σ)], con A =
-     quantità attesa, d = 1 − produzione/attesa, σ = variabilità. È il
-     metodo usato per le stime dell'Allegato A EsaCom (secco e organico
-     misurati per utenza, tariffa puntuale). Funzione taraVariabilita:
-     trova la variabilità che riproduce una stima di crediti per abitante.
+     quantità attesa, d = 1 − produzione/attesa, σ = variabilità.
+     Dal 30/10/2026 (rilievo T11) non c'è più la taratura, che partiva dai
+     crediti per abitante voluti per ricavare la variabilità.
    Buffer secondo il Capitolo 7 (bufferMetodologia): 20% se si contano solo
    le utenze virtuose + Tabella 15 (utenze monitorate) + Tabella 16
    (rifiuti misurati, con −2% centri di raccolta e −1% altre tipologie;
@@ -658,30 +657,6 @@ export function simula(dati) {
   return { base, bufferPct, metodoStima, righe, totali, avvisi: [...new Set(avvisi)], errori: [] };
 }
 
-// Variabilità tra utenze (%) che porta i crediti netti medi per abitante
-// all'anno al valore indicato (es. 0,19 dell'Allegato A EsaCom), a parità
-// di tutto il resto. Metodo «utenze». Restituisce la variabilità (una
-// cifra decimale) oppure null se il valore non si raggiunge tra 0 e 150%.
-export function taraVariabilita(dati, creditiPerAbitante) {
-  const obiettivo = num(creditiPerAbitante);
-  if (!obiettivo) return null;
-  const media = (v) => {
-    const r = simula({ ...dati, metodoStima: "utenze", stimaUtenze: { ...STIMA_PREDEFINITA, ...(dati.stimaUtenze || {}), variabilita: v } });
-    if (!r.righe.length) return null;
-    return somma(r.righe, (x) => (x.popolazione ? x.netti / x.popolazione : 0)) / r.righe.length;
-  };
-  const alto = media(150);
-  if (alto == null || alto < obiettivo || media(0) > obiettivo) return null;
-  let lo = 0;
-  let hi = 150;
-  for (let i = 0; i < 50; i += 1) {
-    const mid = (lo + hi) / 2;
-    if (media(mid) < obiettivo) lo = mid;
-    else hi = mid;
-  }
-  return Math.round(((lo + hi) / 2) * 10) / 10;
-}
-
 // Righe per l'export CSV (separatore «;», decimali con la virgola).
 export function righeCsv(scenario, risultato, economia = null) {
   const f = (v, d = 1) => (v == null ? "" : Number(v).toFixed(d).replace(".", ","));
@@ -724,7 +699,7 @@ export function righeCsv(scenario, risultato, economia = null) {
      la regola non c'è: gli importi annui ripetuti sono solo una stima e il
      risultato lo dichiara (durataFuoriListino, ATTESA_REGOLA).
      Non comprende la validazione dell'ente (Nota 1 del documento).
-     Il Caso 1 riproduce le cifre dei contratti tipo EsaCom (154.247 ab.).
+     Il Caso 1 riproduce le tabelle dei costi del 28/07/2026 (prova con 154.247 ab.).
    - "schema": tariffe MASSIME dello Schema tariffario v1.2
      (src/lib/tariffe.js): Progetto nel primo anno (3.000 € + saldo per
      popolazione + 0,15 € per credito previsto nel periodo); ogni anno
@@ -966,7 +941,7 @@ export function simulaEconomia(righe, economia = {}, popolazione) {
       // R04: solo chiarezza del messaggio, la regola resta da confermare).
       primoAnnoPositivo: (out.find((r) => r.cumulato > 0.005) || {}).anno || null,
       primoAnnoPareggio: (out.find((r) => Math.abs(r.cumulato) <= 0.005) || {}).anno || null,
-      // Indicatori per abitante sull'intero periodo (come nell'Allegato A).
+      // Indicatori per abitante sull'intero periodo.
       costoProCapite: perAb(tot("costi")),
       ricavoProCapite: perAb(tot("ricavi")),
       ricavoProCapiteMin: !vuoto(economia.prezzoMin) ? perAb(tot("ricaviMin")) : null,
