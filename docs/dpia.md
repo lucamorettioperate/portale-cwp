@@ -99,11 +99,11 @@ Il modello **Banca dati utenze CWP** (un foglio per le domestiche, uno per le no
 | Kg per frazione (indifferenziato obbligatorio; organico, carta, plastica, vetro…) | In parte | Dato personale (comportamento) |
 | Numero di svuotamenti per frazione | No | Dato personale (comportamento) |
 
-**Dati che non ci sono e non si caricano:** nome del capofamiglia o ragione sociale e indirizzo (dal 30/10/2026: il portale non li chiede e, se un file li contiene, li ignora), codice fiscale, data di nascita, telefono, email, dati di pagamento, situazione economica, riduzioni o agevolazioni (che potrebbero rivelare condizioni di salute o di disagio).
+**Dati che non ci sono e non si caricano:** nome del capofamiglia o ragione sociale e indirizzo (dal 31/10/2026: il portale non li chiede e, se un file li contiene, li ignora), codice fiscale, data di nascita, telefono, email, dati di pagamento, situazione economica, riduzioni o agevolazioni (che potrebbero rivelare condizioni di salute o di disagio).
 
 Il portale aggiunge un solo campo: la **categoria di simulazione** (la classe della delibera usata dal calcolo).
 
-> **Il punto più importante della valutazione.** Per calcolare i crediti **nome e indirizzo non servono**: basta il codice dell'utenza. Dal 30/10/2026 il portale applica la **pseudonimizzazione** (capitolo «Necessità e proporzionalità», Proposta 1): il modello non ha più nomi e indirizzi, il Comune manda solo i codici e tiene per sé la corrispondenza codice-intestatario. Così la maggior parte dei rischi descritti più avanti si riduce molto.
+> **Il punto più importante della valutazione.** Per calcolare i crediti **nome e indirizzo non servono**: basta il codice dell'utenza. Dal 31/10/2026 il portale applica la **pseudonimizzazione** (capitolo «Necessità e proporzionalità», Proposta 1): il modello non ha più nomi e indirizzi, il Comune manda solo i codici e tiene per sé la corrispondenza codice-intestatario. Così la maggior parte dei rischi descritti più avanti si riduce molto.
 
 ### Ciclo di vita dei dati
 
@@ -175,14 +175,14 @@ Il Comune aggiorna la propria **informativa TARI** (articoli 13 e 14) indicando 
 
 | Principio | Come si applica | Valutazione proposta |
 | --- | --- | --- |
-| **Minimizzazione** | Il calcolo richiede una riga per utenza, la categoria, i componenti o i mq e i kg per frazione. **Nome e indirizzo non sono necessari al calcolo** e dal 30/10/2026 il portale non li tratta | Adeguato (pseudonimizzazione applicata, Proposta 1) |
+| **Minimizzazione** | Il calcolo richiede una riga per utenza, la categoria, i componenti o i mq e i kg per frazione. **Nome e indirizzo non sono necessari al calcolo** e dal 31/10/2026 il portale non li tratta | Adeguato (pseudonimizzazione applicata, Proposta 1) |
 | **Limitazione della finalità** | I dati si usano solo per il calcolo; nessun altro modulo del portale li legge | Adeguato |
 | **Esattezza** | Controlli all'arrivo del file (codici doppi, numeri, totali); le correzioni si fanno nel modulo dell'utenza e sono registrate nell'Audit | Adeguato |
 | **Limitazione della conservazione** | Oggi la pratica si conserva 12 anni; per le utenze serve un periodo proprio | **Da decidere**: vedi proposta qui sotto |
 | **Integrità e riservatezza** | Misure tecniche e organizzative del capitolo «Misure» | Adeguato, con le azioni del piano |
 | **Diritti degli interessati** | Accesso, rettifica, opposizione e cancellazione si esercitano verso il Comune; la Fondazione lo aiuta a rispondere entro i termini (articolo 28, paragrafo 3, lettera e) | Adeguato, da scrivere nell'accordo |
 
-**Proposta 1 — Pseudonimizzazione (consigliata).** Il Comune manda solo il **codice dell'utenza** (o un codice creato apposta, diverso dal codice TARI) e tiene presso di sé la tabella di corrispondenza con nomi e indirizzi. **Applicata nel portale dal 30/10/2026** (rilievo T29 del collaudo, scelta di Luca Moretti): il modello «Banca dati utenze CWP» non ha più le colonne «Nome» e «Indirizzo», il portale ignora quelle colonne nei file vecchi e non le salva. Effetti:
+**Proposta 1 — Pseudonimizzazione (consigliata).** Il Comune manda solo il **codice dell'utenza** (o un codice creato apposta, diverso dal codice TARI) e tiene presso di sé la tabella di corrispondenza con nomi e indirizzi. **Applicata nel portale dal 31/10/2026** (rilievo T29 del collaudo, scelta di Luca Moretti): il modello «Banca dati utenze CWP» non ha più le colonne «Nome» e «Indirizzo», il portale ignora quelle colonne nei file vecchi e non le salva. Effetti:
 
 - il portale contiene dati **pseudonimizzati**: restano dati personali per il Comune, ma nessuno nel portale può risalire alla persona senza la tabella del Comune;
 - un accesso non autorizzato, un errore o una copia di sicurezza persa avrebbero conseguenze molto più leggere;
@@ -199,7 +199,7 @@ Resta al Comune scegliere se usare il codice TARI o un codice creato apposta. **
 
 ## Rischi per le persone
 
-La valutazione guarda ai rischi **per gli interessati** (non per il Comune o la Fondazione). Scala usata: probabilità e gravità **bassa, media, alta**. I valori sono la proposta della Fondazione **con le misure già presenti** nel portale; la colonna «Livello» è stata stimata prima della pseudonimizzazione (applicata dal 30/10/2026, azione A1), quindi è prudente; la colonna a destra indica il livello dopo il piano d'azione.
+La valutazione guarda ai rischi **per gli interessati** (non per il Comune o la Fondazione). Scala usata: probabilità e gravità **bassa, media, alta**. I valori sono la proposta della Fondazione **con le misure già presenti** nel portale; la colonna «Livello» è stata stimata prima della pseudonimizzazione (applicata dal 31/10/2026, azione A1), quindi è prudente; la colonna a destra indica il livello dopo il piano d'azione.
 
 | N. | Rischio | Conseguenze per le persone | Probabilità | Gravità | Livello | Dopo il piano |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -260,7 +260,7 @@ Azioni proposte dalla Fondazione, da completare **prima** del caricamento delle 
 
 | N. | Azione | Rischi | Chi | Stato |
 | --- | --- | --- | --- | --- |
-| A1 | **Pseudonimizzazione** (Proposta 1): modello e portale senza nomi e indirizzi | R1, R2, R4, R5, R6 | Fondazione | **Fatto il 30/10/2026** |
+| A1 | **Pseudonimizzazione** (Proposta 1): modello e portale senza nomi e indirizzi | R1, R2, R4, R5, R6 | Fondazione | **Fatto il 31/10/2026** (in produzione) |
 | A2 | Accendere la **verifica in due passaggi** per Operatori e Amministratori | R1 | Fondazione | Da fare |
 | A3 | Firmare l'**accordo sul trattamento** (articolo 28) con istruzioni, sub-responsabili autorizzati, durata, cancellazione, assistenza per i diritti e per le violazioni | Tutti | Comune e Fondazione | Da fare |
 | A4 | Accettare i **DPA** dei fornitori che trattano le utenze (Supabase, Google) e verificare le garanzie per i trasferimenti fuori UE; verificare la regione di Resend | R5 | Fondazione | Da fare |

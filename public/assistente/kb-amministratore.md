@@ -1,4 +1,4 @@
-# Base di conoscenza del Portale Carbon WastePrint — Amministratori (generata il 30/10/2026)
+# Base di conoscenza del Portale Carbon WastePrint — Amministratori (generata il 31/10/2026)
 
 === DOCUMENTO: Manuale Utente ===
 
@@ -74,7 +74,7 @@ La pagina elenca i Progetti della vostra organizzazione (o delle organizzazioni 
 
 **Valore dei crediti della vostra organizzazione.** In cima alla pagina due riquadri, in crediti (1 credito = 1 tCO₂eq) e in euro, con i soli dati della vostra organizzazione:
 - **Crediti in simulazione**: la stima dell'ultima simulazione che la Fondazione ha preparato per il vostro Comune, su tutto il periodo simulato. È una stima, non un credito certificato.
-- **Crediti in fase esecutiva**: crediti **calcolati** nei Rapporti di Monitoraggio confermati, crediti **emessi** e crediti **venduti** con il valore comunicato dal registro. Calcolati ed emessi sono valorizzati al prezzo di riferimento indicato nel riquadro; non si sommano, perché i crediti emessi vengono dai calcoli.
+- **Crediti in fase esecutiva**: crediti **calcolati** nei Rapporti di Monitoraggio confermati, crediti **emessi** e crediti **venduti** con il valore comunicato dal registro. Calcolati ed emessi sono valorizzati al valore ipotetico del credito indicato nel riquadro (il Programma non stabilisce un prezzo); non si sommano, perché i crediti emessi vengono dai calcoli.
 - **Valore dei progetti**: quanto costa il vostro Progetto secondo il listino concordato con la Fondazione (Caso 1, progetto volontario, oppure Caso 2, progetto da bando di gara: ogni Progetto ne ha sempre uno), in totale e all'anno, e quanto prevede l'ultima simulazione. Lo stesso valore compare nei dati del Progetto, alla voce **Valore del progetto per il cliente**.
 
 **Dal telefono.** Il portale si usa anche dallo smartphone. In alto restano i loghi, la campanella delle notifiche e il pulsante **☰ Menu**, che apre l'elenco delle pagine, **Il mio profilo** ed **Esci**. Con più pratiche si vede prima l'elenco: toccandone una si apre il dettaglio e **← Tutte le pratiche** riporta all'elenco. Con una sola pratica il dettaglio si apre subito. L'assistente è il pulsante tondo ✦ in basso a destra e, aperto, occupa tutto lo schermo.
@@ -398,7 +398,7 @@ Il calcolo dei crediti usa un formato **per utenza**. Quando la Fondazione ve lo
 
 **Come la Fondazione usa questi dati.** Ogni utenza è confrontata con i rifiuti attesi per la sua classe o categoria della delibera TARI (per questo è importante la **categoria tariffaria**), usando i kg indicati per ogni frazione. Una frazione lasciata vuota non conta per quell'utenza; scrivete 0 solo se la frazione è raccolta e l'utenza non ne ha prodotta.
 
-**Dati personali.** Il modello **non contiene nomi né indirizzi** (dal 30/10/2026): ogni utenza è indicata solo con il suo **codice**, e la corrispondenza tra codice e intestatario resta a voi (pseudonimizzazione). Non aggiungete colonne con nomi, indirizzi, codici fiscali, telefoni o email: se ci sono, il portale le ignora. Kg e svuotamenti restano dati da proteggere: il file va trasmesso solo con il canale concordato con la Fondazione, che li tratta per vostro conto solo per il calcolo dei crediti, secondo l'accordo sul trattamento dei dati.
+**Dati personali.** Il modello **non contiene nomi né indirizzi** (dal 31/10/2026): ogni utenza è indicata solo con il suo **codice**, e la corrispondenza tra codice e intestatario resta a voi (pseudonimizzazione). Non aggiungete colonne con nomi, indirizzi, codici fiscali, telefoni o email: se ci sono, il portale le ignora. Kg e svuotamenti restano dati da proteggere: il file va trasmesso solo con il canale concordato con la Fondazione, che li tratta per vostro conto solo per il calcolo dei crediti, secondo l'accordo sul trattamento dei dati.
 
 **Simulazione dei crediti.** La Fondazione può preparare per il vostro Comune uno o più **scenari** su 7, 10 o 21 anni. Partendo dai dati di raccolta attuali e dagli obiettivi che indicate per ogni anno (produzione di rifiuti totale e pro capite, secco residuo pro capite), il simulatore calcola la percentuale di raccolta differenziata e **stima i crediti** che il Comune potrebbe generare anno per anno. Lo scenario comprende anche una **stima economica**: ricavi dalla vendita dei crediti (con il valore del credito anno per anno) e costi a carico del Comune secondo le tabelle della Fondazione per progetti volontari (Caso 1) o obbligatori da bando di gara (Caso 2). Chiedetelo alla Fondazione: oggi gli scenari li vede solo lo staff. È una stima a scopo di pianificazione: i crediti veri si calcolano a consuntivo, con i dati del tracciato.
 
@@ -548,8 +548,8 @@ La **Dashboard** è la pagina iniziale dello staff: mostra in un'unica tabella t
 **Barra di avanzamento a LED.** La colonna **Avanzamento** mostra per ogni pratica (quindi per ogni Comune) una barra di 7 luci, una per fase. Le fasi **completate sono accese** (ambra), quelle **ancora da fare sono spente**. La **settima luce**, la Chiusura, si accende in **verde**. La fase in corso è spenta ma ha un contorno ambra, così si vede subito dove è arrivata la pratica. Accanto c'è il conteggio, ad esempio «4/7». Passando il mouse su una luce compaiono numero, nome e stato della fase. La stessa barra, in piccolo, compare **nell'elenco delle pratiche** a sinistra della pagina Pratiche (in alto a destra di ogni riquadro, con lo stato sotto) e **in alto a destra nella pratica aperta**.
 
 **Valore dei crediti (dal 23/10/2026).** In cima alla Dashboard due riquadri danno il valore complessivo dei crediti di tutto il portale, in crediti (1 credito = 1 tCO₂eq) e in euro:
-- **Crediti in simulazione**: per ogni Comune conta solo lo scenario del Simulatore **aggiornato più di recente** (gli scenari prudente, obiettivo, ambizioso… sono alternative e non si sommano), con i crediti netti di tutto il periodo simulato (7, 10 o 21 anni). Gli euro sono i ricavi dello scenario (crediti × valore del credito anno per anno). Gli scenari salvati prima del 23/10/2026 o senza valore del credito si valorizzano al prezzo di riferimento e il riquadro dice quanti sono: basta riaprirli e premere **Salva** nel Simulatore. È una stima ex ante, non certificabile.
-- **Crediti in fase esecutiva**: tre righe. **Calcolati**: crediti netti dei calcoli ex post confermati e ancora validi (non sostituiti da una nuova versione). **Emessi**: crediti dei lotti emessi dai Rapporti. **Venduti**: crediti venduti con il valore comunicato dal registro. Calcolati ed emessi sono valorizzati al **prezzo di riferimento** (Impostazioni); le righe non si sommano, perché i crediti emessi provengono dai calcoli.
+- **Crediti in simulazione**: per ogni Comune conta solo lo scenario del Simulatore **aggiornato più di recente** (gli scenari prudente, obiettivo, ambizioso… sono alternative e non si sommano), con i crediti netti di tutto il periodo simulato (7, 10 o 21 anni). Gli euro sono i ricavi dello scenario (crediti × valore del credito anno per anno). Gli scenari salvati prima del 23/10/2026 o senza valore del credito si valorizzano al valore ipotetico del credito (Impostazioni) e il riquadro dice quanti sono: basta riaprirli e premere **Salva** nel Simulatore. È una stima ex ante, non certificabile.
+- **Crediti in fase esecutiva**: tre righe. **Calcolati**: crediti netti dei calcoli ex post confermati e ancora validi (non sostituiti da una nuova versione). **Emessi**: crediti dei lotti emessi dai Rapporti. **Venduti**: crediti venduti con il valore comunicato dal registro. Calcolati ed emessi sono valorizzati al **valore ipotetico del credito** (Impostazioni: il Programma non stabilisce un prezzo); le righe non si sommano, perché i crediti emessi provengono dai calcoli.
 
 - **Valore dei progetti (quanto paga il cliente)** (dal 23/10/2026): il totale in euro dei Progetti aperti (non annullati né ritirati) con il listino del **Caso 1** o del **Caso 2**, per la popolazione e il periodo di ogni Progetto, con l'importo annuo; sotto, la riga **In simulazione** con quanto pagherebbe il cliente nell'ultimo scenario di ogni Comune simulato con il Caso 1 o 2. Il riquadro dice quanti Progetti sono senza listino o senza popolazione (da completare in **Modifica i dati** della pratica) e quanti scenari non hanno il Caso 1 o 2 (o sono stati salvati prima del 23/10: basta riaprirli e premere **Salva**).
 
@@ -570,7 +570,7 @@ Gli utenti dei Comuni vedono gli stessi riquadri nella loro pagina **Le mie prat
 | Fatture in scadenza (≤ 7 gg) | Pratiche con una voce di pagamento da saldare entro 7 giorni (numero in arancione) |
 | Dichiarazioni di cancellazione da ricevere | Vendite di crediti senza la Dichiarazione di cancellazione dei crediti venduti (Guida 6.3.3: entro 10 giorni dalla vendita); nella colonna «Da fare» quelle oltre i 10 giorni sono in rosso |
 
-**Stato nel Programma ed ente (dal 30/10/2026).** Nella colonna **Stato**, sotto lo stato interno (Attiva, Sospesa…), compare lo **stato nel Programma** con i nomi della Guida: *richiesta di registrazione*, *in fase di validazione*, *in fase di verifica documentale*, *progetto registrato*, *progetto ritirato*. Lo stesso stato compare nell'elenco della pagina Pratiche. Nella colonna **Organizzazione** compare l'**ente di validazione** assegnato (o «non assegnato»).
+**Stato nel Programma ed ente (dal 31/10/2026).** Nella colonna **Stato**, sotto lo stato interno (Attiva, Sospesa…), compare lo **stato nel Programma** con i nomi della Guida: *richiesta di registrazione*, *in fase di validazione*, *in fase di verifica documentale*, *progetto registrato*, *progetto ritirato*. Lo stesso stato compare nell'elenco della pagina Pratiche. Nella colonna **Organizzazione** compare l'**ente di validazione** assegnato (o «non assegnato»).
 
 **Ricerca e filtri.** Il campo «Cerca organizzazione, codice o progetto…» e i filtri per stato, tipo (Progetti, Rapporti), anno di monitoraggio e fase. **Azzera filtri** li toglie tutti.
 
@@ -588,7 +588,7 @@ La pagina **Pratiche** elenca a sinistra i Progetti (con più di 4 progetti comp
 
 1. Premete **+ Nuovo progetto**.
 2. Scegliete l'ente: **Organizzazione esistente** dal menu, oppure **Nuova** indicando **Denominazione** (es. Comune di …) e **Tipo** (es. Ente locale, Soggetto gestore).
-3. **Codice pratica**: lo assegna sempre il portale (`CWP-AAAA-NNNN`), perché l'ID univoco del progetto lo assegna il soggetto promotore del programma (Guida 6.2.1). Dal 30/10/2026 non si scrive più a mano; i codici già esistenti restano com'erano.
+3. **Codice pratica**: lo assegna sempre il portale (`CWP-AAAA-NNNN`), perché l'ID univoco del progetto lo assegna il soggetto promotore del programma (Guida 6.2.1). Dal 31/10/2026 non si scrive più a mano; i codici già esistenti restano com'erano.
 4. **Titolo**: una descrizione breve.
 5. **Territorio: codici ISTAT dei Comuni (6 cifre)**, separati da virgola (es. `041044, 041001`).
 6. **Periodo di riferimento**: *10 anni (una volta)* oppure *7 anni rinnovabili 3 volte* (Standard 4.3.8).
@@ -661,7 +661,7 @@ Le azioni sulle fasi compaiono nella scheda di ciascuna fase, **solo se la prati
 
 **Verifica sull'accuratezza e accertamenti.** Nelle due verifiche documentali (fasi 2 e 6), se ci sono dubbi sui dati presentati, premete **Verifica sull'accuratezza (+15 gg)**, scrivete la **Motivazione / rilievi (obbligatoria)** e premete **Avvia la verifica**. Dopo la verifica potete registrare fino a 3 accertamenti con **Ulteriore accertamento (+10 gg)** e **Registra l'accertamento**. La fase mostra «Verifica sull'accuratezza avviata · accertamenti: N di 3» e il Comune riceve una notifica con la nuova scadenza. Dopo il terzo accertamento, se le revisioni non sono soddisfacenti, la richiesta non è accettata e si può ripresentare dopo 6 mesi.
 
-**Verifiche documentali complete (dal 30/10/2026).** La Guida (6.2.4 e 6.5) fa avanzare la pratica solo con la documentazione completa. Per questo:
+**Verifiche documentali complete (dal 31/10/2026).** La Guida (6.2.4 e 6.5) fa avanzare la pratica solo con la documentazione completa. Per questo:
 
 - la **fase 2** (prima verifica documentale) si chiude solo se nella fase 1 c'è il *Modulo di descrizione del progetto* e, per un Progetto, se è indicato il **territorio** (almeno un codice ISTAT, Standard 4.6);
 - la **fase 6** (seconda verifica documentale) si chiude solo se ci sono tutti i documenti **obbligatori** delle fasi da 1 a 5 (modulo, documento di proprietà, contratto con l'ente, documento riassuntivo del feedback, rapporto di validazione o di verifica).
@@ -973,7 +973,7 @@ La pagina **Audit** mostra il registro automatico e non modificabile di tutte le
 - Per le organizzazioni compare la denominazione, per esempio *Organizzazione «COLLAUDO AL V03 - COMUNE B - 20261020» (916f3283)*.
 - Il campo di ricerca filtra per operazione, utente, pratica, oggetto (nome o codice di scenari e organizzazioni), motivazione e anche per il **testo dei valori cambiati** (per esempio una riga aggiunta a metà di una nota).
 - Si vedono gli ultimi 200 eventi; **Carica eventi meno recenti** ne aggiunge altri 500.
-- **Scarica CSV** (dal 30/10/2026) scarica gli eventi mostrati, con la ricerca applicata: data e ora, utente, ruolo, operazione, pratica, oggetto, stato prima e dopo, motivazione. Per la storia completa di una pratica c'è anche `audit.csv` nel fascicolo («Esporta fascicolo»).
+- **Scarica CSV** (dal 31/10/2026) scarica gli eventi mostrati, con la ricerca applicata: data e ora, utente, ruolo, operazione, pratica, oggetto, stato prima e dopo, motivazione. Per la storia completa di una pratica c'è anche `audit.csv` nel fascicolo («Esporta fascicolo»).
 
 Sono registrati, tra gli altri: apertura e chiusura delle fasi, modifiche di scadenza, verifiche sull'accuratezza e accertamenti, cambi di stato della pratica (compresi ritiro e rientro), modifiche dei dati del Progetto, caricamenti di documenti con la versione, modifiche di visibilità, apertura e chiusura del feedback pubblico, moderazione delle osservazioni, richieste e chiusure di integrazione, incassi, emissioni, caricamenti sul registro, vendite e cancellazioni dei crediti, reclami, anagrafiche (organizzazioni, enti, registri), metodologie e informazioni del Programma, creazione e modifica di utenti, cambi e reimpostazioni di password, modifiche della durata delle fasi e operazioni sui calcoli dei crediti.
 
@@ -1094,7 +1094,7 @@ L'elenco dei documenti che ci si aspetta in ogni fase, per Progetto e Rapporto. 
 
 Nella pratica la fase mostra quali documenti sono presenti e quali mancano; il Comune, caricando in quella fase, sceglie quale documento sta caricando. **Togli** disattiva una voce (si rimette con **Rimetti**).
 
-Dal 30/10/2026 ogni voce è **Obbligatorio** oppure **Se applicabile** (si cambia con il pulsante accanto alla voce). I documenti obbligatori delle fasi precedenti **bloccano la chiusura delle verifiche documentali** (fasi 2 e 6), salvo deroga motivata dell'Amministratore (capitolo «Gestire le fasi»); le voci «se applicabile» sono solo un promemoria.
+Dal 31/10/2026 ogni voce è **Obbligatorio** oppure **Se applicabile** (si cambia con il pulsante accanto alla voce). I documenti obbligatori delle fasi precedenti **bloccano la chiusura delle verifiche documentali** (fasi 2 e 6), salvo deroga motivata dell'Amministratore (capitolo «Gestire le fasi»); le voci «se applicabile» sono solo un promemoria.
 
 ### Modelli di documento
 
@@ -1145,7 +1145,7 @@ I dati arrivano dal Comune e dal soggetto gestore nel **tracciato dati standard 
 | 6_Letture (singole letture) | 5. Banca Dati Utenze: le letture sono sommate per utenza e tipologia |
 | 7_Riuso | 5. Banca Dati Utenze (beni a riuso) |
 
-**Protezione dei dati personali.** Il tracciato (passo 5b) deve contenere solo un **codice anonimo** per ogni utenza (come la Banca Dati Utenze per utenza del passo 5a, che dal 30/10/2026 non ha più nomi e indirizzi): niente nomi, codici fiscali, indirizzi, email o telefoni. Il portale controlla il file prima dell'import e lo **blocca** se trova dati personali, indicando foglio e riga (con il valore oscurato): chiedete al Comune di sostituirli con codici e di caricare di nuovo il file.
+**Protezione dei dati personali.** Il tracciato (passo 5b) deve contenere solo un **codice anonimo** per ogni utenza (come la Banca Dati Utenze per utenza del passo 5a, che dal 31/10/2026 non ha più nomi e indirizzi): niente nomi, codici fiscali, indirizzi, email o telefoni. Il portale controlla il file prima dell'import e lo **blocca** se trova dati personali, indicando foglio e riga (con il valore oscurato): chiedete al Comune di sostituirli con codici e di caricare di nuovo il file.
 
 Il Comune carica il tracciato tra i documenti della sua pratica: il file Excel (.xlsx) oppure, se è molto grande, uno ZIP con i fogli salvati in CSV (es. `6_Letture.csv`).
 
@@ -1182,7 +1182,7 @@ Il calcolo dei crediti usa un formato **per utenza**: ogni anno il Comune o il g
 - La produzione totale deve corrispondere alla somma delle frazioni: il portale segnala le differenze oltre l'1%.
 - Oltre 1 milione di righe o 50 MB: un CSV per foglio, con lo stesso nome, dentro uno ZIP.
 
-**Dati personali (dal 30/10/2026).** Il modello **non ha più nomi né indirizzi**: ogni utenza è solo un **codice**, e la corrispondenza tra codice e intestatario resta al Comune (pseudonimizzazione, azione A1 della traccia DPIA; la Metodologia, cap. 6.1, chiede solo codice, categoria e kg). Se un file ha ancora le colonne «Nome capofamiglia», «Ragione sociale» o «Indirizzo», il portale le **ignora** e lo dice negli avvisi dell'anteprima; nel modulo dell'utenza quei campi non ci sono più. Le utenze caricate prima restano come sono finché non si ricarica l'elenco. Nel portale le utenze le vedono solo Operatori e Amministratori. Ogni consultazione dell'elenco finisce nell'Audit («consultazione utenze»), così come ogni caricamento («caricamento utenze», con il solo numero di utenze) e ogni cancellazione. Prima dell'uso con dati reali servono la valutazione d'impatto (DPIA) e l'accordo sul trattamento con ogni Comune: la **traccia della DPIA** è nella pagina *Documentazione*.
+**Dati personali (dal 31/10/2026).** Il modello **non ha più nomi né indirizzi**: ogni utenza è solo un **codice**, e la corrispondenza tra codice e intestatario resta al Comune (pseudonimizzazione, azione A1 della traccia DPIA; la Metodologia, cap. 6.1, chiede solo codice, categoria e kg). Se un file ha ancora le colonne «Nome capofamiglia», «Ragione sociale» o «Indirizzo», il portale le **ignora** e lo dice negli avvisi dell'anteprima; nel modulo dell'utenza quei campi non ci sono più. Le utenze caricate prima restano come sono finché non si ricarica l'elenco. Nel portale le utenze le vedono solo Operatori e Amministratori. Ogni consultazione dell'elenco finisce nell'Audit («consultazione utenze»), così come ogni caricamento («caricamento utenze», con il solo numero di utenze) e ogni cancellazione. Prima dell'uso con dati reali servono la valutazione d'impatto (DPIA) e l'accordo sul trattamento con ogni Comune: la **traccia della DPIA** è nella pagina *Documentazione*.
 
 **Gestire le utenze nel portale.** Nel calcolo aprite il passo **5a. Utenze del calcolo**.
 
@@ -1228,7 +1228,7 @@ Le singole tabelle si possono ancora importare a mano in CSV nei passi 2, 3 e 5 
 
 1. Nel menu premete **Calcolo crediti**: si apre l'elenco dei calcoli (Calcolo, Pratica, Anno / tipo, Crediti netti, Stato).
 2. Premete **+ Nuovo calcolo**.
-3. Scegliete la **Pratica** (Progetto o Rapporto di Monitoraggio), un **Titolo** (es. «Monitoraggio 2025»), l'**Anno di monitoraggio** (prima si chiamava «Anno di riferimento») e il **Tipo di stima**: *Ex post (letture della Banca Dati Utenze)* oppure *Ex ante*. Dal 30/10/2026 un calcolo **ex post** si crea (e si conferma) solo per un **anno già concluso** e per un **Progetto registrato** (fase 6 completata) o un suo Rapporto: i crediti si calcolano dalla registrazione, che è la data di inizio del progetto (Standard 4.5). Per una previsione si usa l'ex ante. I calcoli di prova creati prima restano apribili ma non si possono confermare.
+3. Scegliete la **Pratica** (Progetto o Rapporto di Monitoraggio), un **Titolo** (es. «Monitoraggio 2025»), l'**Anno di monitoraggio** (prima si chiamava «Anno di riferimento») e il **Tipo di stima**: *Ex post (letture della Banca Dati Utenze)* oppure *Ex ante*. Dal 31/10/2026 un calcolo **ex post** si crea (e si conferma) solo per un **anno già concluso** e per un **Progetto registrato** (fase 6 completata) o un suo Rapporto: i crediti si calcolano dalla registrazione, che è la data di inizio del progetto (Standard 4.5). Per una previsione si usa l'ex ante. I calcoli di prova creati prima restano apribili ma non si possono confermare.
 4. Solo se è il primo anno del Progetto, compilate **Avvio del progetto (solo se nel primo anno)**.
 5. Premete **Crea e apri**.
 
@@ -1242,7 +1242,7 @@ Ogni tabella ha **+ Riga**, **Importa CSV** e **Scarica il modello**; una riga s
 
 **Passo 2 — Rifiuti del territorio.** Una riga per codice EER (es. 200301 *Rifiuti urbani non differenziati*, 200108 *Rifiuti biodegradabili di cucine e mense*, 200201 *Rifiuti biodegradabili (verde)*) con tipologia, quantità **Qtot (t)** in tonnellate per anno e la spunta **Solo domestiche** quando il rifiuto è raccolto solo presso le utenze domestiche. Fonte: Catasto rifiuti ISPRA o MUD del Comune. Il modello si chiama *rifiuti_ISPRA*.
 
-In cima al passo 2 (dal 30/10/2026) si indica da dove vengono i rifiuti, come chiede lo Standard 4.8.1: **Fonte dei rifiuti** = *Catasto ISPRA dell'anno di riferimento* con l'**Anno di riferimento** (l'anno in cui il Comune ha raggiunto il 65% di differenziata), oppure *Valori medi del cluster (Tabella 3)* con il **cluster SOSE**. Accanto il portale mostra la **differenziata dei rifiuti inseriti**: con la fonte ISPRA deve stare tra il 64% e il 66%, altrimenti il riquadro diventa rosso e tra gli avvisi del calcolo compare «l'anno di riferimento dello Standard 4.8.1 deve avere tra il 64% e il 66%». Anno e fonte compaiono nel rapporto PDF. Se l'anno di riferimento è diverso dall'anno monitorato, il controllo «i conferimenti delle utenze superano i rifiuti del territorio» avvisa solo oltre il +50% (con la raccolta che cresce, alcune frazioni aumentano rispetto all'anno di riferimento).
+In cima al passo 2 (dal 31/10/2026) si indica da dove vengono i rifiuti, come chiede lo Standard 4.8.1: **Fonte dei rifiuti** = *Catasto ISPRA dell'anno di riferimento* con l'**Anno di riferimento** (l'anno in cui il Comune ha raggiunto il 65% di differenziata), oppure *Valori medi del cluster (Tabella 3)* con il **cluster SOSE**. Accanto il portale mostra la **differenziata dei rifiuti inseriti**: con la fonte ISPRA deve stare tra il 64% e il 66%, altrimenti il riquadro diventa rosso e tra gli avvisi del calcolo compare «l'anno di riferimento dello Standard 4.8.1 deve avere tra il 64% e il 66%». Anno e fonte compaiono nel rapporto PDF. Se l'anno di riferimento è diverso dall'anno monitorato, il controllo «i conferimenti delle utenze superano i rifiuti del territorio» avvisa solo oltre il +50% (con la raccolta che cresce, alcune frazioni aumentano rispetto all'anno di riferimento).
 
 **Passo 3 — Delibera tariffaria.** Dalla delibera TARI del Comune:
 
@@ -1279,7 +1279,7 @@ Il **buffer indicato a mano** deve essere un numero tra 0 e 80%: fuori da questo
 
 ### Leggere i risultati
 
-**Risultati non aggiornati (dal 30/10/2026).** Se dopo l'ultimo **Calcola** cambiate dati o impostazioni (per esempio le voci del buffer) senza ricalcolare, in cima al passo 7 compare un riquadro arancione «Risultati non aggiornati» con il pulsante **Calcola**: i valori mostrati sono ancora quelli del calcolo precedente.
+**Risultati non aggiornati (dal 31/10/2026).** Se dopo l'ultimo **Calcola** cambiate dati o impostazioni (per esempio le voci del buffer) senza ricalcolare, in cima al passo 7 compare un riquadro arancione «Risultati non aggiornati» con il pulsante **Calcola**: i valori mostrati sono ancora quelli del calcolo precedente.
 
 Dopo **Calcola** il passo 7 mostra in evidenza **Crediti netti** e **Crediti lordi (−ΔI)** in tCO₂eq e il buffer applicato, poi le tabelle di dettaglio:
 
@@ -1387,14 +1387,14 @@ In questi casi il riquadro rosso nei Risultati elenca gli errori e accanto a **S
 
 Nel riquadro sotto si indicano i **rifiuti misurati per utenza** (Tabella 16), le **utenze monitorate** (Tabella 15) e se sono attive la **tariffa puntuale**, la misura ai **centri di raccolta** (−2%) e la misura di ingombranti, verde o indumenti (−1%). Il portale mostra il **buffer secondo il Capitolo 7** con le voci che lo compongono: 20% se si contano solo le utenze virtuose, più le Tabelle 15 e 16, con la parte della Tabella 16 dimezzata dalla tariffa puntuale, al massimo 80%. **Usa questo buffer** lo applica allo scenario. Se il buffer impostato è più basso del minimo, i Risultati lo segnalano.
 
-**Niente taratura (dal 30/10/2026).** La funzione «Trova la variabilità», che partiva dai crediti per abitante voluti, è stata tolta: la stima parte solo dai dati del Comune e dalle ipotesi dichiarate (rilievo T11). Sono stati tolti anche i riferimenti a documenti esterni al Programma (Allegato A dei contratti EsaCom).
+**Niente taratura (dal 31/10/2026).** La funzione «Trova la variabilità», che partiva dai crediti per abitante voluti, è stata tolta: la stima parte solo dai dati del Comune e dalle ipotesi dichiarate (rilievo T11). Sono stati tolti anche i riferimenti a documenti esterni al Programma (Allegato A dei contratti EsaCom).
 
 **2. Scenario di riferimento (Standard 4.8.1).** È la situazione «senza progetto» con cui si confrontano gli obiettivi, come nel Programma. Due modi, scelti con i pulsanti:
 
 - **Anno con il 65% di differenziata**: l'anno in cui il Comune ha raggiunto l'obiettivo di legge (tra 64% e 66%, dati Catasto ISPRA), con popolazione e rifiuti per tipologia in tonnellate; si compilano a mano o, per gli Amministratori, si importano da un calcolo dei crediti. Se la differenziata dell'anno indicato è fuori dall'intervallo è un **errore**: il simulatore non calcola e chiede un altro anno o il cluster (Standard 4.8.1 e addizionalità normativa 4.9.1); se è indicato il cluster, segnala anche le tipologie che si scostano più del 30% dalla Tabella 3 (Gestione della qualità dei dati, 3.1.2);
 - **Valori medi del cluster (Tabella 3)**: quando il Comune non ha un anno con il 65%, si sceglie il cluster SOSE, si indica la popolazione ISPRA 2022 e si preme **Calcola dai valori medi del cluster**.
 
-A destra il riepilogo: produzione totale e pro capite, secco pro capite, **% di raccolta differenziata** e fattore di emissione del secco (formule 16-17). **Il riferimento si usa così com'è** (Standard 4.8.1, dal 30/10/2026): l'anno con il 64-66% di differenziata con le sue quantità, oppure i valori medi del cluster senza ricalcoli, riportati alla popolazione di ogni anno. Fino al 29/10 il simulatore riportava sempre il riferimento al 65% (stessa produzione, secco al 35%): era una scelta del portale, non dello Standard, e dava crediti più alti per i cluster con differenziata sopra il 65% e più bassi per quelli sotto. Gli scenari salvati prima si ricalcolano con la nuova regola quando si riaprono; quelli con un anno di riferimento fuori dal 64-66% mostrano l'errore e vanno corretti. La tabella dei risultati mostra ancora di quanti punti la differenziata supera l'obiettivo di legge del 65%. Un avviso compare se la produzione pro capite è fuori scala (unità di misura sbagliata). Unica eccezione: la micro simulazione della pagina pubblica «Approfondisci» del Marketing resta com'era.
+A destra il riepilogo: produzione totale e pro capite, secco pro capite, **% di raccolta differenziata** e fattore di emissione del secco (formule 16-17). **Il riferimento si usa così com'è** (Standard 4.8.1, dal 31/10/2026): l'anno con il 64-66% di differenziata con le sue quantità, oppure i valori medi del cluster senza ricalcoli, riportati alla popolazione di ogni anno. Fino al 29/10 il simulatore riportava sempre il riferimento al 65% (stessa produzione, secco al 35%): era una scelta del portale, non dello Standard, e dava crediti più alti per i cluster con differenziata sopra il 65% e più bassi per quelli sotto. Gli scenari salvati prima si ricalcolano con la nuova regola quando si riaprono; quelli con un anno di riferimento fuori dal 64-66% mostrano l'errore e vanno corretti. La tabella dei risultati mostra ancora di quanti punti la differenziata supera l'obiettivo di legge del 65%. Un avviso compare se la produzione pro capite è fuori scala (unità di misura sbagliata). Unica eccezione: la micro simulazione della pagina pubblica «Approfondisci» del Marketing resta com'era.
 
 **Situazione attuale (facoltativa).** L'ultimo anno con dati disponibili (popolazione, produzione pro capite, secco pro capite): è il punto di partenza degli obiettivi e della traiettoria. I crediti si calcolano sempre rispetto allo scenario di riferimento.
 
@@ -1507,7 +1507,7 @@ Se dopo 10 giorni dalla vendita la dichiarazione manca, la vendita mostra in ros
 
 ## Reclami, ricorsi e richieste di chiarimento
 
-La pagina **Reclami** (menu di tutti gli utenti) gestisce reclami, ricorsi e richieste di chiarimento secondo la *Politica di reclamo* del Programma (Guida cap. 8), che prevede «procedure di reclamo e ricorso». Ogni invio riceve un codice automatico: `REC-AAAA-NNN` per i reclami, `RIC-AAAA-NNN` per i ricorsi (dal 30/10/2026), `CHI-AAAA-NNN` per le richieste di chiarimento. Il ricorso si gestisce come il reclamo; se il suo iter deve essere diverso lo deciderà la Fondazione.
+La pagina **Reclami** (menu di tutti gli utenti) gestisce reclami, ricorsi e richieste di chiarimento secondo la *Politica di reclamo* del Programma (Guida cap. 8), che prevede «procedure di reclamo e ricorso». Ogni invio riceve un codice automatico: `REC-AAAA-NNN` per i reclami, `RIC-AAAA-NNN` per i ricorsi (dal 31/10/2026), `CHI-AAAA-NNN` per le richieste di chiarimento. Il ricorso si gestisce come il reclamo; se il suo iter deve essere diverso lo deciderà la Fondazione.
 
 **Cosa fa l'utente del portale.** In **Nuovo invio** sceglie il **Tipo** (*Richiesta di chiarimento*, *Reclamo* o *Ricorso*), il **Progetto** (facoltativo), scrive **Oggetto**, **Dettagli** (almeno 10 caratteri) e l'eventuale **Dichiarazione di eventuali conflitti di interesse**, poi **Invia**. Riceve il codice e segue stato e risposta in **I miei invii**.
 
@@ -2154,7 +2154,7 @@ Stima ex ante, non certificabile.
 
 **Modello (semplificato, da confermare con la Fondazione)**
 
-- Scenario di riferimento dell'anno *a*, sempre alla soglia del 65% di differenziata (richiesta di Luca del 19/10): Tot_rif(a) = Tot_rif × Pop(a) / Pop_rif; secco = 35% di Tot_rif(a); frazione *r* = 65% di Tot_rif(a) × quota di *r* nella differenziata del riferimento. Tot_rif dall'anno di riferimento dello Standard 4.8.1 o dalla Tabella 3.
+- Scenario di riferimento dell'anno *a* come da Standard 4.8.1 (dal 31/10/2026, rilievo T10; prima era sempre riportato alla soglia del 65%): Q_rif(r, a) = Q_rif(r) × Pop(a) / Pop_rif per ogni tipologia, con le quantità dell'anno di riferimento (differenziata tra 64% e 66%, altrimenti errore) o i valori medi del cluster SOSE (Tabella 3) senza ricalcoli. La sola micro simulazione della pagina /scopri (Marketing, invariato) riporta ancora la situazione attuale al 65%.
 - Scenario simulato: Q(secco, a) = secco pro capite(a) × Pop(a); Q(r, a) =
   (Totale(a) − Q(secco, a)) × quota di *r* nella differenziata dell'anno base.
 - Emissioni: E = − Σ Q(r) × FErid(r) (formule 13 e 25); FE del secco =
@@ -2178,7 +2178,7 @@ Costo per abitante interpolato linearmente tra 5.000 e 20.000 e tra 20.000 e 100
 
 In tutti i casi si aggiungono ente di validazione (una tantum), ente di verifica (ogni anno) e altri costi annui. Uscite: ricavi (con intervallo), costi, margine e cumulato per anno, anno di rientro, costo e ricavo per abitante nel periodo (come gli indicatori dell'Allegato A). Funzione `simulaEconomia` di `simulatore.js`.
 
-**Confronto con le stime dei contratti EsaCom (analisi del 19/10/2026).** L'Allegato A del contratto di partecipazione EsaCom stima 29.077 crediti all'anno (anni 1-4), 32.500 (anni 5-7) e 35.356 (anni 8-10) per 154.247 abitanti, cioè 0,19-0,23 crediti per abitante all'anno, «contabilizzando il rifiuto urbano residuo e la frazione organica con tariffazione puntuale». Il simulatore nella prima versione faceva solo il **bilancio del Comune** e dava molto meno (Bovisio-Masciago: 0,04). La differenza è di metodo, non un errore di calcolo: l'Allegato A usa l'opzione della formula 32 che **conta solo le utenze virtuose** (Capitolo 4.6), con il buffer del Capitolo 7.
+**Confronto con le stime dei contratti EsaCom (analisi storica del 19/10/2026; dal 31/10/2026 il portale non cita più documenti esterni al Programma e non ha più la taratura, rilievo T11).** L'Allegato A del contratto di partecipazione EsaCom stima 29.077 crediti all'anno (anni 1-4), 32.500 (anni 5-7) e 35.356 (anni 8-10) per 154.247 abitanti, cioè 0,19-0,23 crediti per abitante all'anno, «contabilizzando il rifiuto urbano residuo e la frazione organica con tariffazione puntuale». Il simulatore nella prima versione faceva solo il **bilancio del Comune** e dava molto meno (Bovisio-Masciago: 0,04). La differenza è di metodo, non un errore di calcolo: l'Allegato A usa l'opzione della formula 32 che **conta solo le utenze virtuose** (Capitolo 4.6), con il buffer del Capitolo 7.
 
 Il simulatore ha ora i due metodi:
 
@@ -2189,7 +2189,7 @@ Il simulatore ha ora i due metodi:
 
 Con il metodo per utenza Bovisio-Masciago ricade nell'intervallo dell'Allegato A. La parte maggiore dei crediti non viene dalla variabilità ipotizzata (con variabilità 0% resterebbe oltre 0,19) ma dal fatto che il Comune ha già l'84% di differenziata: il secco delle utenze è molto sotto il valore atteso dello scenario di riferimento al 65%, e misurando solo secco e organico lo spostamento verso carta, vetro e plastica non si compensa (è il motivo del buffer della Tabella 16).
 
-Modello della stima per utenza: per ogni rifiuto misurato, con A = quantità attesa (riferimento al 65%), m = produzione prevista / A e σ = variabilità tra utenze, i rifiuti evitati dalle sole utenze virtuose sono A × [d·Φ(d/σ) + σ·φ(d/σ)] con d = 1 − m (media di max(0, 1 − X) per X normale di media m e scarto σ); crediti lordi = Σ rifiuti evitati × |FErid|. Funzioni `quotaVirtuose`, `bufferMetodologia` e `taraVariabilita` di `simulatore.js`. Lettura prudente del Capitolo 7: la tariffa puntuale dimezza la parte della Tabella 16, non il 20% delle utenze virtuose.
+Modello della stima per utenza: per ogni rifiuto misurato, con A = quantità attesa (scenario di riferimento), m = produzione prevista / A e σ = variabilità tra utenze, i rifiuti evitati dalle sole utenze virtuose sono A × [d·Φ(d/σ) + σ·φ(d/σ)] con d = 1 − m (media di max(0, 1 − X) per X normale di media m e scarto σ); crediti lordi = Σ rifiuti evitati × |FErid|. Funzioni `quotaVirtuose`, `bufferMetodologia` e `taraVariabilita` di `simulatore.js`. Lettura prudente del Capitolo 7: la tariffa puntuale dimezza la parte della Tabella 16, non il 20% delle utenze virtuose.
 
 Altre osservazioni sull'Allegato A:
 - i costi: le tabelle del 28/07/2026 con 154.247 abitanti danno 82.614 € all'anno (826.139 € in 10 anni, 5,36 € per abitante; le voci «una tantum» sono pagate in 10 rate annuali, come dicono i contratti). L'Allegato indica 6,08 € per abitante: la differenza (circa 111.700 € in 10 anni) potrebbe essere il costo dell'ente di validazione e verifica, che le tabelle escludono. Da chiarire con chi ha preparato l'Allegato;
@@ -2201,7 +2201,7 @@ Altre osservazioni sull'Allegato A:
 |---|---|---|
 | Durata | Standard 4.3.8: 7 anni ripetibili tre volte o 10 anni | Menu 7 / 10 / 21 anni |
 | Scenario di riferimento | Standard 4.8 e 4.8.1: anno con differenziata 64-66% o Tabella 3 × popolazione ISPRA 2022 | I due metodi, con controllo dell'intervallo |
-| Addizionalità normativa | Standard 4.9.1 | Avviso se l'anno di riferimento è fuori 64-66% |
+| Addizionalità normativa | Standard 4.9.1 | Errore se l'anno di riferimento è fuori 64-66% (dal 31/10/2026; prima era un avviso) |
 | Qualità dei dati | Gestione qualità 3.1.2: ±30% dalla Tabella 3 | Avviso per tipologia |
 | Stima ex ante aggregata | Metodologia 6.1 (semplificazione a) e 6.2 | Valori medi su tutto il Comune |
 | Emissioni | Formule 13 e 25, FErid Tabelle 3-4 | Stesse formule e fattori di `parametri.js` |

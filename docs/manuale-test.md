@@ -264,11 +264,11 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | --- | --- | --- |
 | 8b.1 | [O] Menu Simulatore → + Nuovo scenario: Comune scritto a mano «Comune di Prova», nome «Obiettivo», durata dal menu **10 anni**, primo anno 2027 → Crea | Si apre lo scenario con 10 righe di obiettivi (2027-2036) |
 | 8b.2 | Scenario di riferimento → Valori medi del cluster (Tabella 3): popolazione 10000, cluster 4 → Calcola dai valori medi del cluster | Tabella dei rifiuti compilata; riepilogo: produzione 445 kg/ab, secco 95 kg/ab, differenziata circa 78,7% |
-| 8b.2b | Passate ad «Anno con il 65% di differenziata» lasciando gli stessi rifiuti | Riquadro arancione «Lo Standard 4.8.1 chiede un anno con differenziata tra 64% e 66%» e avviso nei Risultati; tornando al cluster l'avviso sparisce |
+| 8b.2b | Passate ad «Anno con il 65% di differenziata» lasciando gli stessi rifiuti | Dal 31/10/2026 (rilievo T10) è un errore: «Scenario di riferimento: l'anno indicato ha il 78,7% di differenziata. Lo Standard (4.8.1) chiede…», nessun risultato e Salva disattivato; tornando al cluster i risultati ricompaiono, con l'avviso «valori medi del cluster… usati così come sono» |
 | 8b.2c | Situazione attuale: anno 2025, produzione 430 kg/ab, secco 90 kg/ab | «Differenziata attuale: 79,1%»; gli obiettivi nuovi partono da questi valori |
 | 8b.3 | Obiettivi: pro capite finale 350, secco pro capite finale 60 → Applica la traiettoria | Righe compilate in modo lineare; la % di differenziata cresce ogni anno; nei Risultati crediti netti positivi e crescenti, grafici aggiornati |
 | 8b.3b | Impostazioni: metodo «Per utenza: solo utenze virtuose», rifiuti misurati «Indifferenziato e organico», spuntate Tariffa puntuale | Buffer secondo il Capitolo 7: 30% (20% + 10%); se il buffer impostato è più basso compare l'avviso; con «Usa questo buffer» diventa 30; nei Risultati crediti più alti e colonna «Bilancio del Comune» per confronto |
-| 8b.3c | Taratura: scrivete 0,19 e premete Trova la variabilità | La variabilità cambia e il riquadro «Per abitante all'anno» mostra circa 0,190 (oppure il messaggio «Valore non raggiungibile» se con questi dati non si può) |
+| 8b.3c | Cercate la taratura («Trova la variabilità») | Non c'è più (dal 31/10/2026, rilievo T11): la variabilità tra utenze è solo un'ipotesi dichiarata, predefinita 30% |
 | 8b.4 | Cambiate la durata a **21 anni**, poi a **7 anni** | Le righe diventano 21 e poi 7; i valori già inseriti per gli stessi anni restano |
 | 8b.5 | In un anno portate il secco pro capite oltre il pro capite totale | Riquadro rosso «Dati non ammessi»: «il secco previsto … supera la produzione totale»; nessun risultato; **Salva** disattivato (dal 20/10/2026: prima era solo un avviso) |
 | 8b.5b | Collaudo V01, D01. Nella prima riga: produzione pro capite **−10**; poi secco pro capite **−10**; poi popolazione **−1000** e **0** (ripristinate ogni volta) | Ogni volta: nessun risultato, riquadro rosso con l'anno e il campo, «Da correggere prima di salvare», Salva disattivato |
@@ -337,9 +337,9 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 10.10h | [A] Dal telefono: Dashboard e Audit | Ogni pratica (e ogni evento) è una scheda con le etichette delle colonne; «Ordina per» sopra le schede funziona |
 | 10.10i | [O] e [C] Dal telefono: Pratiche (o Le mie pratiche con più pratiche) | Prima l'elenco; toccando una pratica il dettaglio con «← Tutte le pratiche» in alto, che riporta all'elenco; con una sola pratica il Comune vede subito il dettaglio |
 | 10.10l | Dal telefono (iPhone) toccate un campo di ricerca o di testo; aprite l'assistente ✦ | La pagina non si ingrandisce; l'assistente occupa tutto lo schermo e si chiude con ✕ |
-| 10.10m | [A] Dashboard: riquadri **Crediti in simulazione** e **Crediti in fase esecutiva** | Crediti ed euro di tutto il portale; nella simulazione un solo scenario per Comune (l'ultimo aggiornato); in fase esecutiva le righe Calcolati, Emessi e Venduti con il prezzo di riferimento indicato |
+| 10.10m | [A] Dashboard: riquadri **Crediti in simulazione** e **Crediti in fase esecutiva** | Crediti ed euro di tutto il portale; nella simulazione un solo scenario per Comune (l'ultimo aggiornato); in fase esecutiva le righe Calcolati, Emessi e Venduti con il valore ipotetico del credito indicato |
 | 10.10n | [A] Simulatore: aprite uno scenario salvato prima del 23/10, premete **Salva**, tornate alla Dashboard | Il numero di scenari «valorizzati a 32 €/credito» scende di uno; gli euro dello scenario sono i suoi ricavi |
-| 10.10o | [A] Impostazioni → Prezzo di riferimento del credito: 40 → Salva; poi rimettete il valore di prima | La Dashboard valorizza calcolati ed emessi al nuovo prezzo; due voci «modifica prezzo di riferimento del credito» in Audit; un prezzo negativo è rifiutato |
+| 10.10o | [A] Impostazioni → Valore ipotetico del credito: 40 → Salva; poi rimettete il valore di prima | La Dashboard valorizza calcolati ed emessi al nuovo prezzo; due voci «modifica prezzo di riferimento del credito» in Audit; un prezzo negativo è rifiutato |
 | 10.10p | [C] Come utente del Comune aprite **Le mie pratiche** | I due riquadri «Valore dei crediti della tua organizzazione» con i soli dati del vostro Comune (nessun dato di altri Comuni) |
 | 10.10q | [A] Pratiche → + Nuovo progetto senza scegliere il listino; poi scegliete Caso 2 con popolazione 16735 | Senza listino: «Scegli il listino…»; con Caso 2 compare «Valore del progetto: … in 10 anni (… all'anno)» |
 | 10.10r | [A] Progetto aperto prima del 23/10: «Listino: da indicare»; Modifica i dati → Caso 1, popolazione 16735 → Salva | Compare «Valore del progetto per il cliente: 162.329,50 € in 10 anni (16.232,95 € all'anno)»; in Audit «modifica pratica»; nella Dashboard il riquadro «Valore dei progetti» lo conta |
@@ -371,7 +371,7 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 
 **Dove finiscono le segnalazioni.** Ogni segnalazione dei collaudatori entra nel **Registro issue e test** (Documentazione, solo Amministratori), con data e ora, azione correttiva e stato (per esempio «CORRETTO_DA_RITESTARE»). Le prove da ripetere sono indicate nel registro con il numero del caso di questo manuale.
 
-### 11. Rilievi TEST_PORTALE_CWP (dal 30/10/2026)
+### 11. Rilievi TEST_PORTALE_CWP (dal 31/10/2026)
 
 Prove per ritestare i rilievi del documento TEST_PORTALE_CWP del 29/10/2026. Il Marketing (rilievi T30 e T31) è rimasto invariato per scelta di Luca.
 

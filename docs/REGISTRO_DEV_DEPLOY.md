@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Ultimo aggiornamento** | 30 ottobre 2026 |
-| **Versione del portale** | 0.47 (ultimo script database eseguito: `47_listino_obbligatorio.sql`, script 01-47). Pronto sul ramo `correzioni-rilievi-t`, da eseguire con l'OK di Luca: `48_rilievi_test_portale.sql` |
+| **Ultimo aggiornamento** | 31 ottobre 2026 |
+| **Versione del portale** | 0.48 (ultimo script database eseguito: `48_rilievi_test_portale.sql`, script 01-48, eseguito il 31/10/2026 alle 09:12) |
 | **Indirizzo** | https://portale-cwp.vercel.app |
 | **Repository** | https://github.com/lucamorettioperate/portale-cwp (pubblico: solo codice, nessun dato) |
 | **Responsabile** | Luca Moretti — Fondazione Operate |
@@ -259,7 +259,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `33_audit_trail_user.sql` | Audit User (backlog 40): tabella `registro_accessi` (accesso, uscita, accesso non riuscito; utente, email, ora; immutabile, RLS senza regole, nessun IP); `registra_accesso`, `registra_uscita` (cancella anche la presenza), `registra_accesso_fallito` (anon, limite 10 per email ogni 15 minuti e 300 all'ora); `registra_download` (scrive «download documento» nell'audit solo se l'utente vede il documento); lettura solo per l'Amministratore principale: `app_e_principale`, `audit_utenti_stato`, `audit_registro_accessi`, `audit_operazioni_utente` | 20/10/2026 — provato sul banco locale (`t33.sql`); **eseguito in produzione il 20/10** e provato dal vivo |
 | `34_sicurezza_avvisi.sql` | Sicurezza (backlog 14, 30): avvisi all'Amministratore principale (`cwp_avviso_sicurezza`, evento «sicurezza»): 5 accessi non riusciti in 15 minuti per email, 30 in un'ora in tutto, nuovo Amministratore (trigger `trg_profilo_avviso_admin`); `registra_uscita(p_motivo)` con l'uscita per inattività; rinforzi del Security Advisor: `search_path` fisso su tutte le funzioni, funzioni SECURITY DEFINER non eseguibili da anon (tranne `registra_accesso_fallito` e quelle usate nelle regole RLS) | 20/10/2026 — provato sul banco locale (`t34.sql`, regressioni `t33.sql`); **eseguito in produzione il 23/10/2026 alle 12:20** su incarico di Luca, dopo gli script 35-43 (prova sul banco nello stesso ordine: stesse 9 funzioni eseguibili senza accesso, `t41`-`t43` invariati) |
 | `47_listino_obbligatorio.sql` | Listino obbligatorio (25/10/2026, richiesta di Luca delle 12:07; **eseguito in produzione il 25/10/2026 alle 12:15**): i Progetti senza listino passano a Caso 1 con motivazione nell'audit; trigger `trg_pratica_listino` (messaggio «Scegli il listino…») e vincolo `chk_progetto_listino` (ogni Progetto ha Caso 1 o Caso 2; i Rapporti no). Prova `t47.sql` |
-| `48_rilievi_test_portale.sql` | Rilievi TEST_PORTALE_CWP del 29/10/2026 (scelte di Luca del 30/10: tutto tranne il Marketing). Fasi: Progetto 5 «Validazione del progetto», 7 «Registrazione del progetto», Rapporto 7 «Emissione dei crediti» (fase e durata_fase). `staff_cruscotto` con ente di validazione, fatture scadute e in scadenza, dichiarazioni di cancellazione da ricevere e oltre i 10 giorni. `ente_validazione.approvato_il`. `cwp_piva_valida`, `cwp_cf_valido`, trigger `trg_organizzazione_dati_fiscali` (controllo quando si scrivono CF e P.IVA) e `trg_pagamento_dati_fiscali` (voci iscrizione e registrazione solo con CF valido). `documento_richiesto.obbligatorio`, voce «Modulo di delega di rappresentanza» in fase 1 non obbligatoria, `cwp_documenti_mancanti`; `staff_chiudi_fase`: fase 2 del Progetto solo con codici ISTAT, fasi 2 e 6 solo con i documenti obbligatori delle fasi precedenti salvo deroga motivata dell'Amministratore (audit). `reclamo`: tipo «ricorso» (codice RIC), `costi_comunicati_il`, `costi_non_dovuti` (costi a 0). `cwp_progetto_registrato` e trigger `trg_calcolo_ex_post` (ex post solo per anno concluso e Progetto registrato, alla creazione, al cambio di anno/tipo/pratica e alla conferma). `pratica_codice_automatico`: codice sempre automatico. `calcolo_utenza.nominativo` e `indirizzo` facoltativi; `admin_salva_utenza` non li salva più. Prova `t48.sql` |
+| `48_rilievi_test_portale.sql` | Rilievi TEST_PORTALE_CWP del 29/10/2026 (scelte di Luca del 30/10: tutto tranne il Marketing). Fasi: Progetto 5 «Validazione del progetto», 7 «Registrazione del progetto», Rapporto 7 «Emissione dei crediti» (fase e durata_fase). `staff_cruscotto` con ente di validazione, fatture scadute e in scadenza, dichiarazioni di cancellazione da ricevere e oltre i 10 giorni. `ente_validazione.approvato_il`. `cwp_piva_valida`, `cwp_cf_valido`, trigger `trg_organizzazione_dati_fiscali` (controllo quando si scrivono CF e P.IVA) e `trg_pagamento_dati_fiscali` (voci iscrizione e registrazione solo con CF valido). `documento_richiesto.obbligatorio`, voce «Modulo di delega di rappresentanza» in fase 1 non obbligatoria, `cwp_documenti_mancanti`; `staff_chiudi_fase`: fase 2 del Progetto solo con codici ISTAT, fasi 2 e 6 solo con i documenti obbligatori delle fasi precedenti salvo deroga motivata dell'Amministratore (audit). `reclamo`: tipo «ricorso» (codice RIC), `costi_comunicati_il`, `costi_non_dovuti` (costi a 0). `cwp_progetto_registrato` e trigger `trg_calcolo_ex_post` (ex post solo per anno concluso e Progetto registrato, alla creazione, al cambio di anno/tipo/pratica e alla conferma). `pratica_codice_automatico`: codice sempre automatico. `calcolo_utenza.nominativo` e `indirizzo` facoltativi; `admin_salva_utenza` non li salva più. Prova `t48.sql`. **Eseguito in produzione il 31/10/2026 alle 09:12** (OK di Luca del 31/10; controllo finale 0 · 1 · 3: nessun codice fiscale non valido, delega «se applicabile», 3 nomi di fase nuovi) |
 | `46_lettura_siti.sql` | Lettore dei siti di Comuni e gestori (25/10/2026, richiesta di Luca; versione gratuita scelta da Luca; **eseguito in produzione il 25/10/2026 alle 11:45**): tabella `mkt_lettura` (coda: stato, tentativi, pagine lette, esito, errore), impostazioni `mkt_lettura_attiva`, `mkt_lettura_segreto` (codice casuale per il lavoro pianificato, non leggibile dal portale) e `url_marketing`; `admin_mkt_lettura_accoda`, `admin_mkt_lettura_attiva`, `admin_mkt_lettura_riepilogo`, `mkt_lettura_prendi` (solo chiave di servizio, `skip locked`, riprende le letture interrotte), `richiedi_lettura_siti` e lavoro pianificato `cwp_lettura_siti` ogni 30 secondi. Prova `t46.sql` |
 | `45_rapporto_registrato_marketing_rls.sql` | Segnalazioni di Luca del 23/10 alle 15:24 (**eseguito in produzione il 23/10/2026 alle 15:50**): `rapporto_coerente` rifiuta un nuovo Rapporto di Monitoraggio se il Progetto non è registrato (fase 6 completata o `data_registrazione`); il trigger resta solo sull'inserimento (i Rapporti già creati non si toccano). Regole RLS delle 6 tabelle `mkt_*` con `(select app_is_admin())`, calcolata una volta per lettura (l'elenco di tutti i Comuni superava il tempo massimo); indice `idx_mkt_ente_tipo_denominazione`. Prova `t45.sql` |
 | `44_marketing.sql` | Marketing (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026 alle 12:12**): tabelle `mkt_ente` (Comuni e gestori: chiave `istat:` / `albo:`, regione, provincia, abitanti, PEC, email generica con controllo «non PEC», sito, natura, numero e categorie dell'Albo, attività di raccolta e tariffa, fonti), `mkt_referente` (sindaco, tributi, ambiente, finanziario, tecnico, direttori, amministratore), `mkt_campagna`, `mkt_invio` (un invio per ente con codice casuale, stato, visita, simulazione, richiesta), `mkt_disiscrizione`, `mkt_richiesta` (richieste di registrazione dalla pagina /scopri; id uuid per l'audit); RLS solo Amministratori, nessun accesso anonimo; audit di campagne e richieste; `mkt_sembra_pec`, `admin_mkt_prepara_invii` (salta enti senza email e indirizzi disiscritti), `admin_mkt_riepilogo`. Prova `t44.sql` |
@@ -453,7 +453,7 @@ Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), c
 
 ---
 
-## 7. Funzionalità per area (stato al 26/10/2026)
+## 7. Funzionalità per area (stato al 31/10/2026)
 
 | Area (requisiti) | Stato | Dettaglio |
 |---|---|---|
@@ -473,7 +473,7 @@ Nell'intestazione, inoltre: «● n online» (solo Amministratore principale), c
 | Conservazione (§12) | Fatto (parte tecnica) | Nessuna cancellazione; data di conservazione a 12 anni (Guida 6.2.1 e 6.5.1); la procedura di cancellazione a fine periodo la definirà la Fondazione |
 | Piattaforma pubblica (Guida 3.7) | Fatto | Pagina /programma: informazioni del Programma, enti, registri, metodologie, documenti e modulistica, Progetti dal momento «in fase di validazione» con documenti pubblici, Rapporti e crediti |
 | Crediti emessi (Guida 6.3.2-6.3.3, Standard 6) | Fatto | Lotti con ID univoci emessi dall'Admin dopo la registrazione del Rapporto (con il limite del calcolo ex post confermato), caricamento sul registro esterno, vendite comunicate dal registro, cancellazione tombale (attivo / ritirato), avviso dopo 10 giorni senza dichiarazione |
-| Reclami (Politica di reclamo, Guida 8) | Fatto | Invio dal portale, registrazione dei reclami arrivati via PEC, gestore, conferma, risposta scritta, costi, note interne, notifiche |
+| Reclami (Politica di reclamo, Guida 8) | Fatto | Reclami, ricorsi (dal 31/10) e richieste di chiarimento; invio dal portale, registrazione dei reclami arrivati via PEC, gestore, conferma, risposta scritta, costi, note interne, notifiche |
 | Calcolo crediti (Metodologia v1.2) | Fatto (scelte interpretative da confermare) | Motore formule 1-32, Tabelle 3-5, 8, 15, 16; import diretto del tracciato con aggregazione delle letture, blocco dei dati personali e controlli di coerenza; Banca Dati Utenze per utenza (passo 5a: file dell'anno, moduli, categoria tariffaria e di simulazione) usata dal motore dal 23/10/2026; controlli della Gestione qualità dei dati (Tabella 3 dello Standard ±30% con motivazione obbligatoria, completezza, unicità, letture a buon fine, tempestività); calcoli confermati immutabili con numero progressivo interno; rapporto PDF. Funzione migliorativa: per la Metodologia il calcolo lo fa il promotore nel Rapporto e l'ente lo verifica |
 | Amministrazione | Fatto | Utenti (più Amministratori, principale protetto, cancellazione dei mai attivi), audit, Audit User, utenti online, impostazioni: durata fasi, documenti richiesti, modelli di documento; simulatore con PDF ed Excel; assistente virtuale |
 | Marketing (richiesta del 23/10) | Fatto (in produzione dal 23/10) | Banche dati di tutti i Comuni (ISTAT + IndicePA) e dei gestori dell'Albo in categoria 1 con PEC, email generica e referenti; campagne email con grafica verso i destinatari scelti (solo email generiche, mai PEC), pagina pubblica /scopri con micro simulazione, fascicolo PDF e richiesta di registrazione a tutti gli Amministratori. Banche dati caricate il 23/10: 7.904 Comuni e 5.818 gestori in categoria 1. Dal 25/10 lettura automatica e gratuita dei siti (script 46): al 26/10 7.904 Comuni con 6.182 email generiche, 7.504 PEC, 3.866 telefoni, email degli uffici tributi o ambiente per 3.092 Comuni; gestori: 166 lombardi delle classi A-C verificati a mano, 135 email generiche. Mancano: dominio email verificato, verifica legale delle email promozionali, sito e recapiti di circa 5.650 gestori senza sito conosciuto |
@@ -558,14 +558,33 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 
+### 31 ottobre 2026
+- **Rilievi TEST_PORTALE_CWP in produzione** (OK di Luca delle 09:11:
+  «aggiorna tutta la documentazione e slide, documenti, codice»). Script
+  `48_rilievi_test_portale.sql` eseguito alle 09:12 dall'editor SQL di
+  Supabase (codice caricato dal repository; controllo finale 0 · 1 · 3).
+  Ramo `correzioni-rilievi-t` unito in `main` (commit `38c262c`),
+  pubblicazione Vercel riuscita; nel sito pubblicato verificati i testi
+  nuovi (fasi, «Anno di monitoraggio», «Valore ipotetico», ricorso,
+  «Scarica CSV»). I 21 rilievi corretti passano a «da ritestare in
+  produzione».
+- **Pulizia del simulatore** (ramo `pulizia-simulatore`): tolta la
+  funzione di taratura della variabilità non più usata (`taraVariabilita`)
+  e i commenti su EsaCom; `docs/crediti-cwp.md` allineato al modello del
+  riferimento (T10); manuali Utente, Amministratore e di Test aggiornati
+  (8b.2b anno fuori 64-66% = errore, 8b.3c senza taratura).
+- Documentazione rigenerata: Registro, Registro issue, manuali, Base di
+  conoscenza dell'assistente, presentazione (slide del collaudo: «21
+  correzioni in produzione dal 31/10»).
+
 ### 30 ottobre 2026
 - **Rilievi TEST_PORTALE_CWP (documento del 29/10, mandato da Luca alle
   15:24).** 31 rilievi T01-T31 verificati su portale, codice, database (in
   lettura) e documenti del Programma; risposte nel documento di progetto
   `claude/test-portale-cwp-risposte.md`, registro issue aggiornato. Scelte
   di Luca: «tutto ma lascia il marketing invariato» (T30 e T31 esclusi).
-- **Correzioni sul ramo `correzioni-rilievi-t`** (non ancora in
-  produzione): script 48 e pagine.
+- **Correzioni sul ramo `correzioni-rilievi-t`** (in produzione dal
+  31/10): script 48 e pagine.
   - Fasi (T01, T02): «Validazione del progetto», «Registrazione del
     progetto», «Emissione dei crediti».
   - Dashboard (T03, T05): stato nel Programma (Guida) sotto lo stato
@@ -1874,12 +1893,12 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 Numerazione stabile: un punto mantiene il suo numero anche quando è
 completato (va barrato qui e annotato in Cronologia).
 
-**Da fare subito (stato al 30/10/2026)** — riepilogo delle azioni
+**Da fare subito (stato al 31/10/2026)** — riepilogo delle azioni
 aperte; il dettaglio è nei punti numerati qui sotto.
 
 *Azioni di Luca (Claude non le può fare: chiavi, pubblicazioni, account)*
-- **Rilievi TEST_PORTALE_CWP**: OK per eseguire lo script 48 e pubblicare il
-  ramo `correzioni-rilievi-t`; poi decidere cosa fare dello scenario di
+- **Rilievi TEST_PORTALE_CWP** (in produzione dal 31/10): ritestare i 21
+  rilievi corretti con i collaudatori; decidere cosa fare dello scenario di
   prova di Borgoval (non conforme allo Standard) e girare alla Fondazione
   le domande T01, T04, T06, T16, T17, T21, T24, T27 (documento di progetto
   `claude/test-portale-cwp-risposte.md`).
@@ -2252,7 +2271,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 189 file, 45.670 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 189 file, 45.683 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -2349,7 +2368,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 189 file, 45.670 righe 
 | `src/lib/crediti/qualita.js` | 141 | indicatori di qualità dei dati di un calcolo dei crediti, oltre ai controlli di coerenza di tracciato.js: - soglia di scostamento ±30% (cap. 3.1.2) tra la produzione pro capite dei rifiuti del territorio e i valori medi del… |
 | `src/lib/crediti/rapportoPdf.js` | 385 | genera nel browser, con jsPDF e jspdf-autotable, il rapporto di un calcolo: scheda, sintesi dei crediti, buffer, dati di ingresso, risultati per tipologia e per classe, avvisi, controlli di coerenza e scelte interpretative. Il… |
 | `src/lib/crediti/scenari.js` | 75 | unico punto in cui il portale legge e scrive la tabella scenario_simulazione (supabase/28_simulatore.sql). |
-| `src/lib/crediti/simulatore.js` | 978 | dati i rifiuti dell'anno base (per tipologia) e, per ogni anno del periodo, gli obiettivi di produzione totale e di secco residuo pro capite, ricalcola la percentuale di raccolta differenziata e stima i crediti anno per anno con… |
+| `src/lib/crediti/simulatore.js` | 953 | dati i rifiuti dell'anno base (per tipologia) e, per ogni anno del periodo, gli obiettivi di produzione totale e di secco residuo pro capite, ricalcola la percentuale di raccolta differenziata e stima i crediti anno per anno con… |
 | `src/lib/crediti/simulatoreExport.js` | 494 | Campo vuoto (non indicato) e numero da testo con la virgola decimale. |
 | `src/lib/crediti/simulatorePdf.js` | 444 | Colori RGB, uguali alla palette del portale e al rapporto di calcolo. |
 | `src/lib/crediti/tracciato.js` | 720 | legge il file del tracciato compilato dal Comune o dal gestore, blocca l'import se trova dati personali, converte i fogli nei dati del motore di calcolo (calcolo.js) e segnala le incoerenze. |
@@ -2460,7 +2479,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 189 file, 45.670 righe 
 | `test/qualita.test.mjs` | 43 | verificare il confronto con la Tabella 3 dello Standard CWP (soglia ±30%) e gli indicatori di completezza, unicità, letture a buon fine e tempestività. |
 | `test/rilievi_n.test.mjs` | 134 | ---------------------------------------------------------------- N01 |
 | `test/rilievi_t.test.mjs` | 70 | — |
-| `test/simulatore.test.mjs` | 283 | verificare il riepilogo dell'anno base (totale, pro capite, % differenziata, fattore del secco), i dati dal cluster SOSE e da un calcolo, gli anni del periodo (7, 10, 21), la traiettoria lineare e la stima dei crediti anno per… |
+| `test/simulatore.test.mjs` | 273 | verificare il riepilogo dell'anno base (totale, pro capite, % differenziata, fattore del secco), i dati dal cluster SOSE e da un calcolo, gli anni del periodo (7, 10, 21), la traiettoria lineare e la stima dei crediti anno per… |
 | `test/simulatoreExport.test.mjs` | 94 | verificare che le tabelle preparate per PDF ed Excel riprendano i risultati del simulatore (sintesi, anni, economia, costi del Caso 1), che il file .xlsx sia un archivio valido con i fogli attesi e numeri veri nelle celle, e che… |
 | `test/tariffe.test.mjs` | 44 | verificare gli importi proposti per le voci di pagamento con gli esempi dello Schema tariffario v1.2: fasce di popolazione, quote per credito previsto, scaglioni cumulativi di emissione e minimo di vendita. |
 | `test/tracciato.test.mjs` | 110 | cinque prove sui file di esempio: lettura dell'Excel compilato, blocco dei dati personali (con valori oscurati nei messaggi), ZIP di CSV con singole letture (aggregazione ed esclusione delle letture fuori anno), controlli di… |
@@ -2481,7 +2500,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 189 file, 45.670 righe 
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/marketing_arricchimento_sql.py` | 107 | — |
 | `strumenti/presentazione/genera_presentazione.cjs` | 704 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1830 | — |
+| `strumenti/revisioni_documenti.json` | 1878 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
