@@ -68,7 +68,7 @@ prova("base di conoscenza degli Operatori senza i capitoli riservati", () => {
   for (const c of ["## Gestione utenti", "## Audit User", "## Audit trail", "## Impostazioni", "## Calcolo dei crediti CWP", "## Backup automatico", "## Sicurezza"]) {
     assert.ok(!kb.includes(c), c);
   }
-  for (const c of ["## Pratiche: Progetti e Rapporti di monitoraggio", "## Simulatore di scenari", "## Crediti emessi", "## Reclami e richieste di chiarimento"]) {
+  for (const c of ["## Pratiche: Progetti e Rapporti di monitoraggio", "## Simulatore di scenari", "## Crediti emessi", "## Reclami, ricorsi e richieste di chiarimento"]) {
     assert.ok(kb.includes(c), c);
   }
 });

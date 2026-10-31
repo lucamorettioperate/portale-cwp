@@ -575,7 +575,7 @@ const n0 = (v) => Number(String(v ?? "").replace(",", ".")) || 0;
 // origine: "conferimenti" (passo 5b, tracciato) oppure "utenze" (passo 5a:
 // righe di utenzeInConferimenti di calcolo.js, con i kg misurati e la
 // categoria di simulazione come classe; 23/10/2026).
-export function controllaCoerenza({ anno, anagrafica = {}, rifiuti = [], pefUd, pefUnd, classiUd = [], classiUnd = [], conferimenti = [], riuso = [], ps = {}, origine = "conferimenti" }) {
+export function controllaCoerenza({ anno, anagrafica = {}, rifiuti = [], pefUd, pefUnd, classiUd = [], classiUnd = [], conferimenti = [], riuso = [], ps = {}, origine = "conferimenti", annoRiferimento = null }) {
   const daUtenze = origine === "utenze";
   const esiti = [];
   const errore = (testo) => esiti.push({ livello: "errore", testo });
@@ -695,9 +695,21 @@ export function controllaCoerenza({ anno, anagrafica = {}, rifiuti = [], pefUd, 
     const kg = (n0(c.svuotamenti) * n0(c.volume) + n0(c.volumeStrutture) + n0(c.volumeCdr)) * p / 1000 + n0(c.pesoStrutture) + n0(c.pesoCdr) + n0(c.kg);
     kgPer[c.tipologia] = (kgPer[c.tipologia] || 0) + kg * (Number(c.nUtenze) || 1);
   });
+  // Rilievo T23 (30/10/2026): se i rifiuti del passo 2 sono quelli di un
+  // anno di riferimento diverso dall'anno monitorato (Standard 4.8.1), più
+  // rifiuti di una frazione sono normali quando la raccolta cresce: si
+  // avvisa solo oltre il +50% e lo si dice. Con lo stesso anno resta il
+  // controllo del +10%.
+  const riferimentoDiverso = annoRiferimento && anno && Number(annoRiferimento) !== Number(anno);
   for (const [t, kg] of Object.entries(kgPer)) {
     const tot = rifiuti.filter((r) => r.tipologia === t).reduce((s, r) => s + n0(r.qtot), 0) * 1000;
-    if (tot && kg > tot * 1.1) avviso(`«${t}»: i conferimenti delle utenze (${Math.round(kg / 1000).toLocaleString("it-IT")} t) superano il totale del territorio (${Math.round(tot / 1000).toLocaleString("it-IT")} t).`);
+    const t1 = Math.round(kg / 1000).toLocaleString("it-IT");
+    const t2 = Math.round(tot / 1000).toLocaleString("it-IT");
+    if (riferimentoDiverso) {
+      if (tot && kg > tot * 1.5) avviso(`«${t}»: i conferimenti delle utenze (${t1} t) superano di oltre il 50% i rifiuti dell'anno di riferimento ${annoRiferimento} (${t2} t, passo 2): normale solo se la raccolta di questa frazione è molto cresciuta, altrimenti verificate i dati.`);
+    } else if (tot && kg > tot * 1.1) {
+      avviso(`«${t}»: i conferimenti delle utenze (${t1} t) superano di oltre il 10% i rifiuti del territorio dello stesso anno (${t2} t, passo 2): verificate i dati o indicate nel passo 2 l'anno di riferimento da cui vengono i rifiuti.`);
+    }
   }
 
   // Riuso

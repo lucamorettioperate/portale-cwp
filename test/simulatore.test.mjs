@@ -118,22 +118,32 @@ prova("aumento dei rifiuti: debito e nessun credito; popolazione in crescita", (
   vicino(r.righe[1].lordi, 0, 1e-6);
 });
 
-prova("riferimento sempre alla soglia del 65% e controllo dei valori fuori scala", () => {
+prova("riferimento come da Standard 4.8.1 (rilievo T10) e controllo dei valori fuori scala", () => {
   const anni = [{ anno: 2027, popolazione: 10000, totale: 3600, seccoProCapite: 80 }];
-  // Dati al 65%: nessun avviso, secco di riferimento = 35% del totale.
+  // Anno al 65%: nessun avviso; il riferimento è l'anno così com'è.
   const r65 = simula({ annoBase, anni });
   assert.equal(r65.avvisi.length, 0);
   vicino(r65.righe[0].seccoRiferimento, 1400);
   vicino(r65.righe[0].rdOltreSoglia, (2800 / 3600) * 100 - 65);
-  // Dati all'85%: riportati al 65% con avviso, stessa produzione totale.
+  // Anno all'85%: non conforme, errore (prima si riportava al 65%).
   const al85 = { ...annoBase, rifiuti: { organico: 1700, carta: 1000, vetro: 450, plastica: 250, indifferenziato: 600 } };
   const r85 = simula({ annoBase: al85, anni });
-  assert.ok(r85.avvisi.some((x) => x.includes("riporta alla soglia del 65%")));
-  vicino(r85.righe[0].seccoRiferimento, 1400);
-  vicino(r85.righe[0].riferimento, 4000);
-  // Tabella 3: avviso di scostamento; valori fuori scala (es. 2,5 kg/ab).
+  assert.ok(r85.errori.some((x) => x.includes("Standard (4.8.1)")));
+  assert.equal(r85.righe.length, 0);
+  // Anno al 64% e al 66%: ammessi, senza ricalcolo.
+  const al66 = { ...annoBase, rifiuti: { organico: 1340, carta: 770, vetro: 360, plastica: 170, indifferenziato: 1360 } };
+  const r66 = simula({ annoBase: al66, anni });
+  assert.equal(r66.errori.length, 0);
+  vicino(r66.righe[0].seccoRiferimento, 1360);
+  // Cluster: valori della Tabella 3 così come sono, con un avviso informativo.
+  const cl = { metodo: "cluster", cluster: 4, popolazione: 10000, rifiuti: { organico: 1000, carta: 600, vetro: 300, plastica: 200, indifferenziato: 1900 } };
+  const rc = simula({ annoBase: cl, anni });
+  assert.equal(rc.errori.length, 0);
+  vicino(rc.righe[0].seccoRiferimento, 1900);
+  assert.ok(rc.avvisi.some((x) => x.includes("così come sono")));
+  // Tabella 3: avviso di scostamento; valori fuori scala (es. 8 kg/ab).
   assert.ok(simula({ annoBase: { ...annoBase, cluster: 4 }, anni }).avvisi.some((x) => x.includes("Tabella 3")));
-  const piccolo = { metodo: "anno", popolazione: 44000, rifiuti: { organico: 11, carta: 18, plastica: 31, indifferenziato: 16 } };
+  const piccolo = { metodo: "anno", popolazione: 10000, rifiuti: { organico: 11, carta: 18, plastica: 23, indifferenziato: 28 } };
   assert.ok(simula({ annoBase: piccolo, anni: [] }).avvisi.some((x) => x.includes("fuori scala")));
 });
 

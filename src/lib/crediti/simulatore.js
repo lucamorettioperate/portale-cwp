@@ -17,10 +17,12 @@
    - scenario di riferimento = anno di riferimento dello Standard 4.8.1:
      l'anno in cui il Comune ha raggiunto il 65% di differenziata (tra 64%
      e 66%, Catasto ISPRA) oppure, se non c'è, i valori medi pro capite del
-     cluster SOSE (Tabella 3) × popolazione ISPRA 2022; il simulatore
-     avvisa se la % dell'anno indicato è fuori dall'intervallo
-     (addizionalità normativa, Standard 4.9.1) e se le quantità si
-     scostano più del 30% dalla Tabella 3 (Gestione qualità dei dati 3.1.2);
+     cluster SOSE (Tabella 3) × popolazione ISPRA 2022. I dati si usano
+     così come sono, senza ricalcoli (rilievo T10 del 29/10/2026: prima il
+     riferimento veniva sempre riportato al 65%). Un anno con la
+     differenziata fuori dal 64-66% è un errore (addizionalità normativa,
+     Standard 4.9.1); il simulatore avvisa se le quantità si scostano più
+     del 30% dalla Tabella 3 (Gestione qualità dei dati 3.1.2);
    - stima ex ante a livello di Comune: ammessa dalla Metodologia (Cap. 6.1,
      semplificazione a: valori medi su tutte le utenze; Cap. 6.2: emissioni
      di progetto ex ante anche «complessivamente a livello di Ente»);
@@ -272,10 +274,11 @@ export function rifiutiDaCalcolo(datiCalcolo) {
 // Intervallo dello Standard 4.8.1 per l'anno di riferimento (65% ± 1%).
 export const RD_RIFERIMENTO_MIN = 64;
 export const RD_RIFERIMENTO_MAX = 66;
-// Soglia minima di differenziata del Programma (obiettivo di legge, Standard
-// 4.8.1 e 4.9.1): lo scenario di riferimento si porta sempre al 65% e i
-// risultati si calcolano per differenza da questa soglia (richiesta di Luca
-// del 19/10/2026).
+// Obiettivo di legge di raccolta differenziata (Standard 4.8.1 e 4.9.1):
+// linea di confronto nei grafici e nella colonna «punti oltre il 65%».
+// Dal 30/10/2026 (rilievo T10) lo scenario di riferimento NON si riporta più
+// a questa soglia: si usano i dati dell'anno di riferimento (64-66%) o del
+// cluster così come sono.
 export const RD_SOGLIA = 65;
 // Produzione pro capite plausibile (kg/ab/anno): fuori da qui quasi sempre
 // i dati sono in un'unità di misura sbagliata.
@@ -364,6 +367,20 @@ const vuoto = (v) => v === null || v === undefined || String(v).trim() === "";
 const numeroRigoroso = (v) => (typeof v === "number" ? v : Number(String(v).replace(/\s/g, "").replace(",", ".")));
 const virgola = (v) => String(v).replace(".", ",");
 
+// Percentuale di differenziata di un insieme di rifiuti { tipologia: t }
+// (null se mancano i dati o il secco).
+function rdRifiuti(rifiuti = {}) {
+  let tot = 0;
+  let secco = 0;
+  Object.entries(rifiuti || {}).forEach(([t, q]) => {
+    const n = numeroRigoroso(q);
+    if (!Number.isFinite(n) || n <= 0) return;
+    tot += n;
+    if (t === SECCO) secco += n;
+  });
+  return tot > 0 && secco > 0 ? ((tot - secco) / tot) * 100 : null;
+}
+
 export function erroriScenario(dati = {}, anniAllineati = null) {
   const errori = [];
   // Controlla un campo: deve essere un numero finito ≥ min (o > min se
@@ -386,6 +403,15 @@ export function erroriScenario(dati = {}, anniAllineati = null) {
   const ab = dati.annoBase || {};
   campo(ab.popolazione, "Popolazione dello scenario di riferimento", { strettamente: true });
   Object.entries(ab.rifiuti || {}).forEach(([t, q]) => campo(q, `Rifiuti di riferimento «${t}» (t)`));
+  // Standard 4.8.1 (rilievo T10): l'anno di riferimento deve avere tra il
+  // 64% e il 66% di differenziata; altrimenti si sceglie un altro anno o il
+  // cluster. Con il cluster i valori della Tabella 3 valgono così come sono.
+  if ((ab.metodo || "anno") === "anno" && !dati.riferimentoAllaSoglia) {
+    const r = rdRifiuti(ab.rifiuti);
+    if (r != null && (r < RD_RIFERIMENTO_MIN - 1e-9 || r > RD_RIFERIMENTO_MAX + 1e-9)) {
+      errori.push(`Scenario di riferimento: l'anno indicato ha il ${virgola(Math.round(r * 10) / 10)}% di differenziata. Lo Standard (4.8.1) chiede l'anno in cui il Comune ha raggiunto il 65% (tra 64% e 66%, Catasto ISPRA): scegliete quell'anno oppure i valori medi del cluster.`);
+    }
+  }
 
   // Situazione attuale (facoltativa).
   const at = dati.attuale || {};
@@ -469,11 +495,12 @@ export function simula(dati) {
   if (!base.popolazione) avvisi.push("Manca la popolazione dello scenario di riferimento.");
   if (!base.totale) avvisi.push("Mancano i rifiuti dello scenario di riferimento.");
   if (base.totale && !base.secco) avvisi.push("Nello scenario di riferimento manca il secco residuo (indifferenziato).");
-  // Conformità dello scenario di riferimento (Standard 4.8.1 e 4.9.1): il
-  // riferimento si porta sempre alla soglia del 65% di differenziata.
+  // Scenario di riferimento come da Standard 4.8.1 (rilievo T10): dati
+  // usati così come sono. L'anno fuori dal 64-66% è già un errore
+  // (erroriScenario); con il cluster lo si dice.
   const metodo = dati.annoBase?.metodo || "anno";
-  if (base.totale && Math.abs(base.rd - RD_SOGLIA) > 1e-6) {
-    avvisi.push(`I dati del riferimento hanno il ${base.rd.toFixed(1).replace(".", ",")}% di differenziata: il calcolo li riporta alla soglia del ${RD_SOGLIA}% (Standard 4.8.1), con la stessa produzione totale e il secco al ${100 - RD_SOGLIA}%.`);
+  if (metodo === "cluster" && base.totale) {
+    avvisi.push(`Scenario di riferimento dai valori medi del cluster (Tabella 3), usati così come sono: differenziata del riferimento ${base.rd.toFixed(1).replace(".", ",")}%.`);
   }
   if (base.totale && base.popolazione && (base.proCapite < PRO_CAPITE_MIN || base.proCapite > PRO_CAPITE_MAX)) {
     avvisi.push(`Produzione del riferimento di ${base.proCapite.toFixed(1).replace(".", ",")} kg per abitante all'anno: valore fuori scala (di solito tra 300 e 700). Controllate che i rifiuti siano in tonnellate all'anno e la popolazione.`);
@@ -526,14 +553,25 @@ export function simula(dati) {
   const righe = (dati.anni || []).map((a) => {
     const pop = num(a.popolazione) || base.popolazione;
     const fattorePop = pop / base.popolazione;
-    // Scenario di riferimento alla soglia del 65%: produzione pro capite
-    // del riferimento × popolazione; secco = 35% del totale, differenziata
-    // = 65% con la composizione del riferimento.
+    // Scenario di riferimento (Standard 4.8.1): quantità dell'anno di
+    // riferimento (o del cluster) per tipologia, riportate alla popolazione
+    // dell'anno; nessun ricalcolo della differenziata (rilievo T10).
+    // Eccezione: la micro simulazione della pagina /scopri (Marketing,
+    // lasciato invariato su scelta di Luca del 30/10/2026) parte dalla
+    // situazione attuale del Comune e la riporta al 65% come prima
+    // (dati.riferimentoAllaSoglia).
     const totRiferimento = base.totale * fattorePop;
-    const riferimento = { [SECCO]: totRiferimento * (1 - RD_SOGLIA / 100) };
-    Object.entries(base.composizione).forEach(([t, quota]) => {
-      riferimento[t] = totRiferimento * (RD_SOGLIA / 100) * quota;
-    });
+    const riferimento = {};
+    if (dati.riferimentoAllaSoglia) {
+      riferimento[SECCO] = totRiferimento * (1 - RD_SOGLIA / 100);
+      Object.entries(base.composizione).forEach(([t, quota]) => {
+        riferimento[t] = totRiferimento * (RD_SOGLIA / 100) * quota;
+      });
+    } else {
+      Object.entries(base.rifiuti).forEach(([t, q]) => {
+        riferimento[t] = q * fattorePop;
+      });
+    }
     // Scenario simulato: secco obiettivo + differenziata con la
     // composizione dell'anno base.
     let totale = num(a.totale);

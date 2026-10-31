@@ -42,7 +42,7 @@ export default function Reclami() {
     <div style={{ background: C.paper, minHeight: "100vh" }}>
       <Header />
       <main style={{ maxWidth: 960, margin: "0 auto", padding: "22px 24px" }}>
-        <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 4px" }}>Reclami e richieste di chiarimento</h1>
+        <h1 style={{ fontFamily: "'Archivo'", fontSize: 22, margin: "0 0 4px" }}>Reclami, ricorsi e richieste di chiarimento</h1>
         <p style={{ fontSize: 13.5, color: C.grafite, margin: "0 0 16px", lineHeight: 1.5 }}>
           Politica di reclamo del Programma Carbon WastePrint®: si può scrivere in qualsiasi momento; si riceve una conferma e
           poi una risposta scritta. Per le questioni con un promotore del progetto, un ente di validazione e verifica o un
@@ -101,6 +101,7 @@ function VistaUtente() {
             <select value={modulo.tipo} onChange={(e) => setModulo({ ...modulo, tipo: e.target.value })} style={campo}>
               <option value="chiarimento">Richiesta di chiarimento</option>
               <option value="reclamo">Reclamo</option>
+              <option value="ricorso">Ricorso</option>
             </select>
           </label>
           <label style={etichetta}>
@@ -159,7 +160,7 @@ function VistaStaff() {
   }
   useEffect(() => { carica(); }, []);
 
-  const nuovo = { tipo: "reclamo", canale: "pec", ricevuto_il: oggiItalia(), mittente_nome: "", mittente_organizzazione: "", mittente_ruolo: "stakeholder", mittente_contatti: "", pratica_id: "", oggetto: "", dettagli: "", conflitto_interessi: "", stato: "ricevuto", gestore_id: "", conferma_inviata_il: "", risposta: "", costi: "", note_interne: "" };
+  const nuovo = { tipo: "reclamo", canale: "pec", ricevuto_il: oggiItalia(), mittente_nome: "", mittente_organizzazione: "", mittente_ruolo: "stakeholder", mittente_contatti: "", pratica_id: "", oggetto: "", dettagli: "", conflitto_interessi: "", stato: "ricevuto", gestore_id: "", conferma_inviata_il: "", risposta: "", costi: "", costi_comunicati_il: "", costi_non_dovuti: false, note_interne: "" };
 
   async function salva() {
     setErrore("");
@@ -201,7 +202,7 @@ function VistaStaff() {
       {modulo && (
         <div style={{ margin: "12px 0", padding: 12, background: C.paper, border: `1px solid ${C.line}`, borderRadius: 10 }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
-            <label style={etichetta}>Tipo<select value={modulo.tipo} onChange={set("tipo")} disabled={!!modulo.id} style={campo}><option value="reclamo">Reclamo</option><option value="chiarimento">Richiesta di chiarimento</option></select></label>
+            <label style={etichetta}>Tipo<select value={modulo.tipo} onChange={set("tipo")} disabled={!!modulo.id} style={campo}><option value="reclamo">Reclamo</option><option value="ricorso">Ricorso</option><option value="chiarimento">Richiesta di chiarimento</option></select></label>
             <label style={etichetta}>Canale<select value={modulo.canale} onChange={set("canale")} style={campo}>{["pec", "portale", "email", "altro"].map((x) => <option key={x}>{x}</option>)}</select></label>
             <label style={etichetta}>Ricevuto il<input type="date" value={modulo.ricevuto_il || ""} onChange={set("ricevuto_il")} style={campo} /></label>
             <label style={etichetta}>Nome e cognome<input value={modulo.mittente_nome || ""} onChange={set("mittente_nome")} style={campo} /></label>
@@ -217,8 +218,16 @@ function VistaStaff() {
             <label style={etichetta}>Stato<select value={modulo.stato} onChange={set("stato")} style={campo}>{STATI.map((x) => <option key={x}>{x}</option>)}</select></label>
             <label style={etichetta}>Gestito da<select value={modulo.gestore_id || ""} onChange={set("gestore_id")} style={campo}><option value="">— da assegnare —</option>{staff.map((s) => <option key={s.id} value={s.id}>{s.nome_completo || s.id}</option>)}</select></label>
             <label style={etichetta}>Conferma di ricezione inviata il<input type="date" value={modulo.conferma_inviata_il || ""} onChange={set("conferma_inviata_il")} style={campo} /></label>
-            <label style={etichetta}>Costi addebitati (€)<input inputMode="decimal" value={modulo.costi ?? ""} onChange={set("costi")} style={campo} /></label>
+            <label style={etichetta}>Costi addebitati (€)<input inputMode="decimal" value={modulo.costi_non_dovuti ? "0" : modulo.costi ?? ""} onChange={set("costi")} disabled={!!modulo.costi_non_dovuti} style={campo} /></label>
+            {/* Rilievo T18 (Politica di reclamo, cap. 1): i costi si comunicano al
+                momento della richiesta e non sono dovuti se il reclamo o il
+                ricorso porta ad annullare un'azione (il database li porta a 0). */}
+            <label style={etichetta}>Costi comunicati il<input type="date" value={modulo.costi_comunicati_il || ""} onChange={set("costi_comunicati_il")} style={campo} /></label>
           </div>
+          <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 13, marginBottom: 10 }}>
+            <input type="checkbox" checked={!!modulo.costi_non_dovuti} onChange={(e) => setModulo({ ...modulo, costi_non_dovuti: e.target.checked })} />
+            Costi non dovuti: a seguito del reclamo o del ricorso è stata annullata un'azione (Politica di reclamo, cap. 1)
+          </label>
           <label style={etichetta}>Risposta scritta<textarea rows={3} value={modulo.risposta || ""} onChange={set("risposta")} style={{ ...campo, resize: "vertical" }} /></label>
           <label style={etichetta}>Note interne (riservate)<textarea rows={2} value={modulo.note_interne || ""} onChange={set("note_interne")} style={{ ...campo, resize: "vertical" }} /></label>
           {errore && <div style={{ color: C.red, fontSize: 12.5, marginBottom: 8 }}>{errore}</div>}
@@ -247,7 +256,7 @@ function VistaStaff() {
               </span>
               <span style={{ display: "flex", gap: 6, alignItems: "center" }}>
                 <StatoBadge stato={r.stato} />
-                {!modulo && <button onClick={() => setModulo({ ...nuovo, ...r, costi: r.costi ?? "" })} style={btnMini}>Gestisci</button>}
+                {!modulo && <button onClick={() => setModulo({ ...nuovo, ...r, costi: r.costi ?? "", costi_comunicati_il: r.costi_comunicati_il || "", costi_non_dovuti: !!r.costi_non_dovuti })} style={btnMini}>Gestisci</button>}
               </span>
             </div>
             <div style={{ fontSize: 12, color: C.grafite, marginTop: 4 }}>

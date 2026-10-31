@@ -207,11 +207,11 @@ export function contenutoSimulazione({ scenario, risultato, eco = null, economia
   const unaTonnellata = base.feSecco != null ? -base.feSecco : null;
   const spiegazione =
     (perUtenza
-      ? "Metodo per utenza: contano i rifiuti misurati che le utenze virtuose producono in meno rispetto al valore atteso dello scenario di riferimento al 65%; " +
+      ? "Metodo per utenza: contano i rifiuti misurati che le utenze virtuose producono in meno rispetto al valore atteso dello scenario di riferimento; " +
         "il risultato è più alto del bilancio del Comune (colonna di confronto). "
       : "") +
-    "I crediti nascono dai rifiuti evitati rispetto allo scenario di riferimento, portato alla soglia del 65% di differenziata " +
-    "(produzione pro capite del riferimento × popolazione): ogni tonnellata pesa con il suo fattore di emissione e il secco con la media " +
+    "I crediti nascono dai rifiuti evitati rispetto allo scenario di riferimento (Standard 4.8.1: anno con il 64-66% di differenziata " +
+    "o valori medi del cluster, usati così come sono e riportati alla popolazione): ogni tonnellata pesa con il suo fattore di emissione e il secco con la media " +
     "dei fattori della differenziata (formule 16-17 della Metodologia CWP v1.2)" +
     (unaTonnellata != null ? `; con i dati di questo Comune 1 t in meno vale circa ${unaTonnellata.toLocaleString("it-IT", { maximumFractionDigits: 2 })} tCO2eq prima del buffer` : "") +
     ". Spostare rifiuti dal secco alla differenziata alza la percentuale di raccolta ma, a parità di produzione totale, non genera crediti.";
@@ -221,7 +221,7 @@ export function contenutoSimulazione({ scenario, risultato, eco = null, economia
   const conEconomia = !vuoto(economia.prezzo) || !!listino || eco;
   const parametriEconomici = conEconomia
     ? [
-        ["Valore proposto del credito", valoreOVuoto(economia.prezzo), "€/credito"],
+        ["Valore ipotetico del credito (non stabilito dal Programma)", valoreOVuoto(economia.prezzo), "€/credito"],
         ["Variazione annua del valore", valoreOVuoto(economia.crescitaPrezzo) ?? 0, "%"],
         ...(!vuoto(economia.prezzoMin) ? [["Valore minimo del credito", numero(economia.prezzoMin), "€/credito"]] : []),
         ...(!vuoto(economia.prezzoMax) ? [["Valore massimo del credito", numero(economia.prezzoMax), "€/credito"]] : []),

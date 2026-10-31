@@ -4,13 +4,14 @@
      della Banca Dati Utenze per utenza (richieste di Luca Moretti del
      22/10/2026). Due tabelle, utenze domestiche e non domestiche, ciascuna
      con ricerca, pagine da 50, e un modulo per ogni utenza (nuova o da
-     modificare): codice, nome del capofamiglia o ragione sociale,
-     indirizzo, categoria tariffaria e categoria di simulazione (proposta
+     modificare): codice, categoria tariffaria e categoria di simulazione (proposta
      uguale alla tariffaria e modificabile), componenti (domestiche), mq,
      produzione totale, kg e svuotamenti per frazione.
      Caricamento dell'elenco completo dell'anno dal modello Excel «Banca
      dati utenze CWP» (o ZIP di CSV): anteprima con errori e avvisi, poi
      «Sostituisci l'elenco»; un file con righe sbagliate non si carica.
+     Dal 30/10/2026 (rilievo T29, DPIA azione A1) nessun nome né indirizzo:
+     ogni utenza è solo un codice (pseudonimizzazione).
    Usato da: src/pages/CalcoloCrediti.jsx.
    Props: calcoloId, sola (calcolo confermato: solo lettura), onCambio()
      dopo ogni modifica (la pagina rilegge la testata: il risultato della
@@ -117,7 +118,7 @@ export default function UtenzeCalcolo({ calcoloId, sola, onCambio }) {
         Il calcolo usa queste utenze: la <b>categoria di simulazione</b> decide la classe della delibera (e quindi i rifiuti attesi),
         i <b>kg</b> di ogni frazione sono i rifiuti prodotti; una frazione lasciata vuota non entra nel calcolo per quell'utenza.
         Le utenze senza categoria restano fuori e il calcolo non si può confermare finché non la si assegna.
-        Contiene dati personali: ogni consultazione e ogni modifica sono registrate nell'Audit.
+        Nessun nome né indirizzo: ogni utenza è solo un codice e la corrispondenza con l'intestatario resta al Comune (pseudonimizzazione). Ogni consultazione e ogni modifica sono registrate nell'Audit.
       </p>
 
       {/* Riquadri: numeri per tipo e utenze senza categoria di simulazione */}
@@ -180,7 +181,7 @@ export default function UtenzeCalcolo({ calcoloId, sola, onCambio }) {
         ))}
       </div>
       <form onSubmit={(e) => { e.preventDefault(); setPagina(0); setCercaAttiva(cerca.trim()); }} style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
-        <input value={cerca} onChange={(e) => setCerca(e.target.value)} placeholder={`Cerca per codice, ${tipo === "UD" ? "capofamiglia" : "ragione sociale"}, indirizzo o categoria`} aria-label="Cerca utenza" style={{ ...campo, flex: "1 1 260px" }} />
+        <input value={cerca} onChange={(e) => setCerca(e.target.value)} placeholder="Cerca per codice o categoria" aria-label="Cerca utenza" style={{ ...campo, flex: "1 1 260px" }} />
         <button type="submit" style={btnMini}>Cerca</button>
         {cercaAttiva && <button type="button" onClick={() => { setCerca(""); setCercaAttiva(""); setPagina(0); }} style={btnMini}>Tutte</button>}
         {!sola && <button type="button" onClick={nuova} style={btnMini}>+ Nuova utenza {tipo === "UD" ? "domestica" : "non domestica"}</button>}
@@ -191,8 +192,6 @@ export default function UtenzeCalcolo({ calcoloId, sola, onCambio }) {
           <thead>
             <tr style={{ background: C.paper, textAlign: "left", color: C.grafite, fontSize: 11.5 }}>
               <th style={th}>Codice</th>
-              <th style={th}>{tipo === "UD" ? "Capofamiglia" : "Ragione sociale"}</th>
-              <th style={th}>Indirizzo</th>
               <th style={th}>Cat. tariffaria</th>
               <th style={th}>Cat. simulazione</th>
               <th style={{ ...th, textAlign: "right" }}>{tipo === "UD" ? "Componenti · mq" : "Mq"}</th>
@@ -202,9 +201,9 @@ export default function UtenzeCalcolo({ calcoloId, sola, onCambio }) {
             </tr>
           </thead>
           <tbody>
-            {caricamento && <tr><td colSpan={9} style={{ ...td, color: C.grafite }}>Caricamento…</td></tr>}
+            {caricamento && <tr><td colSpan={7} style={{ ...td, color: C.grafite }}>Caricamento…</td></tr>}
             {!caricamento && righe.length === 0 && (
-              <tr><td colSpan={9} style={{ ...td, color: C.grafite }}>{cercaAttiva ? "Nessuna utenza corrisponde alla ricerca." : n ? "" : "Nessuna utenza: caricate il file dell'anno."}</td></tr>
+              <tr><td colSpan={7} style={{ ...td, color: C.grafite }}>{cercaAttiva ? "Nessuna utenza corrisponde alla ricerca." : n ? "" : "Nessuna utenza: caricate il file dell'anno."}</td></tr>
             )}
             {!caricamento && righe.map((u) => {
               const r = riepilogoUtenza(u);
@@ -217,8 +216,6 @@ export default function UtenzeCalcolo({ calcoloId, sola, onCambio }) {
                       {u.codice} ✎
                     </button>
                   </td>
-                  <td style={td} data-etichetta={tipo === "UD" ? "Capofamiglia" : "Ragione sociale"}>{u.nominativo}</td>
-                  <td style={td} data-etichetta="Indirizzo">{u.indirizzo}</td>
                   <td style={td} data-etichetta="Categoria tariffaria">{u.categoria_tariffaria || "—"}</td>
                   <td style={td} data-etichetta="Categoria di simulazione">
                     {u.categoria_simulazione || <span style={{ color: C.ocra, fontWeight: 600 }}>da assegnare</span>}
@@ -308,7 +305,7 @@ function ModuloUtenza({ calcoloId, iniziale, sola, onChiudi, onSalvata }) {
       frazioni[id] = sv === null ? { kg } : { kg, svuotamenti: sv };
     });
     return {
-      codice: f.codice.trim(), tipo: iniziale.utenza.tipo, nominativo: f.nominativo.trim(), indirizzo: f.indirizzo.trim(),
+      codice: f.codice.trim(), tipo: iniziale.utenza.tipo, nominativo: null, indirizzo: null,
       componenti: ud ? num(f.componenti) : null, mq: num(f.mq),
       categoria_tariffaria: f.categoria_tariffaria.trim() || null, categoria_simulazione: f.categoria_simulazione.trim() || null,
       produzione_totale_kg: num(f.produzione_totale_kg), frazioni,
@@ -357,8 +354,6 @@ function ModuloUtenza({ calcoloId, iniziale, sola, onChiudi, onSalvata }) {
         <fieldset disabled={sola || inCorso} style={{ border: "none", padding: 0, margin: 0, minWidth: 0 }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10, alignItems: "start" }}>
             <label style={lbl}>Codice utenza *<input value={f.codice} onChange={(e) => cambia("codice", e.target.value)} style={campo} /></label>
-            <label style={lbl}>{ud ? "Nome capofamiglia *" : "Ragione sociale *"}<input value={f.nominativo} onChange={(e) => cambia("nominativo", e.target.value)} style={campo} /></label>
-            <label style={{ ...lbl, gridColumn: "1 / -1" }}>Indirizzo *<input value={f.indirizzo} onChange={(e) => cambia("indirizzo", e.target.value)} style={campo} /></label>
             <label style={lbl}>Categoria tariffaria<input value={f.categoria_tariffaria} onChange={(e) => cambiaTariffaria(e.target.value)} style={campo} placeholder={ud ? "es. 3 (componenti)" : "es. 22 (ristoranti)"} /></label>
             <label style={lbl}>
               Categoria di simulazione

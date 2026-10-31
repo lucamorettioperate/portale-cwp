@@ -19,6 +19,7 @@
      modifiche sono registrate nell'audit.
    Registro sviluppo e deploy: capitolo «Portale (frontend)»
    ========================================================================= */
+import { formatoData } from "../../lib/date.js";
 import React, { useEffect, useState } from "react";
 import { COLORI as C } from "../../lib/cwpProgram.js";
 import Badge from "../Badge.jsx";
@@ -50,7 +51,7 @@ export default function EntiValidazione({ pratiche = [] }) {
     if (!modulo.denominazione?.trim()) return setErrore("Indica la denominazione dell'ente.");
     setInCorso(true);
     // Si inviano solo i campi del modulo (non creato_il e simili letti dal database).
-    const { id, denominazione, identificativo, accreditamento, referente, email, telefono, note, attivo } = modulo;
+    const { id, denominazione, identificativo, accreditamento, referente, email, telefono, note, attivo, approvato_il } = modulo;
     // Campo vuoto o solo spazi → null nel database.
     const pulito = (v) => (v || "").trim() || null;
     const { error } = await salvaEnte({
@@ -58,6 +59,8 @@ export default function EntiValidazione({ pratiche = [] }) {
       denominazione: denominazione.trim(),
       identificativo: pulito(identificativo),
       accreditamento: pulito(accreditamento),
+      // Rilievo T07: data di approvazione nel Programma (Guida 3.4).
+      approvato_il: approvato_il || null,
       referente: pulito(referente),
       email: pulito(email),
       telefono: pulito(telefono),
@@ -71,7 +74,7 @@ export default function EntiValidazione({ pratiche = [] }) {
   }
 
   // Valori iniziali del modulo; in modifica vengono sovrascritti da quelli dell'ente.
-  const nuovo = { denominazione: "", identificativo: "", accreditamento: "", referente: "", email: "", telefono: "", note: "", attivo: true };
+  const nuovo = { denominazione: "", identificativo: "", accreditamento: "", referente: "", email: "", telefono: "", note: "", attivo: true, approvato_il: "" };
 
   // Ordinamento dell'elenco («Ordina per»).
   const ord = useOrdinamento(enti, {
@@ -99,7 +102,7 @@ export default function EntiValidazione({ pratiche = [] }) {
               <b>{e.denominazione}</b>
               {e.identificativo && <> · {e.identificativo}</>}
               <div style={{ fontSize: 11.5, color: C.grafite }}>
-                {[e.accreditamento && `Accreditamento: ${e.accreditamento}`, e.referente, e.email, e.telefono].filter(Boolean).join(" · ") || "—"}
+                {[e.approvato_il && `Approvato il ${formatoData(e.approvato_il)}`, e.accreditamento && `Accreditamento: ${e.accreditamento}`, e.referente, e.email, e.telefono].filter(Boolean).join(" · ") || "—"}
               </div>
               <div style={{ fontSize: 11.5, color: C.grafite }}>
                 {(() => {
@@ -121,6 +124,7 @@ export default function EntiValidazione({ pratiche = [] }) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
             <label style={etichetta}>Denominazione *<input value={modulo.denominazione} onChange={(e) => setModulo({ ...modulo, denominazione: e.target.value })} style={campo} placeholder="Es. RINA Services S.p.A." /></label>
             <label style={etichetta}>Identificativo<input value={modulo.identificativo || ""} onChange={(e) => setModulo({ ...modulo, identificativo: e.target.value })} style={campo} placeholder="Es. P.IVA o codice" /></label>
+            <label style={etichetta}>Approvato il (Guida 3.4)<input type="date" value={modulo.approvato_il || ""} onChange={(e) => setModulo({ ...modulo, approvato_il: e.target.value })} style={campo} /></label>
             <label style={etichetta}>Accreditamento<input value={modulo.accreditamento || ""} onChange={(e) => setModulo({ ...modulo, accreditamento: e.target.value })} style={campo} placeholder="Es. Accredia n. …" /></label>
             <label style={etichetta}>Referente<input value={modulo.referente || ""} onChange={(e) => setModulo({ ...modulo, referente: e.target.value })} style={campo} /></label>
             <label style={etichetta}>Email<input type="email" value={modulo.email || ""} onChange={(e) => setModulo({ ...modulo, email: e.target.value })} style={campo} /></label>

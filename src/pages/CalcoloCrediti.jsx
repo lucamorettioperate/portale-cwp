@@ -50,7 +50,7 @@ import Badge from "../components/Badge.jsx";
 import TabellaDati from "../components/crediti/TabellaDati.jsx";
 import ImportaTracciato, { ControlliCoerenza } from "../components/crediti/ImportaTracciato.jsx";
 import { controllaCoerenza } from "../lib/crediti/tracciato.js";
-import { scostamentiTabella3, indicatoriQualita, CLUSTER, SOGLIA_SCOSTAMENTO } from "../lib/crediti/qualita.js";
+import { scostamentiTabella3, indicatoriQualita, CLUSTER, SOGLIA_SCOSTAMENTO, rdTerritorio } from "../lib/crediti/qualita.js";
 import { caricaDocumento, nomeUtente } from "../lib/dati.js";
 import {
   leggiCalcolo,
@@ -453,7 +453,7 @@ export default function CalcoloCrediti() {
     if (modificato) return setMessaggio({ errore: true, testo: "Ci sono modifiche non salvate: premi «Calcola» (o «Salva») prima del rapporto." });
     setInCorso(archivia ? "Archiviazione del rapporto…" : "Preparazione del rapporto…");
     try {
-      const esiti = controllaCoerenza({ anno: calcolo.anno, rifiuti: dati.rifiuti, pefUd: dati.pefUd, pefUnd: dati.pefUnd, classiUd: dati.classiUd, classiUnd: dati.classiUnd, conferimenti, riuso, ps: psTipologie });
+      const esiti = controllaCoerenza({ anno: calcolo.anno, annoRiferimento: dati.riferimento?.anno, rifiuti: dati.rifiuti, pefUd: dati.pefUd, pefUnd: dati.pefUnd, classiUd: dati.classiUd, classiUnd: dati.classiUnd, conferimenti, riuso, ps: psTipologie });
       // jsPDF è caricato solo quando serve (alleggerisce il portale).
       const { generaRapportoPdf } = await import("../lib/crediti/rapportoPdf.js");
       const { blob, nomeFile } = await generaRapportoPdf({
@@ -500,7 +500,7 @@ export default function CalcoloCrediti() {
   // passo 4; accetta la virgola decimale, valore assente = 0.
   const psTipologie = Object.fromEntries(dati.fattori.map((f) => [f.id, Number(String(f.ps ?? "").replace(",", ".")) || 0]));
   const coerenza = ["utenze_elenco", "utenze", "risultati"].includes(passo) || conferma
-    ? controllaCoerenza({ anno: testa.anno, rifiuti: dati.rifiuti, pefUd: dati.pefUd, pefUnd: dati.pefUnd, classiUd: dati.classiUd, classiUnd: dati.classiUnd, conferimenti: righeBdu, riuso, ps: psTipologie, origine: origineBdu })
+    ? controllaCoerenza({ anno: testa.anno, annoRiferimento: dati.riferimento?.anno, rifiuti: dati.rifiuti, pefUd: dati.pefUd, pefUnd: dati.pefUnd, classiUd: dati.classiUd, classiUnd: dati.classiUnd, conferimenti: righeBdu, riuso, ps: psTipologie, origine: origineBdu })
     : null;
 
   // Controlli della Gestione qualità dei dati (qualita.js): confronto con la
@@ -638,7 +638,8 @@ export default function CalcoloCrediti() {
               <Impostazioni testa={testa} aggiorna={aggiornaTesta} sola={confermato} />
             )}
             {passo === "rifiuti" && (
-              <Passo titolo="Rifiuti del territorio (Catasto ISPRA)" nota="Capitolo 3. Per ogni codice EER: tipologia, quantità nell'anno di riferimento e se è prodotto solo dalle utenze domestiche (scarto verde, inerti). Più codici EER possono confluire nella stessa tipologia.">
+              <Passo titolo="Rifiuti del territorio (Catasto ISPRA)" nota="Capitolo 3 e Standard 4.8.1. Rifiuti dell'anno di riferimento (l'anno in cui il Comune ha raggiunto il 65% di differenziata, tra 64% e 66%, Catasto ISPRA) oppure valori medi del cluster: da qui vengono i valori attesi delle utenze. Per ogni codice EER: tipologia, quantità e se è prodotto solo dalle utenze domestiche (scarto verde, inerti). Più codici EER possono confluire nella stessa tipologia.">
+                <AnnoRiferimento riferimento={dati.riferimento || {}} rifiuti={dati.rifiuti} sola={confermato} onChange={(v) => aggiornaDati({ riferimento: v })} />
                 <TabellaDati
                   solaLettura={confermato}
                   nomeModello="rifiuti_ISPRA"
@@ -697,7 +698,7 @@ export default function CalcoloCrediti() {
               <Buffer dati={dati} opzioni={dati.opzioni} aggiorna={aggiornaOpzioni} sola={confermato} conferimenti={righeBdu} riuso={riuso} />
             )}
             {passo === "risultati" && (
-              <Risultati risultato={risultato} salvato={salvato} onCalcola={esegui} testa={testa} onRapporto={rapporto} confermato={confermato} />
+              <Risultati risultato={risultato} salvato={salvato} onCalcola={esegui} testa={testa} onRapporto={rapporto} confermato={confermato} nonAggiornati={modificato && !confermato} />
             )}
           </section>
         </div>
@@ -715,10 +716,10 @@ function Impostazioni({ testa, aggiorna, sola }) {
   // giorni dall'avvio al 31/12 diviso 365; altrimenti 1.
   const pa = coefficientePrimoAnno(testa.data_avvio, testa.anno);
   return (
-    <Passo titolo="Impostazioni" nota="Anno solare di riferimento e tipo di stima. Se il progetto è partito durante l'anno, i valori attesi si riducono in proporzione ai giorni effettivi (Capitolo 2, formula 1).">
+    <Passo titolo="Impostazioni" nota="Anno solare monitorato e tipo di stima. Il calcolo ex post si fa per un anno già concluso e per un Progetto registrato (Standard 4.5). Se il progetto è partito durante l'anno, i valori attesi si riducono in proporzione ai giorni effettivi (Capitolo 2, formula 1). L'anno di riferimento dello Standard 4.8.1 (quello con il 65% di differenziata) si indica nel passo 2.">
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 12 }}>
         <label style={lbl}>Titolo<input disabled={sola} value={testa.titolo} onChange={(e) => aggiorna({ titolo: e.target.value })} style={campo} /></label>
-        <label style={lbl}>Anno di riferimento<input disabled={sola} type="number" value={testa.anno} onChange={(e) => aggiorna({ anno: e.target.value })} style={campo} /></label>
+        <label style={lbl}>Anno di monitoraggio<input disabled={sola} type="number" value={testa.anno} onChange={(e) => aggiorna({ anno: e.target.value })} style={campo} /></label>
         <label style={lbl}>
           Tipo di stima
           <select disabled={sola} value={testa.tipo} onChange={(e) => aggiorna({ tipo: e.target.value })} style={campo}>
@@ -1257,7 +1258,7 @@ function Buffer({ opzioni, aggiorna, sola, conferimenti, riuso }) {
    - onCalcola, onRapporto(archivia), testa, confermato.
    Si mostra il risultato appena calcolato se c'è, altrimenti quello
    salvato. Il CSV per utenza richiede un «Calcola» nella sessione. */
-function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermato }) {
+function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermato, nonAggiornati = false }) {
   const r = risultato || salvato;
   // Tabelle dei risultati ordinabili per colonna (prima del ritorno
   // anticipato: le regole di React vogliono gli hook sempre chiamati).
@@ -1328,6 +1329,15 @@ function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermat
 
   return (
     <Passo titolo="Risultati" nota={`Calcolato il ${new Date(r.calcolatoIl).toLocaleString("it-IT")} con la Metodologia v${r.versioneMetodologia}.`}>
+      {/* Rilievo T22 (30/10/2026): con dati o impostazioni cambiati dopo
+          l'ultimo «Calcola» (anche il buffer) i risultati qui sotto non
+          corrispondono più: lo si dice in evidenza. */}
+      {nonAggiornati && (
+        <div role="alert" style={{ background: "#FFF4E0", border: `1px solid ${C.amber}`, borderRadius: 9, padding: "10px 12px", marginBottom: 14, fontSize: 12.5, color: C.ink, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <span><b style={{ color: C.amber }}>Risultati non aggiornati:</b> dati o impostazioni (per esempio il buffer) sono cambiati dopo l'ultimo calcolo. I valori qui sotto si riferiscono al calcolo precedente.</span>
+          <button onClick={onCalcola} style={btnPrimario}>Calcola</button>
+        </div>
+      )}
       {/* Errori bloccanti (collaudo V01): nessun credito, risultato non salvato. */}
       {r.errori?.length > 0 && (
         <div role="alert" style={{ background: "#FBE9E7", border: `1px solid ${C.red}`, borderRadius: 9, padding: "10px 12px", marginBottom: 14, fontSize: 12.5, color: C.ink }}>
@@ -1496,6 +1506,46 @@ function Risultati({ risultato, salvato, onCalcola, testa, onRapporto, confermat
 /* ---------------- Elementi comuni ---------------- */
 // Contenitore di un passo: titolo, nota esplicativa (riferimenti alla
 // Metodologia) e contenuto.
+/* Rilievo T19 (30/10/2026): anno di riferimento dello Standard 4.8.1 da
+   cui vengono i rifiuti del passo 2 (Catasto ISPRA di quell'anno) o cluster
+   SOSE (Tabella 3). Mostra la differenziata dei rifiuti inseriti: con la
+   fonte ISPRA deve stare tra 64% e 66%. Si salva in dati.riferimento
+   { anno, fonte: "ispra" | "cluster", cluster }.
+   Props: riferimento, rifiuti (righe del passo 2), sola, onChange. */
+function AnnoRiferimento({ riferimento, rifiuti, sola, onChange }) {
+  const r = rdTerritorio(rifiuti);
+  const fonte = riferimento.fonte || "ispra";
+  const fuori = fonte === "ispra" && r != null && (r < 64 || r > 66);
+  const set = (k) => (e) => onChange({ ...riferimento, fonte, [k]: e.target.value });
+  return (
+    <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end", margin: "0 0 14px", padding: "10px 12px", border: `1px solid ${fuori ? C.red : C.line}`, borderRadius: 10, background: C.paper }}>
+      <label style={{ ...lbl, marginBottom: 0, flex: "1 1 300px", maxWidth: 340 }}>
+        Fonte dei rifiuti (Standard 4.8.1)
+        <select disabled={sola} value={fonte} onChange={set("fonte")} style={campo}>
+          <option value="ispra">Catasto ISPRA dell'anno di riferimento</option>
+          <option value="cluster">Valori medi del cluster (Tabella 3)</option>
+        </select>
+      </label>
+      {fonte === "ispra" ? (
+        <label style={{ ...lbl, marginBottom: 0, maxWidth: 160 }}>
+          Anno di riferimento
+          <input disabled={sola} type="number" value={riferimento.anno || ""} onChange={set("anno")} style={campo} placeholder="es. 2019" />
+        </label>
+      ) : (
+        <label style={{ ...lbl, marginBottom: 0, maxWidth: 160 }}>
+          Cluster SOSE (1-10)
+          <input disabled={sola} type="number" min="1" max="10" value={riferimento.cluster || ""} onChange={set("cluster")} style={campo} />
+        </label>
+      )}
+      <div style={{ fontSize: 12.5, color: fuori ? C.red : C.grafite, lineHeight: 1.5, flex: "1 1 220px" }}>
+        Differenziata dei rifiuti inseriti: <b>{r == null ? "—" : `${r.toFixed(1).replace(".", ",")}%`}</b>
+        {fuori && <> — fuori dall'intervallo 64-66% dello Standard 4.8.1: scegliete l'anno in cui il Comune ha raggiunto il 65% oppure i valori del cluster.</>}
+        {fonte === "ispra" && !riferimento.anno && <> — indicate l'anno di riferimento.</>}
+      </div>
+    </div>
+  );
+}
+
 function Passo({ titolo, nota, children }) {
   return (
     <div>

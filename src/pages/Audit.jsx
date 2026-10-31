@@ -31,6 +31,7 @@ import { useTelefono } from "../lib/useTelefono.js";
 import { elencaScenari } from "../lib/crediti/scenari.js";
 import { etichettaOggetto, testoRicercaEvento } from "../lib/auditDettaglio.js";
 import OggettoEModifiche from "../components/OggettoEModifiche.jsx";
+import { scriviCsv, scaricaTesto } from "../lib/csv.js";
 
 /* Pagina dell'audit. Nessuna prop.
    Carica gli ultimi `limite` eventi (200 all'inizio, +500 a ogni clic su
@@ -115,6 +116,32 @@ export default function Audit() {
           aria-label="Cerca nell'audit"
           style={{ width: "100%", maxWidth: 480, boxSizing: "border-box", padding: "8px 10px", border: `1px solid ${C.line}`, borderRadius: 8, fontSize: 13, marginBottom: 12 }}
         />
+        {/* Rilievo T28 (30/10/2026): scarico degli eventi mostrati (con la
+            ricerca applicata) in CSV, per una verifica o per conservare la
+            storia di una pratica. Il fascicolo della pratica ha già audit.csv. */}
+        <button
+          onClick={() => scaricaTesto(
+            `audit_${new Date().toISOString().slice(0, 10)}.csv`,
+            scriviCsv(
+              ["Data e ora", "Utente", "Ruolo", "Operazione", "Pratica", "Oggetto", "Da", "A", "Motivazione"],
+              ord.ordinate.map((e) => [
+                new Date(e.avvenuto_il).toLocaleString("it-IT"),
+                utenti[e.utente_id] || (e.utente_id ? "utente" : "sistema"),
+                e.ruolo || "",
+                e.operazione,
+                pratiche[e.pratica_id] || "",
+                etichettaOggetto(e, nomiOggetti) || e.oggetto_tipo || "",
+                e.stato_precedente || "",
+                e.stato_successivo || "",
+                e.motivazione || "",
+              ])
+            )
+          )}
+          disabled={!filtrati.length}
+          style={{ marginLeft: 10, padding: "8px 12px", border: `1px solid ${C.line}`, borderRadius: 8, background: C.white, fontSize: 13, cursor: "pointer" }}
+        >
+          Scarica CSV ({filtrati.length})
+        </button>
         {errore && <div style={{ color: C.red, fontSize: 13 }}>{errore}</div>}
         <div style={{ background: C.white, border: `1px solid ${C.line}`, borderRadius: 14, overflowX: "auto" }}>
           {/* Sul telefono ogni evento è una scheda (global.css, «tabella-schede»). */}

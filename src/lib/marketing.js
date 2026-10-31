@@ -179,6 +179,10 @@ export function microSimulazione({ abitanti, secco, totale, anni, caso = "caso1"
     bufferPct,
     metodoStima: "utenze",
     stimaUtenze: stima,
+    // Situazione attuale riportata al 65% come prima del rilievo T10:
+    // la micro simulazione del Marketing resta invariata (scelta di Luca
+    // del 30/10/2026).
+    riferimentoAllaSoglia: true,
   });
   if (!sim.righe.length) return { errori: sim.errori?.length ? sim.errori : ["Dati insufficienti per la stima."] };
   const casoOk = CASI_COSTI[caso] ? caso : "caso1";

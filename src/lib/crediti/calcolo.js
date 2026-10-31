@@ -35,6 +35,7 @@ import {
 } from "./parametri.js";
 // Controllo delle date inesistenti (collaudo V01, D04).
 import { dataIsoEsiste } from "../date.js";
+import { rdTerritorio } from "./qualita.js";
 
 // Converte un valore in numero: accetta numeri, testi con virgola decimale
 // e spazi ("1 234,5"). Vuoto o non valido → 0 (mai NaN nei calcoli).
@@ -484,6 +485,13 @@ export function calcolaCrediti(dati) {
   });
   const sommaPef = num(dati.pefUd) + num(dati.pefUnd);
   if (Math.abs(sommaPef - 100) > 0.01) avvisi.push(`PEF%UD + PEF%UnD = ${sommaPef}% (atteso 100%).`);
+  // Rilievo T19 (30/10/2026): i rifiuti del passo 2 sono quelli dell'anno di
+  // riferimento dello Standard 4.8.1, con il 64-66% di differenziata (o i
+  // valori del cluster). Fuori intervallo resta un avviso da spiegare.
+  const rdRif = rdTerritorio(dati.rifiuti || []);
+  if ((dati.riferimento?.fonte || "ispra") === "ispra" && rdRif != null && (rdRif < 64 || rdRif > 66)) {
+    avvisi.push(`Rifiuti del territorio con il ${rdRif.toFixed(1).replace(".", ",")}% di differenziata: l'anno di riferimento dello Standard 4.8.1 deve avere tra il 64% e il 66% (oppure si usano i valori del cluster).`);
+  }
 
   // Fattore dell'indifferenziato (formule 16-17), se non indicato dal Progetto.
   const ind = fattori.indifferenziato;

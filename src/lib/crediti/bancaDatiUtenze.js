@@ -12,8 +12,8 @@
    Regole (le stesse del database, che resta la garanzia):
    - ogni anno l'elenco è COMPLETO: il caricamento sostituisce quello
      precedente del calcolo;
-   - obbligatori: codice (unico nel file), nome del capofamiglia o ragione
-     sociale, indirizzo, produzione totale in kg, kg di indifferenziato;
+   - obbligatori: codice (unico nel file), produzione totale in kg, kg di
+     indifferenziato;
    - facoltativi: categoria tariffaria (se presente il database la propone
      come categoria di simulazione), componenti (solo domestiche, intero
      1-30), mq (> 0), kg delle altre frazioni (>= 0, vuoto = non misurata),
@@ -23,9 +23,13 @@
    - un file con anche una sola riga sbagliata non si importa (tutto o
      niente, come il tracciato: collaudo V01, D07).
 
-   Dati personali: il file contiene nomi e indirizzi per scelta di Luca
-   (visibili allo staff); qui non si applica il blocco dei dati personali
-   del tracciato (tracciato.js, controllaPrivacy).
+   Dati personali (rilievo T29 del 29/10/2026 e DPIA, azione A1; scelta di
+   Luca del 30/10/2026): il portale NON conserva nomi e indirizzi. Ogni
+   utenza è solo un codice (pseudonimizzazione: la corrispondenza
+   codice-nome resta al Comune). Le colonne «Nome capofamiglia»,
+   «Ragione sociale» e «Indirizzo» non sono più nel modello; se un file le
+   ha ancora, si ignorano e un avviso lo dice. Prima (22/10) erano
+   obbligatorie.
 
    Registro sviluppo e deploy: capitolo 15 «Calcolo crediti».
    ========================================================================= */
@@ -55,8 +59,6 @@ function colonne(tipo) {
   const ud = tipo === "UD";
   return [
     { chiave: "codice", titoli: ["Codice utenza", "Codice"], obbligatorio: true },
-    { chiave: "nominativo", titoli: ud ? ["Nome capofamiglia", "Capofamiglia", "Nominativo"] : ["Ragione sociale", "Denominazione", "Nominativo"], obbligatorio: true },
-    { chiave: "indirizzo", titoli: ["Indirizzo"], obbligatorio: true },
     { chiave: "categoria_tariffaria", titoli: ["Categoria tariffaria", "Categoria", "Classe"] },
     ...(ud ? [{ chiave: "componenti", titoli: ["N. componenti", "Componenti"] }] : []),
     { chiave: "mq", titoli: ud ? ["Mq abitazione", "Mq", "Superficie"] : ["Mq locali", "Mq", "Superficie"] },
@@ -86,8 +88,6 @@ export function controllaUtenza(u) {
   if (!testo(u.codice)) errori.push("manca il codice utenza");
   else if (testo(u.codice).length > 60) errori.push("codice utenza troppo lungo (massimo 60 caratteri)");
   if (u.tipo !== "UD" && u.tipo !== "UnD") errori.push("tipo di utenza non valido");
-  if (!testo(u.nominativo)) errori.push(ud ? "manca il nome del capofamiglia" : "manca la ragione sociale");
-  if (!testo(u.indirizzo)) errori.push("manca l'indirizzo");
   if (u.componenti != null) {
     if (!ud) errori.push("il numero di componenti vale solo per le utenze domestiche");
     else if (!Number.isInteger(u.componenti) || u.componenti < 1 || u.componenti > 30) errori.push(`componenti «${u.componenti}» non ammessi (intero da 1 a 30)`);
@@ -135,8 +135,8 @@ function rigaInUtenza(r, tipo, errori) {
   return {
     codice: testo(r.codice),
     tipo,
-    nominativo: testo(r.nominativo),
-    indirizzo: testo(r.indirizzo),
+    nominativo: null,
+    indirizzo: null,
     componenti: tipo === "UD" ? n(r.componenti) : null,
     mq: n(r.mq),
     categoria_tariffaria: tc,
@@ -160,6 +160,12 @@ export function interpretaBancaDati(fogli) {
   for (const [foglio, tipo] of [["Utenze_domestiche", "UD"], ["Utenze_non_domestiche", "UnD"]]) {
     const nomeFoglio = Object.keys(fogli).find((k) => normalizza(k) === normalizza(foglio));
     if (!nomeFoglio) continue;
+    // T29: colonne di nomi e indirizzi ignorate (non si leggono né si salvano).
+    const intest = (fogli[nomeFoglio]?.[0] || []).map((h) => normalizza(h));
+    const personali = ["Nome capofamiglia", "Capofamiglia", "Nominativo", "Ragione sociale", "Denominazione", "Indirizzo"].filter((t) => intest.includes(normalizza(t)));
+    if (personali.length) {
+      avvisi.push(`${foglio}: le colonne ${personali.join(", ")} sono state ignorate. Il portale non conserva nomi e indirizzi: basta il codice utenza (la corrispondenza resta al Comune).`);
+    }
     for (const r of righeFoglio(fogli[nomeFoglio], colonne(tipo), foglio, errori)) {
       const erroriRiga = [];
       const u = rigaInUtenza(r, tipo, erroriRiga);

@@ -151,7 +151,8 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
     ["Pratica", `${codice}${calcolo.pratica?.titolo ? " — " + calcolo.pratica.titolo : ""}`],
     ["Ente", calcolo.pratica?.organizzazione?.denominazione || "—"],
     ["Calcolo", calcolo.titolo],
-    ["Anno di riferimento", String(calcolo.anno)],
+    ["Anno di monitoraggio", String(calcolo.anno)],
+    ["Anno di riferimento (Standard 4.8.1)", dati.riferimento?.fonte === "cluster" ? `Valori medi del cluster ${dati.riferimento?.cluster || "—"} (Tabella 3)` : dati.riferimento?.anno ? `${dati.riferimento.anno} (Catasto ISPRA)` : "non indicato"],
     ["Tipo di stima", calcolo.tipo === "ex_post" ? "Ex post (letture reali della Banca Dati Utenze)" : "Ex ante (valori stimati)"],
     ...(r.periodo?.coefficiente < 1 ? [["Primo anno", `Avvio ${dataIt(r.periodo.dataAvvio)}: ${r.periodo.giorni} giorni (coefficiente ${num(r.periodo.coefficiente, 4)})`]] : []),
     ...(calcolo.numero_registro ? [["Numero di registro", calcolo.numero_registro]] : []),
@@ -219,7 +220,7 @@ export async function generaRapportoPdf({ calcolo, dati, risultato: r, coerenza 
 
   // ---------- Dati di ingresso ----------
   titolo("3. Dati di ingresso");
-  paragrafo("Rifiuti del territorio (Catasto ISPRA / MUD), in tonnellate nell'anno di riferimento.");
+  paragrafo("Rifiuti del territorio nell'anno di riferimento dello Standard 4.8.1 (Catasto ISPRA) o valori medi del cluster, in tonnellate.");
   tabella({
     head: [["Codice EER", "Descrizione", "Tipologia", "Qtot (t)", "Solo dom.", "Considerato"]],
     body: (dati.rifiuti || []).map((x) => [x.codice, pdfTesto(x.descrizione), pdfTesto(tipNome(x.tipologia)), num(Number(String(x.qtot).replace(",", ".")), 3), x.soloDomestiche ? "sì" : "—", x.considerato === false ? "no" : "sì"]),

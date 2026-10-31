@@ -48,9 +48,9 @@ Il calcolo si basa su un confronto tra due valori:
 | 2. Prima verifica documentale | 10 gg | 10 gg | Promotore del programma | La Fondazione controlla i documenti e chiede integrazioni |
 | 3. Feedback pubblico | 30 gg | 20 gg | Promotore del programma | Il documento è pubblicato e chiunque può fare osservazioni |
 | 4. Risposta ai commenti | 20 gg | 15 gg | Promotore del progetto | Il Comune risponde alle osservazioni ammesse |
-| 5. Validazione e verifica (Rapporto: Verifica del rapporto) | 75 gg | 60 gg | Ente di validazione e verifica | L'ente verifica il Progetto o il Rapporto |
+| 5. Validazione del progetto (Rapporto: Verifica del rapporto) | 75 gg | 60 gg | Ente di validazione e verifica | L'ente verifica il Progetto o il Rapporto |
 | 6. Seconda verifica documentale | 15 gg | 10 gg | Promotore del programma | Controllo finale: alla chiusura il Progetto è **registrato** (per il Rapporto: crediti registrati) |
-| 7. Chiusura | — | — | Promotore del programma | Fine del percorso |
+| 7. Registrazione del progetto (Rapporto: Emissione dei crediti) | — | — | Promotore del programma | Fine del percorso |
 
 Nelle fasi 2 e 6 la Fondazione può avviare una **verifica sull'accuratezza** (+15 giorni) e poi fino a 3 **accertamenti** (+10 giorni ciascuno). Nell'intestazione della pratica lo **stato nel Programma** segue le fasi: «richiesta di registrazione» → «in fase di validazione» (fase 2 completata) → «in fase di verifica documentale» (fase 5 completata) → «progetto registrato» (fase 6 completata).
 
@@ -370,6 +370,29 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 10.10b | [A] Dashboard: guardate la colonna Avanzamento della pratica di prova e passate il mouse sulle luci | Tante luci accese (ambra) quante le fasi completate, le altre spente; la fase in corso ha il contorno ambra; a pratica chiusa la settima luce è verde; il conteggio «n/7» corrisponde |
 
 **Dove finiscono le segnalazioni.** Ogni segnalazione dei collaudatori entra nel **Registro issue e test** (Documentazione, solo Amministratori), con data e ora, azione correttiva e stato (per esempio «CORRETTO_DA_RITESTARE»). Le prove da ripetere sono indicate nel registro con il numero del caso di questo manuale.
+
+### 11. Rilievi TEST_PORTALE_CWP (dal 30/10/2026)
+
+Prove per ritestare i rilievi del documento TEST_PORTALE_CWP del 29/10/2026. Il Marketing (rilievi T30 e T31) è rimasto invariato per scelta di Luca.
+
+| N. | Rilievo | Prova | Risultato atteso |
+| --- | --- | --- | --- |
+| 11.1 | T01, T02 | [A] Aprite un Progetto e un Rapporto | Fase 5 del Progetto «Validazione del progetto»; fase 7 «Registrazione del progetto» (Rapporto: «Emissione dei crediti») |
+| 11.2 | T03, T05 | [A] Dashboard | Sotto lo stato interno lo stato nel Programma (es. «in fase di validazione»); ente sotto l'organizzazione; riquadri «Fatture scadute», «Fatture in scadenza (≤ 7 gg)», «Dichiarazioni di cancellazione da ricevere» |
+| 11.3 | T07 | [A] Anagrafiche → Enti di Validazione → Modifica | Campo «Approvato il (Guida 3.4)»; la data compare nell'elenco |
+| 11.4 | T08 | [A] Anagrafiche → organizzazione con codice fiscale 123456789 → Salva | Messaggio «Codice fiscale non valido»; con un codice valido si salva. Su una pratica di un'organizzazione senza codice fiscale valido, «Proponi dallo Schema tariffario» rifiuta le voci di iscrizione e registrazione |
+| 11.5 | T12 | [O] Su un Progetto di prova con la fase 2 aperta e senza il Modulo di descrizione nella fase 1 → Chiudi fase | Elenco dei documenti mancanti; l'Operatore non può chiudere. [A] Lo stesso con motivazione → «Chiudi con deroga»: fase completata, audit «Deroga dell'Amministratore…» |
+| 11.6 | T15 | [O] Progetto senza codici ISTAT, fase 2 aperta → Chiudi fase | Messaggio «Indica il territorio del Progetto…» |
+| 11.7 | T14 | [A] + Nuovo progetto | Nessun campo codice; il Progetto riceve il codice CWP-AAAA-NNNN |
+| 11.8 | T17, T18 | [A] Reclami → + Registra con Tipo «Ricorso» e costi; poi Gestisci → «Costi non dovuti» | Codice RIC-AAAA-NNN; con la casella spuntata i costi diventano 0; «Costi comunicati il» salvato |
+| 11.9 | T19, T23 | [A] Calcolo crediti → passo 2 | Campi «Fonte dei rifiuti» e «Anno di riferimento»; differenziata dei rifiuti in rosso se fuori dal 64-66%; nel passo 1 «Anno di monitoraggio» |
+| 11.10 | T20 | [A] + Nuovo calcolo ex post per l'anno in corso, o per un Progetto non registrato | Il portale rifiuta con il messaggio dello Standard 4.5; l'ex ante si crea |
+| 11.11 | T22 | [A] In un calcolo con un risultato cambiate una voce del buffer senza Calcola, poi aprite il passo 7 | Riquadro arancione «Risultati non aggiornati» con il pulsante Calcola |
+| 11.12 | T10, T11 | [A] Simulatore → scenario con anno di riferimento al 70% | Errore «lo Standard (4.8.1) chiede l'anno… tra 64% e 66%»; con il cluster nessun ricalcolo al 65%; nessun pulsante di taratura né riferimenti EsaCom |
+| 11.13 | T04 | [A] Impostazioni e Dashboard | «Valore ipotetico del credito», con la nota che il Programma non stabilisce un prezzo |
+| 11.14 | T25 | [A] Impostazioni → Documenti richiesti per fase | Fase 1 del Progetto: «Modulo di delega di rappresentanza» come «Se applicabile»; ogni voce si alterna tra Obbligatorio e Se applicabile |
+| 11.15 | T28 | [A] Audit → Scarica CSV | File CSV con gli eventi mostrati (anche filtrati) |
+| 11.16 | T29 | [A] Calcolo → 5a → Carica il file dell'anno con il vecchio modello (con nomi e indirizzi) | Avviso «colonne … ignorate»; nell'elenco e nel modulo dell'utenza non ci sono nome e indirizzo; il nuovo modello Excel non ha quelle colonne |
 
 ## Limiti noti e funzioni in arrivo
 

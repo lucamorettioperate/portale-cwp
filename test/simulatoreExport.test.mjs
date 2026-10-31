@@ -73,7 +73,7 @@ await prova("il report riprende tutti i dati inseriti nella pagina", () => {
   // Parametri economici come nella pagina (virgola decimale accettata).
   const conCosti = contenutoSimulazione({ scenario, risultato, eco, economia: datiScenario.economia, popolazione: 10000 });
   assert.ok(conCosti.parametriEconomici.some(([k, v]) => k === "Ente di verifica, ogni anno" && v === 1500.5));
-  assert.ok(conCosti.parametriEconomici.some(([k, v]) => k === "Valore proposto del credito" && v === 32));
+  assert.ok(conCosti.parametriEconomici.some(([k, v]) => k === "Valore ipotetico del credito (non stabilito dal Programma)" && v === 32));
   assert.equal(c.costi.totale[3], c.costi.righe.reduce((s, r) => s + r[3], 0));
 });
 await prova("risultati con la riga del totale e grafici pronti", () => {

@@ -146,7 +146,7 @@ function grafico(doc, FONT, g, x, y, w, h) {
       doc.line(sx, scala(g.soglia), dx, scala(g.soglia));
       doc.setLineDashPattern([], 0);
       doc.setFont(FONT, "normal").setFontSize(6).setTextColor(...OCRA);
-      doc.text(pdfTesto(g.unita === "%" ? `soglia ${fmt(g.soglia)}` : "pareggio"), dx, scala(g.soglia) - 1, { align: "right" });
+      doc.text(pdfTesto(g.unita === "%" ? `obiettivo di legge ${fmt(g.soglia)}` : "pareggio"), dx, scala(g.soglia) - 1, { align: "right" });
     }
     doc.setDrawColor(...VERDE).setLineWidth(0.5);
     for (let i = 1; i < n; i++) doc.line(cx(i - 1), scala(valori[i - 1]), cx(i), scala(valori[i]));
