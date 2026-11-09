@@ -297,6 +297,21 @@ peso anche alla qualità della differenziata, servirebbe una scelta
 metodologica (per esempio un fattore del secco diverso o una composizione
 della differenziata che cambia negli anni).
 
+**Scenari salvati con regole precedenti (9/11/2026, secondo collaudo,
+script 49).** Ogni scenario ha la colonna `ammesso`. L'elenco del Simulatore
+rivaluta gli scenari con le regole di oggi (`valutaScenario` in
+`simulatore.js`, gli stessi passi della pagina) e segnala quelli «Non
+ammesso» o con i totali da aggiornare; il pulsante «Aggiorna i totali
+salvati» riscrive solo le colonne di riepilogo. Il database segna non
+ammesso uno scenario con l'anno di riferimento fuori dal 64-66%
+(`cwp_scenario_riferimento_ammesso`) e la Dashboard somma solo gli scenari
+ammessi. La data «Aggiornato» cambia solo quando cambiano gli input.
+
+**Risultato salvato e risultato di oggi (9/11/2026).** Aprendo un calcolo
+il portale lo rifà nel browser con i dati salvati e confronta crediti netti
+e buffer con il risultato salvato: se non coincidono avvisa «Risultati non
+aggiornati» e, in bozza, non lascia confermare finché non si ricalcola.
+
 ## Garanzie
 
 - Accesso solo agli Amministratori con verifica a due fattori.

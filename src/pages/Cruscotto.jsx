@@ -7,7 +7,7 @@
      verificare, consultazioni attive) e tabella di tutte le pratiche,
      Progetti e Rapporti, con ricerca e filtri per stato, tipo, anno e fase.
      Un clic su una riga apre la pratica in «/pratiche?id=…». Per ogni
-     pratica la colonna «Avanzamento» mostra la barra a LED delle 7 fasi
+     pratica la colonna «Avanzamento» mostra la barra a LED delle 6 fasi
      (componente BarraFasi: accese le completate, spente quelle da fare,
      la settima verde). Ogni colonna si ordina con un clic sull'intestazione
      (componente Ordinamento).

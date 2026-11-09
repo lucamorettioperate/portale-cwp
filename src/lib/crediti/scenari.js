@@ -23,9 +23,12 @@ function rifiutaSeNonAmmessi(dati) {
   return { data: null, error: { message: `Scenario non salvato, dati non ammessi: ${errori.slice(0, 3).join(" ")}${errori.length > 3 ? " …" : ""}` } };
 }
 
-const CAMPI_ELENCO = "id, organizzazione_id, comune, nome, durata, anno_inizio, crediti_netti_totali, rd_finale, simulato_il, aggiornato_il";
+// Dal 9/11/2026 (secondo collaudo) l'elenco legge anche i dati di input:
+// la pagina rivaluta ogni scenario con le regole di oggi (valutaScenario) e
+// segnala quelli non più ammessi o con i totali da aggiornare.
+const CAMPI_ELENCO = "id, organizzazione_id, comune, nome, durata, anno_inizio, dati, crediti_netti_totali, rd_finale, ricavi_totali, costo_cliente_totale, ammesso, simulato_il, aggiornato_il";
 
-// Tutti gli scenari, dal più recente, senza i dati di dettaglio.
+// Tutti gli scenari, dal più recente (con i dati di input, per rivalutarli).
 export async function elencaScenari() {
   return await supabase.from("scenario_simulazione").select(CAMPI_ELENCO).order("aggiornato_il", { ascending: false });
 }
@@ -54,6 +57,22 @@ export async function salvaScenario(id, campi) {
   const rifiuto = rifiutaSeNonAmmessi(campi.dati);
   if (rifiuto) return rifiuto;
   return await supabase.from("scenario_simulazione").update(campi).eq("id", id).select().single();
+}
+
+// Aggiorna solo le colonne di riepilogo di uno scenario salvato con regole
+// precedenti (crediti, differenziata finale, ricavi, costo per il cliente,
+// «ammesso»), senza toccare i dati di input: per questo non passa dal
+// controllo dei dati, così si può segnare «non ammesso» anche uno scenario
+// che oggi non si salverebbe. La Dashboard somma solo gli scenari ammessi
+// (script 49). Parametri: id e campi di valutaScenario().campi.
+export async function aggiornaRiepilogoScenario(id, campi) {
+  const { crediti_netti_totali, rd_finale, ricavi_totali, costo_cliente_totale, ammesso } = campi;
+  return await supabase
+    .from("scenario_simulazione")
+    .update({ crediti_netti_totali, rd_finale, ricavi_totali, costo_cliente_totale, ammesso, simulato_il: new Date().toISOString() })
+    .eq("id", id)
+    .select("id")
+    .single();
 }
 
 // Copia di uno scenario con un nuovo nome (per confrontare varianti).

@@ -1,11 +1,11 @@
 /* =========================================================================
-   BarraFasi — indicatore a LED dell'avanzamento di una pratica sulle 7 fasi
-   Scopo: barra orizzontale di 7 «luci», una per fase (richiesta di Luca del
+   BarraFasi — indicatore a LED dell'avanzamento di una pratica sulle 6 fasi
+   Scopo: barra orizzontale di 6 «luci», una per fase (richiesta di Luca del
      19/10/2026). Le fasi completate sono accese, quelle ancora da fare
      spente. Le luci accese delle fasi 1-6 sono ambra; la settima
      (Chiusura) è verde. La fase in corso resta spenta ma ha un contorno
      ambra, così si vede dove è arrivata la pratica. Accanto, il conteggio
-     «n/7». Passando il mouse su una luce compaiono numero, nome e stato
+     «n/6». Passando il mouse su una luce compaiono numero, nome e stato
      della fase.
    Usato da: src/pages/Cruscotto.jsx (Dashboard), colonna «Avanzamento»;
      dal 21/10/2026 anche negli elenchi delle pratiche (BackOffice.jsx,
@@ -15,7 +15,7 @@
        (tabella fase, script 01); stato = non_iniziata | in_corso |
        in_attesa_integrazione | completata. Le fasi mancanti valgono
        «non iniziata».
-     - totale: numero di luci (predefinito 7).
+     - totale: numero di luci (predefinito 6: le fasi della Guida, script 49).
    Solo visualizzazione: nessun dato scritto.
    Registro sviluppo e deploy: capitolo «Portale (frontend)».
    ========================================================================= */
@@ -27,7 +27,7 @@ import { STATI_FASE } from "../lib/cwpProgram.js";
 const AMBRA = { acceso: "#f2a516", alone: "rgba(242,165,22,0.55)" };
 const VERDE = { acceso: "#2fb24c", alone: "rgba(47,178,76,0.55)" };
 
-export default function BarraFasi({ fasi = [], totale = 7 }) {
+export default function BarraFasi({ fasi = [], totale = 6 }) {
   // Stato di ogni fase per numero (1..totale).
   const perNumero = {};
   for (const f of fasi) perNumero[f.numero] = f;

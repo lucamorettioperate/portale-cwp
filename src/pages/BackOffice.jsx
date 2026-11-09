@@ -12,7 +12,7 @@
      viene rimandato a «/».
    Dati: elencaProgetti() di src/lib/dati.js (tabella "pratica"); il
      dettaglio è il componente DettaglioPratica, la creazione il componente
-     NuovoProgetto (creaPratica: pratica + 7 fasi).
+     NuovoProgetto (creaPratica: pratica + 6 fasi).
    Sicurezza: il rimando a «/» è solo interfaccia. Ciò che conta lo fa il
      database: lettura e scrittura delle pratiche consentite allo staff solo
      con app_is_staff() (ruolo operatore/admin, profilo attivo e, se
@@ -200,7 +200,7 @@ export default function BackOffice() {
                   marginBottom: 9,
                 }}
               >
-                {/* In alto a destra la barra a LED delle 7 fasi (21/10/2026);
+                {/* In alto a destra la barra a LED delle 6 fasi (21/10/2026);
                     lo stato della pratica sulla riga sotto. */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                   <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: 13.5, color: C.ink }}>

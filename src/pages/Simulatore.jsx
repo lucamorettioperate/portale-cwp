@@ -52,9 +52,9 @@ import { formatoData } from "../lib/date.js";
 import {
   DURATE, TIPOLOGIE, datiIniziali, riepilogoAnnoBase, rifiutiDaCluster, rifiutiDaCalcolo,
   anniDelPeriodo, traiettoriaLineare, simula, righeCsv, puntoDiPartenza, RD_SOGLIA, simulaEconomia, economiaIniziale, prezziPerAnni, PREZZO_PROPOSTO, costiPerCaso, listinoDi, CASI_COSTI, NOTA_UNA_TANTUM,
-  METODI_STIMA, RIFIUTI_MISURATI, UTENZE_MONITORATE, STIMA_PREDEFINITA, bufferMetodologia, erroriScenario, erroriEconomia,
+  valutaScenario, riepilogoDaAggiornare, METODI_STIMA, RIFIUTI_MISURATI, UTENZE_MONITORATE, STIMA_PREDEFINITA, bufferMetodologia, erroriScenario, erroriEconomia,
 } from "../lib/crediti/simulatore.js";
-import { elencaScenari, leggiScenario, creaScenario, salvaScenario, duplicaScenario, eliminaScenario } from "../lib/crediti/scenari.js";
+import { elencaScenari, leggiScenario, creaScenario, salvaScenario, duplicaScenario, eliminaScenario, aggiornaRiepilogoScenario } from "../lib/crediti/scenari.js";
 import { useOrdinamento, ThOrdinabile } from "../components/Ordinamento.jsx";
 
 // Numero in formato italiano; "—" se manca.
@@ -122,12 +122,47 @@ export default function Simulatore() {
     setModificato(false);
   }
 
+  // Ogni scenario rivalutato con le regole di oggi (secondo collaudo,
+  // 9/11/2026): uno scenario salvato con regole precedenti può non essere
+  // più ammesso (es. riferimento fuori dal 64-66%, Standard 4.8.1) o avere
+  // totali diversi. L'elenco mostra il valore di oggi e la Dashboard somma
+  // solo gli scenari ammessi (script 49).
+  const valutati = useMemo(
+    () =>
+      scenari.map((s) => {
+        const v = valutaScenario(s);
+        return { ...s, valutazione: v, daAggiornare: riepilogoDaAggiornare(s, v) };
+      }),
+    [scenari]
+  );
+  const daAggiornare = valutati.filter((s) => s.daAggiornare);
+  const [riallineo, setRiallineo] = useState("");
+  // Riscrive le sole colonne di riepilogo degli scenari da aggiornare
+  // (input invariati; ogni modifica resta nell'audit).
+  async function riallinea() {
+    if (!window.confirm(`Aggiornare i totali salvati di ${daAggiornare.length} scenari con le regole di oggi? I dati inseriti non cambiano.`)) return;
+    setErrore("");
+    let fatti = 0;
+    for (const s of daAggiornare) {
+      setRiallineo(`Aggiornamento ${fatti + 1} di ${daAggiornare.length}…`);
+      const { error } = await aggiornaRiepilogoScenario(s.id, s.valutazione.campi);
+      if (error) {
+        setErrore(`«${s.nome}»: ${traduci(error)}`);
+        break;
+      }
+      fatti++;
+    }
+    setRiallineo("");
+    setMessaggio(`Totali aggiornati: ${fatti} scenari.`);
+    await ricarica();
+  }
+
   // Ordinamento degli scenari per colonna: vale per tutti i Comuni insieme.
-  const ordScenari = useOrdinamento(scenari, {
+  const ordScenari = useOrdinamento(valutati, {
     nome: (s) => s.nome,
     periodo: (s) => s.anno_inizio * 100 + s.durata,
     rd: (s) => (s.rd_finale == null ? null : Number(s.rd_finale)),
-    crediti: (s) => (s.crediti_netti_totali == null ? null : Number(s.crediti_netti_totali)),
+    crediti: (s) => (s.valutazione.ammesso ? s.valutazione.campi.crediti_netti_totali : null),
     aggiornato: (s) => s.aggiornato_il,
   });
 
@@ -245,6 +280,8 @@ export default function Simulatore() {
                 ricavi_totali: t && Number.isFinite(ricavi) ? Math.round(ricavi) : null,
                 costo_cliente_totale: t && Number.isFinite(costoCliente) ? Math.round(costoCliente) : null,
                 simulato_il: t ? new Date().toISOString() : null,
+                // Salvato solo senza errori: ammesso (script 49).
+                ammesso: true,
               });
               if (error) return setErrore(traduci(error));
               setAperto(data);
@@ -280,6 +317,17 @@ export default function Simulatore() {
 
         <section style={{ marginTop: aperto ? 22 : 0 }} className="no-stampa">
           <h2 style={{ ...h2, marginBottom: 10 }}>Scenari per Comune</h2>
+          {/* Scenari salvati con regole precedenti (secondo collaudo, 9/11/2026). */}
+          {!caricamento && daAggiornare.length > 0 && (
+            <div style={{ ...riquadro, background: "#fbf1de", border: `1px solid ${C.ocra}`, marginBottom: 12, fontSize: 13.5 }}>
+              <strong>{daAggiornare.length === 1 ? "1 scenario salvato" : `${daAggiornare.length} scenari salvati`} con regole precedenti.</strong>{" "}
+              L'elenco mostra già i valori di oggi; i totali salvati, usati dalla Dashboard, sono ancora quelli vecchi
+              {daAggiornare.some((x) => !x.valutazione.ammesso) ? " e gli scenari «Non ammesso» vanno corretti (non entrano nei crediti in simulazione)" : ""}.
+              <div style={{ marginTop: 8 }}>
+                <button style={btnPrimario} disabled={!!riallineo} onClick={riallinea}>{riallineo || "Aggiorna i totali salvati"}</button>
+              </div>
+            </div>
+          )}
           {caricamento && <div style={{ color: C.grafite, fontSize: 13 }}>Caricamento…</div>}
           {!caricamento && scenari.length === 0 && (
             <div style={{ ...riquadro, color: C.grafite, fontSize: 13.5 }}>Nessuno scenario ancora. Crea il primo con «+ Nuovo scenario».</div>
@@ -305,8 +353,15 @@ export default function Simulatore() {
                       <tr key={s.id} onClick={() => apri(s.id)} style={{ borderTop: `1px solid ${C.line}`, cursor: "pointer", background: aperto?.id === s.id ? C.greenSoft : "transparent" }}>
                         <td style={{ ...td, fontWeight: 700 }}>{s.nome}</td>
                         <td style={td}>{s.durata} anni · {s.anno_inizio}–{s.anno_inizio + s.durata - 1}</td>
-                        <td style={{ ...td, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{s.rd_finale == null ? "—" : `${fmt(s.rd_finale)}%`}</td>
-                        <td style={{ ...td, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700 }}>{fmt(s.crediti_netti_totali)}</td>
+                        <td style={{ ...td, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{s.valutazione.ammesso && s.valutazione.campi.rd_finale != null ? `${fmt(s.valutazione.campi.rd_finale)}%` : "—"}</td>
+                        <td style={{ ...td, textAlign: "right", fontVariantNumeric: "tabular-nums", fontWeight: 700 }} title={s.valutazione.ammesso ? undefined : s.valutazione.errori[0]}>
+                          {s.valutazione.ammesso ? fmt(s.valutazione.campi.crediti_netti_totali) : <span style={{ color: C.red }}>Non ammesso</span>}
+                          {s.daAggiornare && (
+                            <div style={{ fontWeight: 400, fontSize: 11.5, color: C.ocra }}>
+                              salvato: {s.crediti_netti_totali == null ? "—" : fmt(s.crediti_netti_totali)}, da aggiornare
+                            </div>
+                          )}
+                        </td>
                         <td style={{ ...td, color: C.grafite }}>{formatoData(s.aggiornato_il)}</td>
                       </tr>
                     ))}
@@ -763,6 +818,7 @@ export function Editor({ scenario, ruolo, onCambia, onSalva, onDuplica, onElimin
             <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
               {errori.map((a) => <li key={a}>{a}</li>)}
             </ul>
+            <div style={{ marginTop: 6 }}>Finché non si corregge, lo scenario non entra nei «Crediti in simulazione» della Dashboard.</div>
           </div>
         )}
         {risultato.avvisi.length > 0 && (

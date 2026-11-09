@@ -2,7 +2,7 @@
    cwpProgram.js — dati di riferimento del Programma Carbon WastePrint.
 
    Scopo: costanti condivise da tutto il portale, allineate all'analisi
-   funzionale: le 7 fasi del Progetto e del Rapporto, i 3 ruoli applicativi, gli stati di pratica e di
+   funzionale: le 6 fasi del Progetto e del Rapporto (Guida 6.2 e 6.3.1), i 3 ruoli applicativi, gli stati di pratica e di
    fase (con i colori dei badge), la palette e le tipologie di documento.
 
    Usato da: quasi tutte le pagine e i componenti (COLORI in particolare),
@@ -16,7 +16,11 @@
    capitolo 4 «Database» (tipi enumerati, tabella durata_fase).
    ========================================================================= */
 
-// Le 7 fasi operative ufficiali (intervalli di giorni dall'infografica).
+// Le 6 fasi operative ufficiali (intervalli di giorni dall'infografica).
+// Dal 9/11/2026 (secondo collaudo, script 49) non c'è più la fase 7: la
+// registrazione è l'esito della fase 6, la verifica documentale (Guida
+// 6.2.4 e 6.3.1), e l'emissione dei crediti segue la registrazione del
+// Rapporto (Guida 6.3.2, riquadro «Crediti emessi»).
 // g_da / g_a: giorno di inizio e fine indicativi dall'adesione.
 // Sono valori descrittivi: le scadenze reali si calcolano nel database con
 // la tabella durata_fase (13_durata_fasi.sql), modificabile dall'Admin.
@@ -34,10 +38,9 @@ export const FASI = [
   { numero: 4, nome: "Risposta ai commenti / pubblicazione", g_da: 40, g_a: 60, responsabile: PROG },
   { numero: 5, nome: "Validazione del progetto", g_da: 60, g_a: 135, responsabile: ENTE },
   { numero: 6, nome: "Seconda verifica documentale", g_da: 135, g_a: 150, responsabile: PROGR },
-  { numero: 7, nome: "Registrazione del progetto", g_da: 150, g_a: 150, responsabile: PROGR },
 ];
 
-// Le 7 fasi di un Rapporto di Monitoraggio annuale (Guida al Programma
+// Le 6 fasi di un Rapporto di Monitoraggio annuale (Guida al Programma
 // 6.3.1 e Tabella 4; script 23): stesso percorso del Progetto con feedback
 // pubblico di 20 giorni, risposta in 15, verifica dell'ente in 60 e
 // seconda verifica documentale in 10.
@@ -48,7 +51,6 @@ export const FASI_RAPPORTO = [
   { numero: 4, nome: "Risposta ai commenti", g_da: 30, g_a: 45, responsabile: PROG },
   { numero: 5, nome: "Verifica del rapporto", g_da: 45, g_a: 105, responsabile: ENTE },
   { numero: 6, nome: "Seconda verifica documentale", g_da: 105, g_a: 115, responsabile: PROGR },
-  { numero: 7, nome: "Emissione dei crediti", g_da: 115, g_a: 115, responsabile: PROGR },
 ];
 
 // Fasi della verifica documentale, in cui la Fondazione può avviare la
@@ -56,6 +58,11 @@ export const FASI_RAPPORTO = [
 export const FASI_VERIFICA_DOCUMENTALE = [2, 6];
 
 export const fasiDi = (tipo) => (tipo === "rapporto" ? FASI_RAPPORTO : FASI);
+
+// Numero di fasi del percorso (stesso valore di cwp_numero_fasi nel
+// database, script 49). Una fase con numero più alto è una fase 7 rimasta
+// da prima del 9/11/2026 perché aveva contenuti: «non più prevista».
+export const NUMERO_FASI = 6;
 
 // Nomi dei tipi di pratica, per elenchi e menu.
 export const TIPI_PRATICA = { progetto: "Progetto", rapporto: "Rapporto di Monitoraggio" };

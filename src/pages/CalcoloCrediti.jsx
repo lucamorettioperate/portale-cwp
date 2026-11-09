@@ -122,6 +122,11 @@ export default function CalcoloCrediti() {
   const [inCorso, setInCorso] = useState("");
   // Vero quando è aperto il riquadro «Confermare il calcolo?».
   const [conferma, setConferma] = useState(false);
+  // Risultato salvato diverso da quello che danno oggi gli stessi dati e
+  // impostazioni (secondo collaudo, 9/11/2026: per esempio buffer salvato
+  // al 40% con impostazioni che portano al 10%). null = allineato.
+  // { salvati: { netti, buffer }, oggi: { netti, buffer, bloccato } }.
+  const [disallineo, setDisallineo] = useState(null);
 
   // Legge il calcolo e la sua Banca Dati Utenze e riallinea lo stato locale
   // (le modifiche non salvate vanno perse).
@@ -140,6 +145,7 @@ export default function CalcoloCrediti() {
     setUtenze(u.data || []);
     if (u.error) setMessaggio({ errore: true, testo: "Utenze del calcolo non lette: " + u.error.message });
     setModificato(false);
+    setDisallineo(confrontaConSalvato(data, c.data || [], r.data || [], u.data || []));
     // Calcolo ancora vuoto: si parte dall'import del tracciato.
     if (!data.dati?.rifiuti?.length && !(c.data || []).length && !(u.data || []).length && data.stato !== "confermato") setPasso("importa");
   }
@@ -172,6 +178,27 @@ export default function CalcoloCrediti() {
   // migliaia di utenze). Hook prima dei ritorni anticipati più sotto.
   const origineBdu = utenze.length ? "utenze" : "conferimenti";
   const righeBdu = useMemo(() => (utenze.length ? utenzeInConferimenti(utenze) : conferimenti), [utenze, conferimenti]);
+
+  // Ricalcola nel browser, senza salvare, i dati e le impostazioni salvati e
+  // confronta crediti netti e buffer con il risultato salvato. Serve ai
+  // calcoli salvati prima di una modifica delle impostazioni o delle regole
+  // (secondo collaudo, 9/11/2026): l'avviso «Risultati non aggiornati»
+  // compare anche aprendo il calcolo, non solo dopo una modifica.
+  function confrontaConSalvato(c, conf, ris, ut) {
+    if (!c?.risultato || c.crediti_netti == null) return null;
+    let r;
+    try {
+      r = calcolaCrediti({ ...c.dati, anno: c.anno, tipo: c.tipo, dataAvvio: c.data_avvio || "", conferimenti: conf, riuso: ris, utenze: ut });
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+    const salvati = { netti: Number(c.crediti_netti), buffer: c.buffer_pct == null ? null : Number(c.buffer_pct) };
+    if (r.bloccato) return { salvati, oggi: { bloccato: true, errori: r.errori } };
+    const oggi = { netti: r.crediti.netti, buffer: r.buffer.totale };
+    const diversi = Math.abs(oggi.netti - salvati.netti) > 0.0005 || (salvati.buffer != null && Math.abs(oggi.buffer - salvati.buffer) > 0.005);
+    return diversi ? { salvati, oggi } : null;
+  }
 
   // Ricarica quando cambia il calcolo nell'indirizzo (es. dopo «Nuova versione»).
   useEffect(() => {
@@ -268,6 +295,10 @@ export default function CalcoloCrediti() {
     });
     setRisultato(r);
     setPasso("risultati");
+    // Sui calcoli in bozza il risultato nuovo si salva qui sotto; su quelli
+    // confermati «Calcola» mostra il risultato di oggi senza salvarlo, quindi
+    // il disallineamento resta.
+    if (!confermato && !r.bloccato) setDisallineo(null);
     // Dati impossibili (valori negativi, data inesistente, buffer fuori da
     // 0-80%: collaudo V01, D02/D04/D07): il motore non dà crediti e il
     // risultato NON si salva. Se c'era un risultato salvato si cancella,
@@ -558,7 +589,7 @@ export default function CalcoloCrediti() {
             <button onClick={esegui} disabled={!!inCorso} style={btnPrimario}>Calcola</button>
             {/* Si conferma solo una bozza con risultato salvato e senza
                 modifiche pendenti: si conferma ciò che è nel database. */}
-            {!confermato && salvato && !modificato && (
+            {!confermato && salvato && !modificato && !disallineo && (
               <button onClick={() => setConferma(true)} style={btnMini}>Conferma calcolo</button>
             )}
             {confermato && <button onClick={revisione} style={btnMini}>Nuova versione</button>}
@@ -590,6 +621,11 @@ export default function CalcoloCrediti() {
               <button onClick={() => setConferma(false)} style={btnMini}>Annulla</button>
             </div>
           </div>
+        )}
+
+        {/* Risultato salvato diverso da quello di oggi (secondo collaudo). */}
+        {disallineo && (
+          <AvvisoDisallineo disallineo={disallineo} confermato={confermato} onCalcola={esegui} />
         )}
 
         {(messaggio || inCorso) && (
@@ -635,7 +671,7 @@ export default function CalcoloCrediti() {
             {(passo === "utenze" || passo === "risultati") && <ControlliCoerenza esiti={coerenza} />}
             {passo === "risultati" && <QualitaDati qualita={qualita} aggiorna={aggiornaDati} sola={confermato} />}
             {passo === "impostazioni" && (
-              <Impostazioni testa={testa} aggiorna={aggiornaTesta} sola={confermato} />
+              <Impostazioni testa={testa} aggiorna={aggiornaTesta} sola={confermato} registrazione={calcolo.pratica?.tipo === "rapporto" ? calcolo.pratica?.padre?.data_registrazione : calcolo.pratica?.data_registrazione} />
             )}
             {passo === "rifiuti" && (
               <Passo titolo="Rifiuti del territorio (Catasto ISPRA)" nota="Capitolo 3 e Standard 4.8.1. Rifiuti dell'anno di riferimento (l'anno in cui il Comune ha raggiunto il 65% di differenziata, tra 64% e 66%, Catasto ISPRA) oppure valori medi del cluster: da qui vengono i valori attesi delle utenze. Per ogni codice EER: tipologia, quantità e se è prodotto solo dalle utenze domestiche (scarto verde, inerti). Più codici EER possono confluire nella stessa tipologia.">
@@ -711,10 +747,15 @@ export default function CalcoloCrediti() {
 /* Testata del calcolo: titolo, anno, tipo di stima, data di avvio, note.
    Props: testa (valori), aggiorna(parziale) (modifica la testata),
    sola (sola lettura). Mostra il coefficiente del primo anno parziale. */
-function Impostazioni({ testa, aggiorna, sola }) {
+function Impostazioni({ testa, aggiorna, sola, registrazione = null }) {
   // Formula 1: se l'avvio cade nell'anno di riferimento, coefficiente =
   // giorni dall'avvio al 31/12 diviso 365; altrimenti 1.
   const pa = coefficientePrimoAnno(testa.data_avvio, testa.anno);
+  // Data di registrazione del Progetto = data di inizio (Standard 4.5;
+  // secondo collaudo, 9/11/2026). Nel suo anno l'avvio dovrebbe coincidere.
+  const annoReg = registrazione ? Number(String(registrazione).slice(0, 4)) : null;
+  const primoAnno = annoReg != null && Number(testa.anno) === annoReg;
+  const avvioDiverso = primoAnno && (testa.data_avvio || "") !== String(registrazione).slice(0, 10);
   return (
     <Passo titolo="Impostazioni" nota="Anno solare monitorato e tipo di stima. Il calcolo ex post si fa per un anno già concluso e per un Progetto registrato (Standard 4.5). Se il progetto è partito durante l'anno, i valori attesi si riducono in proporzione ai giorni effettivi (Capitolo 2, formula 1). L'anno di riferimento dello Standard 4.8.1 (quello con il 65% di differenziata) si indica nel passo 2.">
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 12 }}>
@@ -728,6 +769,22 @@ function Impostazioni({ testa, aggiorna, sola }) {
           </select>
         </label>
         <label style={lbl}>Avvio del progetto (primo anno)<input disabled={sola} type="date" value={testa.data_avvio} onChange={(e) => aggiorna({ data_avvio: e.target.value })} style={campo} /></label>
+      </div>
+      <div style={{ fontSize: 12.5, marginTop: 10, color: registrazione ? C.grafite : C.amber }}>
+        {registrazione
+          ? <>Progetto registrato il <b>{formatoData(registrazione)}</b>: è la data di inizio del Progetto (Standard 4.5).</>
+          : <>Il Progetto non è ancora registrato: un calcolo ex post non si può creare né confermare (Standard 4.5).</>}
+        {avvioDiverso && (
+          <span style={{ color: C.amber }}>
+            {" "}L'anno monitorato è il primo del Progetto: l'avvio dovrebbe essere la data di registrazione
+            {testa.data_avvio ? ` (ora ${formatoData(testa.data_avvio)})` : " (ora vuoto)"}.{" "}
+            {!sola && (
+              <button type="button" onClick={() => aggiorna({ data_avvio: String(registrazione).slice(0, 10) })} style={{ ...btnMini, padding: "3px 9px", fontSize: 12 }}>
+                Usa la data di registrazione
+              </button>
+            )}
+          </span>
+        )}
       </div>
       {pa.coefficiente < 1 && (
         <div style={{ fontSize: 12.5, color: C.ocra, marginTop: 10 }}>
@@ -1245,6 +1302,29 @@ function Buffer({ opzioni, aggiorna, sola, conferimenti, riuso }) {
         </div>
       </div>
     </Passo>
+  );
+}
+
+/* Avviso del risultato salvato non allineato ai dati e alle impostazioni di
+   oggi (secondo collaudo, 9/11/2026). In bozza: si ricalcola con «Calcola»
+   e la conferma resta nascosta finché non si fa. Confermato: il calcolo
+   resta com'è (è definitivo); per correggerlo si crea una nuova versione.
+   Props: disallineo ({ salvati, oggi }), confermato, onCalcola. */
+function AvvisoDisallineo({ disallineo, confermato, onCalcola }) {
+  const { salvati, oggi } = disallineo;
+  const dettaglio = oggi.bloccato
+    ? "con le regole di oggi il calcolo è bloccato (dati non ammessi)"
+    : `salvati ${fmt(salvati.netti, 3)} tCO₂eq${salvati.buffer != null ? ` con buffer ${fmt(salvati.buffer, 1)}%` : ""}; con dati e impostazioni di oggi ${fmt(oggi.netti, 3)} tCO₂eq con buffer ${fmt(oggi.buffer, 1)}%`;
+  return (
+    <div role="alert" style={{ background: "#FFF4E0", border: `1px solid ${C.amber}`, borderRadius: 9, padding: "10px 12px", marginBottom: 14, fontSize: 12.5, color: C.ink, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+      <span style={{ flex: "1 1 320px" }}>
+        <b style={{ color: C.amber }}>Risultati non aggiornati:</b> il risultato salvato non corrisponde ai dati e alle impostazioni del calcolo ({dettaglio}).{" "}
+        {confermato
+          ? "Il calcolo è confermato e resta com'è; per correggerlo create una «Nuova versione»."
+          : "Premete «Calcola» per aggiornarlo: fino ad allora il calcolo non si può confermare."}
+      </span>
+      {!confermato && <button onClick={onCalcola} style={btnPrimario}>Calcola</button>}
+    </div>
   );
 }
 

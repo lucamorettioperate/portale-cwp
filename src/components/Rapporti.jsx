@@ -4,7 +4,7 @@
      (requisiti §2): uno per anno, in sequenza, fino a 10 con il periodo
      di riferimento di 10 anni o fino a 21 con 7 anni rinnovabili 3 volte
      (Standard 4.3.8, script 23). Ognuno è una pratica autonoma (tipo
-     «rapporto») con le sue 7 fasi (Guida 6.3.1). Lo staff può creare il
+     «rapporto») con le sue 6 fasi (Guida 6.3.1). Lo staff può creare il
      Rapporto dell'anno successivo; un clic apre il Rapporto.
    Usato da: DettaglioPratica.jsx (solo per le pratiche di tipo progetto).
    Chi lo vede: cliente/Comune (sola consultazione), operatore e admin
@@ -44,7 +44,7 @@ export default function Rapporti({ progetto, staff, onApri, onCreato }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progetto.id]);
 
-  // Crea il Rapporto dell'anno successivo (con le 7 fasi, la prima in
+  // Crea il Rapporto dell'anno successivo (con le 6 fasi, la prima in
   // corso), ricarica l'elenco e apre subito il nuovo Rapporto.
   async function nuovo() {
     setErrore("");

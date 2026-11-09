@@ -227,6 +227,12 @@
       "data": "31/10/2026",
       "descrizione": "Rilievi del collaudo in produzione dal 31/10/2026 (date delle novità aggiornate); valore ipotetico del credito nei riquadri della Dashboard.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.8",
+      "data": "09/11/2026",
+      "descrizione": "Sei fasi come nella Guida: la registrazione è l'esito della fase 6 (fase 7 tolta, secondo collaudo del 9/11/2026); crediti in simulazione solo da simulazioni valide.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -595,6 +601,12 @@
       "data": "31/10/2026",
       "descrizione": "Rilievi del collaudo in produzione dal 31/10/2026 (date delle novità aggiornate); Dashboard con il valore ipotetico del credito; simulatore senza taratura.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.11",
+      "data": "09/11/2026",
+      "descrizione": "Secondo collaudo del 9/11/2026: sei fasi e fase 7 tolta; scenari salvati con regole precedenti («Non ammesso», «Aggiorna i totali salvati») e Dashboard solo con gli scenari ammessi; avviso «Risultati non aggiornati» all'apertura del calcolo; data di registrazione come avvio del progetto.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -902,6 +914,12 @@
       "rev": "3.30",
       "data": "31/10/2026",
       "descrizione": "Prove 8b.2b (anno di riferimento fuori 64-66% = errore), 8b.3c (senza taratura), 10.10m e 10.10o aggiornate; ritest 11.1-11.16 sul portale in produzione dal 31/10/2026.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.31",
+      "data": "09/11/2026",
+      "descrizione": "Nuova sezione 12 (prove 12.1-12.9) per i rilievi del secondo collaudo; prove con 6 fasi.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1361,6 +1379,12 @@
       "data": "31/10/2026",
       "descrizione": "Script 48 eseguito in produzione il 31/10/2026 alle 09:12 e rilascio dei rilievi T (commit 38c262c); pulizia del simulatore; versione 0.48; «Da fare subito» al 31/10.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "8.6",
+      "data": "09/11/2026",
+      "descrizione": "Secondo collaudo del 9/11/2026: script 49 (sei fasi, scenari ammessi) pronto sul ramo rilievi-test-2, cronologia, decisioni e «Da fare subito».",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1506,6 +1530,12 @@
       "rev": "3.3",
       "data": "30/10/2026",
       "descrizione": "Script del database 01-48.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.4",
+      "data": "09/11/2026",
+      "descrizione": "Script del database 01-49.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1670,6 +1700,12 @@
       "rev": "4.5",
       "data": "31/10/2026",
       "descrizione": "Slide del collaudo del 29 ottobre: 21 correzioni in produzione dal 31 ottobre.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.6",
+      "data": "09/11/2026",
+      "descrizione": "Nuova slide «Secondo collaudo del 9 novembre».",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1852,6 +1888,12 @@
       "rev": "1.29",
       "data": "31/10/2026",
       "descrizione": "I 21 rilievi T corretti sono in produzione dal 31/10/2026 alle 09:12: riepilogo aggiornato (42 da ritestare).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.30",
+      "data": "09/11/2026",
+      "descrizione": "Secondo collaudo: voci T32-T35 corrette sul ramo rilievi-test-2; prove t49.sql e rilievi_t2.test.mjs.",
       "autore": "Fondazione Operate"
     }
   ],

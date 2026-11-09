@@ -951,3 +951,69 @@ export function simulaEconomia(righe, economia = {}, popolazione) {
     avvisi,
   };
 }
+
+/* Valutazione completa di uno scenario salvato con le regole di oggi
+   (rilievo del secondo collaudo del 9/11/2026, scenari salvati con regole
+   vecchie). Fa gli stessi passi della pagina del simulatore: anni del
+   periodo, controlli, stima dei crediti e parte economica.
+   Parametro: la riga di scenario_simulazione (durata, anno_inizio, dati).
+   Restituisce { errori, ammesso, totali, campi }: «campi» sono le colonne
+   di riepilogo da salvare (crediti_netti_totali, rd_finale, ricavi_totali,
+   costo_cliente_totale, ammesso), le stesse che scrive «Salva». */
+export function valutaScenario(scenario = {}) {
+  const dati = scenario.dati || {};
+  const base = riepilogoAnnoBase(dati.annoBase || { rifiuti: {} });
+  const attuale = dati.attuale || {};
+  const partenza = puntoDiPartenza(base, attuale);
+  const anni = anniDelPeriodo({ durata: scenario.durata, annoInizio: scenario.anno_inizio, anni: dati.anni || [], base: partenza });
+  const errori = erroriScenario({ ...dati, anni }, anni);
+  const risultato = simula({ ...dati, anni });
+  const t = risultato.totali;
+  if (errori.length || !t) {
+    return {
+      errori,
+      ammesso: errori.length === 0,
+      totali: null,
+      campi: { crediti_netti_totali: null, rd_finale: null, ricavi_totali: null, costo_cliente_totale: null, ammesso: errori.length === 0 },
+    };
+  }
+  const economia = { ...economiaIniziale(), ...(dati.economia || {}) };
+  const pop = num(attuale.popolazione) || base.popolazione;
+  const eco = simulaEconomia(risultato.righe, economia, pop);
+  const ricavi = eco?.totali?.ricavi;
+  const casoListino = eco && (eco.listino === "caso1" || eco.listino === "caso2");
+  const costo = casoListino ? eco.totali.tariffeProgramma : null;
+  return {
+    errori,
+    ammesso: true,
+    totali: t,
+    risultato,
+    eco,
+    campi: {
+      crediti_netti_totali: Math.round(t.netti * 10) / 10,
+      rd_finale: Math.round(t.rdFinale * 10) / 10,
+      ricavi_totali: Number.isFinite(ricavi) ? Math.round(ricavi) : null,
+      costo_cliente_totale: Number.isFinite(costo) ? Math.round(costo) : null,
+      ammesso: true,
+    },
+  };
+}
+
+/* Vero se le colonne di riepilogo salvate non corrispondono più alla
+   valutazione di oggi (scenario salvato con regole precedenti). Tolleranza:
+   0,1 crediti e 1 € (gli arrotondamenti del salvataggio). */
+export function riepilogoDaAggiornare(scenario = {}, valutazione = valutaScenario(scenario)) {
+  const c = valutazione.campi;
+  const diverso = (a, b, tol) => {
+    const x = a == null ? null : Number(a);
+    const y = b == null ? null : Number(b);
+    if (x == null || y == null) return x !== y;
+    return Math.abs(x - y) > tol;
+  };
+  return (
+    (scenario.ammesso ?? true) !== c.ammesso ||
+    diverso(scenario.crediti_netti_totali, c.crediti_netti_totali, 0.1) ||
+    diverso(scenario.ricavi_totali, c.ricavi_totali, 1) ||
+    diverso(scenario.costo_cliente_totale, c.costo_cliente_totale, 1)
+  );
+}
