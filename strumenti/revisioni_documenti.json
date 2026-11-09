@@ -1385,6 +1385,12 @@
       "data": "09/11/2026",
       "descrizione": "Secondo collaudo del 9/11/2026: script 49 (sei fasi, scenari ammessi) pronto sul ramo rilievi-test-2, cronologia, decisioni e «Da fare subito».",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "8.7",
+      "data": "09/11/2026",
+      "descrizione": "Script 49 eseguito in produzione il 9/11/2026 alle 10:54, versione 0.49; rilascio del secondo collaudo (commit 4d08e40).",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1707,6 +1713,12 @@
       "data": "09/11/2026",
       "descrizione": "Nuova slide «Secondo collaudo del 9 novembre».",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.7",
+      "data": "09/11/2026",
+      "descrizione": "Slide del secondo collaudo: correzioni in produzione dal 9 novembre.",
+      "autore": "Fondazione Operate"
     }
   ],
   "issue": [
@@ -1894,6 +1906,12 @@
       "rev": "1.30",
       "data": "09/11/2026",
       "descrizione": "Secondo collaudo: voci T32-T35 corrette sul ramo rilievi-test-2; prove t49.sql e rilievi_t2.test.mjs.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.31",
+      "data": "09/11/2026",
+      "descrizione": "T32-T35 in produzione dal 9/11/2026 alle 10:54: riepilogo aggiornato (46 da ritestare).",
       "autore": "Fondazione Operate"
     }
   ],

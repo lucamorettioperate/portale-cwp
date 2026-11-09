@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Ultimo aggiornamento** | 9 novembre 2026 |
-| **Versione del portale** | 0.48 (ultimo script database eseguito: `48_rilievi_test_portale.sql`, script 01-48, eseguito il 31/10/2026 alle 09:12). Pronto sul ramo `rilievi-test-2`, da eseguire con l'OK di Luca: `49_rilievi_test_portale_2.sql` |
+| **Versione del portale** | 0.49 (ultimo script database eseguito: `49_rilievi_test_portale_2.sql`, script 01-49, eseguito il 9/11/2026 alle 10:54) |
 | **Indirizzo** | https://portale-cwp.vercel.app |
 | **Repository** | https://github.com/lucamorettioperate/portale-cwp (pubblico: solo codice, nessun dato) |
 | **Responsabile** | Luca Moretti — Fondazione Operate |
@@ -260,7 +260,7 @@ Editor di Supabase. Dal 07 in poi sono rieseguibili.
 | `34_sicurezza_avvisi.sql` | Sicurezza (backlog 14, 30): avvisi all'Amministratore principale (`cwp_avviso_sicurezza`, evento «sicurezza»): 5 accessi non riusciti in 15 minuti per email, 30 in un'ora in tutto, nuovo Amministratore (trigger `trg_profilo_avviso_admin`); `registra_uscita(p_motivo)` con l'uscita per inattività; rinforzi del Security Advisor: `search_path` fisso su tutte le funzioni, funzioni SECURITY DEFINER non eseguibili da anon (tranne `registra_accesso_fallito` e quelle usate nelle regole RLS) | 20/10/2026 — provato sul banco locale (`t34.sql`, regressioni `t33.sql`); **eseguito in produzione il 23/10/2026 alle 12:20** su incarico di Luca, dopo gli script 35-43 (prova sul banco nello stesso ordine: stesse 9 funzioni eseguibili senza accesso, `t41`-`t43` invariati) |
 | `47_listino_obbligatorio.sql` | Listino obbligatorio (25/10/2026, richiesta di Luca delle 12:07; **eseguito in produzione il 25/10/2026 alle 12:15**): i Progetti senza listino passano a Caso 1 con motivazione nell'audit; trigger `trg_pratica_listino` (messaggio «Scegli il listino…») e vincolo `chk_progetto_listino` (ogni Progetto ha Caso 1 o Caso 2; i Rapporti no). Prova `t47.sql` |
 | `48_rilievi_test_portale.sql` | Rilievi TEST_PORTALE_CWP del 29/10/2026 (scelte di Luca del 30/10: tutto tranne il Marketing). Fasi: Progetto 5 «Validazione del progetto», 7 «Registrazione del progetto», Rapporto 7 «Emissione dei crediti» (fase e durata_fase). `staff_cruscotto` con ente di validazione, fatture scadute e in scadenza, dichiarazioni di cancellazione da ricevere e oltre i 10 giorni. `ente_validazione.approvato_il`. `cwp_piva_valida`, `cwp_cf_valido`, trigger `trg_organizzazione_dati_fiscali` (controllo quando si scrivono CF e P.IVA) e `trg_pagamento_dati_fiscali` (voci iscrizione e registrazione solo con CF valido). `documento_richiesto.obbligatorio`, voce «Modulo di delega di rappresentanza» in fase 1 non obbligatoria, `cwp_documenti_mancanti`; `staff_chiudi_fase`: fase 2 del Progetto solo con codici ISTAT, fasi 2 e 6 solo con i documenti obbligatori delle fasi precedenti salvo deroga motivata dell'Amministratore (audit). `reclamo`: tipo «ricorso» (codice RIC), `costi_comunicati_il`, `costi_non_dovuti` (costi a 0). `cwp_progetto_registrato` e trigger `trg_calcolo_ex_post` (ex post solo per anno concluso e Progetto registrato, alla creazione, al cambio di anno/tipo/pratica e alla conferma). `pratica_codice_automatico`: codice sempre automatico. `calcolo_utenza.nominativo` e `indirizzo` facoltativi; `admin_salva_utenza` non li salva più. Prova `t48.sql`. **Eseguito in produzione il 31/10/2026 alle 09:12** (OK di Luca del 31/10; controllo finale 0 · 1 · 3: nessun codice fiscale non valido, delega «se applicabile», 3 nomi di fase nuovi) |
-| `49_rilievi_test_portale_2.sql` | Rilievi del secondo collaudo (TEST_PORTALE_CWP_2, 9/11/2026). **Sei fasi** come nella Guida (T32): `cwp_numero_fasi` = 6, durata della fase 7 tolta, documenti richiesti e modelli della fase 7 spostati alla 6, vincoli 1-6; fasi 7 vuote delle pratiche esistenti cancellate con la motivazione nell'audit (quelle con note, documenti o integrazioni restano, «non più previste»); `staff_apri_fase` non apre una fase oltre la 6. **Scenari ammessi** (T33): colonna `scenario_simulazione.ammesso`, `cwp_rd_riferimento_scenario` e `cwp_scenario_riferimento_ammesso` (anno di riferimento 64-66% o cluster, Standard 4.8.1), trigger `trg_scenario_ammesso`; `scenario_aggiornato` cambia la data solo se cambiano gli input; `cruscotto_valore_crediti` e `cruscotto_valore_progetti` contano solo gli scenari ammessi. Prova `t49.sql`. **Da eseguire con l'OK di Luca** |
+| `49_rilievi_test_portale_2.sql` | Rilievi del secondo collaudo (TEST_PORTALE_CWP_2, 9/11/2026). **Sei fasi** come nella Guida (T32): `cwp_numero_fasi` = 6, durata della fase 7 tolta, documenti richiesti e modelli della fase 7 spostati alla 6, vincoli 1-6; fasi 7 vuote delle pratiche esistenti cancellate con la motivazione nell'audit (quelle con note, documenti o integrazioni restano, «non più previste»); `staff_apri_fase` non apre una fase oltre la 6. **Scenari ammessi** (T33): colonna `scenario_simulazione.ammesso`, `cwp_rd_riferimento_scenario` e `cwp_scenario_riferimento_ammesso` (anno di riferimento 64-66% o cluster, Standard 4.8.1), trigger `trg_scenario_ammesso`; `scenario_aggiornato` cambia la data solo se cambiano gli input; `cruscotto_valore_crediti` e `cruscotto_valore_progetti` contano solo gli scenari ammessi. Prova `t49.sql`. **Eseguito in produzione il 9/11/2026 alle 10:54** (OK di Luca; controllo finale 0 · 0 · 2 · 6: nessuna fase 7 rimasta, nessuna durata della fase 7, 2 scenari non ammessi, percorso di 6 fasi; 7 fasi 7 vuote cancellate con motivazione nell'audit) |
 | `46_lettura_siti.sql` | Lettore dei siti di Comuni e gestori (25/10/2026, richiesta di Luca; versione gratuita scelta da Luca; **eseguito in produzione il 25/10/2026 alle 11:45**): tabella `mkt_lettura` (coda: stato, tentativi, pagine lette, esito, errore), impostazioni `mkt_lettura_attiva`, `mkt_lettura_segreto` (codice casuale per il lavoro pianificato, non leggibile dal portale) e `url_marketing`; `admin_mkt_lettura_accoda`, `admin_mkt_lettura_attiva`, `admin_mkt_lettura_riepilogo`, `mkt_lettura_prendi` (solo chiave di servizio, `skip locked`, riprende le letture interrotte), `richiedi_lettura_siti` e lavoro pianificato `cwp_lettura_siti` ogni 30 secondi. Prova `t46.sql` |
 | `45_rapporto_registrato_marketing_rls.sql` | Segnalazioni di Luca del 23/10 alle 15:24 (**eseguito in produzione il 23/10/2026 alle 15:50**): `rapporto_coerente` rifiuta un nuovo Rapporto di Monitoraggio se il Progetto non è registrato (fase 6 completata o `data_registrazione`); il trigger resta solo sull'inserimento (i Rapporti già creati non si toccano). Regole RLS delle 6 tabelle `mkt_*` con `(select app_is_admin())`, calcolata una volta per lettura (l'elenco di tutti i Comuni superava il tempo massimo); indice `idx_mkt_ente_tipo_denominazione`. Prova `t45.sql` |
 | `44_marketing.sql` | Marketing (23/10/2026, richiesta di Luca; **eseguito in produzione il 23/10/2026 alle 12:12**): tabelle `mkt_ente` (Comuni e gestori: chiave `istat:` / `albo:`, regione, provincia, abitanti, PEC, email generica con controllo «non PEC», sito, natura, numero e categorie dell'Albo, attività di raccolta e tariffa, fonti), `mkt_referente` (sindaco, tributi, ambiente, finanziario, tecnico, direttori, amministratore), `mkt_campagna`, `mkt_invio` (un invio per ente con codice casuale, stato, visita, simulazione, richiesta), `mkt_disiscrizione`, `mkt_richiesta` (richieste di registrazione dalla pagina /scopri; id uuid per l'audit); RLS solo Amministratori, nessun accesso anonimo; audit di campagne e richieste; `mkt_sembra_pec`, `admin_mkt_prepara_invii` (salta enti senza email e indirizzi disiscritti), `admin_mkt_riepilogo`. Prova `t44.sql` |
@@ -565,7 +565,7 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   aggiunge 3 nuovi, più una nota: verificati su codice, database del banco
   e Guida; risposte nel documento di progetto
   `claude/test-portale-cwp-2-risposte.md`. Correzioni sul ramo
-  `rilievi-test-2` (non ancora in produzione):
+  `rilievi-test-2` (in produzione dal 9/11 alle 10:54):
   - **T32 — Fase 7 e registrazione.** La Guida (6.2, 6.2.4, 6.3.1, Tabelle
     3 e 4) ha 6 fasi e la registrazione è l'esito della fase 6; l'emissione
     segue la registrazione del Rapporto (6.3.2). Tolta la fase 7 (script 49
@@ -591,6 +591,16 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
     elenco del Simulatore, scenario non ammesso, apertura del calcolo.
   - Produzione non verificata in lettura: la sessione della dashboard di
     Supabase è scaduta (serve l'accesso di Luca).
+- **Rilascio del secondo collaudo** (OK di Luca alle 10:50, dopo il suo
+  accesso a Supabase). Prima, in sola lettura: 7 fasi 7 in produzione,
+  tutte vuote e mai aperte; 2 scenari con l'anno di riferimento fuori dal
+  64-66% (Borgoval «ISPRA Casalmaggiore 2024» 78,9%, Bovisio-Masciago «Dati
+  ISPRA 2021» 84,0%). Script 49 eseguito alle 10:54 (controllo finale
+  0 · 0 · 2 · 6; 7 cancellazioni nell'audit con la motivazione); `main`
+  unito al commit `4d08e40` e pubblicato su Vercel; nel sito pubblicato
+  verificati i testi nuovi. Resta da premere «Aggiorna i totali salvati»
+  nel Simulatore (serve una sessione del portale: la password non la
+  inserisco).
 
 ### 31 ottobre 2026
 - **Rilievi TEST_PORTALE_CWP in produzione** (OK di Luca delle 09:11:
@@ -1932,11 +1942,11 @@ completato (va barrato qui e annotato in Cronologia).
 aperte; il dettaglio è nei punti numerati qui sotto.
 
 *Azioni di Luca (Claude non le può fare: chiavi, pubblicazioni, account)*
-- **Secondo collaudo (TEST_PORTALE_CWP_2)**: accedere alla dashboard di
-  Supabase e dare l'OK per eseguire lo script 49 e pubblicare il ramo
-  `rilievi-test-2` (prima dell'esecuzione si contano le fasi 7 con
-  contenuti che resteranno); dopo, premere (o far premere) «Aggiorna i
-  totali salvati» nel Simulatore.
+- **Secondo collaudo (TEST_PORTALE_CWP_2)** (in produzione dal 9/11 alle
+  10:54): premere «Aggiorna i totali salvati» nel Simulatore (gli scenari
+  con il cluster hanno ancora i totali del vecchio ricalcolo al 65%);
+  decidere se correggere o eliminare gli scenari non ammessi di Borgoval e
+  Bovisio-Masciago; far ritestare T32-T35 (prove 12.1-12.9).
 - **Rilievi TEST_PORTALE_CWP** (in produzione dal 31/10): ritestare i 21
   rilievi corretti con i collaudatori; decidere cosa fare dello scenario di
   prova di Borgoval (non conforme allo Standard) e girare alla Fondazione
@@ -2311,7 +2321,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 191 file, 46.364 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 191 file, 46.382 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -2542,7 +2552,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 191 file, 46.364 righe 
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/marketing_arricchimento_sql.py` | 107 | — |
 | `strumenti/presentazione/genera_presentazione.cjs` | 735 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1920 | — |
+| `strumenti/revisioni_documenti.json` | 1938 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
