@@ -1391,6 +1391,12 @@
       "data": "09/11/2026",
       "descrizione": "Script 49 eseguito in produzione il 9/11/2026 alle 10:54, versione 0.49; rilascio del secondo collaudo (commit 4d08e40).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "8.8",
+      "data": "09/11/2026",
+      "descrizione": "Documentazione riallineata alle 6 fasi (tabelle del database, Simulatore, «Da fare subito»: T01 risolto).",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1719,6 +1725,12 @@
       "data": "09/11/2026",
       "descrizione": "Slide del secondo collaudo: correzioni in produzione dal 9 novembre.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.8",
+      "data": "09/11/2026",
+      "descrizione": "Slide delle funzioni e del collaudo del 29 ottobre allineate alle 6 fasi.",
+      "autore": "Fondazione Operate"
     }
   ],
   "issue": [
@@ -1912,6 +1924,12 @@
       "rev": "1.31",
       "data": "09/11/2026",
       "descrizione": "T32-T35 in produzione dal 9/11/2026 alle 10:54: riepilogo aggiornato (46 da ritestare).",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.32",
+      "data": "09/11/2026",
+      "descrizione": "T01 collegato a T32: fase 7 tolta il 9/11/2026.",
       "autore": "Fondazione Operate"
     }
   ],
