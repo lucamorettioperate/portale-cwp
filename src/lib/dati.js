@@ -84,7 +84,7 @@ export async function elencaPraticheAnagrafiche() {
 // Elenca i progetti (pratiche di tipo 'progetto') con la loro organizzazione.
 // Dal più recente. Tabella `pratica` (01_schema.sql); RLS pratica_select
 // (06_utente_multi_org.sql): il cliente vede solo le pratiche delle sue organizzazioni.
-// Con lo stato delle 7 fasi (tabella `fase`) per la barra a LED dell'elenco
+// Con lo stato delle 6 fasi (tabella `fase`) per la barra a LED dell'elenco
 // (dal 21/10/2026).
 export async function elencaProgetti() {
   return await supabase
@@ -116,7 +116,7 @@ export async function leggiPratica(id) {
     .single();
 }
 
-// Crea una pratica e le sue 7 fasi in un'unica operazione (o tutto o niente).
+// Crea una pratica e le sue 6 fasi in un'unica operazione (o tutto o niente).
 // Parametro: colonne della pratica (tipo, organizzazione_id, codice, titolo,
 // stato, progetto_padre_id, anno_monitoraggio, periodo_riferimento,
 // codici_istat, copromotori, popolazione, crediti_previsti — script 23). Restituisce { data: pratica
@@ -592,7 +592,7 @@ export async function leggiCruscotto() {
   return await supabase.rpc("staff_cruscotto");
 }
 
-// Stato delle 7 fasi di più pratiche, per l'indicatore a LED della
+// Stato delle 6 fasi di più pratiche, per l'indicatore a LED della
 // Dashboard (src/components/BarraFasi.jsx). Tabella "fase" (script 01),
 // leggibile dallo staff per le regole RLS. Parametro: elenco di id pratica.
 // Restituisce { data: [{ pratica_id, numero, nome, stato }] }.

@@ -1,7 +1,7 @@
 /* =========================================================================
    DurateFasi
    Scopo: sezione «Durata delle fasi» delle Impostazioni, una per tipo di
-     pratica: Progetto (7 fasi) e Rapporto di Monitoraggio (4 fasi, script
+     pratica: Progetto (6 fasi) e Rapporto di Monitoraggio (6 fasi, script
      21). Tabella delle fasi con la durata in giorni modificabile (dalla
      fase 2 in poi; la fase 1 è l'avvio), giorno di inizio e fine calcolati
      e durata complessiva. La modifica vale per le fasi aperte da quel

@@ -512,6 +512,37 @@ async function icona(Comp, colore) {
   ]), { x: 8.65, y: 1.45, w: 3.9, h: 5.3, fontSize: 13.5, valign: "top", margin: 0, paraSpaceAfter: 5, isTextBox: true });
   s.addNotes("Rilievi del documento TEST_PORTALE_CWP del 29 ottobre 2026: 31 punti verificati su portale, codice, database e documenti del Programma. Scelte di Luca del 30 ottobre: correggere tutto tranne il Marketing. Correzioni (script 48 e pagine, in produzione dal 31 ottobre 2026 alle 09:12, da ritestare con i collaudatori): nomi delle fasi come nella Guida; Dashboard con lo stato nel Programma, l'ente di validazione, le fatture scadute e in scadenza e le dichiarazioni di cancellazione dei crediti venduti da ricevere; controllo di codice fiscale e partita IVA e data di approvazione degli enti; verifiche documentali (fasi 2 e 6) solo con i documenti obbligatori e con i codici ISTAT, con deroga motivata dell'Amministratore; codice della pratica sempre automatico; ricorso e costi dei reclami; nel calcolo anno di monitoraggio e anno di riferimento dello Standard 4.8.1, ex post solo per anni conclusi e Progetti registrati, avviso dei risultati non aggiornati; simulatore con il riferimento come da Standard, senza taratura e senza riferimenti EsaCom, valore ipotetico del credito; CSV dell'Audit; Banca Dati Utenze senza nomi e indirizzi. Domande alla Fondazione: fase 7, valore del credito, tipologie di promotori, listino ufficiale, iter del ricorso, paniere del secco, accesso degli enti, invio degli 8 moduli.");
 
+  // ---------------------------------------------------------------- Secondo collaudo del 9 novembre
+  s = pres.addSlide({ masterName: "CONTENUTO", sectionTitle: "Novità" });
+  s.addText("Secondo collaudo del 9 novembre", { placeholder: "title" });
+  [
+    ["31", "rilievi ripresi", "stato al 31 ottobre, nessuna nuova riserva"],
+    ["4", "punti nuovi corretti", "fase 7, scenari, calcoli, avvio"],
+    ["6", "fasi come nella Guida", "registrazione alla chiusura della fase 6"],
+  ].forEach(([n, t, d], i) => {
+    const x = 0.6 + i * 2.6;
+    card(s, x, 1.3, 2.4, 1.55, i === 0 ? C.accent3 : C.background2, "Numero " + t);
+    s.addText([{ text: n, options: { bold: true, fontSize: 26, color: C.text2, breakLine: true } }, { text: t, options: { bold: true, fontSize: 12, color: C.text1, breakLine: true } }, { text: d, options: { fontSize: 10.5, color: C.text1 } }],
+      { x: x + 0.15, y: 1.3, w: 2.1, h: 1.55, valign: "middle", margin: 0, isTextBox: true });
+  });
+  card(s, 0.6, 3.1, 7.6, 2.2, C.background2, "Cosa cambia");
+  s.addText([
+    { text: "Registrazione ed emissione al posto giusto", options: { bold: true, color: C.text2, breakLine: true } },
+    { text: "La Guida ha 6 fasi: la registrazione è l'esito della verifica documentale (fase 6) e l'emissione dei crediti segue la registrazione del Rapporto. La fase 7 è stata tolta; dove conteneva note o documenti resta visibile come «non più prevista».", options: { fontSize: 12.5, color: C.text1 } },
+  ], { x: 0.8, y: 3.2, w: 7.2, h: 2.0, fontSize: 13.5, valign: "top", margin: 0, isTextBox: true });
+  card(s, 8.45, 1.3, 4.25, 5.55, C.background2, "Elenco correzioni del 9 novembre");
+  const novita5 = [
+    ["Fasi (T32)", "6 fasi per Progetto e Rapporto; pratiche esistenti allineate"],
+    ["Simulatore (T33)", "scenari salvati con regole vecchie: «Non ammesso» e totali da aggiornare; la Dashboard conta solo quelli ammessi"],
+    ["Calcolo (T34)", "avviso «Risultati non aggiornati» anche aprendo un calcolo già salvato"],
+    ["Avvio (T35)", "data di registrazione del Progetto proposta come avvio nel primo anno"],
+  ];
+  s.addText(novita5.flatMap(([t, d], j) => [
+    { text: t, options: { bold: true, color: C.text2, breakLine: true } },
+    { text: d, options: { color: C.text1, fontSize: 12, breakLine: j < novita5.length - 1 } },
+  ]), { x: 8.65, y: 1.45, w: 3.9, h: 5.3, fontSize: 13.5, valign: "top", margin: 0, paraSpaceAfter: 5, isTextBox: true });
+  s.addNotes("Secondo collaudo, documento TEST_PORTALE_CWP_2 del 9 novembre 2026: riprende i 31 rilievi del 29 ottobre con lo stato al 31 ottobre e aggiunge quattro punti, corretti sul ramo rilievi-test-2 con lo script 49 (da pubblicare con l'OK di Luca). T32: la Guida (6.2, 6.2.4, 6.3.1, Tabelle 3 e 4) prevede sei fasi e la registrazione come esito della verifica documentale; la fase 7 di zero giorni è stata tolta, le pratiche nuove nascono con sei fasi, le fasi 7 vuote sono cancellate con la motivazione nell'audit. T33: lo scenario di prova di Borgoval con il riferimento al 78,9% non è più ammesso dallo Standard 4.8.1; l'elenco del Simulatore lo mostra come Non ammesso e la Dashboard non lo somma più. T34: aprendo un calcolo il portale lo rifà con i dati salvati e avvisa se il risultato salvato non corrisponde, come nel caso del buffer al 40% contro il 10% delle impostazioni. T35: nel primo anno del Progetto il portale propone come avvio la data di registrazione (Standard 4.5).");
+
   // ---------------------------------------------------------------- 4. Punti aperti
   pres.addSection({ title: "Punti aperti" });
   s = pres.addSlide({ masterName: "CONTENUTO", sectionTitle: "Punti aperti" });

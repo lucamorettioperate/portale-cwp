@@ -74,10 +74,10 @@ Si accede da [portale-cwp.vercel.app](https://portale-cwp.vercel.app) con **Emai
 
 La **Dashboard** è la pagina iniziale dello staff: mostra in un'unica tabella tutte le pratiche, Progetti e Rapporti, con l'avanzamento, la fase corrente, la scadenza e ciò che c'è da fare.
 
-**Barra di avanzamento a LED.** La colonna **Avanzamento** mostra per ogni pratica (quindi per ogni Comune) una barra di 7 luci, una per fase. Le fasi **completate sono accese** (ambra), quelle **ancora da fare sono spente**. La **settima luce**, la Chiusura, si accende in **verde**. La fase in corso è spenta ma ha un contorno ambra, così si vede subito dove è arrivata la pratica. Accanto c'è il conteggio, ad esempio «4/7». Passando il mouse su una luce compaiono numero, nome e stato della fase. La stessa barra, in piccolo, compare **nell'elenco delle pratiche** a sinistra della pagina Pratiche (in alto a destra di ogni riquadro, con lo stato sotto) e **in alto a destra nella pratica aperta**.
+**Barra di avanzamento a LED.** La colonna **Avanzamento** mostra per ogni pratica (quindi per ogni Comune) una barra di 6 luci, una per fase. Le fasi **completate sono accese** (ambra), quelle **ancora da fare sono spente**. La **settima luce**, la Chiusura, si accende in **verde**. La fase in corso è spenta ma ha un contorno ambra, così si vede subito dove è arrivata la pratica. Accanto c'è il conteggio, ad esempio «4/7». Passando il mouse su una luce compaiono numero, nome e stato della fase. La stessa barra, in piccolo, compare **nell'elenco delle pratiche** a sinistra della pagina Pratiche (in alto a destra di ogni riquadro, con lo stato sotto) e **in alto a destra nella pratica aperta**.
 
 **Valore dei crediti (dal 23/10/2026).** In cima alla Dashboard due riquadri danno il valore complessivo dei crediti di tutto il portale, in crediti (1 credito = 1 tCO₂eq) e in euro:
-- **Crediti in simulazione**: per ogni Comune conta solo lo scenario del Simulatore **aggiornato più di recente** (gli scenari prudente, obiettivo, ambizioso… sono alternative e non si sommano), con i crediti netti di tutto il periodo simulato (7, 10 o 21 anni). Gli euro sono i ricavi dello scenario (crediti × valore del credito anno per anno). Gli scenari salvati prima del 23/10/2026 o senza valore del credito si valorizzano al valore ipotetico del credito (Impostazioni) e il riquadro dice quanti sono: basta riaprirli e premere **Salva** nel Simulatore. È una stima ex ante, non certificabile.
+- **Crediti in simulazione**: per ogni Comune conta solo lo scenario **ammesso** del Simulatore **aggiornato più di recente** (dal 9/11/2026 gli scenari «Non ammesso», per esempio con l'anno di riferimento fuori dal 64-66% di differenziata, non si contano) (gli scenari prudente, obiettivo, ambizioso… sono alternative e non si sommano), con i crediti netti di tutto il periodo simulato (7, 10 o 21 anni). Gli euro sono i ricavi dello scenario (crediti × valore del credito anno per anno). Gli scenari salvati prima del 23/10/2026 o senza valore del credito si valorizzano al valore ipotetico del credito (Impostazioni) e il riquadro dice quanti sono: basta riaprirli e premere **Salva** nel Simulatore. È una stima ex ante, non certificabile.
 - **Crediti in fase esecutiva**: tre righe. **Calcolati**: crediti netti dei calcoli ex post confermati e ancora validi (non sostituiti da una nuova versione). **Emessi**: crediti dei lotti emessi dai Rapporti. **Venduti**: crediti venduti con il valore comunicato dal registro. Calcolati ed emessi sono valorizzati al **valore ipotetico del credito** (Impostazioni: il Programma non stabilisce un prezzo); le righe non si sommano, perché i crediti emessi provengono dai calcoli.
 
 - **Valore dei progetti (quanto paga il cliente)** (dal 23/10/2026): il totale in euro dei Progetti aperti (non annullati né ritirati) con il listino del **Caso 1** o del **Caso 2**, per la popolazione e il periodo di ogni Progetto, con l'importo annuo; sotto, la riga **In simulazione** con quanto pagherebbe il cliente nell'ultimo scenario di ogni Comune simulato con il Caso 1 o 2. Il riquadro dice quanti Progetti sono senza listino o senza popolazione (da completare in **Modifica i dati** della pratica) e quanti scenari non hanno il Caso 1 o 2 (o sono stati salvati prima del 23/10: basta riaprirli e premere **Salva**).
@@ -125,7 +125,7 @@ La pagina **Pratiche** elenca a sinistra i Progetti (con più di 4 progetti comp
 8. **Listino (quanto paga il cliente)**, obbligatorio dal 23/10/2026: **Caso 1 – Progetto volontario** oppure **Caso 2 – Progetto obbligatorio (da bando di gara)**, le stesse tabelle dei costi del Simulatore. Con la popolazione indicata, sotto il menu compare il **valore del progetto** (es. Caso 1 a 16.735 abitanti: 16.232,95 € all'anno, 162.329,50 € in 10 anni). Con il periodo di 7 anni il valore è una stima, perché le tabelle valgono per 10 anni.
 9. Premete **Crea progetto**.
 
-Vengono create le 7 fasi: la 1 (Adesione) già *In corso*, le altre *Non iniziata*.
+Vengono create le 6 fasi della Guida: la 1 (Adesione) già *In corso*, le altre *Non iniziata*. Alla chiusura della fase 6 il Progetto è **registrato** (Guida 6.2.4): la data di registrazione è la data di inizio del Progetto (Standard 4.5).
 
 **Un solo progetto per territorio.** Un Comune (codice ISTAT) può stare in un solo Progetto non annullato né ritirato (Standard 4.6). Se il codice è già usato il portale rifiuta il salvataggio con il messaggio «Il territorio con codice ISTAT … è già nel Progetto …»; se il codice non ha 6 cifre compare «Codice ISTAT non valido: ogni Comune ha un codice di 6 cifre».
 
@@ -157,7 +157,7 @@ Il periodo di riferimento vale anche per i Rapporti del Progetto. Non si può pa
 2. Nella sezione **Rapporti di Monitoraggio (N/10)** (oppure **N/21** con il periodo di 7 anni rinnovabili) premete **+ Rapporto anno N**.
 3. Il Rapporto nasce con codice `<codice progetto>-RMN`, eredita l'ente e il periodo di riferimento e si apre subito.
 
-I Rapporti si creano in ordine (l'anno N richiede l'anno N−1), fino a 10 con il periodo di 10 anni o fino a 21 con 7 anni rinnovabili 3 volte, in qualsiasi momento mentre il Progetto è attivo. Un Progetto ritirato o annullato non può avere nuovi Rapporti. Ogni Rapporto ha documenti, pagamenti e crediti propri e lo stesso percorso di **7 fasi** del Progetto, con il feedback pubblico (Guida 6.3.1 e Tabella 4):
+I Rapporti si creano in ordine (l'anno N richiede l'anno N−1), fino a 10 con il periodo di 10 anni o fino a 21 con 7 anni rinnovabili 3 volte, in qualsiasi momento mentre il Progetto è attivo. Un Progetto ritirato o annullato non può avere nuovi Rapporti. Ogni Rapporto ha documenti, pagamenti e crediti propri e lo stesso percorso di **6 fasi** del Progetto, con il feedback pubblico (Guida 6.3.1 e Tabella 4):
 
 | Fase del Rapporto | Durata iniziale (giorni) | Responsabile |
 | --- | --- | --- |
@@ -167,7 +167,10 @@ I Rapporti si creano in ordine (l'anno N richiede l'anno N−1), fino a 10 con i
 | 4. Risposta ai commenti | 15 | Promotore del progetto |
 | 5. Verifica del rapporto | 60 | Ente di validazione e verifica |
 | 6. Seconda verifica documentale | 10 | Promotore del programma |
-| 7. Emissione dei crediti | 0 | Promotore del programma |
+
+Alla chiusura della fase 6 il Rapporto e i suoi crediti sono **registrati** (Guida 6.3.1, Tabella 4); poi l'Amministratore emette i crediti dal riquadro **Crediti emessi** del Rapporto (Guida 6.3.2).
+
+**Fase 7 tolta (9/11/2026, secondo collaudo).** Fino al 9/11/2026 Progetti e Rapporti avevano una fase 7 di 0 giorni («Registrazione del progetto» / «Emissione dei crediti»), che la Guida non prevede: la registrazione è l'esito della fase 6 e l'emissione segue la registrazione del Rapporto. Lo script 49 l'ha tolta dalle pratiche dove era vuota (l'audit lo registra con la motivazione); dove aveva note, documenti o integrazioni resta visibile con la scritta «non più prevista» e non si può più aprire. Le pratiche nuove nascono con 6 fasi.
 
 Le durate si cambiano in Impostazioni. Per tornare al Progetto: **← Torna al Progetto**. Nei Rapporti creati prima del 18/10/2026 con 4 fasi, le fasi nuove sono state aggiunte: se il Rapporto era già più avanti risultano *Completate* con una nota che spiega che non sono state svolte.
 
@@ -581,7 +584,6 @@ Due tabelle, una per il **Progetto** e una per il **Rapporto di Monitoraggio**, 
 | 4. Risposta ai commenti / pubblicazione | 20 | 40 → 60 | Promotore del progetto |
 | 5. Validazione del progetto | 75 | 60 → 135 | Ente di validazione e verifica |
 | 6. Seconda verifica documentale | 15 | 135 → 150 | Promotore del programma |
-| 7. Registrazione del progetto | 0 | 150 | Promotore del programma |
 
 | Fase del Rapporto | Durata iniziale (giorni) | Giorni del percorso |
 | --- | --- | --- |
@@ -591,7 +593,6 @@ Due tabelle, una per il **Progetto** e una per il **Rapporto di Monitoraggio**, 
 | 4. Risposta ai commenti | 15 | 30 → 45 |
 | 5. Verifica del rapporto | 60 | 45 → 105 |
 | 6. Seconda verifica documentale | 10 | 105 → 115 |
-| 7. Emissione dei crediti | 0 | 115 |
 
 **Modificare una durata**
 
@@ -758,7 +759,7 @@ Le singole tabelle si possono ancora importare a mano in CSV nei passi 2, 3 e 5 
 1. Nel menu premete **Calcolo crediti**: si apre l'elenco dei calcoli (Calcolo, Pratica, Anno / tipo, Crediti netti, Stato).
 2. Premete **+ Nuovo calcolo**.
 3. Scegliete la **Pratica** (Progetto o Rapporto di Monitoraggio), un **Titolo** (es. «Monitoraggio 2025»), l'**Anno di monitoraggio** (prima si chiamava «Anno di riferimento») e il **Tipo di stima**: *Ex post (letture della Banca Dati Utenze)* oppure *Ex ante*. Dal 31/10/2026 un calcolo **ex post** si crea (e si conferma) solo per un **anno già concluso** e per un **Progetto registrato** (fase 6 completata) o un suo Rapporto: i crediti si calcolano dalla registrazione, che è la data di inizio del progetto (Standard 4.5). Per una previsione si usa l'ex ante. I calcoli di prova creati prima restano apribili ma non si possono confermare.
-4. Solo se è il primo anno del Progetto, compilate **Avvio del progetto (solo se nel primo anno)**.
+4. Solo se è il primo anno del Progetto, compilate **Avvio del progetto (solo se nel primo anno)**. Sotto i campi il portale mostra la **data di registrazione** del Progetto, che è la data di inizio (Standard 4.5): se l'anno monitorato è quello della registrazione e l'avvio è vuoto o diverso, compare un avviso con il pulsante **Usa la data di registrazione** (dal 9/11/2026).
 5. Premete **Crea e apri**.
 
 Il calcolo nasce come **Bozza**. In alto trovate i pulsanti **Salva** (diventa *Salvato* quando non ci sono modifiche), **Calcola**, **Conferma calcolo** ed **Elimina**. A sinistra c'è il menu **Passi del calcolo**.
@@ -809,6 +810,8 @@ Il **buffer indicato a mano** deve essere un numero tra 0 e 80%: fuori da questo
 ### Leggere i risultati
 
 **Risultati non aggiornati (dal 31/10/2026).** Se dopo l'ultimo **Calcola** cambiate dati o impostazioni (per esempio le voci del buffer) senza ricalcolare, in cima al passo 7 compare un riquadro arancione «Risultati non aggiornati» con il pulsante **Calcola**: i valori mostrati sono ancora quelli del calcolo precedente.
+
+**Anche all'apertura (dal 9/11/2026, secondo collaudo).** Aprendo un calcolo il portale rifà il calcolo con i dati e le impostazioni salvati e lo confronta con il risultato salvato. Se crediti netti o buffer non coincidono (per esempio buffer salvato al 40% con impostazioni che oggi portano al 10%), sotto l'intestazione compare il riquadro «Risultati non aggiornati» con i valori salvati e quelli di oggi. In bozza: premete **Calcola**; fino ad allora **Conferma calcolo** non compare. Su un calcolo confermato il risultato resta com'è (è definitivo): per correggerlo create una **Nuova versione**.
 
 Dopo **Calcola** il passo 7 mostra in evidenza **Crediti netti** e **Crediti lordi (−ΔI)** in tCO₂eq e il buffer applicato, poi le tabelle di dettaglio:
 
@@ -937,7 +940,9 @@ A destra il riepilogo: produzione totale e pro capite, secco pro capite, **% di 
 - tabella anno per anno: produzione, scenario di riferimento, rifiuti evitati, crediti lordi, buffer, crediti netti e cumulati; con il metodo per utenza anche la colonna **Bilancio del Comune**, per confronto;
 - eventuali avvisi (dati mancanti, secco superiore al totale).
 
-Premete **Salva** per conservare lo scenario: nell'elenco *Scenari per Comune* compaiono, per confrontarli, la % di differenziata finale e i crediti netti stimati di ogni scenario. Per consegnare o presentare lo scenario al Comune:
+Premete **Salva** per conservare lo scenario: nell'elenco *Scenari per Comune* compaiono, per confrontarli, la % di differenziata finale e i crediti netti stimati di ogni scenario.
+
+**Scenari salvati con regole precedenti (dal 9/11/2026, secondo collaudo).** L'elenco ricalcola ogni scenario con le regole di oggi. Se uno scenario non è più ammesso (per esempio l'anno di riferimento al 78,9% di differenziata, Standard 4.8.1) la colonna dei crediti mostra **Non ammesso** (passando il mouse si legge il motivo); se i totali salvati sono diversi da quelli di oggi compare sotto «salvato: …, da aggiornare». In cima all'elenco un riquadro arancione conta questi scenari e offre **Aggiorna i totali salvati**: riscrive solo i totali (crediti, differenziata finale, ricavi, costo per il cliente e «ammesso») senza toccare i dati inseriti, e la data *Aggiornato* non cambia. La Dashboard somma solo gli scenari ammessi. Uno scenario «Non ammesso» si corregge aprendolo (per esempio scegliendo i valori medi del cluster) e premendo **Salva**. Per consegnare o presentare lo scenario al Comune:
 
 - **Scarica PDF**: un rapporto impaginato in A4 orizzontale con **tutti i dati della pagina**, sezione per sezione. Contiene:
   - i loghi, la scheda dello scenario, l'avvertenza «stima ex ante» e gli indicatori di sintesi;

@@ -31,11 +31,11 @@ prova("T08: codice fiscale e partita IVA (stesse regole del database)", () => {
   assert.equal(erroriDatiFiscali({ codice_fiscale: "123456789", partita_iva: "01199250159" }).length, 2);
 });
 
-prova("T01 e T02: nomi delle fasi come nella Guida", () => {
+prova("T01 e T02: nomi delle fasi come nella Guida (dal 9/11/2026 sei fasi, rilievo T32)", () => {
   assert.equal(FASI.find((f) => f.numero === 5).nome, "Validazione del progetto");
-  assert.equal(FASI.find((f) => f.numero === 7).nome, "Registrazione del progetto");
   assert.equal(FASI_RAPPORTO.find((f) => f.numero === 5).nome, "Verifica del rapporto");
-  assert.equal(FASI_RAPPORTO.find((f) => f.numero === 7).nome, "Emissione dei crediti");
+  assert.equal(FASI.length, 6);
+  assert.equal(FASI_RAPPORTO.length, 6);
 });
 
 const rifiuti65 = [

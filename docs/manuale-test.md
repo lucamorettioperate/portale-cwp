@@ -40,7 +40,7 @@ Il calcolo si basa su un confronto tra due valori:
 - Il **Registro** è la piattaforma esterna su cui i crediti emessi vengono caricati, venduti e cancellati.
 - Il **pubblico** può presentare osservazioni durante il **feedback pubblico** e consultare la pagina pubblica del Programma.
 
-**Il percorso di un Progetto e di un Rapporto** è diviso nelle stesse 7 fasi, con durate indicative (modificabili dall'Amministratore):
+**Il percorso di un Progetto e di un Rapporto** è diviso nelle stesse 6 fasi della Guida, con durate indicative (modificabili dall'Amministratore):
 
 | Fase | Progetto | Rapporto | Responsabile | Cosa succede |
 | --- | --- | --- | --- | --- |
@@ -50,11 +50,10 @@ Il calcolo si basa su un confronto tra due valori:
 | 4. Risposta ai commenti | 20 gg | 15 gg | Promotore del progetto | Il Comune risponde alle osservazioni ammesse |
 | 5. Validazione del progetto (Rapporto: Verifica del rapporto) | 75 gg | 60 gg | Ente di validazione e verifica | L'ente verifica il Progetto o il Rapporto |
 | 6. Seconda verifica documentale | 15 gg | 10 gg | Promotore del programma | Controllo finale: alla chiusura il Progetto è **registrato** (per il Rapporto: crediti registrati) |
-| 7. Registrazione del progetto (Rapporto: Emissione dei crediti) | — | — | Promotore del programma | Fine del percorso |
 
 Nelle fasi 2 e 6 la Fondazione può avviare una **verifica sull'accuratezza** (+15 giorni) e poi fino a 3 **accertamenti** (+10 giorni ciascuno). Nell'intestazione della pratica lo **stato nel Programma** segue le fasi: «richiesta di registrazione» → «in fase di validazione» (fase 2 completata) → «in fase di verifica documentale» (fase 5 completata) → «progetto registrato» (fase 6 completata).
 
-Dopo la registrazione il Progetto produce ogni anno un **Rapporto di Monitoraggio**: fino a 10 con il periodo di riferimento «10 anni (una volta)», fino a 21 con «7 anni rinnovabili 3 volte». Ogni Rapporto è una pratica con le sue 7 fasi; per ogni anno si calcolano i crediti e, dopo la registrazione del Rapporto, si **emettono** e si caricano sul registro. Un Progetto può essere **ritirato** dal Programma e poi **rientrare**. Le pratiche si conservano per **12 anni**.
+Dopo la registrazione il Progetto produce ogni anno un **Rapporto di Monitoraggio**: fino a 10 con il periodo di riferimento «10 anni (una volta)», fino a 21 con «7 anni rinnovabili 3 volte». Ogni Rapporto è una pratica con le sue 6 fasi; per ogni anno si calcolano i crediti e, dopo la registrazione del Rapporto, si **emettono** e si caricano sul registro. Un Progetto può essere **ritirato** dal Programma e poi **rientrare**. Le pratiche si conservano per **12 anni**.
 
 ## Il ruolo del portale
 
@@ -64,7 +63,7 @@ Il portale è lo strumento unico con cui Comune e Fondazione seguono la pratica.
 | --- | --- | --- |
 | Accesso | Email e password, password temporanea da cambiare al primo accesso, recupero della password, profilo | tutti |
 | Pratiche | Progetti e Rapporti di Monitoraggio, ID automatico (CWP-AAAA-NNNN), stati attiva / sospesa / annullata / chiusa / ritirato (solo Progetti, con rientro), stato nel Programma; dati del Progetto (territorio con codici ISTAT, un solo Progetto per territorio, co-promotori, periodo di riferimento, popolazione, crediti previsti, data di registrazione); conservazione per 12 anni, nulla si cancella | Fondazione; il Comune consulta |
-| Fasi | 7 fasi per Progetto e Rapporto; apertura, scadenza calcolata, chiusura, modifica della scadenza con motivazione; verifica sull'accuratezza e accertamenti nelle fasi 2 e 6; note di fase interne o condivise; modelli da scaricare e documenti richiesti per fase (preimpostati dalla Guida al Programma) | Fondazione; il Comune consulta |
+| Fasi | 6 fasi per Progetto e Rapporto (registrazione alla chiusura della fase 6); apertura, scadenza calcolata, chiusura, modifica della scadenza con motivazione; verifica sull'accuratezza e accertamenti nelle fasi 2 e 6; note di fase interne o condivise; modelli da scaricare e documenti richiesti per fase (preimpostati dalla Guida al Programma) | Fondazione; il Comune consulta |
 | Anagrafiche | Organizzazioni (con fino a 2 delegati), Enti di Validazione e Registri, con le pratiche collegate | Fondazione |
 | Messaggi | Conversazione tra Comune e Fondazione dentro ogni pratica | tutti |
 | Documenti | Caricamento con versioni (mai sovrascritte), tipologie ufficiali, visibilità, controllo di formato e contenuto, impronta di integrità; il contratto con l'ente e la versione privata del Modulo di descrizione non possono essere pubblici | tutti |
@@ -72,7 +71,7 @@ Il portale è lo strumento unico con cui Comune e Fondazione seguono la pratica.
 | Feedback pubblico | Pagina pubblica per 30 giorni (Progetto) o 20 (Rapporto); documento bloccato; osservazioni numerate con email confermata e allegato; moderazione con motivazione; risposte del Comune; errata corrige | tutti, anche senza accesso |
 | Pagamenti | Voci previste con la voce dello Schema tariffario, proposta degli importi dallo Schema tariffario, incassi registrati a mano (nessun pagamento online); con una voce scaduta non si aprono nuove fasi, la fase 5 richiede la tariffa di iscrizione saldata | Fondazione; il Comune consulta |
 | Notifiche | Campanella nel portale ed email per ogni evento importante; avvisi di scadenza | tutti |
-| Dashboard | Tutte le pratiche con barra a LED delle 7 fasi, fase, scadenza e cose da fare, filtri e ricerca | Fondazione |
+| Dashboard | Tutte le pratiche con barra a LED delle 6 fasi, fase, scadenza e cose da fare, filtri e ricerca | Fondazione |
 | Export | Fascicolo completo della pratica in un file ZIP con riepilogo PDF | tutti |
 | Audit | Registro non modificabile di ogni operazione, con motivazione | Amministratore |
 | Utenti e impostazioni | Creazione utenti (un solo account cliente attivo per Organizzazione), associazione ai Comuni, reimpostazione password, durata delle fasi, documenti richiesti, modelli di documento (anche pubblici), informazioni del Programma, metodologie approvate | Amministratore |
@@ -92,7 +91,7 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | N. | Prova | Risultato atteso |
 | --- | --- | --- |
 | 1.1 | [A] Impostazioni: cambiate la durata della fase 2 del Progetto da 10 a 12 giorni con una motivazione | La durata complessiva si aggiorna; la modifica compare in Audit |
-| 1.2 | [A] Pratiche → + Nuovo progetto, con una **nuova** organizzazione «Comune di Prova»; Territorio **999001**, periodo «10 anni (una volta)», popolazione **12000**, crediti previsti nel periodo **5000** | Nasce la pratica con 7 fasi; la fase 1 è In corso, responsabile «Promotore del progetto»; nell'intestazione «ID progetto: CWP-AAAA-NNNN» e «Nel Programma: richiesta di registrazione»; sotto, i dati inseriti (popolazione 12.000, crediti 5.000) |
+| 1.2 | [A] Pratiche → + Nuovo progetto, con una **nuova** organizzazione «Comune di Prova»; Territorio **999001**, periodo «10 anni (una volta)», popolazione **12000**, crediti previsti nel periodo **5000** | Nasce la pratica con 6 fasi; la fase 1 è In corso, responsabile «Promotore del progetto»; nell'intestazione «ID progetto: CWP-AAAA-NNNN» e «Nel Programma: richiesta di registrazione»; sotto, i dati inseriti (popolazione 12.000, crediti 5.000) |
 | 1.2a | [A] + Nuovo progetto con l'organizzazione **esistente** «Comune di Prova» e territorio «12345» | Rifiutato: «Codice ISTAT non valido: ogni Comune ha un codice di 6 cifre…» |
 | 1.2b | [A] Ripetete con territorio **999001** | Rifiutato: «Il territorio con codice ISTAT 999001 è già nel Progetto CWP-… (un solo progetto per territorio…)»; nessuna nuova pratica |
 | 1.2d | [A] Rilievo N05. + Nuovo progetto: scrivete nel campo Codice pratica «cwp-026-099», poi cancellatelo e lasciate il campo vuoto (non create la pratica se non serve) | Con il codice scritto compare l'avviso arancione «Il codice non segue il formato automatico CWP-AAAA-NNNN: verrà salvato così come è scritto»; con il campo vuoto l'avviso sparisce e il codice lo assegna il portale (CWP-AAAA-NNNN) |
@@ -188,7 +187,7 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 6.1 | [O] Sospendi (anche per controllo di qualità) con motivazione | Notifica al Comune con la motivazione |
 | 6.2 | [C] Aprite la pratica sospesa | Avviso «La pratica è sospesa…»; nessun pulsante + Carica; i Messaggi funzionano |
 | 6.2b | [O] Aprite un Progetto attivo con la fase 6 non ancora completata e guardate la sezione Rapporti di Monitoraggio | Nessun pulsante + Rapporto; la riga «I Rapporti di Monitoraggio si creano dopo la registrazione del Progetto (fase 6 … completata)» |
-| 6.3 | [O] Riattiva la pratica; nella sezione Rapporti di Monitoraggio premete + Rapporto anno 1 | Nasce la pratica CWP-…-RM1 con 7 fasi (Registrazione del rapporto in corso, Prima verifica documentale, Feedback pubblico, Risposta ai commenti, Verifica del rapporto, Seconda verifica documentale, Chiusura); «Nel Programma: richiesta di registrazione del rapporto»; nel Progetto «Rapporti di Monitoraggio (1/10)»; nel Rapporto il riquadro Crediti emessi dice che i crediti si emettono dopo la registrazione |
+| 6.3 | [O] Riattiva la pratica; nella sezione Rapporti di Monitoraggio premete + Rapporto anno 1 | Nasce la pratica CWP-…-RM1 con 6 fasi (Registrazione del rapporto in corso, Prima verifica documentale, Feedback pubblico, Risposta ai commenti, Verifica del rapporto, Seconda verifica documentale, Chiusura); «Nel Programma: richiesta di registrazione del rapporto»; nel Progetto «Rapporti di Monitoraggio (1/10)»; nel Rapporto il riquadro Crediti emessi dice che i crediti si emettono dopo la registrazione |
 | 6.4 | [O] Nel Rapporto, fase 1: caricate un PDF «Modulo di descrizione del rapporto di monitoraggio», chiudete la fase 1 e aprite la fase 2 | Scadenza = oggi + 10 giorni (durata del Rapporto in Impostazioni) |
 | 6.5 | [O] Chiudete la fase 2, aprite la fase 3; nel riquadro Feedback pubblico scegliete il Modulo del rapporto e Apri il feedback pubblico | Il riquadro indica un feedback pubblico di **20 giorni**; chiusura = oggi + 20; sulla pagina pubblica compare «Rapporto di Monitoraggio anno 1» |
 | 6.6 | [O] Chiudete il feedback pubblico e le fasi 3 e 4; aprite e chiudete le fasi 5 e 6 | «Nel Programma: rapporto registrato e crediti registrati»; nei dati «Crediti registrati il»; ora il riquadro Crediti emessi è pronto (sezione 8). Chiudete anche la fase 7 |
@@ -331,7 +330,7 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 10.11c | [A] Documentazione: in fondo alla pagina gli 8 documenti ufficiali del Programma; premete Apri PDF sulla Metodologia | Si apre il PDF della Metodologia CWP v1.2 in una nuova scheda |
 | 10.10f | [A] Rilievo N04. Dashboard: guardate i riquadri e la colonna Scadenza | Riquadro «Fase aperta senza scadenza» con il numero delle pratiche attive la cui fase aperta non ha data (arancione se > 0); nella riga «— nessuna scadenza nota»; un clic sul riquadro filtra quelle pratiche; le pratiche sospese, chiuse o ritirate non sono contate |
 | 10.10c | [A] Dashboard: fate clic su «Organizzazione», poi di nuovo; in Pratiche e Utenti scegliete un campo in «Ordina per» e premete ▲/▼ | La tabella si ordina in modo crescente (▲) e poi decrescente (▼); gli elenchi a schede seguono il campo e il verso scelti; «ordine predefinito» torna all'ordine iniziale |
-| 10.10d | [A] Aprite **Pratiche**; poi, come utente del Comune, **Le mie pratiche** | In ogni riquadro dell'elenco, in alto a destra, la barra a LED delle 7 fasi con «n/7» (stato sotto); nella pratica aperta la stessa barra in alto a destra, sopra lo stato; dopo aver chiuso una fase la luce si accende anche nell'elenco |
+| 10.10d | [A] Aprite **Pratiche**; poi, come utente del Comune, **Le mie pratiche** | In ogni riquadro dell'elenco, in alto a destra, la barra a LED delle 6 fasi con «n/6» (stato sotto); nella pratica aperta la stessa barra in alto a destra, sopra lo stato; dopo aver chiuso una fase la luce si accende anche nell'elenco |
 | 10.10e | Aprite la pagina di accesso e l'intestazione | Accanto al logo Carbon WastePrint i loghi RINA e Carbon Credit con i cerchi della stessa misura; nella pagina di accesso piccoli, sulla stessa riga del logo, allineati in basso e a destra |
 | 10.10g | [A] Dal telefono (o con il browser stretto sotto 760 px) aprite la Dashboard e premete **☰ Menu** | Intestazione bassa con loghi, campanella e Menu; il pannello mostra tutte le voci grandi, il profilo con il segno Admin ed Esci; scegliendo una voce il pannello si chiude e la pagina cambia; nessuna pagina scorre di lato |
 | 10.10h | [A] Dal telefono: Dashboard e Audit | Ogni pratica (e ogni evento) è una scheda con le etichette delle colonne; «Ordina per» sopra le schede funziona |
@@ -367,7 +366,7 @@ Seguite le prove nell'ordine: ognuna prepara la successiva. Tra parentesi l'uten
 | 10.15f | [O] e [C] Scrivete /notizie-co2 nell'indirizzo | Nessuna voce Notizie CO2 nel menu; la pagina dice «Questa sezione è riservata agli amministratori» e non mostra notizie |
 | 10.15h | [A] Dopo una ricerca con notizie nuove (o «Aggiorna ora» da un altro Amministratore) guardate il menu, poi aprite Notizie CO2 | Pallino verde in alto a destra di «Notizie CO2»; aprendo la sezione si spegne e non ricompare finché non arrivano altre notizie; un altro Amministratore che non ha aperto la sezione lo vede ancora |
 | 10.15g | [A] Il giorno dopo aprite il Registro ricerche | Ricerche «Automatica» ogni 2 ore con esito ok |
-| 10.10b | [A] Dashboard: guardate la colonna Avanzamento della pratica di prova e passate il mouse sulle luci | Tante luci accese (ambra) quante le fasi completate, le altre spente; la fase in corso ha il contorno ambra; a pratica chiusa la settima luce è verde; il conteggio «n/7» corrisponde |
+| 10.10b | [A] Dashboard: guardate la colonna Avanzamento della pratica di prova e passate il mouse sulle luci | Tante luci accese (ambra) quante le fasi completate, le altre spente; la fase in corso ha il contorno ambra; con la fase 6 completata la sesta luce è verde; il conteggio «n/6» corrisponde |
 
 **Dove finiscono le segnalazioni.** Ogni segnalazione dei collaudatori entra nel **Registro issue e test** (Documentazione, solo Amministratori), con data e ora, azione correttiva e stato (per esempio «CORRETTO_DA_RITESTARE»). Le prove da ripetere sono indicate nel registro con il numero del caso di questo manuale.
 
@@ -377,7 +376,7 @@ Prove per ritestare i rilievi del documento TEST_PORTALE_CWP del 29/10/2026. Il 
 
 | N. | Rilievo | Prova | Risultato atteso |
 | --- | --- | --- | --- |
-| 11.1 | T01, T02 | [A] Aprite un Progetto e un Rapporto | Fase 5 del Progetto «Validazione del progetto»; fase 7 «Registrazione del progetto» (Rapporto: «Emissione dei crediti») |
+| 11.1 | T01, T02 | [A] Aprite un Progetto e un Rapporto | Fase 5 del Progetto «Validazione del progetto». Dal 9/11/2026 le fasi sono 6 (prova 12.1) |
 | 11.2 | T03, T05 | [A] Dashboard | Sotto lo stato interno lo stato nel Programma (es. «in fase di validazione»); ente sotto l'organizzazione; riquadri «Fatture scadute», «Fatture in scadenza (≤ 7 gg)», «Dichiarazioni di cancellazione da ricevere» |
 | 11.3 | T07 | [A] Anagrafiche → Enti di Validazione → Modifica | Campo «Approvato il (Guida 3.4)»; la data compare nell'elenco |
 | 11.4 | T08 | [A] Anagrafiche → organizzazione con codice fiscale 123456789 → Salva | Messaggio «Codice fiscale non valido»; con un codice valido si salva. Su una pratica di un'organizzazione senza codice fiscale valido, «Proponi dallo Schema tariffario» rifiuta le voci di iscrizione e registrazione |
@@ -393,6 +392,20 @@ Prove per ritestare i rilievi del documento TEST_PORTALE_CWP del 29/10/2026. Il 
 | 11.14 | T25 | [A] Impostazioni → Documenti richiesti per fase | Fase 1 del Progetto: «Modulo di delega di rappresentanza» come «Se applicabile»; ogni voce si alterna tra Obbligatorio e Se applicabile |
 | 11.15 | T28 | [A] Audit → Scarica CSV | File CSV con gli eventi mostrati (anche filtrati) |
 | 11.16 | T29 | [A] Calcolo → 5a → Carica il file dell'anno con il vecchio modello (con nomi e indirizzi) | Avviso «colonne … ignorate»; nell'elenco e nel modulo dell'utenza non ci sono nome e indirizzo; il nuovo modello Excel non ha quelle colonne |
+
+### 12. Rilievi del secondo collaudo (TEST_PORTALE_CWP_2, dal 9/11/2026)
+
+| N. | Rilievo | Prova | Risultato atteso |
+| --- | --- | --- | --- |
+| 12.1 | T32 | [A] + Nuovo progetto; poi + Rapporto su un Progetto registrato | Il Progetto e il Rapporto nascono con **6 fasi**; la barra a LED mostra «n/6» |
+| 12.2 | T32 | [O] Su un Progetto di prova chiudete la fase 6 | «Nel Programma: progetto registrato» e «Registrato il» con la data di chiusura; non c'è nessuna fase 7 da aprire |
+| 12.3 | T32 | [A] Rapporto con la fase 6 chiusa → riquadro Crediti emessi | Si possono emettere i crediti (Guida 6.3.2); prima della chiusura della fase 6 no |
+| 12.4 | T32 | [A] Pratica creata prima del 9/11/2026 con note o documenti nella vecchia fase 7 | La fase 7 compare con «non più prevista» e senza il pulsante «Apri fase»; le pratiche senza contenuti nella fase 7 non la mostrano più |
+| 12.5 | T33 | [A] Simulatore → elenco | Lo scenario di Borgoval «ISPRA Casalmaggiore 2024…» mostra **Non ammesso** (riferimento al 78,9%) con «salvato: 58.640,2, da aggiornare»; riquadro arancione «scenari salvati con regole precedenti» |
+| 12.6 | T33 | [A] Premete «Aggiorna i totali salvati», poi Dashboard | Gli scenari non ammessi non entrano più nei «Crediti in simulazione» né nel valore dei progetti in simulazione; la data «Aggiornato» degli scenari non cambia |
+| 12.7 | T34 | [A] Aprite il calcolo di prova di Borgoval (buffer salvato 40%, impostazioni da circa 10%) | Subito in alto il riquadro «Risultati non aggiornati» con i valori salvati e quelli di oggi; il pulsante «Conferma calcolo» non compare finché non si preme Calcola |
+| 12.8 | T34 | [A] Premete Calcola | Il riquadro sparisce e il risultato salvato è quello nuovo |
+| 12.9 | T35 | [A] Calcolo di un Rapporto del primo anno del Progetto → passo 1 | Sotto i campi «Progetto registrato il …»; se l'avvio è vuoto o diverso, l'avviso e il pulsante «Usa la data di registrazione» |
 
 ## Limiti noti e funzioni in arrivo
 

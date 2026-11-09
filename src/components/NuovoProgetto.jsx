@@ -10,7 +10,7 @@
      e, dal 23/10/2026, il listino obbligatorio: Caso 1 (progetto
      volontario) o Caso 2 (obbligatorio da bando di gara), che dà il valore
      del progetto per il cliente (script 43, Dashboard);
-     alla creazione vengono generate le 7 fasi, con la fase 1 «in corso».
+     alla creazione vengono generate le 6 fasi, con la fase 1 «in corso».
    Usato da: pagina BackOffice (/pratiche), pulsante di nuovo progetto.
    Chi lo vede: operatore e admin.
    Dati: elencaOrganizzazioni, creaOrganizzazione, creaPratica
@@ -67,7 +67,7 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
   }, []);
 
   // Invio del modulo: crea l'organizzazione (se «Nuova»), poi la pratica
-  // con le sue 7 fasi, infine passa l'id alla pagina con onCreato.
+  // con le sue 6 fasi, infine passa l'id alla pagina con onCreato.
   async function onSubmit(e) {
     e.preventDefault();
     setErrore("");
@@ -101,7 +101,7 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
       return;
     }
 
-    // Crea il progetto (genera le 7 fasi).
+    // Crea il progetto (genera le 6 fasi).
     const { data: pratica, error } = await creaPratica({
       tipo: "progetto",
       organizzazione_id: organizzazioneId,
@@ -253,7 +253,7 @@ export default function NuovoProgetto({ onChiudi, onCreato }) {
             </button>
           </div>
           <p style={{ fontSize: 11.5, color: C.grafite, marginTop: 12, lineHeight: 1.5 }}>
-            Alla creazione vengono generate automaticamente le 7 fasi del percorso.
+            Alla creazione vengono generate automaticamente le 6 fasi del percorso.
           </p>
         </form>
       </div>

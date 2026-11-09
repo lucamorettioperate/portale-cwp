@@ -77,7 +77,7 @@ Il collegamento vale una sola volta e per un tempo limitato; se è scaduto compa
 La pagina elenca i Progetti della vostra organizzazione (o delle organizzazioni che seguite), dal più recente. I Rapporti di Monitoraggio annuali si trovano dentro ciascun Progetto (capitolo 9).
 
 **Valore dei crediti della vostra organizzazione.** In cima alla pagina due riquadri, in crediti (1 credito = 1 tCO₂eq) e in euro, con i soli dati della vostra organizzazione:
-- **Crediti in simulazione**: la stima dell'ultima simulazione che la Fondazione ha preparato per il vostro Comune, su tutto il periodo simulato. È una stima, non un credito certificato.
+- **Crediti in simulazione**: la stima dell'ultima simulazione valida (conforme allo Standard) che la Fondazione ha preparato per il vostro Comune, su tutto il periodo simulato. È una stima, non un credito certificato.
 - **Crediti in fase esecutiva**: crediti **calcolati** nei Rapporti di Monitoraggio confermati, crediti **emessi** e crediti **venduti** con il valore comunicato dal registro. Calcolati ed emessi sono valorizzati al valore ipotetico del credito indicato nel riquadro (il Programma non stabilisce un prezzo); non si sommano, perché i crediti emessi vengono dai calcoli.
 - **Valore dei progetti**: quanto costa il vostro Progetto secondo il listino concordato con la Fondazione (Caso 1, progetto volontario, oppure Caso 2, progetto da bando di gara: ogni Progetto ne ha sempre uno), in totale e all'anno, e quanto prevede l'ultima simulazione. Lo stesso valore compare nei dati del Progetto, alla voce **Valore del progetto per il cliente**.
 
@@ -85,7 +85,7 @@ La pagina elenca i Progetti della vostra organizzazione (o delle organizzazioni 
 
 **Ordinare gli elenchi.** Con più pratiche o documenti, in alto compare **Ordina per**: scegliete il campo (titolo, codice, stato, data…) e con il pulsante ▲/▼ l'ordine crescente o decrescente. Nelle tabelle basta fare clic sull'intestazione della colonna.
 
-Ogni riquadro mostra il titolo del progetto, lo stato e il codice della pratica con il nome dell'ente. In alto a destra c'è la **barra di avanzamento a LED**: 7 luci, una per fase; le fasi completate sono accese (ambra, la settima verde), quella in corso ha il contorno ambra, accanto il conteggio (es. «4/7»). Passando il mouse su una luce compaiono nome e stato della fase. La stessa barra compare in alto a destra nella pratica aperta.
+Ogni riquadro mostra il titolo del progetto, lo stato e il codice della pratica con il nome dell'ente. In alto a destra c'è la **barra di avanzamento a LED**: 6 luci, una per fase; le fasi completate sono accese (ambra, la settima verde), quella in corso ha il contorno ambra, accanto il conteggio (es. «4/7»). Passando il mouse su una luce compaiono nome e stato della fase. La stessa barra compare in alto a destra nella pratica aperta.
 
 | Stato | Significato |
 | --- | --- |
@@ -134,7 +134,7 @@ Ogni Comune (codice ISTAT) può far parte di un solo Progetto, se non è annulla
 
 ## Seguire una pratica: fasi e scadenze
 
-Ogni Progetto e ogni Rapporto di Monitoraggio attraversano 7 fasi. Le apre e le chiude Fondazione Operate; voi vedete in ogni momento a che punto siete e quanto tempo resta.
+Ogni Progetto e ogni Rapporto di Monitoraggio attraversano 6 fasi, come nella Guida al Programma. Le apre e le chiude Fondazione Operate; voi vedete in ogni momento a che punto siete e quanto tempo resta.
 
 | Fase | Progetto | Giorni | Rapporto di Monitoraggio | Giorni | Responsabile |
 | --- | --- | --- | --- | --- | --- |
@@ -144,9 +144,10 @@ Ogni Progetto e ogni Rapporto di Monitoraggio attraversano 7 fasi. Le apre e le 
 | 4 | **Risposta ai commenti / pubblicazione** | 20 | **Risposta ai commenti** | 15 | Promotore del progetto |
 | 5 | **Validazione del progetto** | 75 | **Verifica del rapporto** | 60 | Ente di validazione e verifica |
 | 6 | **Seconda verifica documentale** | 15 | **Seconda verifica documentale** | 10 | Promotore del programma |
-| 7 | **Registrazione del progetto** | 0 | **Emissione dei crediti** | 0 | Promotore del programma |
 
 I giorni sono le durate standard: la Fondazione può modificarle. Fa sempre fede la scadenza mostrata nella fase.
+
+**Registrazione.** Quando la Fondazione chiude con esito positivo la fase 6 (seconda verifica documentale), il Progetto è **registrato** e la data di registrazione è la data di inizio del Progetto (Guida 6.2.4, Standard 4.5); per il Rapporto vengono registrati il Rapporto e i suoi crediti, che la Fondazione poi emette (Guida 6.3.2). Fino al 9/11/2026 il portale aveva una fase 7 senza durata: è stata tolta perché la Guida non la prevede; dove conteneva note o documenti resta visibile come «non più prevista».
 
 Ogni fase ha uno stato:
 
@@ -263,7 +264,7 @@ Ogni anno si presenta un **Rapporto di Monitoraggio**. Il numero massimo dipende
 | 10 anni (una volta) | 10 |
 | 7 anni rinnovabili 3 volte | 21 |
 
-Ogni Rapporto è una pratica a sé, con i suoi documenti e le stesse 7 fasi del Progetto, compreso il feedback pubblico di 20 giorni (tabella del capitolo 4). Lo crea la Fondazione; la fase 1 *Registrazione del rapporto* è già in corso quando il Rapporto nasce. Un Progetto ritirato o annullato non può avere nuovi Rapporti.
+Ogni Rapporto è una pratica a sé, con i suoi documenti e le stesse 6 fasi del Progetto, compreso il feedback pubblico di 20 giorni (tabella del capitolo 4). Lo crea la Fondazione; la fase 1 *Registrazione del rapporto* è già in corso quando il Rapporto nasce. Un Progetto ritirato o annullato non può avere nuovi Rapporti.
 
 1. Aprite il Progetto: in basso trovate **Rapporti di Monitoraggio (N/10)** oppure **(N/21)**.
 2. Fate clic su un Rapporto («Anno N · codice») per aprirlo.

@@ -145,7 +145,7 @@ export default function AreaCliente() {
                       <span style={{ fontFamily: "'Archivo'", fontWeight: 700, fontSize: 15 }}>
                         {p.titolo || "Progetto"}
                       </span>
-                      {/* Barra a LED delle 7 fasi in alto a destra (21/10/2026). */}
+                      {/* Barra a LED delle 6 fasi in alto a destra (21/10/2026). */}
                       <BarraFasi fasi={p.fasi || []} />
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginTop: 3 }}>

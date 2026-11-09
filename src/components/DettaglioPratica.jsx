@@ -1,7 +1,7 @@
 /* =========================================================================
    DettaglioPratica
    Scopo: pagina di dettaglio di una pratica (Progetto o Rapporto di
-     Monitoraggio) con le sue 7 fasi (Guida al Programma 6.2 e 6.3.1).
+     Monitoraggio) con le sue 6 fasi (Guida al Programma 6.2 e 6.3.1).
      Riunisce in un'unica vista:
      intestazione, stato della pratica e stato nel Programma (Guida,
      Tabelle 3 e 4), dati del Progetto (territorio con codici ISTAT,
@@ -42,7 +42,7 @@
    Registro sviluppo e deploy: capitolo «Portale (frontend)»
    ========================================================================= */
 import React, { useEffect, useState } from "react";
-import { COLORI as C, STATI_PRATICA, STATI_FASE, PERIODI_RIFERIMENTO, FASI_VERIFICA_DOCUMENTALE, statoProgramma } from "../lib/cwpProgram.js";
+import { COLORI as C, STATI_PRATICA, STATI_FASE, PERIODI_RIFERIMENTO, FASI_VERIFICA_DOCUMENTALE, NUMERO_FASI, statoProgramma } from "../lib/cwpProgram.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Badge from "./Badge.jsx";
 import BarraFasi from "./BarraFasi.jsx";
@@ -185,7 +185,7 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
             )}
           </div>
           <div style={{ textAlign: "right", display: "grid", gap: 8, justifyItems: "end", alignContent: "start" }}>
-            {/* In alto a destra, in piccolo, la barra a LED delle 7 fasi
+            {/* In alto a destra, in piccolo, la barra a LED delle 6 fasi
                 (richiesta di Luca del 21/10/2026), come nella Dashboard. */}
             <BarraFasi fasi={fasi} />
             <Badge bg={st.bg} fg={st.fg}>{st.label}</Badge>
@@ -221,7 +221,7 @@ export default function DettaglioPratica({ praticaId, onAggiornato, onApri }) {
         {staff && <CambioStato pratica={pratica} onFatto={dopoAzione} />}
       </div>
 
-      {/* Le 7 fasi del percorso */}
+      {/* Le 6 fasi del percorso (più l'eventuale fase 7 rimasta da prima del 9/11/2026) */}
       <div style={{ display: "grid", gap: 10 }}>
         {fasi.map((f) => (
           <Fase
@@ -369,6 +369,10 @@ function Fase({ fase: f, pratica, staff, admin, richieste, note, modelli, richie
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <span style={{ fontWeight: 700, fontSize: 14 }}>{f.nome}</span>
           <Badge bg={sf.bg} fg={sf.fg}>{sf.label}</Badge>
+          {/* Fase 7 rimasta perché aveva contenuti (script 49): la Guida ha 6 fasi. */}
+          {f.numero > NUMERO_FASI && (
+            <span style={{ fontSize: 12, color: C.grafite }}>non più prevista: la registrazione è l'esito della fase 6 (Guida 6.2.4)</span>
+          )}
           {residui != null && (
             <span style={{ fontSize: 12, fontWeight: 600, color: residui < 0 ? C.red : residui <= 3 ? C.amber : C.grafite }}>
               {residui < 0 ? `scaduta da ${-residui} gg` : residui === 0 ? "scade oggi" : `${residui} gg alla scadenza`}
@@ -401,7 +405,7 @@ function Fase({ fase: f, pratica, staff, admin, richieste, note, modelli, richie
                 validazione e verifica assegnato; il database lo impone. */}
             {f.stato === "non_iniziata" && f.numero === 5 && !pratica.ente_validazione_id ? (
               <span style={{ fontSize: 12, color: C.ocra }}>Per aprire la fase 5 assegna prima l'ente di validazione e verifica (riquadro in alto).</span>
-            ) : f.stato === "non_iniziata" && (
+            ) : f.stato === "non_iniziata" && f.numero <= NUMERO_FASI && (
               <button onClick={() => esegui(() => apriFase(f.id))} disabled={inCorso} style={btnPrimario}>
                 Apri fase
               </button>

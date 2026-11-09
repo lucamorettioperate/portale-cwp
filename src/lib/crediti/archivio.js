@@ -86,7 +86,10 @@ export async function elencaCalcoli() {
 export async function leggiCalcolo(id) {
   return await supabase
     .from("calcolo_crediti")
-    .select("*, pratica:pratica_id (codice, tipo, titolo, anno_monitoraggio, organizzazione:organizzazione_id (denominazione))")
+    // Data di registrazione del Progetto (o del Progetto del Rapporto): è la
+    // data di inizio (Standard 4.5) e suggerisce l'«Avvio del progetto»
+    // (secondo collaudo, 9/11/2026).
+    .select("*, pratica:pratica_id (codice, tipo, titolo, anno_monitoraggio, data_registrazione, organizzazione:organizzazione_id (denominazione), padre:progetto_padre_id (codice, data_registrazione))")
     .eq("id", id)
     .single();
 }
