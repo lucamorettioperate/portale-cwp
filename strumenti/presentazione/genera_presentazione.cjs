@@ -201,13 +201,13 @@ async function icona(Comp, colore) {
   linkPortale(s);
   griglia(s, [
     { i: "org", t: "Anagrafiche", d: "Organizzazioni con 2 delegati e un solo account, Enti di validazione e verifica, Registri" },
-    { i: "fasi", t: "Pratiche e fasi", d: "Progetti e Rapporti a 7 fasi (Guida), ID e stato nel Programma, territorio ISTAT, periodo, ritiro e rientro" },
+    { i: "fasi", t: "Pratiche e fasi", d: "Progetti e Rapporti a 6 fasi (Guida), ID e stato nel Programma, territorio ISTAT, periodo, ritiro e rientro" },
     { i: "doc", t: "Documenti", d: "Versioni mai sovrascritte, impronta, tipologie ufficiali, richiesti per fase; contratto e versione privata mai pubblici" },
     { i: "integr", t: "Integrazioni e verifiche", d: "Richiesta e risposta del Comune; verifica sull'accuratezza (+15 gg) e fino a 3 accertamenti" },
     { i: "consult", t: "Feedback pubblico", d: "Progetti 30 giorni, Rapporti 20; documento bloccato, osservazioni numerate con email confermata, errata corrige" },
     { i: "pag", t: "Pagamenti", d: "Voci e importi dello Schema tariffario; attività sospese fino al saldo; il Comune consulta" },
     { i: "notif", t: "Notifiche e messaggi", d: "Campanella ed email per eventi e scadenze, avviso dopo 2 anni senza Rapporti; messaggi nella pratica" },
-    { i: "cruscotto", t: "Dashboard", d: "Barra a LED delle 7 fasi per pratica; in corso, in scadenza, scadute; ricerca, filtri, ogni colonna ordinabile" },
+    { i: "cruscotto", t: "Dashboard", d: "Barra a LED delle 6 fasi per pratica; in corso, in scadenza, scadute; ricerca, filtri, ogni colonna ordinabile" },
   ], 4, 0.6, 1.5, 12.1, 2.45);
   s.addNotes("Le otto aree del requisito funzionale dedicate alla gestione del percorso del Comune sono tutte realizzate e pubblicate. Il 18 ottobre sera il portale è stato allineato ai documenti ufficiali del Programma (Guida, Standard, Schema tariffario): Rapporto a 7 fasi con feedback di 20 giorni, un solo account per Organizzazione (Guida 7.2), periodo di 10 anni o 7 rinnovabili (fino a 21 Rapporti), stati della Guida (in fase di validazione, in fase di verifica documentale, progetto registrato, progetto ritirato), un solo progetto per territorio (codice ISTAT, Standard 4.6), tariffe con sospensione fino al saldo, verifica sull'accuratezza e accertamenti (Guida 6.5.2). Le durate delle fasi del Progetto (10, 30, 20, 75 e 15 giorni) coincidono con la Tabella 3 della Guida al Programma. Il 19 ottobre: il Cruscotto diventa Dashboard, con una barra a LED delle 7 fasi per ogni pratica (accese le fasi completate, spente quelle da fare, la settima verde), e tutte le tabelle e gli elenchi del portale si ordinano per qualsiasi colonna.");
 
@@ -500,7 +500,7 @@ async function icona(Comp, colore) {
   ], { x: 0.8, y: 3.2, w: 7.2, h: 2.0, fontSize: 13.5, valign: "top", margin: 0, isTextBox: true });
   card(s, 8.45, 1.3, 4.25, 5.55, C.background2, "Elenco correzioni del 30 ottobre");
   const novita4 = [
-    ["Fasi", "Validazione del progetto; fase 7 Registrazione del progetto (Rapporto: Emissione dei crediti)"],
+    ["Fasi", "Validazione del progetto; dal 9 novembre 6 fasi, registrazione alla chiusura della fase 6"],
     ["Dashboard", "stato nel Programma, ente, fatture scadute e in scadenza, dichiarazioni di cancellazione"],
     ["Anagrafiche", "codice fiscale e partita IVA controllati; data di approvazione degli enti"],
     ["Calcolo", "anno di monitoraggio e anno di riferimento; ex post solo per anni conclusi e Progetti registrati"],

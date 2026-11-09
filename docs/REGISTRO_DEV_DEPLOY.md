@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Ultimo aggiornamento** | 9 novembre 2026 |
+| **Ultimo aggiornamento** | 9 novembre 2026 (documentazione riallineata alle 11:10) |
 | **Versione del portale** | 0.49 (ultimo script database eseguito: `49_rilievi_test_portale_2.sql`, script 01-49, eseguito il 9/11/2026 alle 10:54) |
 | **Indirizzo** | https://portale-cwp.vercel.app |
 | **Repository** | https://github.com/lucamorettioperate/portale-cwp (pubblico: solo codice, nessun dato) |
@@ -1950,7 +1950,7 @@ aperte; il dettaglio è nei punti numerati qui sotto.
 - **Rilievi TEST_PORTALE_CWP** (in produzione dal 31/10): ritestare i 21
   rilievi corretti con i collaudatori; decidere cosa fare dello scenario di
   prova di Borgoval (non conforme allo Standard) e girare alla Fondazione
-  le domande T01, T04, T06, T16, T17, T21, T24, T27 (documento di progetto
+  le domande T04, T06, T16, T17, T21, T24, T27 (T01 risolto il 9/11 con le 6 fasi; documento di progetto
   `claude/test-portale-cwp-risposte.md`).
 - Decidere con la Fondazione quale impostazione del simulatore usare per le
   stime ufficiali: con il metodo «bilancio del Comune» i 5 Comuni di prova
@@ -2239,7 +2239,7 @@ main.jsx → App.jsx (route, Protetta: accesso, password temporanea, MFA)
 | `staff_errata_corrige` | 17 | staff | Errata corrige, eventuale ripartenza dei 30 giorni |
 | `staff_imposta_ente_validazione` | 17, 39 | staff | Ente di Validazione della pratica (non si toglie con la fase 5 aperta) |
 | `cruscotto_valore_progetti` | 43 | tutti con accesso (staff: tutto; Comuni: i propri) | Dati per il valore dei progetti (Caso 1 / Caso 2) in Dashboard e Le mie pratiche |
-| `staff_crea_pratica`, `staff_aggiorna_dati_pratica` | 20, 23, 43 | staff | Creazione del Progetto con le 7 fasi e modifica dei dati, dal 23/10 anche il listino Caso 1 / Caso 2 |
+| `staff_crea_pratica`, `staff_aggiorna_dati_pratica` | 20, 23, 43 | staff | Creazione del Progetto con le sue fasi (6 dal 9/11, script 49) e modifica dei dati, dal 23/10 anche il listino Caso 1 / Caso 2 |
 | `cruscotto_valore_crediti` | 42 | tutti con accesso (staff: tutto; Comuni: i propri) | Valore dei crediti in simulazione e in fase esecutiva, in crediti ed euro |
 | `admin_imposta_prezzo_riferimento` | 42 | admin | Prezzo di riferimento del credito (Impostazioni), con audit |
 | `cwp_utenze_controllo` | 41 | uso interno (trigger della conferma) | Numero di utenze del calcolo, senza categoria di simulazione e con categoria fuori delibera |
@@ -2259,7 +2259,7 @@ main.jsx → App.jsx (route, Protetta: accesso, password temporanea, MFA)
 | Tabella | Script | Contenuto |
 |---|---|---|
 | `organizzazione`, `utente_organizzazione`, `profilo` | 01, 06 | Comuni ed enti, utenti, associazioni utente-organizzazione |
-| `pratica`, `fase`, `durata_fase` | 01, 13, 43 | Progetti e Rapporti (dal 23/10 con il listino Caso 1 / Caso 2), 7 fasi, durate |
+| `pratica`, `fase`, `durata_fase` | 01, 13, 43 | Progetti e Rapporti (dal 23/10 con il listino Caso 1 / Caso 2), 6 fasi (dal 9/11), durate |
 | `documento` | 01 (07, 14) | Documenti con versioni, visibilità, impronta |
 | `richiesta_integrazione` | 01 (08) | Integrazioni |
 | `nota_fase`, `messaggio` | 17 | Note di fase, messaggi Comune-Fondazione |
@@ -2321,7 +2321,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 191 file, 46.382 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 191 file, 46.401 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -2548,11 +2548,11 @@ Inventario generato da `strumenti/inventario_codice.py`: 191 file, 46.382 righe 
 | `strumenti/genera_esempi_tracciato.py` | 101 | genera i file di prova del tracciato dati per i test automatici (test/tracciato.test.mjs) e per il collaudo manuale (Manuale Test): - test/dati/tracciato_esempio.xlsx : tracciato compilato, Banca Dati con totali (foglio 5) -… |
 | `strumenti/genera_tracciato_dati.py` | 312 | genera public/modelli/Tracciato_dati_CWP_v1.xlsx (tracciato dati standard CWP), il file vuoto che Comuni e gestori compilano per il calcolo dei crediti: fogli Istruzioni, 1_Anagrafica, 2_Rifiuti … 7_Riuso, Codici, con menu a… |
 | `strumenti/genera_utenze_casuali.py` | 104 | riempie il modello public/modelli/Banca_dati_utenze_CWP_v1.xlsx con 20 utenze domestiche e 20 non domestiche inventate (richiesta di Luca |
-| `strumenti/impagina_pdf.py` | 455 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
+| `strumenti/impagina_pdf.py` | 456 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/marketing_arricchimento_sql.py` | 107 | — |
 | `strumenti/presentazione/genera_presentazione.cjs` | 735 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1938 | — |
+| `strumenti/revisioni_documenti.json` | 1956 | — |
 <!-- INVENTARIO-FINE -->
 
 ---
@@ -2582,7 +2582,8 @@ ex ante e non certificabile dei crediti di un Comune su 7, 10 o 21 anni.
 |---|---|---|
 | Pagina (elenco per Comune, editor in 4 parti, grafici, CSV, stampa) | `src/pages/Simulatore.jsx` | — |
 | Motore (anno base, anni del periodo, traiettoria, simulazione) | `src/lib/crediti/simulatore.js` (usa `parametri.js`, `calcolo.js`, `qualita.js`) | — (nel browser) |
-| Salvataggio | `src/lib/crediti/scenari.js` | `scenario_simulazione` (28), policy `scenario_staff`, audit |
+| Salvataggio | `src/lib/crediti/scenari.js` | `scenario_simulazione` (28), policy `scenario_staff`, audit; dal 9/11 colonna `ammesso` e riallineo dei totali (`aggiornaRiepilogoScenario`, script 49) |
+| Rivalutazione degli scenari salvati (9/11) | `valutaScenario`, `riepilogoDaAggiornare` in `simulatore.js` | `cwp_scenario_riferimento_ammesso` (49); Dashboard solo con scenari ammessi |
 | Prove | `test/simulatore.test.mjs` | `t28.sql` sul banco locale |
 
 Modello e conseguenze (i crediti nascono dai rifiuti evitati; più

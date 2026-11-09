@@ -352,11 +352,12 @@ def md_html(testo):
     return h
 
 
-# Schema grafico delle 7 fasi (cerchi numerati), usato nel Manuale Utente.
+# Schema grafico delle 6 fasi (cerchi numerati), usato nel Manuale Utente
+# (dal 9/11/2026 sei fasi come nella Guida: la registrazione è l'esito della fase 6).
 # I nomi devono restare uguali a FASI di src/lib/cwpProgram.js.
 def schema_fasi():
-    fasi = ["Adesione", "Prima verifica documentale", "Consultazione pubblica", "Risposta ai commenti / pubblicazione",
-            "Validazione e verifica", "Seconda verifica documentale", "Chiusura"]
+    fasi = ["Adesione", "Prima verifica documentale", "Feedback pubblico", "Risposta ai commenti / pubblicazione",
+            "Validazione del progetto", "Seconda verifica documentale"]
     celle = "".join(f"<div><b>{i}</b><span>{html.escape(f)}</span></div>" for i, f in enumerate(fasi, 1))
     return f'<div class="fasi">{celle}</div>'
 
