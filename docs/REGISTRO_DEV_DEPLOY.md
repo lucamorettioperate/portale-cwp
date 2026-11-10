@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Ultimo aggiornamento** | 9 novembre 2026 (documentazione riallineata alle 11:10) |
+| **Ultimo aggiornamento** | 10 novembre 2026 |
 | **Versione del portale** | 0.49 (ultimo script database eseguito: `49_rilievi_test_portale_2.sql`, script 01-49, eseguito il 9/11/2026 alle 10:54) |
 | **Indirizzo** | https://portale-cwp.vercel.app |
 | **Repository** | https://github.com/lucamorettioperate/portale-cwp (pubblico: solo codice, nessun dato) |
@@ -558,6 +558,31 @@ Claude. Si aggiorna quando cambiano servizi, script, funzioni o chiavi.
 ## 9. Cronologia sviluppo e deploy
 
 Voci più recenti in alto. Commit = identificativo nel repository GitHub.
+
+### 10 novembre 2026
+- **Terzo collaudo: documento TEST_PORTALE_CWP_9_11_2026** (mandato da Luca
+  alle 08:41). Riprende i 35 rilievi con le note dei collaudatori: 3 punti
+  da sistemare, nessuna modifica al database (nessuno script nuovo).
+  Risposte nel documento di progetto `claude/test-portale-cwp-3-risposte.md`.
+  Correzioni sul ramo `rilievi-test-3`, pubblicate il 10/11 con l'OK di Luca:
+  - **T36 — Residui della fase 7**: filtro delle fasi della Dashboard su 6
+    voci (`NUMERO_FASI`); Manuale Utente e Amministratore: barra a 6 luci,
+    la sesta verde, esempio «4/6».
+  - **T37 — «Conferma calcolo» visibile su un ex post non confermabile**:
+    il pulsante non compare e al suo posto «Non confermabile: il Progetto
+    non è ancora registrato (Standard 4.5)» o «l'anno … non è ancora
+    concluso» (stessa regola di `trg_calcolo_ex_post`, script 48).
+  - **T34 — «Correzione non riscontrata»**: verificato in produzione in sola
+    lettura che le impostazioni salvate del calcolo di Borgoval sono solo
+    utenze virtuose, secco e organico misurati, cioè 40% come i risultati;
+    dall'audit il calcolo non è stato modificato dopo il 26/10. Il ~10%
+    corrisponde a tutte le caselle spuntate (cinque frazioni, misure ai
+    centri e fuori, tariffa puntuale), che nella pagina sono solo elencate
+    con le percentuali della Metodologia. Nel passo «Buffer» ora c'è il
+    riquadro «Buffer con le caselle spuntate» (voci del motore,
+    `calcolaBuffer`) e «Nei risultati salvati», arancione se diversi.
+  - Prove: nuova serie `test/rilievi_t3.test.mjs` (23 serie superate),
+    build; pagine verificate su computer e telefono.
 
 ### 9 novembre 2026
 - **Secondo collaudo: documento TEST_PORTALE_CWP_2** (mandato da Luca alle
@@ -1938,7 +1963,7 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
 Numerazione stabile: un punto mantiene il suo numero anche quando è
 completato (va barrato qui e annotato in Cronologia).
 
-**Da fare subito (stato al 9/11/2026)** — riepilogo delle azioni
+**Da fare subito (stato al 10/11/2026)** — riepilogo delle azioni
 aperte; il dettaglio è nei punti numerati qui sotto.
 
 *Azioni di Luca (Claude non le può fare: chiavi, pubblicazioni, account)*
@@ -2321,7 +2346,7 @@ LibreOffice (numeri di pagina del Word).
 ### 14.8 Inventario dei file
 
 <!-- INVENTARIO-INIZIO -->
-Inventario generato da `strumenti/inventario_codice.py`: 191 file, 46.401 righe in tutto.
+Inventario generato da `strumenti/inventario_codice.py`: 192 file, 46.520 righe in tutto.
 
 **Avvio e instradamento**
 
@@ -2339,7 +2364,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 191 file, 46.401 righe 
 | `src/pages/Audit.jsx` | 202 | tabella degli eventi registrati (data, utente, operazione, pratica, passaggio di stato, motivazione), con ricerca testuale e pulsante per caricare eventi meno recenti (requisiti §10). Ogni colonna si ordina con un clic… |
 | `src/pages/AuditUtenti.jsx` | 477 | Nomi leggibili degli eventi di accesso. |
 | `src/pages/BackOffice.jsx` | 267 | a sinistra l'elenco dei Progetti (con ricerca oltre 4 voci), a destra il dettaglio della pratica scelta con le sue fasi, documenti, integrazioni, consultazione, pagamenti, rapporti. Pulsante «+ Nuovo progetto» per registrare un… |
-| `src/pages/CalcoloCrediti.jsx` | 1747 | editor di un calcolo dei crediti di CO₂eq secondo la Metodologia CWP v1.2, a passi (menu a sinistra): import del tracciato dati, impostazioni, rifiuti del territorio, delibera tariffaria, fattori di emissione, Banca Dati Utenze,… |
+| `src/pages/CalcoloCrediti.jsx` | 1782 | editor di un calcolo dei crediti di CO₂eq secondo la Metodologia CWP v1.2, a passi (menu a sinistra): import del tracciato dati, impostazioni, rifiuti del territorio, delibera tariffaria, fattori di emissione, Banca Dati Utenze,… |
 | `src/pages/CambiaPassword.jsx` | 163 | scegliere una nuova password, con le regole di src/lib/password.js. - "obbligatorio": primo accesso con password temporanea (o reimpostata dall'Amministratore): finché non la cambia l'utente non entra; - "volontario": l'utente… |
 | `src/pages/ConsultazioniPubbliche.jsx` | 331 | permettere a chiunque di leggere il Progetto (30 giorni) o il Rapporto di Monitoraggio (20 giorni) nel periodo di feedback pubblico (Guida al Programma 3.9 e 6.3.1) e inviare osservazioni, che Fondazione Operate modera e a cui… |
 | `src/pages/Crediti.jsx` | 248 | sezione del calcolo dei crediti di CO₂eq (Metodologia Carbon WastePrint® v1.2). Due viste: - «Calcoli»: elenco di tutti i calcoli (titolo, pratica, anno e tipo, crediti netti, stato bozza/confermato) e modulo «+ Nuovo calcolo»… |
@@ -2531,6 +2556,7 @@ Inventario generato da `strumenti/inventario_codice.py`: 191 file, 46.401 righe 
 | `test/rilievi_n.test.mjs` | 134 | ---------------------------------------------------------------- N01 |
 | `test/rilievi_t.test.mjs` | 70 | — |
 | `test/rilievi_t2.test.mjs` | 61 | Scenario con il riferimento di Casalmaggiore 2024 (78,9% di |
+| `test/rilievi_t3.test.mjs` | 47 | Opzioni salvate nel calcolo di prova di Borgoval (26/10/2026). |
 | `test/simulatore.test.mjs` | 273 | verificare il riepilogo dell'anno base (totale, pro capite, % differenziata, fattore del secco), i dati dal cluster SOSE e da un calcolo, gli anni del periodo (7, 10, 21), la traiettoria lineare e la stima dei crediti anno per… |
 | `test/simulatoreExport.test.mjs` | 94 | verificare che le tabelle preparate per PDF ed Excel riprendano i risultati del simulatore (sintesi, anni, economia, costi del Caso 1), che il file .xlsx sia un archivio valido con i fogli attesi e numeri veri nelle celle, e che… |
 | `test/tariffe.test.mjs` | 44 | verificare gli importi proposti per le voci di pagamento con gli esempi dello Schema tariffario v1.2: fasce di popolazione, quote per credito previsto, scaglioni cumulativi di emissione e minimo di vendita. |
@@ -2551,8 +2577,8 @@ Inventario generato da `strumenti/inventario_codice.py`: 191 file, 46.401 righe 
 | `strumenti/impagina_pdf.py` | 456 | impagina in PDF (WeasyPrint) Manuale Utente, Manuale Amministratore, Manuale Test e Registro, a partire dagli stessi Markdown del Word. (Uso, impaginazione e requisiti sono descritti nella docstring qui sotto.) |
 | `strumenti/inventario_codice.py` | 121 | genera l'elenco di tutti i file del codice (cartella, righe, descrizione presa dall'intestazione del file) e lo inserisce nel capitolo «Codice sorgente» di docs/REGISTRO_DEV_DEPLOY.md, tra i segnaposto INVENTARIO-INIZIO e… |
 | `strumenti/marketing_arricchimento_sql.py` | 107 | — |
-| `strumenti/presentazione/genera_presentazione.cjs` | 735 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
-| `strumenti/revisioni_documenti.json` | 1956 | — |
+| `strumenti/presentazione/genera_presentazione.cjs` | 736 | produce la presentazione di riepilogo del portale (metodologia, funzioni, novità, architettura, ruoli, punti aperti, simulatore, piani a pagamento, scelte da prendere). Per regola di Luca (19/10/2026) si aggiorna a ogni rilascio… |
+| `strumenti/revisioni_documenti.json` | 1992 | — |
 <!-- INVENTARIO-FINE -->
 
 ---

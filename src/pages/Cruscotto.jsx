@@ -33,7 +33,7 @@
    ========================================================================= */
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { COLORI as C, STATI_PRATICA, STATI_FASE, statoProgramma } from "../lib/cwpProgram.js";
+import { COLORI as C, STATI_PRATICA, STATI_FASE, NUMERO_FASI, statoProgramma } from "../lib/cwpProgram.js";
 import Header from "../components/Header.jsx";
 import Badge from "../components/Badge.jsx";
 import { leggiCruscotto, leggiFasiPratiche } from "../lib/dati.js";
@@ -217,7 +217,7 @@ export default function Cruscotto() {
           </select>
           <select value={fase} onChange={(e) => setFase(e.target.value)} style={campo} aria-label="Fase corrente">
             <option value="">Tutte le fasi</option>
-            {[1, 2, 3, 4, 5, 6, 7].map((n) => <option key={n} value={n}>Fase {n}</option>)}
+            {Array.from({ length: NUMERO_FASI }, (_, i) => i + 1).map((n) => <option key={n} value={n}>Fase {n}</option>)}
           </select>
           {filtriAttivi && (
             <button onClick={azzera} style={{ background: "none", border: "none", color: C.green, fontWeight: 600, fontSize: 12.5, cursor: "pointer" }}>

@@ -62,7 +62,7 @@ import {
   salvaRiuso,
   nuovaVersione,
 } from "../lib/crediti/archivio.js";
-import { calcolaCrediti, coefficientePrimoAnno, utenzeInConferimenti } from "../lib/crediti/calcolo.js";
+import { calcolaCrediti, calcolaBuffer, coefficientePrimoAnno, utenzeInConferimenti } from "../lib/crediti/calcolo.js";
 import { leggiUtenzeCalcolo } from "../lib/crediti/utenzeCalcolo.js";
 import { BENI_RIUSO, TIPOLOGIE_RIFIUTO } from "../lib/crediti/parametri.js";
 import { csvInOggetti, scriviCsv, scaricaTesto } from "../lib/csv.js";
@@ -559,6 +559,22 @@ export default function CalcoloCrediti() {
   const tipologieOpzioni = dati.fattori.map((f) => ({ valore: f.id, etichetta: f.nome }));
   // Riepilogo del risultato salvato nel database (null se mai calcolato).
   const salvato = calcolo.risultato;
+  // Data di registrazione del Progetto (o del Progetto del Rapporto): data
+  // di inizio, Standard 4.5.
+  const registrazione = calcolo.pratica?.tipo === "rapporto" ? calcolo.pratica?.padre?.data_registrazione : calcolo.pratica?.data_registrazione;
+  // Perché un calcolo ex post non si può confermare (stessa regola del
+  // database, trg_calcolo_ex_post, script 48): anno non ancora concluso o
+  // Progetto non registrato. Terzo collaudo (10/11/2026): il pulsante
+  // «Conferma calcolo» non compare e al suo posto si legge il motivo.
+  const annoCorrente = new Date().getFullYear();
+  const motivoNonConfermabile =
+    testa.tipo !== "ex_post"
+      ? null
+      : !registrazione
+        ? "il Progetto non è ancora registrato (Standard 4.5)"
+        : Number(testa.anno) >= annoCorrente
+          ? `l'anno ${testa.anno} non è ancora concluso`
+          : null;
 
   return (
     <div style={{ background: C.paper, minHeight: "100vh" }}>
@@ -589,8 +605,11 @@ export default function CalcoloCrediti() {
             <button onClick={esegui} disabled={!!inCorso} style={btnPrimario}>Calcola</button>
             {/* Si conferma solo una bozza con risultato salvato e senza
                 modifiche pendenti: si conferma ciò che è nel database. */}
-            {!confermato && salvato && !modificato && !disallineo && (
+            {!confermato && salvato && !modificato && !disallineo && !motivoNonConfermabile && (
               <button onClick={() => setConferma(true)} style={btnMini}>Conferma calcolo</button>
+            )}
+            {!confermato && salvato && motivoNonConfermabile && (
+              <span style={{ fontSize: 12, color: C.grafite, alignSelf: "center" }}>Non confermabile: {motivoNonConfermabile}</span>
             )}
             {confermato && <button onClick={revisione} style={btnMini}>Nuova versione</button>}
             {!confermato && <button onClick={elimina} style={{ ...btnMini, color: C.red }}>Elimina</button>}
@@ -671,7 +690,7 @@ export default function CalcoloCrediti() {
             {(passo === "utenze" || passo === "risultati") && <ControlliCoerenza esiti={coerenza} />}
             {passo === "risultati" && <QualitaDati qualita={qualita} aggiorna={aggiornaDati} sola={confermato} />}
             {passo === "impostazioni" && (
-              <Impostazioni testa={testa} aggiorna={aggiornaTesta} sola={confermato} registrazione={calcolo.pratica?.tipo === "rapporto" ? calcolo.pratica?.padre?.data_registrazione : calcolo.pratica?.data_registrazione} />
+              <Impostazioni testa={testa} aggiorna={aggiornaTesta} sola={confermato} registrazione={registrazione} />
             )}
             {passo === "rifiuti" && (
               <Passo titolo="Rifiuti del territorio (Catasto ISPRA)" nota="Capitolo 3 e Standard 4.8.1. Rifiuti dell'anno di riferimento (l'anno in cui il Comune ha raggiunto il 65% di differenziata, tra 64% e 66%, Catasto ISPRA) oppure valori medi del cluster: da qui vengono i valori attesi delle utenze. Per ogni codice EER: tipologia, quantità e se è prodotto solo dalle utenze domestiche (scarto verde, inerti). Più codici EER possono confluire nella stessa tipologia.">
@@ -731,7 +750,7 @@ export default function CalcoloCrediti() {
               />
             )}
             {passo === "buffer" && (
-              <Buffer dati={dati} opzioni={dati.opzioni} aggiorna={aggiornaOpzioni} sola={confermato} conferimenti={righeBdu} riuso={riuso} />
+              <Buffer dati={dati} opzioni={dati.opzioni} aggiorna={aggiornaOpzioni} sola={confermato} conferimenti={righeBdu} riuso={riuso} bufferSalvato={salvato ? calcolo.buffer_pct : null} />
             )}
             {passo === "risultati" && (
               <Risultati risultato={risultato} salvato={salvato} onCalcola={esegui} testa={testa} onRapporto={rapporto} confermato={confermato} nonAggiornati={modificato && !confermato} />
@@ -1219,7 +1238,13 @@ function BancaDati({ calcoloId, tipo, dati, aggiorna, sola, conferimenti, riuso,
    Progetto sostituisce quello calcolato).
    Props: opzioni (dati.opzioni), aggiorna(parziale) che scrive in
    dati.opzioni, sola, conferimenti, riuso. (`dati` arriva ma non è usato.) */
-function Buffer({ opzioni, aggiorna, sola, conferimenti, riuso }) {
+function Buffer({ opzioni, aggiorna, sola, conferimenti, riuso, bufferSalvato = null }) {
+  // Buffer che danno le caselle spuntate qui sotto, con le stesse regole del
+  // motore (calcolaBuffer), e confronto con quello dei risultati salvati
+  // (terzo collaudo, 10/11/2026: le voci della Tabella 16 elencate qui
+  // venivano lette come già applicate).
+  const attuale = calcolaBuffer({ ...(opzioni || {}), soloVirtuose: !!opzioni?.soloVirtuose });
+  const diverso = bufferSalvato != null && Math.abs(Number(bufferSalvato) - attuale.totale) > 0.005;
   // Tipologie presenti nella Banca Dati = tipologie misurate.
   const misurate = new Set(conferimenti.map((c) => c.tipologia));
   // «Ricava dai dati importati»: propone le caselle in base alla Banca Dati
@@ -1257,6 +1282,16 @@ function Buffer({ opzioni, aggiorna, sola, conferimenti, riuso }) {
   );
   return (
     <Passo titolo="Analisi del rischio e buffer" nota="Capitolo 7. Il buffer è una riserva di crediti trattenuta a copertura delle incertezze: si sommano le voci delle Tabelle 15 e 16, si dimezza con la tariffa puntuale attiva, fino a un massimo dell'80%. Il Progetto può indicare un valore diverso motivandolo.">
+      <div style={{ background: diverso ? "#FFF4E0" : "#EEF6EF", border: `1px solid ${diverso ? C.amber : C.line}`, borderRadius: 9, padding: "9px 12px", marginBottom: 12, fontSize: 13 }}>
+        <b>Buffer con le caselle spuntate qui sotto: {fmt(attuale.totale, 1)}%</b>
+        {attuale.voci.length > 0 && <span style={{ color: C.grafite }}> ({attuale.voci.map((v) => `${v.voce} ${v.valore >= 0 ? "" : "−"}${fmt(Math.abs(v.valore), 1)}%`).join(" · ")})</span>}
+        {bufferSalvato != null && (
+          <div style={{ marginTop: 4, color: diverso ? C.amber : C.grafite }}>
+            Nei risultati salvati: {fmt(Number(bufferSalvato), 1)}%{diverso ? " — diverso: premete «Calcola» per aggiornare i risultati." : " — coincide."}
+          </div>
+        )}
+        <div style={{ marginTop: 4, color: C.grafite, fontSize: 12 }}>Contano solo le caselle spuntate; le percentuali tra parentesi nelle etichette sono quelle della Metodologia.</div>
+      </div>
       {!sola && conferimenti.length > 0 && <button onClick={ricava} style={{ ...btnMini, marginBottom: 12 }}>Ricava dai dati importati</button>}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
         <div>
