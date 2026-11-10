@@ -233,6 +233,12 @@
       "data": "09/11/2026",
       "descrizione": "Sei fasi come nella Guida: la registrazione è l'esito della fase 6 (fase 7 tolta, secondo collaudo del 9/11/2026); crediti in simulazione solo da simulazioni valide.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.9",
+      "data": "10/11/2026",
+      "descrizione": "Barra a LED con 6 luci (la sesta verde, esempio «4/6»): terzo collaudo del 10/11/2026.",
+      "autore": "Fondazione Operate"
     }
   ],
   "amministratore": [
@@ -607,6 +613,12 @@
       "data": "09/11/2026",
       "descrizione": "Secondo collaudo del 9/11/2026: sei fasi e fase 7 tolta; scenari salvati con regole precedenti («Non ammesso», «Aggiorna i totali salvati») e Dashboard solo con gli scenari ammessi; avviso «Risultati non aggiornati» all'apertura del calcolo; data di registrazione come avvio del progetto.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "6.12",
+      "data": "10/11/2026",
+      "descrizione": "Terzo collaudo del 10/11/2026: barra a 6 luci; riquadro del buffer delle caselle spuntate e dei risultati salvati; «Non confermabile» per gli ex post con Progetto non registrato o anno non concluso.",
+      "autore": "Fondazione Operate"
     }
   ],
   "test": [
@@ -920,6 +932,12 @@
       "rev": "3.31",
       "data": "09/11/2026",
       "descrizione": "Nuova sezione 12 (prove 12.1-12.9) per i rilievi del secondo collaudo; prove con 6 fasi.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "3.32",
+      "data": "10/11/2026",
+      "descrizione": "Nuova sezione 13 (prove 13.1-13.5) per il terzo collaudo.",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1397,6 +1415,12 @@
       "data": "09/11/2026",
       "descrizione": "Documentazione riallineata alle 6 fasi (tabelle del database, Simulatore, «Da fare subito»: T01 risolto).",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "8.9",
+      "data": "10/11/2026",
+      "descrizione": "Terzo collaudo del 10/11/2026: T36-T37 e nota su T34 sul ramo rilievi-test-3.",
+      "autore": "Fondazione Operate"
     }
   ],
   "ripristino": [
@@ -1731,6 +1755,12 @@
       "data": "09/11/2026",
       "descrizione": "Slide delle funzioni e del collaudo del 29 ottobre allineate alle 6 fasi.",
       "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "4.9",
+      "data": "10/11/2026",
+      "descrizione": "Slide del secondo collaudo con le correzioni del 10 novembre.",
+      "autore": "Fondazione Operate"
     }
   ],
   "issue": [
@@ -1930,6 +1960,12 @@
       "rev": "1.32",
       "data": "09/11/2026",
       "descrizione": "T01 collegato a T32: fase 7 tolta il 9/11/2026.",
+      "autore": "Fondazione Operate"
+    },
+    {
+      "rev": "1.33",
+      "data": "10/11/2026",
+      "descrizione": "Terzo collaudo: voci T36-T37, nota su T34; prova rilievi_t3.test.mjs.",
       "autore": "Fondazione Operate"
     }
   ],

@@ -407,6 +407,16 @@ Prove per ritestare i rilievi del documento TEST_PORTALE_CWP del 29/10/2026. Il 
 | 12.8 | T34 | [A] Premete Calcola | Il riquadro sparisce e il risultato salvato è quello nuovo |
 | 12.9 | T35 | [A] Calcolo di un Rapporto del primo anno del Progetto → passo 1 | Sotto i campi «Progetto registrato il …»; se l'avvio è vuoto o diverso, l'avviso e il pulsante «Usa la data di registrazione» |
 
+### 13. Rilievi del terzo collaudo (TEST_PORTALE_CWP_9_11_2026, dal 10/11/2026)
+
+| N. | Rilievo | Prova | Risultato atteso |
+| --- | --- | --- | --- |
+| 13.1 | T36 | [A] Dashboard → filtro delle fasi | Le voci sono «Tutte le fasi» e Fase 1-6; nessuna «Fase 7» |
+| 13.2 | T37 | [A] Aprite il calcolo di prova di Borgoval (ex post 2027, Progetto non registrato) | Il pulsante «Conferma calcolo» non compare; al suo posto «Non confermabile: il Progetto non è ancora registrato (Standard 4.5)» |
+| 13.3 | T37 | [A] Calcolo ex post di un anno non concluso su un Progetto registrato | «Non confermabile: l'anno … non è ancora concluso» |
+| 13.4 | T34 | [A] Calcolo di Borgoval → passo Buffer | Riquadro «Buffer con le caselle spuntate qui sotto: 40%» (solo utenze virtuose 20% + secco e organico 20%) e «Nei risultati salvati: 40% — coincide» |
+| 13.5 | T34 | [A] Spuntate carta, plastica e vetro senza premere Calcola | Il riquadro del passo diventa arancione con il buffer nuovo e «diverso: premete Calcola»; al passo Risultati compare «Risultati non aggiornati» |
+
 ## Limiti noti e funzioni in arrivo
 
 **Limiti noti oggi (non sono errori da segnalare).**

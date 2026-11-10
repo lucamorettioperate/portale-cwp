@@ -1,4 +1,4 @@
-# Base di conoscenza del Portale Carbon WastePrint — Operatori di back-office (generata il 09/11/2026)
+# Base di conoscenza del Portale Carbon WastePrint — Operatori di back-office (generata il 10/11/2026)
 
 === DOCUMENTO: Manuale Utente ===
 
@@ -81,7 +81,7 @@ La pagina elenca i Progetti della vostra organizzazione (o delle organizzazioni 
 
 **Ordinare gli elenchi.** Con più pratiche o documenti, in alto compare **Ordina per**: scegliete il campo (titolo, codice, stato, data…) e con il pulsante ▲/▼ l'ordine crescente o decrescente. Nelle tabelle basta fare clic sull'intestazione della colonna.
 
-Ogni riquadro mostra il titolo del progetto, lo stato e il codice della pratica con il nome dell'ente. In alto a destra c'è la **barra di avanzamento a LED**: 6 luci, una per fase; le fasi completate sono accese (ambra, la settima verde), quella in corso ha il contorno ambra, accanto il conteggio (es. «4/7»). Passando il mouse su una luce compaiono nome e stato della fase. La stessa barra compare in alto a destra nella pratica aperta.
+Ogni riquadro mostra il titolo del progetto, lo stato e il codice della pratica con il nome dell'ente. In alto a destra c'è la **barra di avanzamento a LED**: 6 luci, una per fase; le fasi completate sono accese (ambra; la sesta, che porta alla registrazione, verde), quella in corso ha il contorno ambra, accanto il conteggio (es. «4/6»). Passando il mouse su una luce compaiono nome e stato della fase. La stessa barra compare in alto a destra nella pratica aperta.
 
 | Stato | Significato |
 | --- | --- |
@@ -546,7 +546,7 @@ Si accede da [portale-cwp.vercel.app](https://portale-cwp.vercel.app) con **Emai
 
 La **Dashboard** è la pagina iniziale dello staff: mostra in un'unica tabella tutte le pratiche, Progetti e Rapporti, con l'avanzamento, la fase corrente, la scadenza e ciò che c'è da fare.
 
-**Barra di avanzamento a LED.** La colonna **Avanzamento** mostra per ogni pratica (quindi per ogni Comune) una barra di 6 luci, una per fase. Le fasi **completate sono accese** (ambra), quelle **ancora da fare sono spente**. La **settima luce**, la Chiusura, si accende in **verde**. La fase in corso è spenta ma ha un contorno ambra, così si vede subito dove è arrivata la pratica. Accanto c'è il conteggio, ad esempio «4/7». Passando il mouse su una luce compaiono numero, nome e stato della fase. La stessa barra, in piccolo, compare **nell'elenco delle pratiche** a sinistra della pagina Pratiche (in alto a destra di ogni riquadro, con lo stato sotto) e **in alto a destra nella pratica aperta**.
+**Barra di avanzamento a LED.** La colonna **Avanzamento** mostra per ogni pratica (quindi per ogni Comune) una barra di 6 luci, una per fase. Le fasi **completate sono accese** (ambra), quelle **ancora da fare sono spente**. La **sesta luce**, la seconda verifica documentale che porta alla registrazione, si accende in **verde**. La fase in corso è spenta ma ha un contorno ambra, così si vede subito dove è arrivata la pratica. Accanto c'è il conteggio, ad esempio «4/6». Passando il mouse su una luce compaiono numero, nome e stato della fase. La stessa barra, in piccolo, compare **nell'elenco delle pratiche** a sinistra della pagina Pratiche (in alto a destra di ogni riquadro, con lo stato sotto) e **in alto a destra nella pratica aperta**.
 
 **Valore dei crediti (dal 23/10/2026).** In cima alla Dashboard due riquadri danno il valore complessivo dei crediti di tutto il portale, in crediti (1 credito = 1 tCO₂eq) e in euro:
 - **Crediti in simulazione**: per ogni Comune conta solo lo scenario **ammesso** del Simulatore **aggiornato più di recente** (dal 9/11/2026 gli scenari «Non ammesso», per esempio con l'anno di riferimento fuori dal 64-66% di differenziata, non si contano) (gli scenari prudente, obiettivo, ambizioso… sono alternative e non si sommano), con i crediti netti di tutto il periodo simulato (7, 10 o 21 anni). Gli euro sono i ricavi dello scenario (crediti × valore del credito anno per anno). Gli scenari salvati prima del 23/10/2026 o senza valore del credito si valorizzano al valore ipotetico del credito (Impostazioni) e il riquadro dice quanti sono: basta riaprirli e premere **Salva** nel Simulatore. È una stima ex ante, non certificabile.
