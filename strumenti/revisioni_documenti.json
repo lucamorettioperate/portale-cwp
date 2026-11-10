@@ -1419,7 +1419,7 @@
     {
       "rev": "8.9",
       "data": "10/11/2026",
-      "descrizione": "Terzo collaudo del 10/11/2026: T36-T37 e nota su T34 sul ramo rilievi-test-3.",
+      "descrizione": "Terzo collaudo del 10/11/2026: T36-T37 e nota su T34, pubblicati il 10/11 (ramo rilievi-test-3, nessuno script).",
       "autore": "Fondazione Operate"
     }
   ],
@@ -1965,7 +1965,7 @@
     {
       "rev": "1.33",
       "data": "10/11/2026",
-      "descrizione": "Terzo collaudo: voci T36-T37, nota su T34; prova rilievi_t3.test.mjs.",
+      "descrizione": "Terzo collaudo: voci T36-T37 in produzione dal 10/11/2026, nota su T34; prova rilievi_t3.test.mjs (48 da ritestare).",
       "autore": "Fondazione Operate"
     }
   ],

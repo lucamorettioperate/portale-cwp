@@ -564,7 +564,7 @@ Voci più recenti in alto. Commit = identificativo nel repository GitHub.
   alle 08:41). Riprende i 35 rilievi con le note dei collaudatori: 3 punti
   da sistemare, nessuna modifica al database (nessuno script nuovo).
   Risposte nel documento di progetto `claude/test-portale-cwp-3-risposte.md`.
-  Correzioni sul ramo `rilievi-test-3`:
+  Correzioni sul ramo `rilievi-test-3`, pubblicate il 10/11 con l'OK di Luca:
   - **T36 — Residui della fase 7**: filtro delle fasi della Dashboard su 6
     voci (`NUMERO_FASI`); Manuale Utente e Amministratore: barra a 6 luci,
     la sesta verde, esempio «4/6».
